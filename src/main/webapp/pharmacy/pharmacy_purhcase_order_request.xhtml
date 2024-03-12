@@ -9,10 +9,10 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
     <ui:define name="content">
         <h:form id="form">
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreatePurchaseOrder')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" >
                 <p:defaultCommand target="btnSave" ></p:defaultCommand>
                 <h:panelGroup id="notPrintPreview"  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
 
@@ -22,14 +22,10 @@
                             <p:dataTable 
                                 styleClass="noBorder" 
                                 rowIndexVar="i" 
-
                                 var="bi" 
-                                scrollable="false"
+                                scrollable="true"
+                                scrollHeight="500px"
                                 rowKey="#{bi.searialNo}"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rows="6"
-                                paginatorAlwaysVisible="false"
                                 value="#{purchaseOrderRequestController.billItems}" 
                                 selection="#{purchaseOrderRequestController.selectedBillItems}"
                                 id="itemList" >  
@@ -106,12 +102,22 @@
                                 </p:column>  
 
                                 <p:column headerText="Stock" style="width:4em; text-align: right;">
-                                    <p:outputLabel value="#{stockController.findStock(bi.item)}" style="width:4em; text-align: right;"/>                            
+                                    <p:commandLink value="#{stockController.findStock(bi.item)}"
+                                                   oncomplete="PF('stockDetailsDialog').show();"
+                                                   update=":stockDetailsForm:stockList"
+                                                   actionListener="#{stockController.listStocksOfSelectedItem(bi.item)}">
+                                    </p:commandLink>
                                 </p:column>
 
-                                <p:column headerText="Expiaring" style="width:4em; text-align: right;">
-                                    <p:outputLabel value="#{stockController.findExpiaringStock(bi.item)}" style="width:4em; text-align: right;"/>                            
+                                <p:column headerText="Expiry" style="width:4em; text-align: right;">
+                                    <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
+                                                   oncomplete="PF('expStockDetailsDialog').show();"
+                                                   update=":expStockDetailsForm:expStockList"
+                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}">
+                                    </p:commandLink>
                                 </p:column>
+
+
 
                                 <p:column headerText="Sale" style="width:4em; text-align: right;">
                                     <p:outputLabel value="#{pharmacyController.findAllOutTransactions(bi.item)}" style="width:4em; text-align: right;"/>                            
@@ -127,6 +133,10 @@
                                 </p:column>
 
                             </p:dataTable> 
+
+
+
+
                         </div>
                         <div class="col-3">
                             <p:panel header="Purchase Order" id="po">
@@ -405,7 +415,7 @@
                                                     </td>
                                                     <td style="text-align: right;">
                                                         <h:outputLabel value="#{bi.netValue}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                            <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputLabel>
                                                     </td>
                                                 </tr>
@@ -440,9 +450,9 @@
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.netTotal}">
-                                             <f:convertNumber pattern="#,##0.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                         
+
                                     </div>
                                 </div>
 
@@ -454,5 +464,89 @@
             </h:panelGroup>
 
         </h:form>
+
+
+        <p:dialog widgetVar="stockDetailsDialog" modal="true" header="Stock Details" width="50%" height="auto">
+            <h:form id="stockDetailsForm">
+
+                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s">
+
+                    <f:facet name="header">
+                        <h:outputText id="stockItemName" value="Item: #{stockController.selectedItem.name}" />
+                    </f:facet>
+
+                    <p:column headerText="Expiry Date">
+                        <h:outputText value="#{s.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Department">
+                        <h:outputText value="#{s.department.name}" />
+                    </p:column>
+
+                    <p:column headerText="Stock">
+                        <h:outputText value="#{s.stock}">
+                            <f:convertNumber pattern="#.#" />
+                        </h:outputText>
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <h:outputText value="Total Stock Quantity: " />
+                        <h:outputText id="stockQty" value="#{stockController.totalStockQty}">
+                            <f:convertNumber pattern="#.#" />
+                        </h:outputText>
+                    </f:facet>
+
+                </p:dataTable>
+            </h:form>
+        </p:dialog>
+
+
+
+        <p:dialog widgetVar="expStockDetailsDialog" modal="true" header="Expiring Stock Details" width="50%" height="auto">
+            <h:form id="expStockDetailsForm">
+
+                <p:dataTable id="expStockList" value="#{stockController.selectedItemExpiaringStocks}" var="s">
+
+                    <f:facet name="header">
+                        <h:outputText id="expItemName" value="#{stockController.selectedItem.name}" />
+                    </f:facet>
+
+                    <p:column headerText="Expiry Date">
+                        <h:outputText value="#{s.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Department">
+                        <h:outputText value="#{s.department.name}">
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Stock">
+                        <h:outputText value="#{s.stock}" >
+                            <f:convertNumber pattern="#.#" ></f:convertNumber>
+                        </h:outputText>
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <h:outputText value="Total Expiaring Quentity by " />
+                        <h:outputText value="#{stockController.shortExpiaryDate}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                        </h:outputText>
+                        <h:outputText value=" : " />
+                        <h:outputText id="expQty" value="#{stockController.expiaringStockQty}" >
+                            <f:convertNumber pattern="#.#" ></f:convertNumber>
+                        </h:outputText>
+                    </f:facet>
+
+                </p:dataTable>
+
+            </h:form>
+        </p:dialog>
+
+
+
     </ui:define>  
 </ui:composition>
