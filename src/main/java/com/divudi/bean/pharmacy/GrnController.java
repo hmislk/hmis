@@ -505,6 +505,7 @@ public class GrnController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
+        setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
