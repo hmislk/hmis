@@ -478,6 +478,12 @@ public class PharmacyBillSearch implements Serializable {
         bill.setTransTotalSaleValue(tmp);
 
     }
+    
+    
+    public String navigateToViewPharmacyGrn(){
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true;";
+    }
+    
 
     public String navigateToViewPurchaseOrder() {
         if (bill == null) {
