@@ -1019,13 +1019,13 @@
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}" >
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
-                                        <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
+                                        <phi:saleBill_without_item bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                        <phi:saleBill bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -1033,7 +1033,7 @@
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                        <phi:saleBill_prabodha bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -1041,7 +1041,7 @@
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>                            
