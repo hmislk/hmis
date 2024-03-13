@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -58,7 +58,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author www.divudi.com
  */
 @Named
-@RequestScoped
+@SessionScoped
 public class CommonReport implements Serializable {
 
     /**
@@ -409,6 +409,10 @@ public class CommonReport implements Serializable {
         return "/pharmacy/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
     }
 
+    public String navigateToPharmacySaleSummery() {
+        return "/pharmacy/report_pharmacy_sale_bill_summary.xhtml?faces-redirect=true";
+    }
+    
     public String navigateToReportCashierDetailedByDepartment() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
