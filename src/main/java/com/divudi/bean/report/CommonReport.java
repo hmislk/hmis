@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -58,7 +58,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author www.divudi.com
  */
 @Named
-@RequestScoped
+@SessionScoped
 public class CommonReport implements Serializable {
 
     /**
