@@ -1402,6 +1402,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //            return;
 //        }
 
+        if (billPreview) {
+            
+        }
+
         calculateAllRates();
 
         Patient pt = savePatient();
@@ -1413,7 +1417,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         savePreBillFinally(pt);
         savePreBillItemsFinally(tmpBillItems);
-
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
         if (getToken() != null) {
@@ -1444,7 +1447,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void settleBillWithPay() {
         Date startTime = new Date();
-
         Date fromDate = null;
         Date toDate = null;
 
@@ -1464,6 +1466,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        
+        if (getPatient()==null) {
+            JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
 

@@ -12,22 +12,17 @@
 
 
     <ui:define name="subcontent">
-
         <h:panelGroup rendered="true" >
             <h:form>
-
                 <p:panel  header="Pharmay Sale Bill Summery">
                     <h:panelGrid columns="4" class="w-100">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{billSearch.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
-
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
-
                         <h:outputLabel styleClass="noPrintButton" value="Department"/>
-
                         <p:autoComplete styleClass="noPrintButton"  value="#{billSearch.department}"  style="text-align: left;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                         </p:autoComplete>
 
@@ -37,16 +32,19 @@
                                          var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                          value="#{billSearch.user}" ></p:autoComplete>
 
-                        <p:commandButton 
+                    </h:panelGrid>
+                    
+                    <div class="d-flex align-items-center my-2">
+                         <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
-                            value="Refresh"
-                            icon="fa-solid fa-arrows-rotate"
+                            value="Process"
+                            icon="fas fa-cog"
                             class="ui-button-warning" 
                             style="float: right;" 
                             actionListener="#{billSearch.processCashierPharmacySaleBillSummery}" />
                         <p:defaultCommand target="btnRefresh"/>
-
+                        
                         <p:commandButton 
                             ajax="false" 
                             value="Excel" 
@@ -64,10 +62,7 @@
                             class="ui-button-info " >
                             <p:printer target="tbl"  />
                         </p:commandButton>
-
-
-
-                    </h:panelGrid>
+                    </div>
 
                     <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
                         <p:column headerText="Bill Type" >
@@ -88,10 +83,6 @@
                             </h:outputText>
                         </p:column>
                     </p:dataTable>
-
-
-
-
                 </p:panel>
             </h:form>
         </h:panelGroup>
