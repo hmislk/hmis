@@ -1163,6 +1163,8 @@ public class PatientEncounterController implements Serializable {
         String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
+        String nic = e.getPatient().getPerson().getNic()!= null ? e.getPatient().getPerson().getNic() : "";
+        String phn = e.getPatient().getPhn()!= null ? e.getPatient().getPhn() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
@@ -1293,7 +1295,11 @@ public class PatientEncounterController implements Serializable {
                 .replace("{bp}", bp)
                 .replace("{pr}",pulseRate)
                 .replace("{pfr}",pfr)
-                .replace("{sat}", saturation);
+                .replace("{sat}", saturation)
+                .replace("{patient_name}", name)
+                .replace("{patient_age}", age)
+                .replace("{patient_phn_number}", phn)
+                .replace("{patient_nic}", nic);
         return output;
 
     }
