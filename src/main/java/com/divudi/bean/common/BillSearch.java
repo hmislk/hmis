@@ -466,7 +466,7 @@ public class BillSearch implements Serializable {
         m.put("bts", billTypes);
         
 
-        j += " group by b.paymentMethod, b.billClassType, b.billType";
+        j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater";
 
         Boolean bf = false;
         if (bf) {
