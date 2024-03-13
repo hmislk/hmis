@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -58,7 +58,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author www.divudi.com
  */
 @Named
-@RequestScoped
+@SessionScoped
 public class CommonReport implements Serializable {
 
     /**
@@ -244,6 +244,7 @@ public class CommonReport implements Serializable {
     boolean onlyStaffFee = false;
     boolean onlyHosFee = false;
     PaymentMethod paymentMethod;
+    private String departmentId;
 
     public List<Bill> getBills() {
         return bills;
@@ -409,6 +410,10 @@ public class CommonReport implements Serializable {
         return "/pharmacy/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
     }
 
+    public String navigateToPharmacySaleSummery() {
+        return "/pharmacy/report_pharmacy_sale_bill_summary.xhtml?faces-redirect=true";
+    }
+    
     public String navigateToReportCashierDetailedByDepartment() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1122,6 +1127,9 @@ public class CommonReport implements Serializable {
     }
 
     public Department getDepartment() {
+        if(department==null){
+            setDepartment(sessionController.getLoggedUser().getDepartment());
+        }
         return department;
     }
 
@@ -1885,6 +1893,12 @@ public class CommonReport implements Serializable {
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";
             temMap.put("fIns", institution);
+        }
+        
+        if (!getDepartmentId().trim().equals("")) {
+            System.out.println("test = "+getDepartmentId());
+            sql+= " and b.deptId like :deptId ";
+            temMap.put("deptId", "%" + getDepartmentId() + "%");
         }
 
         if (getReferenceInstitution() != null) {
@@ -6352,6 +6366,14 @@ public class CommonReport implements Serializable {
 
     public void setManageLabReportIndex(int manageLabReportIndex) {
         this.manageLabReportIndex = manageLabReportIndex;
+    }
+
+    public String getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(String departmentId) {
+        this.departmentId = departmentId;
     }
 
     public class CollectingCenteRow {
