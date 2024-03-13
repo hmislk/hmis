@@ -71,19 +71,21 @@
 
                     <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
                         <p:column headerText="Bill Type" >
-                            <h:outputText value="#{bs.billType}" ></h:outputText>
+                            <h:outputText value="#{bs.billType.label}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Payment Method" >
                             <h:outputText value="#{bs.paymentMethod}" ></h:outputText>
                         </p:column>
                         <p:column headerText="User" >
-                            <h:outputText value="#{bs.webUser.webUserPerson.name}" ></h:outputText>
+                            <h:outputText value="#{bs.webUser}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Count" >
                             <h:outputText value="#{bs.count}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Bill Total" >
-                            <h:outputText value="#{bs.total}" ></h:outputText>
+                            <h:outputText value="#{bs.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
                         </p:column>
                     </p:dataTable>
 
