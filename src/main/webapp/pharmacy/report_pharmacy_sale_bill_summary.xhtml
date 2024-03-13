@@ -37,11 +37,14 @@
                                          var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                          value="#{billSearch.user}" ></p:autoComplete>
 
-                        <p:commandButton 
+                    </h:panelGrid>
+                    
+                    <div class="d-flex align-items-center my-2">
+                         <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
-                            value="Refresh"
-                            icon="fa-solid fa-arrows-rotate"
+                            value="Process"
+                            icon="fas fa-cog"
                             class="ui-button-warning" 
                             style="float: right;" 
                             actionListener="#{billSearch.processCashierPharmacySaleBillSummery}" />
@@ -64,10 +67,7 @@
                             class="ui-button-info " >
                             <p:printer target="tbl"  />
                         </p:commandButton>
-
-
-
-                    </h:panelGrid>
+                    </div>
 
                     <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
                         <p:column headerText="Bill Type" >
