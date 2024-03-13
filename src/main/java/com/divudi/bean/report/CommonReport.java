@@ -409,6 +409,10 @@ public class CommonReport implements Serializable {
         return "/pharmacy/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
     }
 
+    public String navigateToPharmacySaleSummery() {
+        return "/pharmacy/report_pharmacy_sale_bill_summary.xhtml?faces-redirect=true";
+    }
+    
     public String navigateToReportCashierDetailedByDepartment() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
