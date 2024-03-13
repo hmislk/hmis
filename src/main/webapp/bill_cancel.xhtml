@@ -15,7 +15,7 @@
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputText value="Cancellation"/>
+                                <h:outputText value="Cancellation" class="mt-5"/>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
                                     <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billSearch.comment}" style="float: right" class="p-2 w-100"/> 
 
@@ -64,16 +64,30 @@
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                             <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <p:panelGrid columns="2">
-                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
-                                            <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
-                                            <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
-                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
-                                        </p:panelGrid>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-2"><h:outputLabel value="Bill No" ></h:outputLabel></div>
+                                            <div class="col-md-1" style="text-align: center;">:</div>
+                                            <div class="col-md-3"><h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel></div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-2"><h:outputLabel value="Total" ></h:outputLabel></div>
+                                            <div class="col-md-1" style="text-align: center;">:</div>
+                                            <div class="col-md-3"><h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel></div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-2"><h:outputLabel value="Discount" ></h:outputLabel></div>
+                                            <div class="col-md-1" style="text-align: center;">:</div>
+                                            <div class="col-md-3"><h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel></div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-2"><h:outputLabel value="Net Total" ></h:outputLabel></div>
+                                            <div class="col-md-1" style="text-align: center;">:</div>
+                                            <div class="col-md-3"><h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel></div>
+                                        </div>
                                     </p:panel>
                                 </div>
                             </div>

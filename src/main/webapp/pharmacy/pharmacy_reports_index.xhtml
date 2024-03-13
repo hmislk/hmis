@@ -32,7 +32,11 @@
                             </p:tab>
                             <p:tab title="Item Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton class="w-100" value="Bin Card" action="/pharmacy/bin_card?faces-redirect=true" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        value="Bin Card" 
+                                        action="/pharmacy/bin_card?faces-redirect=true" 
+                                        ajax="false" ></p:commandButton>                            
                                     
                                     <p:commandButton class="w-100" value="Items List" action="/pharmacy/list_amps?faces-redirect=true" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
                                     <p:commandButton class="w-100" value="Medicine List" action="/pharmacy/list_medicines?faces-redirect=true" actionListener="#{ampController.createMedicineList()}" ajax="false" ></p:commandButton>                            
@@ -47,7 +51,10 @@
                             <p:tab title="Reports for Ordering">
                                 <div class="d-grid gap-2">
                                     <p:commandButton class="w-100" value="Reorder Analysis" action="/pharmacy/ordering_data?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                    <p:commandButton class="w-100" value="Manage Reordering Data" action="/pharmacy/manage_reordering_data?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                    <p:commandButton class="w-100" value="Reorder Management" action="#{reorderController.navigateReorderManagement()}" ajax="false" ></p:commandButton> 
                                 </div>
+            
                             </p:tab>
                             <p:tab title="Sales Reports">
                                 <div class="d-grid gap-2">

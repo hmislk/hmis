@@ -119,6 +119,7 @@
 
 
                                 <p:commandButton 
+                                    id="btnRetailBillForCashier"
                                     ajax="false"
                                     class="ui-button-primary mx-2"
                                     icon="fa fa-pills" 
@@ -127,6 +128,7 @@
                                     action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
+                                <p:tooltip value="Bill For Cashier" />
 
                                 <p:commandButton 
                                     ajax="false"
@@ -156,7 +158,7 @@
                                     ajax="false"
                                     class="ui-button-warning"
                                     icon="fas fa-pen" 
-                                    disabled="#{token.bill.cancelled eq true}"
+                                    disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
                                     rendered="#{token.bill ne null}"
                                     title="Edit Bill" 
                                     action="#{tokenController.navigateToSaleForCashier}">

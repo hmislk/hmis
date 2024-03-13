@@ -50,6 +50,15 @@
                                             <f:selectItem itemLabel="Please Select Paper Type" />
                                             <f:selectItems var="t" itemLabel="#{t.label}" itemValue="#{t}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
+                                        <h:outputLabel 
+                                            value="Partial Payment of Pharmacy Bills allowed"
+                                            class="form-label"></h:outputLabel>
+                                        <p:selectBooleanButton 
+                                            offIcon="fas fa-times" 
+                                            onIcon="fas fa-check"
+                                            class="form-control"                                              
+                                            value="#{sessionController.currentPreference.partialPaymentOfPharmacyBillsAllowed}" />
+
                                         <h:outputLabel value="GRN Detaied" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.grnBillDetailed}" ></p:selectBooleanButton>
 
@@ -238,6 +247,9 @@
                                     {date_of_admission}<br/>
                                     {date_of_discharge}<br/>
                                     {admission_type}<br/>
+                                    
+                                    {time_of_admission}<br/>
+                                    {time_of_discharge}<br/>
 
                                 </h:panelGroup>
                             </p:tab>
@@ -266,7 +278,7 @@
                                         <f:selectItem itemLabel="Please Select Paper Type" />
                                         <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
-                                    
+
                                     <h:outputLabel 
                                         value="Inward Deposit Payment Bill Paper" 
                                         class="form-label"></h:outputLabel>
@@ -318,7 +330,7 @@
                             </p:tab>
                             <p:tab title="Channel" >
                                 <p:panel header="Channel" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" >
+                                    <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
@@ -351,6 +363,10 @@
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
+                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  
+                                                                                                           
+                                        </p:inputTextarea>
 
 
                                     </h:panelGrid>

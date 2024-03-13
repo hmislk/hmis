@@ -41,9 +41,7 @@
                                     <p:column>
                                         <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>  
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
+                                    
                                 </p:autoComplete> 
                                 <p:commandButton value="Select" ajax="false" class="m-1"/>
                             </div>
@@ -80,7 +78,7 @@
                                                 value="Clear"
                                                 icon="fa fa-ban"
                                                 ajax="false" 
-                                                action="#{inwardAdditionalChargeController.makeNull}" />
+                                                action="#{inwardAdditionalChargeController.reset()}" />
 
                                             <p:commandButton 
                                                 class="m-1 ui-button-warning " 
@@ -187,7 +185,7 @@
                                                     </p:autoComplete>-->
 
                                                             <div>
-                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
+                                                                <p:selectOneMenu autoWidth="false" class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
                                                                     <f:selectItem itemLabel="Select Institution"/>
                                                                     <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                                 </p:selectOneMenu>

@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -2452,15 +2453,21 @@ public class ItemController implements Serializable {
     }
 
     public ItemLight findItemLightById(Long id) {
+        System.out.println("findItemLightById");
+        System.out.println("id = " + id);
+        Optional<ItemLight> itemLightOptional = findItemLightByIdStreaming(id);
+        ItemLight il = itemLightOptional.orElse(null);
+        System.out.println("il = " + il);
+        return il;
+    }
+
+    public Optional<ItemLight> findItemLightByIdStreaming(Long id) {
         if (id == null) {
-            return null;
+            return Optional.empty(); // Clearly indicate absence of value
         }
-        for (ItemLight itemLight : itemApplicationController.getItems()) {
-            if (id.equals(itemLight.getId())) {
-                return itemLight;
-            }
-        }
-        return null; // Or handle the case when no matching ItemLight is found
+        return itemApplicationController.getItems().stream()
+                .filter(itemLight -> id.equals(itemLight.getId()))
+                .findFirst(); // Returns an Optional describing the first matching element, or an empty Optional if no match is found
     }
 
     public ItemLight getSelectedItemLight() {
@@ -2549,9 +2556,10 @@ public class ItemController implements Serializable {
                 Long id = Long.valueOf(value);
                 ItemController controller = (ItemController) context.getApplication().getELResolver()
                         .getValue(context.getELContext(), null, "itemController");
-                return controller.findItemLightById(id);
+                ItemLight il = controller.findItemLightById(id);
+                return il;
             } catch (NumberFormatException e) {
-                throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Conversion Error", "Invalid ItemLight ID"));
+                return null;
             }
         }
 

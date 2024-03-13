@@ -15,6 +15,7 @@ public class PaymentMethodData {
     private ComponentDetail ewallet;
     private ComponentDetail patient_deposit;
     private ComponentDetail paymentMethodMultiple;
+    private ComponentDetail credit;
     
     private PaymentMethod paymentMethod;
 
@@ -116,6 +117,19 @@ public class PaymentMethodData {
         this.cash = cash;
     }
 
+    public ComponentDetail getCredit() {
+        if (credit == null) {
+            credit = new ComponentDetail();
+            credit.setPaymentMethod(PaymentMethod.Credit);
+        }
+        return credit;
+    }
+
+    public void setCredit(ComponentDetail credit) {
+        this.credit = credit;
+    }
+
+    
     
     
     

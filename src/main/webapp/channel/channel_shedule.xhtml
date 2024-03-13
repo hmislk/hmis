@@ -8,10 +8,8 @@
 
     <h:body>
 
-        <ui:composition 
-            template="/resources/template/template.xhtml" >
-
-            <ui:define name="content">
+        <ui:composition template="/channel/channel_scheduling/index.xhtml" >
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
@@ -27,7 +25,7 @@
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel  value="Speciality" ></h:outputLabel>
-                                        <p:autoComplete inputStyleClass="w-100" class="mx-2 w-100" forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality" placeholder="Speciality"
+                                        <p:autoComplete inputStyleClass="w-100" class="mx-2 w-100" forceSelection="true" value="#{channelScheduleController.speciality}" id="acSpeciality" placeholder="Speciality"
                                                         completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                         >
                                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
@@ -36,19 +34,19 @@
 
 
                                         <h:outputLabel  value="Doctor" ></h:outputLabel>
-                                        <p:autoComplete inputStyleClass="w-100" class="mx-2 w-100"  forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff" placeholder="Doctor"
-                                                        completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                        <p:autoComplete inputStyleClass="w-100" class="mx-2 w-100"  forceSelection="true" value="#{channelScheduleController.currentStaff}" id="scStaff" placeholder="Doctor"
+                                                        completeMethod="#{channelScheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                         >   
-                                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail" listener="#{sheduleController.prepareAdd()}" />
+                                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail" listener="#{channelScheduleController.prepareAdd()}" />
                                         </p:autoComplete>  
 
 
 
                                         <h:outputLabel  value="Sessions" ></h:outputLabel>
                                         <h:panelGroup id="gpSelectText" >
-                                            <p:selectOneListbox  id="lstSelect" converter="sscon"  value="#{sheduleController.current}" style="height: 250px;" class="mx-2 w-100" >
-                                                <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                                <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{sheduleController.fillFees()}" >
+                                            <p:selectOneListbox  id="lstSelect" converter="sscon"  value="#{channelScheduleController.current}" style="height: 250px;" class="mx-2 w-100" >
+                                                <f:selectItems  value="#{channelScheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                                <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{channelScheduleController.fillFees()}" >
                                                 </f:ajax>
                                             </p:selectOneListbox>
                                         </h:panelGroup>
@@ -58,34 +56,23 @@
                                         <p:commandButton ajax="false" id="btnAdd" value="Add New Session" 
                                                          class="ui-button-success"
                                                          icon="fas fa-plus"
-                                                         action="#{sheduleController.prepareAdd()}" 
+                                                         action="#{channelScheduleController.prepareAdd()}" 
                                                          >
                                             <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                                             </f:ajax>
                                         </p:commandButton>
                                         <p:commandButton ajax="false" class="ui-button-danger" icon="fas fa-trash" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                    return false;" action="#{sheduleController.delete()}"  value="Delete Selected Session" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove') and false}" >
+                                                    return false;" action="#{channelScheduleController.delete()}"  value="Delete Selected Session" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove') and false}" >
                                         </p:commandButton>
                                     </h:panelGrid>
                                     <p:panelGrid columns="1" class="my-2 w-100" >
                                         <f:facet name="header" >
                                             Links
                                         </f:facet>
-                                        <p:commandLink value="Create Default Fee Set for Selected Sessions" action="#{sheduleController.createOnCallFeeOldSession()}"   ajax="false" />
-                                        <p:commandLink value="Manually Create Channelling Seesions For Selected Doctor" action="#{sheduleController.createFutureSessionsManually()}"   ajax="false" />
+                                        <p:commandLink value="Create Default Fee Set for Selected Sessions" action="#{channelScheduleController.createOnCallFeeOldSession()}"   ajax="false" />
+                                        <p:commandLink value="Manually Create Channelling Seesions For Selected Doctor" action="#{channelScheduleController.createFutureSessionsManually()}"   ajax="false" />
                                     </p:panelGrid>
 
-                                </p:panel>
-                                <p:panel class="my-1">
-                                    <f:facet name="header" >
-                                        Others
-                                    </f:facet>
-                                    <h:panelGrid columns="2" class="w-100">
-                                        <h:outputLabel value="Activities" />
-                                        <p:inputTextarea class="mx-2 w-100 my-1" rows="4" value="#{sheduleController.current.activities}" />
-                                        <h:outputLabel value="Actions" />
-                                        <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{sheduleController.current.actions}"/>
-                                    </h:panelGrid>
                                 </p:panel>
                             </div>
                             <div class="col-6">
@@ -96,7 +83,7 @@
                                     </f:facet>
                                     <h:panelGrid columns="3" class="d-flex justify-content-end my-1">
                                         <p:commandButton ajax="false" id="btnSave" value="Save"  
-                                                         action="#{sheduleController.saveSelected}"
+                                                         action="#{channelScheduleController.saveSelected}"
                                                          class="ui-button-warning" icon="fas fa-save" >
 
                                         </p:commandButton>
@@ -117,31 +104,31 @@
 
 
                                                 <p:outputLabel value="Session Name"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.name}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.name}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
 
 
-                                                <h:panelGroup rendered="#{sheduleController.current.id ne null}" >
-                                                    <h:panelGroup rendered="#{sheduleController.current.sessionDate eq null}" >
+                                                <h:panelGroup rendered="#{channelScheduleController.current.id ne null}" >
+                                                    <h:panelGroup rendered="#{channelScheduleController.current.sessionDate eq null}" >
                                                         <p:outputLabel value="Weekday"></p:outputLabel>
                                                     </h:panelGroup>
                                                     <h:panelGroup 
-                                                        rendered="#{sheduleController.current.sessionDate ne null}" >
+                                                        rendered="#{channelScheduleController.current.sessionDate ne null}" >
                                                         <p:outputLabel value="Session Date"></p:outputLabel>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{sheduleController.current.id ne null}" >
-                                                    <h:panelGroup rendered="#{sheduleController.current.sessionDate eq null}" >
-                                                        <p:inputText class="w-100" disabled="true" value="Sunday" rendered="#{sheduleController.current.sessionWeekday eq 1 and sheduleController.current.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Monday" rendered="#{sheduleController.current.sessionWeekday eq 2 and sheduleController.current.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Tuesday" rendered="#{sheduleController.current.sessionWeekday eq 3 and sheduleController.current.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Wednesday" rendered="#{sheduleController.current.sessionWeekday eq 4 and sheduleController.current.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Thursday" rendered="#{sheduleController.current.sessionWeekday eq 5 and sheduleController.current.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Friday" rendered="#{sheduleController.current.sessionWeekday eq 6 and sheduleController.current.sessionWeekday ne null}"/>
-                                                        <p:inputText class="w-100" disabled="true"  value="Sutarday" rendered="#{sheduleController.current.sessionWeekday eq 7 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <h:panelGroup rendered="#{channelScheduleController.current.id ne null}" >
+                                                    <h:panelGroup rendered="#{channelScheduleController.current.sessionDate eq null}" >
+                                                        <p:inputText class="w-100" disabled="true" value="Sunday" rendered="#{channelScheduleController.current.sessionWeekday eq 1 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Monday" rendered="#{channelScheduleController.current.sessionWeekday eq 2 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Tuesday" rendered="#{channelScheduleController.current.sessionWeekday eq 3 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Wednesday" rendered="#{channelScheduleController.current.sessionWeekday eq 4 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Thursday" rendered="#{channelScheduleController.current.sessionWeekday eq 5 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Friday" rendered="#{channelScheduleController.current.sessionWeekday eq 6 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Sutarday" rendered="#{channelScheduleController.current.sessionWeekday eq 7 and channelScheduleController.current.sessionWeekday ne null}"/>
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{sheduleController.current.sessionDate ne null}" >
-                                                        <p:inputText class="w-100" disabled="true"  value="#{sheduleController.current.sessionDate}" rendered="#{sheduleController.current.sessionWeekday eq null}">
+                                                    <h:panelGroup rendered="#{channelScheduleController.current.sessionDate ne null}" >
+                                                        <p:inputText class="w-100" disabled="true"  value="#{channelScheduleController.current.sessionDate}" rendered="#{channelScheduleController.current.sessionWeekday eq null}">
                                                             <f:convertDateTime pattern="yyyy MMM dd" />
                                                         </p:inputText>
                                                     </h:panelGroup>
@@ -150,7 +137,7 @@
 
 
                                                 <h:outputText value="Institution" ></h:outputText>
-                                                <p:selectOneMenu class="w-100" id="cmbIns" value="#{sheduleController.current.institution}" >
+                                                <p:selectOneMenu class="w-100" id="cmbIns" value="#{channelScheduleController.current.institution}" >
                                                     <f:selectItem itemLabel="Please select a Institution"/>
                                                     <f:selectItems value="#{institutionController.companies}" 
                                                                    var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />    
@@ -160,69 +147,74 @@
 
 
                                                 <h:outputText value="Department"></h:outputText>        
-                                                <p:selectOneMenu class="w-100" id="cmbDep" value="#{sheduleController.current.department}">
+                                                <p:selectOneMenu class="w-100" id="cmbDep" value="#{channelScheduleController.current.department}">
                                                     <f:selectItem itemLabel="Please select a Department" />
-                                                    <f:selectItems value="#{sheduleController.institutionDepatrments}"
+                                                    <f:selectItems value="#{channelScheduleController.institutionDepatrments}"
                                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                                 </p:selectOneMenu>
                                                 <p:outputLabel value="Start Time"/>                        
-                                                <p:calendar class="w-100" inputStyleClass="w-100"  value="#{sheduleController.current.startingTime}" 
+                                                <p:calendar class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.startingTime}" 
                                                             navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
                                                             timeZone="Asia/Colombo">                            
                                                 </p:calendar>
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:calendar class="w-100" inputStyleClass="w-100"  value="#{sheduleController.current.endingTime}"
+                                                <p:calendar class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.endingTime}"
                                                             navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
                                                             timeOnly="true"
                                                             timeZone="Asia/Colombo">                            
                                                 </p:calendar>
 
                                                 <p:outputLabel value="Starting Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.startingNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.startingNo}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
 
                                                 <p:outputLabel value="Reserved Number"/>
-                                                <p:inputText class="w-100" autocomplete="off"  disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
+                                                <p:inputText class="w-100" autocomplete="off"  disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
 
                                                 <p:outputLabel value="Max Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.maxNo}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.maxNo}"/>
 
                                                 <p:outputLabel value="Duration in Minutes"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.duration}"/>
-                                                
+                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.duration}"/>
+
                                                 <p:outputLabel value="Room Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.roomNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.roomNo}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
 
                                                 <p:outputLabel value="Before Session" rendered="false"/>
-                                                <p:autoComplete class="w-100" inputStyleClass="w-100"  rendered="false" forceSelection="true" value="#{sheduleController.current.beforeSession}" 
-                                                                completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                <p:autoComplete class="w-100" inputStyleClass="w-100"  rendered="false" forceSelection="true" value="#{channelScheduleController.current.beforeSession}" 
+                                                                completeMethod="#{channelScheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                 converter="sscon">                            
                                                 </p:autoComplete>
                                                 <p:outputLabel value="After Session" rendered="false"/>
-                                                <p:autoComplete class="w-100" inputStyleClass="w-100"   rendered="false" forceSelection="true" value="#{sheduleController.current.afterSession}" 
-                                                                completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                <p:autoComplete class="w-100" inputStyleClass="w-100"   rendered="false" forceSelection="true" value="#{channelScheduleController.current.afterSession}" 
+                                                                completeMethod="#{channelScheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                 converter="sscon">   
                                                 </p:autoComplete>
 
                                                 <p:outputLabel value="Number of days for autocreation of Sessions"></p:outputLabel>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.numberOfDaysForAutomaticInstanceCreation}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.numberOfDaysForAutomaticInstanceCreation}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
 
                                                 <p:outputLabel value="Refundable"/>
-                                                <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
+                                                <p:selectBooleanCheckbox value="#{channelScheduleController.current.refundable}"/>
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
-                                                <p:selectBooleanCheckbox value="#{sheduleController.current.paidAppointmentsOnly}" />
+                                                <p:selectBooleanCheckbox value="#{channelScheduleController.current.paidAppointmentsOnly}" />
 
                                                 <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
-                                                <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
+                                                <p:selectBooleanCheckbox value="#{channelScheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
 
                                                 <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
-                                                <p:selectOneMenu class="w-100" id="cmbChanType" value="#{sheduleController.current.forBillType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
+                                                <p:selectOneMenu class="w-100" id="cmbChanType" value="#{channelScheduleController.current.forBillType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                                                     <f:selectItem itemLabel="Please Select a Type"/>
                                                     <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                                                 </p:selectOneMenu>
 
-
+                                                <h:outputLabel value="Activities" />
+                                                <p:inputTextarea class="mx-2 w-100 my-1" rows="4" value="#{channelScheduleController.current.activities}" />
+                                                <h:outputLabel value="Actions" />
+                                                <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.actions}"/>
+                                                <h:outputLabel value="Forms" />
+                                                <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.dataEntryForms}"/>
 
 
                                             </h:panelGrid>
@@ -238,8 +230,8 @@
                                                             <p:selectOneMenu 
                                                                 class="w-100" 
                                                                 id="wdate" 
-                                                                value="#{sheduleController.current.sessionWeekday}" 
-                                                                disabled="#{sheduleController.current.id ne null}">
+                                                                value="#{channelScheduleController.current.sessionWeekday}" 
+                                                                disabled="#{channelScheduleController.current.id ne null}">
                                                                 <f:selectItem itemLabel="Select Week Day"/>
                                                                 <f:selectItem itemValue="1" itemLabel="Sunday"/>
                                                                 <f:selectItem itemValue="2" itemLabel="Monday"/>
@@ -256,7 +248,7 @@
                                                             <h:outputLabel value="You are NOT Autherized to manage Special Channel Scheduling" ></h:outputLabel>
                                                         </h:panelGroup>
                                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingSpecialChannelSheduling')}" >
-                                                            <p:calendar class="w-100" inputStyleClass="w-100"  id="odate" value="#{sheduleController.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{sheduleController.current.id ne null}">                              
+                                                            <p:calendar class="w-100" inputStyleClass="w-100"  id="odate" value="#{channelScheduleController.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{channelScheduleController.current.id ne null}">                              
                                                             </p:calendar>
                                                         </h:panelGroup>
 
@@ -266,9 +258,9 @@
                                         </p:tab>
                                         <p:tab title="Fee Details">
                                             <p:outputLabel value="Session Value - "/>
-                                            <p:outputLabel value="#{sheduleController.current.total}"/>
+                                            <p:outputLabel value="#{channelScheduleController.current.total}"/>
                                             <h:panelGrid columns="1">
-                                                <p:dataTable value="#{sheduleController.itemFees}" var="i" >
+                                                <p:dataTable value="#{channelScheduleController.itemFees}" var="i" >
                                                     <p:column headerText="Name">
                                                         <h:outputLabel value="#{i.name}"/> 
                                                     </p:column>
@@ -300,27 +292,27 @@
                                         <p:tab title="Aditional Details">
                                             <h:panelGrid columns="2" class="w-100">
                                                 <p:outputLabel value="Displaying Count"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.displayCount}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.displayCount}"/>
                                                 <p:outputLabel value="Displaying Percent"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.displayPercent}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.displayPercent}"/>
                                                 <p:outputLabel value="Session Number"></p:outputLabel>
 
-                                                <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100"  forceSelection="true" value="#{sheduleController.current.sessionNumberGenerator}" 
+                                                <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100"  forceSelection="true" value="#{channelScheduleController.current.sessionNumberGenerator}" 
                                                                 completeMethod="#{sessionNumberGenerateController.completeSessionNumberGenerator}" 
                                                                 var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                 >                            
                                                 </p:autoComplete>
 
                                                 <p:outputLabel value="Credit Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.creditNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.creditNumbers}"/>
                                                 <p:outputLabel value="Cash Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.cashNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.cashNumbers}"/>
                                                 <p:outputLabel value="Agent Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.agencyNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.agencyNumbers}"/>
                                                 <p:outputLabel value="Reserved Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.reserveNumbers}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.reserveNumbers}"/>
                                                 <p:outputLabel value="Reserver Name"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{sheduleController.current.reserveName}"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.reserveName}"/>
 
 
                                             </h:panelGrid>
@@ -329,20 +321,20 @@
 
                                         <p:tab title="Log">
                                             <h:panelGrid columns="2">
-                                                <p:outputLabel value="Id" rendered="#{sheduleController.current ne null}"/>
-                                                <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
+                                                <p:outputLabel value="Id" rendered="#{channelScheduleController.current ne null}"/>
+                                                <p:outputLabel value="#{channelScheduleController.current.id}" rendered="#{channelScheduleController.current ne null}"/>
 
 
                                                 <p:outputLabel value="Created by"></p:outputLabel>
-                                                <p:outputLabel value="#{sheduleController.current.creater.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{channelScheduleController.current.creater.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="created At"></p:outputLabel>
-                                                <p:outputLabel value="#{sheduleController.current.createdAt}">
+                                                <p:outputLabel value="#{channelScheduleController.current.createdAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                 <p:outputLabel value="Last Editor"></p:outputLabel>
-                                                <p:outputLabel value="#{sheduleController.current.editer.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{channelScheduleController.current.editer.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="Last Edited At"></p:outputLabel>
-                                                <p:outputLabel value="#{sheduleController.current.editedAt}">
+                                                <p:outputLabel value="#{channelScheduleController.current.editedAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                             </h:panelGrid>

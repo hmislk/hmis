@@ -14,26 +14,47 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panelGrid columns="1" style="width: 100%;" >
+                    <p:panel style="width: 100%;" >
                         <f:facet name="header" >
-                            <h:outputLabel value="GRN Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_grn" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-
-                            </p:commandButton>                          
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="GRN Reprint" class="mt-2"></h:outputLabel>
+                                <div class="d-flex gap-2">
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-warning"
+                                        icon="fa fa-print"
+                                        action="#{transferIssueController.navigateToPharmacyIssueFromGrn}"
+                                        value="Transfer All Stocks" 
+                                        ajax="false" >
+                                        <f:setPropertyActionListener 
+                                            value="#{pharmacyBillSearch.bill}" 
+                                            target="#{transferIssueController.requestedBill}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-info"
+                                        icon="fa fa-print"
+                                        value="Reprint" 
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel" 
+                                        class="ui-button-danger"
+                                        icon="fa fa-ban"
+                                        action="pharmacy_cancel_grn" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                    </p:commandButton>  
+                                </div>
+                            </div>              
                         </f:facet>
-
-
 
                         <div style="width: 100%;">
 
                             <h:panelGroup id="gpBillPreview" >
 
-                                <h:panelGroup  >
+                                <h:panelGroup class="d-flex justify-content-center">
                                     <ph:grn bill="#{pharmacyBillSearch.bill}"/>
                                 </h:panelGroup>
 
@@ -52,28 +73,13 @@
                             </h:panelGroup>
 
                             <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
-
                                 <ph:grn_edit bill="#{pharmacyBillSearch.bill}" rendered="false" />
                             </h:panelGroup>
 
                         </div>
-
-
-
-
-                    </p:panelGrid>
-
-
-
-
-
-
-
+                    </p:panel>
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
 
     </h:body>

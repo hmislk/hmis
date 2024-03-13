@@ -15,7 +15,7 @@
                 <p:panel header="Session Detail Report" >
                     <p:panelGrid columns="2">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
-                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                        <p:autoComplete  forceSelection="true" value="#{channelScheduleController.speciality}" id="acSpeciality"
                                          completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                          >
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
@@ -24,8 +24,8 @@
 
 
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
-                        <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
-                                          completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                        <p:autoComplete   forceSelection="true" value="#{channelScheduleController.currentStaff}" id="scStaff"
+                                          completeMethod="#{channelScheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           >   
                         </p:autoComplete>  
                     </p:panelGrid>
@@ -45,9 +45,9 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Session Detail Report" />
                                 <br></br>
-                                <p:outputLabel value="Doctor : #{sheduleController.currentStaff.person.name}" rendered="#{sheduleController.currentStaff ne null}" />
+                                <p:outputLabel value="Doctor : #{channelScheduleController.currentStaff.person.name}" rendered="#{channelScheduleController.currentStaff ne null}" />
                             </f:facet>
-                            <p:column rendered="#{sheduleController.currentStaff eq null}">
+                            <p:column rendered="#{channelScheduleController.currentStaff eq null}">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Staff" />
                                 </f:facet>

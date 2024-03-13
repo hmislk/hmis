@@ -140,6 +140,18 @@ public class GrnController implements Serializable {
 
     }
 
+    public void duplicateItem(BillItem bi) {
+        BillItem updateBillItem = new BillItem();
+        if (bi != null) {
+            System.out.println("updateBillItem = " + bi.getItem().getName());
+            updateBillItem.setItem(bi.getItem());
+            getBillItems().add(updateBillItem);
+        }
+
+        calGrossTotal();
+
+    }
+
     public void removeSelected() {
         //  //System.err.println("1");
         if (selectedBillItems == null) {
@@ -202,7 +214,7 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        if (insTotal == 0) {
+        if (insTotal == 0 && difference != 0) {
             JsfUtil.addErrorMessage("Fill the invoice Total");
             return;
         }
@@ -493,6 +505,7 @@ public class GrnController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
+        setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());

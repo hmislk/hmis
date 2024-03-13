@@ -808,6 +808,25 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Sorry this BHT was Settled !!!");
             return true;
         }
+        for (BillItem bi: getPreBill().getBillItems()){
+            if(bi.getItem()==null){
+                JsfUtil.addErrorMessage("Requested item could not empty"+bi.getItem().getName());
+                return true;
+            }
+            if (bi.getPharmaceuticalBillItem() == null){
+                JsfUtil.addErrorMessage("Requested item not found"+bi.getItem().getName());
+                return true;
+            }
+            if (bi.getPharmaceuticalBillItem().getStock()==null){
+                JsfUtil.addErrorMessage("Requested item not found"+bi.getItem().getName());
+                return true;
+            }
+            if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null){
+                JsfUtil.addErrorMessage("Please edit the item quantity to save"+bi.getItem().getName());
+                return true;
+            }
+           
+        }
 
 //        if (checkAllBillItem()) {
 //            //  UtilityController.addErrorMessage("Please Set Room 33");

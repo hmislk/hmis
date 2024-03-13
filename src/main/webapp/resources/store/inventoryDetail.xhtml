@@ -69,7 +69,7 @@
                                 id="calDoe" pattern="dd MM yy" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.doe}">
                         <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.setBatch()}"/>
                     </p:calendar> 
-                    <h:outputLabel value="Bathch No"/>
+                    <h:outputLabel value="Batch No"/>
                     <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                  id="tmp" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
                     <h:outputLabel value="Make"/>

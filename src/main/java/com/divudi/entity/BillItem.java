@@ -563,6 +563,11 @@ public class BillItem implements Serializable {
     }
 
     public Double getQty() {
+        if(qty==null){
+            qty=0.0;
+        }else if(qty==0.0){
+            qty =0.0;
+        }
         return qty;
     }
 

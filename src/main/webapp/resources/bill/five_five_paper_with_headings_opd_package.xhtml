@@ -21,7 +21,7 @@
 
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" >
+        <div class="fiveinchbill" style="page-break-after: always" >
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
@@ -40,19 +40,19 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="RECEIPT"   />    
+                <h:outputLabel value="OPD Package Bill"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
-                <br/>
+                
                 <hr></hr>   
-                <br/>
+                
             </div>
 
             <div class="billDetailsFiveFive" >
-                <table style="width: 99%!important;" >
+                <table style="width: 100%!important;" >
 
 
 
@@ -285,15 +285,12 @@
 
 
             <div class="billline">
-                <br/>
                 <hr/>
-                <br/>
-
             </div>
 
 
 
-            <div  >
+            <div>
 
                 <table style="width: 100%;">
 
@@ -363,15 +360,16 @@
 
             </div>
 
-            <div style="text-decoration: overline; margin-top: 20px;">
+            <div style="text-decoration: overline; margin-top: 10px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
-
+            <h:panelGroup rendered="#{sessionController.userPreference.pharmacyBillFooter ne null}">
             <div class="footer" style="text-align: center;">
                 <br/>
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
                 <br/>
             </div>
+            </h:panelGroup>
 
         </div>
     </cc:implementation>

@@ -216,7 +216,7 @@ public class SearchController implements Serializable {
 
     public Bill searchBillFromBillId(Long currentBillILong) {
         if (currentBillILong == null) {
-            JsfUtil.addErrorMessage("Enter COrrect Bill Number !");
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
         }
         String sql = "Select b from Bill b"
                 + " where b.retired=false "
@@ -1451,6 +1451,59 @@ public class SearchController implements Serializable {
     public void createPharmacyWholesaleBills() {
         createPharmacyRetailBills(BillType.PharmacyWholesalePre, true);
     }
+    
+    public void createPharmacyWholeTableRe() {
+        Date startTime = new Date();
+
+        Map m = new HashMap();
+        m.put("bt", BillType.PharmacyWholesalePre);
+        //     m.put("class", PreBill.class);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ret", false);
+        m.put("ins", getSessionController().getInstitution());
+        String sql;
+
+        sql = "Select b from Bill b where "
+                + " b.createdAt between :fd and :td "
+                + " and b.billType=:bt "
+                + " and b.retired=:ret "
+                + " and b.institution=:ins";
+        //+ " and type(b)=:class ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patient.person.name) like :patientName )";
+            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :dep )";
+            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        //     //////System.out.println("sql = " + sql);
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Search sale pre bill(/faces/pharmacy/pharmacy_search_sale_pre_bill.xhtml)");
+
+    }
 
     public void createPharmacyRetailAllBills() {
         Date startTime = new Date();
@@ -1630,13 +1683,14 @@ public class SearchController implements Serializable {
         //     m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
+        m.put("ret", false);
         m.put("ins", getSessionController().getInstitution());
         String sql;
 
-        sql = "Select b from PreBill b where "
+        sql = "Select b from Bill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt "
-                + " and b.cancelled=true "
+                + " and b.retired=:ret "
                 + " and b.institution=:ins";
         //+ " and type(b)=:class ";
 
