@@ -35,16 +35,13 @@
                             </div>
                         </f:facet>
 
-                        <p:panel>
-                            <h:panelGroup >
-
-                                <h:panelGroup id="gpBillPreview" >
+                        <div class="d-flex justify-content-center border border-light boder-1">
+                            <h:panelGroup id="gpBillPreview" style="width: 212mm;">
                                     <ph:po bill="#{pharmacyBillSearch.bill}" reprint="true"/>
 
-                                </h:panelGroup>
-
-                            </h:panelGroup>
-                        </p:panel>
+                                </h:panelGroup> 
+                        </div>
+                                
 
                     </p:panel>
                 </h:form>

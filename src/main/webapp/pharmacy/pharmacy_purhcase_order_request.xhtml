@@ -381,15 +381,15 @@
                                     </h:panelGrid>
                                 </div>
 
-                                <table class="order-table">
+                                <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
                                     <thead>
-                                        <tr>
-                                            <th>Item Code</th>
-                                            <th>Item Name</th>
-                                            <th>Qty</th>
-                                            <th>Free Qty</th>
-                                            <th>Purchase Rate</th>
-                                            <th>Purchase Value</th>
+                                        <tr style="border: 1px solid black;">
+                                            <th style="border: 1px solid black;">Item Code</th>
+                                            <th style="border: 1px solid black;">Item Name</th>
+                                            <th style="border: 1px solid black;">Qty</th>
+                                            <th style="border: 1px solid black;">Free Qty</th>
+                                            <th style="border: 1px solid black;">Purchase Rate</th>
+                                            <th style="border: 1px solid black;">Purchase Value</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -397,25 +397,25 @@
 
                                             <h:panelGroup rendered="#{not bi.retired}" >
 
-                                                <tr>
-                                                    <td><h:outputLabel value="#{bi.item.code}"/></td>
-                                                    <td><h:outputLabel value="#{bi.item.name}"/></td>
-                                                    <td style="text-align: right;">
+                                                <tr style="border: 1px solid black;">
+                                                    <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.code}"/></td>
+                                                    <td style="border: 1px solid black;"><h:outputLabel value="#{bi.item.name}"/></td>
+                                                    <td style="text-align: right; border: 1px solid black;">
                                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}">
                                                             <f:convertNumber pattern="#,##0"/>
                                                         </h:outputLabel>
                                                     </td>
-                                                    <td style="text-align: right;">
+                                                    <td style="text-align: right; border: 1px solid black;">
                                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}">
                                                             <f:convertNumber pattern="#,##0"/>
                                                         </h:outputLabel>
                                                     </td>
-                                                    <td style="text-align: right;">
+                                                    <td style="text-align: right; border: 1px solid black;">
                                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputLabel>
                                                     </td>
-                                                    <td style="text-align: right;">
+                                                    <td style="text-align: right; border: 1px solid black;">
                                                         <h:outputLabel value="#{bi.netValue}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputLabel>
@@ -424,10 +424,10 @@
 
                                             </h:panelGroup>
 
-
                                         </ui:repeat>
                                     </tbody>
                                 </table>
+
                                 <br/>
 
                                 <div class="purchase-order">
