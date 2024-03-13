@@ -31,6 +31,7 @@
                                          forceSelection="true" rendered="true"
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
+                           
 
                         <h:outputLabel value="Reference Institution"/>
                         <p:autoComplete  value="#{commonReport.referenceInstitution}"
@@ -38,6 +39,9 @@
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
+                        <h:outputLabel value="GRN No"/>
+                        <p:inputText  value="#{commonReport.departmentId}"
+                                         />
                         <p:defaultCommand target="btnRefresh"/>
                     </h:panelGrid>
 
