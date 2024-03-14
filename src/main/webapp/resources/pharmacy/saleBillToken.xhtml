@@ -31,6 +31,16 @@
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
+            
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+            
+            <h:panelGroup rendered="#{not empty tokenController.findPharmacyTokens(cc.attrs.bill)}">
+                <div class="billline">
+                    <h:outputLabel value="#{tokenController.findPharmacyTokens(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
+                </div>
+            </h:panelGroup>  
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
@@ -114,17 +124,6 @@
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
-
-            <h:panelGroup rendered="#{not empty tokenController.findPharmacyTokens(cc.attrs.bill)}">
-                <div class="billline">
-                    <h:outputLabel value="#{tokenController.findPharmacyTokens(cc.attrs.bill).tokenNumber}" />
-                </div>
-            </h:panelGroup>            
-
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
-
 
             <div class="billline m-1">
                 <p:barcode value="#{cc.attrs.bill.idStr}" cache="false" type="code128" ></p:barcode>
