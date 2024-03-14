@@ -485,8 +485,8 @@
                                                                 <p:commandLink id="billNo" 
                                                                                ajax="false" 
                                                                                value="#{bill.insId}" 
-                                                                               action="#{opdBillController.navigateToViewOpdBillByBillLight()}">
-                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.billLight}"/>
+                                                                               action="#{opdBillController.navigateToViewOpdBatchBill}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                                                 </p:commandLink>
                                                             </p:column>
                                                             <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
