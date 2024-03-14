@@ -636,7 +636,7 @@
                         </div>
 
 
-                        <h:panelGroup   id="TokenPreview" class="m-2">
+                        <h:panelGroup  rendered="#{pharmacySaleController.printBill ne null}"  id="TokenPreview" class="m-2">
                             <phi:saleBillToken id="saleBillToken" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
                         </h:panelGroup>
 
