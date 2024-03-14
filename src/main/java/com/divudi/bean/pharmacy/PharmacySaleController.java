@@ -600,6 +600,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void resetAll() {
+        tokenController.setCurrentToken(null);
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
