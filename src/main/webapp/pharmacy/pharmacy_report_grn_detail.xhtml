@@ -405,7 +405,8 @@
 
                         <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b" 
                                      rendered="#{commonReport.grnReturn.bills.size()!=0}" 
-                                     sortBy="#{b.billType}"  >
+                                     sortBy="#{b.billType}" 
+                                     rowKey="#{b.id}" >
 
                             <f:facet name="header">  
                                 <h:outputLabel value="GRN Return"/>
@@ -508,7 +509,6 @@
                                 </f:facet> 
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                             </p:column>
-
                             <p:columnGroup type="footer">  
                                 <p:row >  
                                     <p:column colspan="7" style="text-align:left" footerText="Totals:"/>
