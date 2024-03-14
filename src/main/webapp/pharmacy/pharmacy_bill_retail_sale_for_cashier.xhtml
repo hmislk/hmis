@@ -189,7 +189,12 @@
 
                                                 <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                                 <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
-
+                                                
+                                                <p:column headerText="No" style="width: 2%">
+                                                    <h:outputLabel id="no" value="#{s+1}" >
+                                                        <f:convertNumber pattern="#,##0" />
+                                                    </h:outputLabel>
+                                                </p:column>
 
                                                 <p:column headerText="Item" width="30%">
                                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
