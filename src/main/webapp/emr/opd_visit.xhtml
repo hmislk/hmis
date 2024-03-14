@@ -333,10 +333,10 @@
 
                                             </p:panel>
 
-                                            <p:panel header="Tests" class="w-100 m-1">
+                                            <p:panel header="Ordered Tests For Visit" class="w-100 m-1">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-vial"/>
-                                                    <h:outputText class="mx-4" value="Tests"/>
+                                                    <h:outputText class="mx-4" value="Order Tests For Visit"/>
                                                 </f:facet>
                                                 <div class="row" >
                                                     <div class="col-9" >
@@ -734,16 +734,18 @@
 
 
 
-                                                <p:textEditor 
-                                                    styleClass="textEditer"
-                                                    class="my-2" 
-                                                    id="txtPrescriptionDoc" 
-                                                    toolbarVisible="false"
-                                                    secure='false' 
-                                                    widgetVar="textEditorWidget" 
-                                                    value="#{patientEncounterController.encounterPrescreption.lobValue}"
-                                                    >
-                                                </p:textEditor>
+                                                    <h:panelGroup id="txtPrescriptionDoc">
+                                                        <p:textEditor
+                                                            styleClass="textEditer"
+                                                            class="my-2"
+                                                            toolbarVisible="false"
+                                                            rendered="#{patientEncounterController.encounterPrescreption ne null}"
+                                                            secure='false'
+                                                            widgetVar="textEditorWidget"
+                                                            value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                            >
+                                                        </p:textEditor>
+                                                    </h:panelGroup>
                                             </p:panel>
                                         </div>
 
