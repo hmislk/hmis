@@ -30,7 +30,7 @@
                                          forceSelection="true" rendered="true"
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
-                           
+
 
                         <h:outputLabel value="Reference Institution"/>
                         <p:autoComplete  value="#{commonReport.referenceInstitution}"
@@ -40,7 +40,7 @@
 
                         <h:outputLabel value="GRN Return No"/>
                         <p:inputText  value="#{commonReport.departmentId}"
-                                         />
+                                      />
                         <p:defaultCommand target="btnRefresh"/>
                     </h:panelGrid>
 
@@ -130,12 +130,12 @@
                                 </f:facet> 
                                 <h:outputLabel value="#{b.referenceBill.createdAt}"/>
                             </p:column>
-<!--                            <p:column headerText="Referenace Institution" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Referenace Institution"/>
-                                </f:facet> 
-                                <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
-                            </p:column>-->
+                            <!--                            <p:column headerText="Referenace Institution" >
+                                                            <f:facet name="header">  
+                                                                <h:outputLabel value="Referenace Institution"/>
+                                                            </f:facet> 
+                                                            <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
+                                                        </p:column>-->
 
                             <p:column headerText="Return At"  >
                                 <f:facet name="header">  
@@ -202,9 +202,14 @@
                             </p:column>
 
                             <p:column headerText="Action" exportable="false">
-                                <p:commandButton ajax="false" value="View" id="bill" action="#{goodsReturnController.navigateToGrnReturnBill(b)}" >
-                                    <f:setPropertyActionListener value="#{b}" target="#{goodsReturnController.returnBill}" ></f:setPropertyActionListener>
-                                    <f:setPropertyActionListener value="true" target="#{goodsReturnController.printPreview}" ></f:setPropertyActionListener>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    id="viewBill"
+                                    icon="fas fa-file-invoice"
+
+                                    action="/pharmacy/pharmacy_return_good">
+                                    <f:setPropertyActionListener value="#{b}" target="#{goodsReturnController.returnBill}"/>   
+                                    <f:setPropertyActionListener value="true" target="#{goodsReturnController.printPreview}"/> 
                                 </p:commandButton>
                             </p:column>
 
@@ -248,7 +253,7 @@
 
                         </p:dataTable>
 
-                        
+
                     </p:panel>
 
 

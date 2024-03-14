@@ -99,6 +99,7 @@ public class GoodsReturnController implements Serializable {
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new BilledBill();
+            System.out.println("returnBill = " + returnBill);
             returnBill.setBillType(BillType.PharmacyGrnReturn);
 
         }
@@ -361,7 +362,7 @@ public class GoodsReturnController implements Serializable {
     
     public String navigateToGrnReturnBill(Bill b){
         System.out.println("b"+b);
-        returnBill = b;
+        setReturnBill(b);
         if(returnBill==null){
             JsfUtil.addErrorMessage("No Bill get selected");
             return "";
