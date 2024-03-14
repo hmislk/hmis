@@ -35,6 +35,10 @@
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Cashier Detailed Report by Department" action="#{commonReport.navigateToReportCashierDetailedByDepartment()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy Sale Summery"
+                                                             action="#{commonReport.navigateToPharmacySaleSummery()}" 
+                                                             actionListener="#{commonReport.recreteModal}"/>
 
                                         </div>
                                     </p:tab>  
@@ -91,6 +95,7 @@
                                                              value="GRN Bill Item Report" action="#{pharmacySaleReport.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="GRN Registry" action="#{pharmacySaleReport.navigatePharmacyReportGrnRegistory()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left" value="GRN Return List" action="#{pharmacySaleReport.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
                                         </div>
                                     </p:tab>  
                                     <p:tab title="Purchase">
