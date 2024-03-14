@@ -1897,10 +1897,10 @@ public class CommonReport implements Serializable {
         
         if (!getDepartmentId().trim().equals("")) {
             System.out.println("test = "+getDepartmentId());
-            sql+= " and b.deptId like :deptId ";
-            temMap.put("deptId", "%" + getDepartmentId() + "%");
+            sql+= " and b.deptId like :deptId";
+            temMap.put("deptId", "%" + getDepartmentId() + "%");     
         }
-
+        
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
@@ -4409,6 +4409,65 @@ public class CommonReport implements Serializable {
 
         getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true)");
+    }
+    
+    public void createGrnReturnDetailTable() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createGrnDetailTable()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        recreteModal();
+
+        grnBilled = new BillsTotals();
+        grnCancelled = new BillsTotals();
+        grnReturn = new BillsTotals();
+        grnReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select Department");
+            return;
+        }
+
+        
+        //GRN Refunded Bill
+        getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+
+        getGrnReturn().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+        getGrnReturn().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);

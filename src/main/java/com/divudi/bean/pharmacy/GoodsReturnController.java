@@ -358,6 +358,16 @@ public class GoodsReturnController implements Serializable {
         setPaymentMethodData(p, pm);
         return p;
     }
+    
+    public String navigateToGrnReturnBill(Bill b){
+        System.out.println("b"+b);
+        returnBill = b;
+        if(returnBill==null){
+            JsfUtil.addErrorMessage("No Bill get selected");
+            return "";
+        }
+        return "/pharmacy/pharmacy_return_good";
+    }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
 
