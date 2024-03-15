@@ -1270,7 +1270,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String changeTextCases(String nm, String tc) {
-        switch (tc) {
+        System.out.println("nm = " + nm);
+        System.out.println("tc = " + tc);
+        if (tc == null) {
+            return nm;
+        }
+        switch (tc.toUpperCase()) {
             case "UPPERCASE":
                 return nm.toUpperCase();
             case "LOWERCASE":
