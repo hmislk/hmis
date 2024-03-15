@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1738,17 +1739,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void removeSelectedBillItems() {
-        if (selectedBillItems==null){
+        if (selectedBillItems == null || selectedBillItems.isEmpty()) {
             JsfUtil.addErrorMessage("Please select items to delete");
             return;
         }
-        for (BillItem b : selectedBillItems) {
-            userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
-            getPreBill().getBillItems().remove(b.getSearialNo());
+
+        Iterator<BillItem> iterator = selectedBillItems.iterator();
+        while (iterator.hasNext()) {
+            BillItem billItem = iterator.next();
+            userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
+            getPreBill().getBillItems().remove(billItem);
+            iterator.remove(); 
         }
 
         calTotal();
-        selectedBillItems = null;
     }
 
 //    Checked
