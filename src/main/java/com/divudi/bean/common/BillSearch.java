@@ -1563,6 +1563,7 @@ public class BillSearch implements Serializable {
         bill.getForwardReferenceBills().add(rb);
         bill.setRefunded(true);
         bill.getRefundBills().add(rb);
+        billController.save(bill);
         return true;
     }
 
