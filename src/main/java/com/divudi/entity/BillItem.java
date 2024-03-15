@@ -52,6 +52,7 @@ public class BillItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     Double qty = 0.0;
+    private Double freeQty = 0.0;
     @Transient
     private Double absoluteQty;
     @Lob
@@ -59,6 +60,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
+    private double remainingFreeQty;
     double Rate;
     double discountRate;
     double marginRate;
@@ -139,6 +141,8 @@ public class BillItem implements Serializable {
     private List<Item> tmpSuggession;
     @Transient
     private double tmpQty;
+    @Transient
+    private double tmpFreeQty;
     @Transient
     private UserStock transUserStock;
     @Transient
@@ -664,6 +668,26 @@ public class BillItem implements Serializable {
         }
     }
 
+    public double getTmpFreeQty() {
+        if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
+            return tmpFreeQty / getItem().getDblValue();
+        } else {
+            return tmpFreeQty;
+        }
+    }
+
+    public void setTmpFreeQty(double tmpFreeQty) {
+        freeQty = tmpFreeQty;
+        if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
+            this.tmpFreeQty = tmpFreeQty * getItem().getDblValue();
+        } else {
+            this.tmpFreeQty = tmpFreeQty;
+        }
+
+        if (getPharmaceuticalBillItem() != null) {
+            getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
+        }
+    }
     public UserStock getTransUserStock() {
         return transUserStock;
     }
@@ -856,6 +880,22 @@ public class BillItem implements Serializable {
             billFees = new ArrayList<>();
         }
         return billFees;
+    }
+
+    public Double getFreeQty() {
+        return freeQty;
+    }
+
+    public void setFreeQty(Double freeQty) {
+        this.freeQty = freeQty;
+    }
+
+    public double getRemainingFreeQty() {
+        return remainingFreeQty;
+    }
+
+    public void setRemainingFreeQty(double remainingFreeQty) {
+        this.remainingFreeQty = remainingFreeQty;
     }
 
 }
