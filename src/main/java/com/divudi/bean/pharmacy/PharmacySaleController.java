@@ -156,6 +156,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Bill printBill;
     Bill bill;
     BillItem billItem;
+    private List<BillItem> selectedBillItems;
     //BillItem removingBillItem;
     BillItem editingBillItem;
     Double qty;
@@ -1403,7 +1404,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        }
 
         if (billPreview) {
-            
+
         }
 
         calculateAllRates();
@@ -1468,8 +1469,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
-        
-        if (getPatient()==null) {
+
+        if (getPatient() == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
@@ -1734,6 +1735,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().getBillItems().remove(b.getSearialNo());
 
         calTotal();
+    }
+
+    public void removeSelectedBillItems() {
+        if (selectedBillItems==null){
+            JsfUtil.addErrorMessage("Please select items to delete");
+            return;
+        }
+        for (BillItem b : selectedBillItems) {
+            userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+            getPreBill().getBillItems().remove(b.getSearialNo());
+        }
+
+        calTotal();
+        selectedBillItems = null;
     }
 
 //    Checked
@@ -2430,6 +2445,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public List<BillItem> getSelectedBillItems() {
+        return selectedBillItems;
+    }
+
+    public void setSelectedBillItems(List<BillItem> selectedBillItems) {
+        this.selectedBillItems = selectedBillItems;
     }
 
 }
