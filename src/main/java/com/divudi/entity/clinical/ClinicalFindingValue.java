@@ -10,6 +10,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
+import com.divudi.entity.lab.PatientInvestigation;
 import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -63,6 +64,8 @@ public class ClinicalFindingValue implements Serializable {
     private Prescription prescription;
     @ManyToOne
     private DocumentTemplate documentTemplate;
+    @ManyToOne
+    private PatientInvestigation patientInvestigation;
 
     @Enumerated(EnumType.STRING)
     private ClinicalFindingValueType clinicalFindingValueType;
@@ -256,5 +259,15 @@ public class ClinicalFindingValue implements Serializable {
     public void setImageType(String imageType) {
         this.imageType = imageType;
     }
+
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+    
+    
 
 }

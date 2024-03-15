@@ -164,7 +164,7 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-    
+
     public String pharmacyWholeRetailSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
     }
@@ -359,23 +359,40 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         calTotal();
         editingQty = null;
     }
-    
+
     private Patient savePatient() {
-        if (!getPatient().getPerson().getName().trim().equals("")) {
-            getPatient().setCreater(getSessionController().getLoggedUser());
-            getPatient().setCreatedAt(new Date());
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            if (getPatient().getPerson().getId() == null) {
-                getPersonFacade().create(getPatient().getPerson());
-            }
-            if (getPatient().getId() == null) {
-                getPatientFacade().create(getPatient());
-            }
-            return getPatient();
-        } else {
+        if (getPatient() == null) {
             return null;
         }
+
+        if (getPatient().getPerson() == null) {
+            return null;
+        }
+
+        if (getPatient().getPerson().getName() == null) {
+            return null;
+        }
+
+        if (getPatient().getPerson().getName().trim().equals("")) {
+            return null;
+        }
+
+        getPatient().setCreater(getSessionController().getLoggedUser());
+        getPatient().setCreatedAt(new Date());
+        getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+        getPatient().getPerson().setCreatedAt(new Date());
+        if (getPatient().getPerson().getId() == null) {
+            getPersonFacade().create(getPatient().getPerson());
+        }else{
+            getPersonFacade().edit(getPatient().getPerson());
+        }
+        if (getPatient().getId() == null) {
+            getPatientFacade().create(getPatient());
+        }else{
+            getPatientFacade().edit(getPatient());
+        }
+        return getPatient();
+
     }
 
 //    private Patient savePatient() {
@@ -401,7 +418,6 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 //        }
 //        return null;
 //    }
-
     public Title[] getTitle() {
         return Title.values();
     }
@@ -969,7 +985,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
     }
 
     private void savePreBillFinally(Patient pt) {
-
+        
+        
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
