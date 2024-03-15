@@ -18,7 +18,7 @@
 
 
             <div class="headingBill">
-                <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <h:outputLabel value="Wholesale Rate Adjustment Note" style="text-decoration: underline;"/>                           
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
@@ -57,19 +57,28 @@
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Before Wholesale Price" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Before Wholesale Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.wholesaleRate}" >
-                             <f:convertNumber pattern="#00.00"/>
+                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
-                    </p:column>                  
-
-                    <p:column style="text-align: right!important;"> 
+                    </p:column>
+                    
+                    <p:column style="text-align: right!important;" width="13%"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Wholesale Price" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Rate Difference" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.wholesaleRate - bip.pharmaceuticalBillItem.wholesaleRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: right!important;" width="13%"> 
+                        <f:facet name="header">                           
+                            <h:outputLabel value="Wholesale Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.wholesaleRate}">
-                            <f:convertNumber pattern="#00.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>                  
 
