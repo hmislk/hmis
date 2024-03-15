@@ -450,6 +450,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void calculateTotalPay() {
+        System.out.println("payingBillFees = " + getPayingBillFees().size());
         totalPaying = 0;
         for (BillFee f : payingBillFees) {
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
@@ -522,6 +523,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void fillSessions() {
+        System.out.println("this = " + "working this");
         String sql;
         Map m = new HashMap();
         sql = "Select s From ServiceSession s "
@@ -533,6 +535,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("doc", currentStaff);
         m.put("class", ServiceSession.class);
         serviceSessionList = getServiceSessionFacade().findByJpql(sql, m);
+        System.out.println("serviceSessionList = " + serviceSessionList.size());
     }
 
     private Bill createPaymentBill() {
@@ -596,6 +599,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     private boolean errorCheck() {
+        System.out.println("this working error check");
         if (currentStaff == null) {
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
@@ -644,6 +648,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void settleBill() {
+        System.out.println("this = " + payingBillFees.size());
+        System.out.println("working settle bill");
         if (errorCheck()) {
             return;
         }
@@ -672,6 +678,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     private void saveBillCompo(Bill b) {
+        System.out.println("save bill true");
+        System.out.println("b = " + b);
         for (BillFee bf : getPayingBillFees()) {
             saveBillItemForPaymentBill(b, bf);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
@@ -679,6 +687,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             getBillFeeFacade().edit(bf);
             //////// // System.out.println("marking as paid");
         }
+        System.out.println("save bill true end");
     }
 
     private void saveBillItemForPaymentBill(Bill b, BillFee bf) {
