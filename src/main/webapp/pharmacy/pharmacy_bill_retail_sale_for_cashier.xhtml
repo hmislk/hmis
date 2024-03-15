@@ -182,25 +182,34 @@
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Bill Items" class="mx-4"></h:outputText>
+                                        <p:commandButton 
+                                            value="Remove Selected" class="ui-button-danger" style="float: right" 
+                                            action="#{pharmacySaleController.removeSelectedBillItems()}"
+                                            process="@this tblBillItem :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
+                                                        update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('det',view).clientId} :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"/>                          
                                     </f:facet>
 
                                     <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
                                                  scrollable="true" scrollHeight="300"
                                                  style="padding: 0;"
-                                                 var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
+                                                  rowKey="#{bi.searialNo}"
+                                                 var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100"
+                                                 selection="#{pharmacySaleController.selectedBillItems}">
 
 
 
                                         <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                         <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
-                                        <p:column headerText="No" style="width: 2%; padding: 0;" >
+                                        <p:column selectionMode="multiple" style="width: 3%;"></p:column>
+                                        
+                                        <p:column headerText="No" style="width: 4%; padding: 0;" >
                                             <h:outputLabel id="no" value="#{s+1}." >
                                                 <f:convertNumber pattern="#,##0" />
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Item" width="28%" style="padding: 0;">
+                                        <p:column headerText="Item" width="27%" style="padding: 0;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                             <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
 
@@ -279,7 +288,7 @@
                                             </h:outputLabel>
 
                                         </p:column>
-                                        <p:column headerText="Qty" style="width: 8%; padding: 0;">
+                                        <p:column headerText="Qty" style="width: 5%; padding: 0;">
                                             <p:cellEditor>  
                                                 <f:facet name="output">  
                                                     <h:outputText value="#{bi.qty}" >
@@ -292,7 +301,7 @@
                                             </p:cellEditor> 
                                         </p:column>
 
-                                        <p:column style="width:6%; padding: 0; ">  
+                                        <p:column style="width:5%; padding: 0; ">  
                                             <div class="d-flex">
                                                 <p:rowEditor />  
                                                 <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
