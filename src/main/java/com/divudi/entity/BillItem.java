@@ -9,6 +9,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.AdjustmentBillItem;
 import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.Vmpp;
 import java.io.Serializable;
@@ -46,6 +47,9 @@ public class BillItem implements Serializable {
 
     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private PharmaceuticalBillItem pharmaceuticalBillItem;
+
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private AdjustmentBillItem adjustmentBillItem;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -567,10 +571,10 @@ public class BillItem implements Serializable {
     }
 
     public Double getQty() {
-        if(qty==null){
-            qty=0.0;
-        }else if(qty==0.0){
-            qty =0.0;
+        if (qty == null) {
+            qty = 0.0;
+        } else if (qty == 0.0) {
+            qty = 0.0;
         }
         return qty;
     }
@@ -688,6 +692,7 @@ public class BillItem implements Serializable {
             getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
         }
     }
+
     public UserStock getTransUserStock() {
         return transUserStock;
     }
@@ -896,6 +901,14 @@ public class BillItem implements Serializable {
 
     public void setRemainingFreeQty(double remainingFreeQty) {
         this.remainingFreeQty = remainingFreeQty;
+    }
+
+    public AdjustmentBillItem getAdjustmentBillItem() {
+        return adjustmentBillItem;
+    }
+
+    public void setAdjustmentBillItem(AdjustmentBillItem adjustmentBillItem) {
+        this.adjustmentBillItem = adjustmentBillItem;
     }
 
 }
