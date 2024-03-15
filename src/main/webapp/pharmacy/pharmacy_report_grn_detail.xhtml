@@ -31,6 +31,7 @@
                                          forceSelection="true" rendered="true"
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
+                           
 
                         <h:outputLabel value="Reference Institution"/>
                         <p:autoComplete  value="#{commonReport.referenceInstitution}"
@@ -38,6 +39,9 @@
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
+                        <h:outputLabel value="GRN No"/>
+                        <p:inputText  value="#{commonReport.departmentId}"
+                                         />
                         <p:defaultCommand target="btnRefresh"/>
                     </h:panelGrid>
 
@@ -95,8 +99,13 @@
                         </h:panelGrid>
 
                         <p:spacer height="5"/>
-                        <p:dataTable id="billed"  value="#{commonReport.grnBilled.bills}" var="b" 
-                                     rendered="#{commonReport.grnBilled.bills.size()!=0}" sortBy="#{b.billType}">
+                        <p:dataTable 
+                            id="billed"  
+                            value="#{commonReport.grnBilled.bills}"
+                            var="b" 
+                            rendered="#{commonReport.grnBilled.bills ne null}" 
+                            sortBy="#{b.billType}"
+                            rowKey="#{b.id}">
 
                             <f:facet name="header">  
                                 <h:outputLabel value="From :" />&nbsp;&nbsp;
@@ -201,6 +210,13 @@
                                     <h:outputLabel value="Remark"/>
                                 </f:facet> 
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Remark" exportable="false" >
+                                <p:commandButton ajax="false" value="View" action="/pharmacy/pharmacy_grn" >
+                                    <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
+                                    <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
+                                </p:commandButton>
                             </p:column>
 
                             <p:columnGroup type="footer">  
@@ -389,7 +405,8 @@
 
                         <p:dataTable id="refunded"  value="#{commonReport.grnReturn.bills}" var="b" 
                                      rendered="#{commonReport.grnReturn.bills.size()!=0}" 
-                                     sortBy="#{b.billType}"  >
+                                     sortBy="#{b.billType}" 
+                                     rowKey="#{b.id}" >
 
                             <f:facet name="header">  
                                 <h:outputLabel value="GRN Return"/>
@@ -492,7 +509,6 @@
                                 </f:facet> 
                                 <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
                             </p:column>
-
                             <p:columnGroup type="footer">  
                                 <p:row >  
                                     <p:column colspan="7" style="text-align:left" footerText="Totals:"/>

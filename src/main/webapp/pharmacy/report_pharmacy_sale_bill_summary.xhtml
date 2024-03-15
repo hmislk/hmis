@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_summery_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier">
+
+
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel  header="Pharmay Sale Bill Summery">
+                    <h:panelGrid columns="4" class="w-100">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{billSearch.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                        <h:outputLabel styleClass="noPrintButton" value="Department"/>
+                        <p:autoComplete styleClass="noPrintButton"  value="#{billSearch.department}"  style="text-align: left;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                        </p:autoComplete>
+
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" 
+                                         forceSelection="true"
+                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                         value="#{billSearch.user}" ></p:autoComplete>
+
+                    </h:panelGrid>
+                    
+                    <div class="d-flex align-items-center my-2">
+                         <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" 
+                            value="Process"
+                            icon="fas fa-cog"
+                            class="ui-button-warning" 
+                            style="float: right;" 
+                            actionListener="#{billSearch.processCashierPharmacySaleBillSummery}" />
+                        <p:defaultCommand target="btnRefresh"/>
+                        
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Excel" 
+                            icon="fa-solid fa-file-excel"
+                            class="ui-button-success mx-2" 
+                            style="float: right;" >
+                            <p:dataExporter target="tbl" fileName="Pharmay Sale Bill Summery.xlsx" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print" 
+                            style="float: right;" 
+                            icon="fa-solid fa-print"
+                            class="ui-button-info " >
+                            <p:printer target="tbl"  />
+                        </p:commandButton>
+                    </div>
+
+                    <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
+                        <p:column headerText="Bill Type" >
+                            <h:outputText value="#{bs.billType.label}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Payment Method" >
+                            <h:outputText value="#{bs.paymentMethod}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="User" >
+                            <h:outputText value="#{bs.webUser.webUserPerson.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Count" >
+                            <h:outputText value="#{bs.count}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Bill Total" >
+                            <h:outputText value="#{bs.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

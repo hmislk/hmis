@@ -189,8 +189,9 @@
                                             <p:commandButton 
                                                 class="m-1" 
                                                 icon="fas fa-file-alt" 
-                                                title="View PO" action="#{pharmacyBillSearch.navigateToViewPurchaseOrder()}" >
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                                title="View PO" action="pharmacy_reprint_po" 
+                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                             </p:commandButton>
                                         </h:panelGroup>
                                     </h:column>
