@@ -201,7 +201,7 @@
                                         <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                         <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
-                                        <p:column selectionMode="multiple" style="width: 3%;"></p:column>
+                                        <p:column selectionMode="multiple" style="width: 1%;"></p:column>
                                         
                                         <p:column headerText="No" style="width: 4%; padding: 0;" >
                                             <h:outputLabel id="no" value="#{s+1}." >
@@ -282,13 +282,13 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Expiry" style="width: 15%; padding: 0;">
+                                        <p:column headerText="Expiry" style="width: 14%; padding: 0;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                             </h:outputLabel>
 
                                         </p:column>
-                                        <p:column headerText="Qty" style="width: 5%; padding: 0;">
+                                        <p:column headerText="Qty" style="width: 4%; padding: 0;">
                                             <p:cellEditor>  
                                                 <f:facet name="output">  
                                                     <h:outputText value="#{bi.qty}" >
@@ -301,7 +301,7 @@
                                             </p:cellEditor> 
                                         </p:column>
 
-                                        <p:column style="width:5%; padding: 0; ">  
+                                        <p:column style="width:8%; padding: 0; ">  
                                             <div class="d-flex">
                                                 <p:rowEditor />  
                                                 <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
