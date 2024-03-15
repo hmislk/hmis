@@ -109,6 +109,20 @@
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
+                    
+                    <!-- Balance Quantity with Number Formatting -->
+                    <p:column headerText="STOCK Qty">
+                        <h:outputText value="#{sh.stockQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+                    
+                    <!-- Balance Quantity with Number Formatting -->
+                    <p:column headerText="PHBI Qty">
+                        <h:outputText value="#{sh.pbItem.qty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
 
                 </p:dataTable>
 

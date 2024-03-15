@@ -237,7 +237,9 @@
                                     execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
                         </p:inputText>
                     </p:column> 
-
+                    
+                    
+                    
                     <p:column headerText="P. Rate" style="width:8em; padding: 0px;">                     
                         <p:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="width: 70px; text-align: right;">
                             <f:ajax event="blur" render="profMargin @this retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
