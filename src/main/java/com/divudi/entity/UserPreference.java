@@ -236,7 +236,7 @@ public class UserPreference implements Serializable {
     @Lob
     private String smsTemplateForChannelBooking;
 
-
+    private boolean opdSettleWithoutPatientArea;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1221,6 +1221,14 @@ public class UserPreference implements Serializable {
 
     public void setSmsTemplateForChannelBooking(String smsTemplateForChannelBooking) {
         this.smsTemplateForChannelBooking = smsTemplateForChannelBooking;
+    }
+
+    public boolean isOpdSettleWithoutPatientArea() {
+        return opdSettleWithoutPatientArea;
+    }
+
+    public void setOpdSettleWithoutPatientArea(boolean opdSettleWithoutPatientArea) {
+        this.opdSettleWithoutPatientArea = opdSettleWithoutPatientArea;
     }
 
     

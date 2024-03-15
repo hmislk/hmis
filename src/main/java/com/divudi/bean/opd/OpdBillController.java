@@ -1958,6 +1958,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return true;
             }
         }
+        
+         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
+            if (getPatient().getPerson().getArea()== null) {
+                JsfUtil.addErrorMessage("Please Select Pataient Area");
+                return true;
+            }
+            if (getPatient().getPerson().getArea().getName().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please Select Patient Area");
+                return true;
+            }
+        }
 
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
             if (referredBy == null && referredByInstitution == null) {
