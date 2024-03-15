@@ -13,6 +13,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -166,6 +167,9 @@ public class PatientInvestigation implements Serializable {
     List<PatientReport> patientReports;
 
     public List<PatientReport> getPatientReports() {
+        if(patientReports == null){
+            patientReports = new ArrayList<>();
+        }
         return patientReports;
     }
 
