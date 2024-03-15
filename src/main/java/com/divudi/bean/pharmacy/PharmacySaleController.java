@@ -382,10 +382,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
+        System.out.println("tmp1 = " + tmp);
         if (tmp == null) {
             return;
         }
-
+        System.out.println("tmp2 = " + tmp);
         onEdit(tmp);
     }
 
@@ -439,11 +440,24 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
 
         calculateBillItemForEditing(tmp);
-
+        
         calTotal();
 
     }
 
+    public void quantityInTableChangeEvent(BillItem tmp) {
+        if (tmp == null) {
+            return;
+        }
+
+        tmp.setGrossValue(tmp.getQty() * tmp.getRate());
+        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+
+        calculateBillItemForEditing(tmp);
+        
+        calTotal();
+
+    }
     public void editQty(BillItem bi) {
         if (bi == null) {
             //////System.out.println("No Bill Item to Edit Qty");
@@ -1749,7 +1763,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             BillItem billItem = iterator.next();
             userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
             getPreBill().getBillItems().remove(billItem);
-            iterator.remove(); 
+            iterator.remove();
         }
 
         calTotal();
