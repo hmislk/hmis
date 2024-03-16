@@ -449,7 +449,7 @@ public class PharmacyPurchaseController implements Serializable {
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
             } else {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
+                getPharmaceuticalBillItemFacade().edit(tmpPh);
             }
 
             i.setPharmaceuticalBillItem(tmpPh);
@@ -457,6 +457,9 @@ public class PharmacyPurchaseController implements Serializable {
             saveBillFee(i, p);
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
+            System.out.println("tmpPh.getQtyInUnit() = " + tmpPh.getQtyInUnit());
+            System.out.println("tmpPh.getFreeQtyInUnit() = " + tmpPh.getFreeQtyInUnit());
+            System.out.println("addingQty = " + addingQty);
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());

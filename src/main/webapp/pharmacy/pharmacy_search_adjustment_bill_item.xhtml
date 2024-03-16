@@ -59,9 +59,6 @@
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>
-                                    <p:column headerText="Item Name"  styleClass="alignTop" >
-                                        <h:outputLabel value="#{pi.item.name}" />    
-                                    </p:column>
 
                                     <p:column headerText="Item Code">
                                         <f:facet name="header">
@@ -70,6 +67,10 @@
                                         <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" >
 
                                         </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Item Name"  styleClass="alignTop" >
+                                        <h:outputLabel value="#{pi.item.name}" />    
                                     </p:column>
 
                                     <p:column headerText="Billed At"  >
@@ -95,7 +96,7 @@
                                         </h:panelGroup>
                                     </p:column>     
 
-                                    <p:column headerText="Befory Qty" >
+<!--                                    <p:column headerText="Befory Qty" >
                                         <h:outputLabel value="#{pi.pharmaceuticalBillItem.stockHistory.stockQty}" >
                                             <f:convertNumber pattern="#,##0"/>
                                         </h:outputLabel>
@@ -105,32 +106,41 @@
                                         <h:outputLabel value="#{pi.qty}" >
                                             <f:convertNumber pattern="##,##0"/>
                                         </h:outputLabel>
+                                    </p:column>-->
+                                    
+                                    <p:column headerText="Adjustment Type" >
+                                        <h:outputText value="Department Stock" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentDepartmentStock'}"/>
+                                        <h:outputText value="Purchase Rate" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentPurchaseRate'}"/>
+                                        <h:outputText value="Sale Rate" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentSaleRate'}"/>
+                                        <h:outputText value="Expiry Date" rendered="#{pi.bill.billType eq 'PharmacyAdjustmentExpiryDate'}"/>
+                                        <h:outputText value="WholeSale Rate " rendered="#{pi.bill.billType eq 'PharmacyAdjustmentWholeSaleRate'}"/>
                                     </p:column>
+                                    
                                     <p:column>
                                         <p:commandButton ajax="false" action="pharmacy_reprint_adjustment" value="View BIll">
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>
 
-<!--                                    <p:column headerText="Befory Purchase Rate" >
-                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.purchaseRate}" >
-                                        </h:outputLabel>
-                                    </p:column> 
-
-                                    <p:column headerText="After Purchase Rate" >
-                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" >
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Befory Sale Rate" >
-                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.retailRate}" >
-                                        </h:outputLabel>
-                                    </p:column> 
-
-                                    <p:column headerText="After Sale Rate" >
-                                        <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" >
-                                        </h:outputLabel>
-                                    </p:column>-->
+                                    <!--                                    <p:column headerText="Befory Purchase Rate" >
+                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.purchaseRate}" >
+                                                                            </h:outputLabel>
+                                                                        </p:column> 
+                                    
+                                                                        <p:column headerText="After Purchase Rate" >
+                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" >
+                                                                            </h:outputLabel>
+                                                                        </p:column>
+                                    
+                                                                        <p:column headerText="Befory Sale Rate" >
+                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.retailRate}" >
+                                                                            </h:outputLabel>
+                                                                        </p:column> 
+                                    
+                                                                        <p:column headerText="After Sale Rate" >
+                                                                            <h:outputLabel value="#{pi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" >
+                                                                            </h:outputLabel>
+                                                                        </p:column>-->
 
                                 </p:dataTable>
 

@@ -1241,7 +1241,7 @@ public class ItemController implements Serializable {
                     + " or "
                     + " (c.barcode) like :str ) "
                     + "order by c.name";
-            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("dep", DepartmentType.Pharmacy);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);

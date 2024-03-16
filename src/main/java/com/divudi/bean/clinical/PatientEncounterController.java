@@ -3049,14 +3049,7 @@ public class PatientEncounterController implements Serializable {
         this.currentPatientReport = currentPatientReport;
     }
 
-    public PatientReportFacade getPrFacade() {
-        return prFacade;
-    }
-
-    public void setPrFacade(PatientReportFacade prFacade) {
-        this.prFacade = prFacade;
-    }
-    
+   
     public CommonReportItemController getCommonReportItemController() {
         return commonReportItemController;
     }

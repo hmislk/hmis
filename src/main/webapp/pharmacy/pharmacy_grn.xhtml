@@ -101,14 +101,18 @@
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
+                        
+                        <p:column headerText="Ordered Free Qty" >  
+                            <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
+                        </p:column>  
 
-                        <p:column headerText="Free">   
+                        <p:column headerText="Recieved Free Qty">   
                             <p:cellEditor>  
                                 <f:facet name="output">  
-                                    <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
+                                    <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQtyInUnit}"/>
                                 </f:facet>                      
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" />
                                 </f:facet>
                             </p:cellEditor>                        
                         </p:column> 
@@ -240,7 +244,7 @@
                                             listener="#{grnController.calDifference()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Difference"/>
-                                <p:inputText autocomplete="off" id="diff" value="#{grnController.difference}" >
+                                <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnController.difference}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
 
