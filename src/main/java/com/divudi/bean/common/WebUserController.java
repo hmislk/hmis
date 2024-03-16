@@ -405,6 +405,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToAddNewUser() {
         setCurrent(new WebUser());
+        getCurrent().setActivated(true);
         Person p = new Person();
         getCurrent().setWebUserPerson(p);
         setSpeciality(null);
