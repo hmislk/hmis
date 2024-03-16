@@ -205,6 +205,8 @@ public class BillSearch implements Serializable {
     String encryptedExpiary;
 
     private OverallSummary overallSummary;
+    
+    private Bill currentRefundBill;
 
     public void preparePatientReportByIdForRequests() {
         bill = null;
@@ -1554,6 +1556,7 @@ public class BillSearch implements Serializable {
         rb.setReferenceBill(bill);
         rb.setBilledBill(bill);
         billController.save(rb);
+        currentRefundBill=rb;
         for (BillItem bi : rb.getBillItems()) {
             billController.saveBillItem(bi);
             for (BillFee bf : bi.getBillFees()) {
@@ -1566,6 +1569,8 @@ public class BillSearch implements Serializable {
         billController.save(bill);
         return true;
     }
+    
+    
 
     private Bill createRefundBill() {
         RefundBill rb = new RefundBill();
@@ -3636,6 +3641,17 @@ public class BillSearch implements Serializable {
 
     }
 
+    public Bill getCurrentRefundBill() {
+        if (currentRefundBill==null && bill!=null) {
+            currentRefundBill=bill;
+        }
+        return currentRefundBill;
+    }
+
+    public void setCurrentRefundBill(Bill currentRefundBill) {
+        this.currentRefundBill = currentRefundBill;
+    }
+
     public class PaymentSummary {
 
         private long idCounter = 0;
@@ -3810,6 +3826,9 @@ public class BillSearch implements Serializable {
         public void setBillTypeSummaries(List<BillTypeSummary> billTypeSummaries) {
             this.billTypeSummaries = billTypeSummaries;
         }
+        
+        
+        
     }
 
 }
