@@ -21,6 +21,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -39,7 +40,7 @@ public class PharmaceuticalBillItem implements Serializable {
     @OneToOne(fetch = FetchType.EAGER)
 //    @JoinColumn(name = "bill_item_id") // This is the owning side, so it should have the @JoinColumn annotation.
     private BillItem billItem;
-    
+
     @Temporal(javax.persistence.TemporalType.DATE)
     Date doe;
     @ManyToOne
@@ -47,6 +48,7 @@ public class PharmaceuticalBillItem implements Serializable {
     private String stringValue;
     double qty;
     double freeQty;
+    private double remainingFreeQty;
     double purchaseRate;
     private double lastPurchaseRate;
     double retailRate;
@@ -78,6 +80,15 @@ public class PharmaceuticalBillItem implements Serializable {
 
     @ManyToOne
     Institution manufacturer;
+
+    @Transient
+    private double transQtyPlusFreeQty;
+    @Transient
+    private double transAbsoluteQtyPlusFreeQty;
+    @Transient
+    private boolean transThisIsStockOut;
+    @Transient
+    private boolean transThisIsStockIn;
 
     public String getSerialNo() {
         return serialNo;
@@ -227,21 +238,21 @@ public class PharmaceuticalBillItem implements Serializable {
         stringValue = ph.getStringValue();
         //  remainingQty=ph.getRemainingQty();
 
-        make= ph.getMake();
-        model=ph.getModel();
-        code=ph.getCode();
-        description=ph.getDescription();
-        barcode=ph.getBarcode();
-        serialNo=ph.getSerialNo();
-        registrationNo=ph.getRegistrationNo();
-        chassisNo=ph.getChassisNo();
-        engineNo=ph.getEngineNo();
-        colour=ph.getColour();
-        warrentyCertificateNumber=ph.getWarrentyCertificateNumber();
-        warrentyDuration=ph.getWarrentyDuration();
-        deprecitionRate=ph.getDeprecitionRate();
-        manufacturer=ph.getManufacturer();
-        otherNotes=ph.getOtherNotes();
+        make = ph.getMake();
+        model = ph.getModel();
+        code = ph.getCode();
+        description = ph.getDescription();
+        barcode = ph.getBarcode();
+        serialNo = ph.getSerialNo();
+        registrationNo = ph.getRegistrationNo();
+        chassisNo = ph.getChassisNo();
+        engineNo = ph.getEngineNo();
+        colour = ph.getColour();
+        warrentyCertificateNumber = ph.getWarrentyCertificateNumber();
+        warrentyDuration = ph.getWarrentyDuration();
+        deprecitionRate = ph.getDeprecitionRate();
+        manufacturer = ph.getManufacturer();
+        otherNotes = ph.getOtherNotes();
 
     }
 
@@ -504,5 +515,39 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setMake(Category make) {
         this.make = make;
     }
+
+    public double getRemainingFreeQty() {
+        return remainingFreeQty;
+    }
+
+    public void setRemainingFreeQty(double remainingFreeQty) {
+        this.remainingFreeQty = remainingFreeQty;
+    }
+
+    public double getTransQtyPlusFreeQty() {
+        transQtyPlusFreeQty = getQtyInUnit() + getFreeQtyInUnit();
+        return transQtyPlusFreeQty;
+    }
+
+    public double getTransAbsoluteQtyPlusFreeQty() {
+        transAbsoluteQtyPlusFreeQty = Math.abs(getTransQtyPlusFreeQty());
+        return transAbsoluteQtyPlusFreeQty;
+    }
+
+    public boolean isTransThisIsStockOut() {
+        if(getTransQtyPlusFreeQty()<0){
+            transThisIsStockOut=true;
+        }
+        return transThisIsStockOut;
+    }
+
+    public boolean isTransThisIsStockIn() {
+        if(getTransQtyPlusFreeQty()>0){
+            transThisIsStockIn=true;
+        }
+        return transThisIsStockIn;
+    }
+    
+    
 
 }

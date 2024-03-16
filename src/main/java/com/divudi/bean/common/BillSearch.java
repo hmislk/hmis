@@ -464,7 +464,6 @@ public class BillSearch implements Serializable {
 
         j += " and b.billType in :bts ";
         m.put("bts", billTypes);
-        
 
         j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater";
 
@@ -494,8 +493,6 @@ public class BillSearch implements Serializable {
             billSummeries.add(tbs);
             i++;
         }
-        
-       
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -1553,6 +1550,9 @@ public class BillSearch implements Serializable {
         rb.setPaymentMethod(paymentMethod);
         rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
         rb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
+        rb.setRefunded(Boolean.TRUE);
+        rb.setReferenceBill(bill);
+        rb.setBilledBill(bill);
         billController.save(rb);
         for (BillItem bi : rb.getBillItems()) {
             billController.saveBillItem(bi);
@@ -1560,6 +1560,10 @@ public class BillSearch implements Serializable {
                 billController.saveBillFee(bf);
             }
         }
+        bill.getForwardReferenceBills().add(rb);
+        bill.setRefunded(true);
+        bill.getRefundBills().add(rb);
+        billController.save(bill);
         return true;
     }
 
