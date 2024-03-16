@@ -110,6 +110,16 @@
                                         value="#{sessionController.currentPreference.canSettleOpdBillWithInvestigationsWithoutReferringDoctor}" ></p:selectBooleanButton>
 
 
+                                    <h:outputLabel 
+                                        value="Can settle OPD Bills without Patient Area"
+                                        class="form-label"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
+                                        class="form-control"
+                                        value="#{sessionController.currentPreference.opdSettleWithoutPatientArea}" ></p:selectBooleanButton>
+
+
 
                                     <h:outputLabel value="Can settle without Cash Tendered amount" rendered="false"></h:outputLabel>
                                     <p:selectBooleanButton 
@@ -246,7 +256,7 @@
                                     {date_of_admission}<br/>
                                     {date_of_discharge}<br/>
                                     {admission_type}<br/>
-                                    
+
                                     {time_of_admission}<br/>
                                     {time_of_discharge}<br/>
 
@@ -364,7 +374,7 @@
                                         </p:selectOneMenu>
                                         <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  
-                                                                                                           
+
                                         </p:inputTextarea>
 
 
