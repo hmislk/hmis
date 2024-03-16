@@ -52,7 +52,6 @@ public class BillItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     Double qty = 0.0;
-    private Double freeQty = 0.0;
     @Transient
     private Double absoluteQty;
     @Lob
@@ -60,7 +59,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    private double remainingFreeQty;
+    
     double Rate;
     double discountRate;
     double marginRate;
@@ -677,7 +676,6 @@ public class BillItem implements Serializable {
     }
 
     public void setTmpFreeQty(double tmpFreeQty) {
-        freeQty = tmpFreeQty;
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
             this.tmpFreeQty = tmpFreeQty * getItem().getDblValue();
         } else {
@@ -882,20 +880,5 @@ public class BillItem implements Serializable {
         return billFees;
     }
 
-    public Double getFreeQty() {
-        return freeQty;
-    }
-
-    public void setFreeQty(Double freeQty) {
-        this.freeQty = freeQty;
-    }
-
-    public double getRemainingFreeQty() {
-        return remainingFreeQty;
-    }
-
-    public void setRemainingFreeQty(double remainingFreeQty) {
-        this.remainingFreeQty = remainingFreeQty;
-    }
-
+   
 }

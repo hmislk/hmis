@@ -449,7 +449,7 @@ public class PharmacyPurchaseController implements Serializable {
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
             } else {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
+                getPharmaceuticalBillItemFacade().edit(tmpPh);
             }
 
             i.setPharmaceuticalBillItem(tmpPh);
