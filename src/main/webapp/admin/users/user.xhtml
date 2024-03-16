@@ -61,14 +61,20 @@
                             <p:outputLabel value="Email " style="width: 100px;" for="email" />
                             <p:outputLabel value=":" style="width: 20px;"/>
                             <p:inputText id="email" value="#{webUserController.current.email}" title="Email" style="width: 300px;"/>
-                            
+
                             <p:outputLabel value="Mobile " style="width: 100px;" for="telNo" />
                             <p:outputLabel value=":" style="width: 20px;"/>
                             <p:inputText id="telNo" value="#{webUserController.current.telNo}" title="TelNo" style="width: 300px;"/>
-                            
+
                             <p:outputLabel value="Code " style="width: 100px;" for="code" />
                             <p:outputLabel value=":" style="width: 20px;"/>
                             <p:inputText id="code" value="#{webUserController.current.code}" title="Code" style="width: 300px;" />
+
+                            <p:outputLabel value="User is Active" class=" m-1"></p:outputLabel>
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
+                            </p:selectBooleanCheckbox>
+
                         </h:panelGrid>
                     </p:panel>
                 </f:view>
