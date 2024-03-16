@@ -161,20 +161,33 @@ public class SecurityController implements Serializable {
         System.out.println("matching = " + matching);
     }
 
-    
-    
-    public String hash(String word) {
+    public String hashAndCheck(String word) {
+        System.out.println("hashAndCheck");
+        System.out.println("word = " + word);
         try {
             BasicPasswordEncryptor en = new BasicPasswordEncryptor();
-            return en.encryptPassword(word);
+            String encryptedPassword = en.encryptPassword(word);
+            System.out.println("encryptedPassword = " + encryptedPassword);
+            // This check will always return true for a successfully hashed password
+            boolean match = en.checkPassword(word, encryptedPassword);
+            if (match) {
+                return encryptedPassword;
+            } else {
+                return null; // This branch will likely never be executed
+            }
         } catch (Exception e) {
             return null;
         }
     }
 
     public static boolean matchPassword(String planePassword, String encryptedPassword) {
+        System.out.println("matchPassword");
+        System.out.println("planePassword = " + planePassword);
+        System.out.println("encryptedPassword = " + encryptedPassword);
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
-        return en.checkPassword(planePassword, encryptedPassword);
+        boolean mathingAccess =en.checkPassword(planePassword, encryptedPassword);
+        System.out.println("mathingAccess = " + mathingAccess);
+        return  mathingAccess;
     }
 
     public static boolean matchPassword(String planePassword, String encryptedPassword, boolean fake) {

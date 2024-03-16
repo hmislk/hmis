@@ -499,7 +499,7 @@ public class WebUserController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(sessionController.loggedUser);
         getCurrent().setName((getCurrent().getName()));
-        getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
+        getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
         if (createOnlyUser) {
             JsfUtil.addSuccessMessage("Add New User Only");
@@ -903,7 +903,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         String hashedPassword;
-        hashedPassword=getSecurityController().hash(newPassword);
+        hashedPassword=getSecurityController().hashAndCheck(newPassword);
         System.out.println("hashedPassword = " + hashedPassword);
         current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
