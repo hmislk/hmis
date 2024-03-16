@@ -130,6 +130,10 @@
                                 </p:tab>
                                 <p:tab title="Advance" >
                                     <h:panelGrid id="pg1" columns="2" style="text-align: left;" >
+                                        <p:outputLabel value="User is Active" class=" m-1"></p:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
+                                        </p:selectBooleanCheckbox>
+                                        
                                         
                                         <p:outputLabel value="Add Only User" style="width: 250px" class=" mb-1"></p:outputLabel>
                                         <p:selectBooleanCheckbox value="#{webUserController.createOnlyUser}" >
