@@ -9,6 +9,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.AdjustmentBillItem;
 import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.Vmpp;
 import java.io.Serializable;
@@ -47,11 +48,15 @@ public class BillItem implements Serializable {
     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private PharmaceuticalBillItem pharmaceuticalBillItem;
 
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private AdjustmentBillItem adjustmentBillItem;
+
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     Double qty = 0.0;
+    private Double freeQty = 0.0;
     @Transient
     private Double absoluteQty;
     @Lob
@@ -59,7 +64,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    
+    private double remainingFreeQty;
     double Rate;
     double discountRate;
     double marginRate;
@@ -566,10 +571,10 @@ public class BillItem implements Serializable {
     }
 
     public Double getQty() {
-        if(qty==null){
-            qty=0.0;
-        }else if(qty==0.0){
-            qty =0.0;
+        if (qty == null) {
+            qty = 0.0;
+        } else if (qty == 0.0) {
+            qty = 0.0;
         }
         return qty;
     }
@@ -676,6 +681,7 @@ public class BillItem implements Serializable {
     }
 
     public void setTmpFreeQty(double tmpFreeQty) {
+        freeQty = tmpFreeQty;
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
             this.tmpFreeQty = tmpFreeQty * getItem().getDblValue();
         } else {
@@ -686,6 +692,7 @@ public class BillItem implements Serializable {
             getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
         }
     }
+
     public UserStock getTransUserStock() {
         return transUserStock;
     }
@@ -880,5 +887,28 @@ public class BillItem implements Serializable {
         return billFees;
     }
 
-   
+    public Double getFreeQty() {
+        return freeQty;
+    }
+
+    public void setFreeQty(Double freeQty) {
+        this.freeQty = freeQty;
+    }
+
+    public double getRemainingFreeQty() {
+        return remainingFreeQty;
+    }
+
+    public void setRemainingFreeQty(double remainingFreeQty) {
+        this.remainingFreeQty = remainingFreeQty;
+    }
+
+    public AdjustmentBillItem getAdjustmentBillItem() {
+        return adjustmentBillItem;
+    }
+
+    public void setAdjustmentBillItem(AdjustmentBillItem adjustmentBillItem) {
+        this.adjustmentBillItem = adjustmentBillItem;
+    }
+
 }
