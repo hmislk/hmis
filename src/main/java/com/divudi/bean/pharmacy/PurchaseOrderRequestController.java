@@ -297,10 +297,7 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreater(getSessionController().getLoggedUser());
 
             double qty = 0.0;
-            qty = b.getQty();
-            qty = b.getPharmaceuticalBillItem().getFreeQty();
-
-
+            qty = b.getQty()+b.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 b.setRetired(true);
                 b.setRetirer(sessionController.getLoggedUser());
