@@ -14,6 +14,7 @@ import com.divudi.bean.common.AreaController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConsultantController;
+import com.divudi.bean.common.CreditCompanyController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
@@ -166,6 +167,9 @@ public class DataUploadController implements Serializable {
     StaffController staffController;
     @Inject
     AreaController areaController;
+    @Inject
+    CreditCompanyController creditCompanyController;
+    
 
     @EJB
     PatientFacade patientFacade;
@@ -197,6 +201,7 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForVmpUpload;
     private StreamedContent templateForAmpUpload;
     private StreamedContent templateForAmpMinimalUpload;
+    private StreamedContent templateForCreditCompanyUpload;
 
     List<Item> itemsToSave;
     List<Item> itemsSkipped;
@@ -206,6 +211,7 @@ public class DataUploadController implements Serializable {
     List<Institution> institutionsSaved;
     List<Department> departmentsSaved;
     private List<Consultant> consultantsToSave;
+    private List<Institution> creditCompanies;
 
     private boolean pollActive;
 
@@ -1321,6 +1327,18 @@ public class DataUploadController implements Serializable {
             }
         }
     }
+    
+     public void uploadCreditCOmpanies() {
+        creditCompanies = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                creditCompanies = readCreditCOmpanyFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -1558,6 +1576,109 @@ public class DataUploadController implements Serializable {
         return collectingCentresList;
     }
 
+    private List<Institution> readCreditCOmpanyFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Institution> CreditCompanyList = new ArrayList<>();
+        Institution creditCompany;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            creditCompany = null;
+            String creditCompanyName = null;
+            String creditCompanyPrintingName = null;
+            String creditCompanyPhone = null;
+            String creditCompanyEmail = null;
+            String creditCompanyaddress = null;
+
+           
+            //    Item masterItem = itemController.findMasterItemByName(code);
+            Cell agentNameCell = row.getCell(1);
+
+            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
+                creditCompanyName = agentNameCell.getStringCellValue();
+            }
+            if (creditCompanyName == null || creditCompanyName.trim().equals("")) {
+                continue;
+            }
+
+            Cell agentPrintingNameCell = row.getCell(2);
+
+            if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
+                creditCompanyPrintingName = agentPrintingNameCell.getStringCellValue();
+
+            }
+            if (creditCompanyPrintingName == null || creditCompanyPrintingName.trim().equals("")) {
+                creditCompanyPrintingName = creditCompanyPrintingName;
+            }
+
+
+            Cell contactNumberCell = row.getCell(3);
+
+            if (contactNumberCell != null) {
+                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    creditCompanyPhone = decimalFormat.format(contactNumberCell.getNumericCellValue());
+
+                } else if (contactNumberCell.getCellType() == CellType.STRING) {
+                    creditCompanyPhone = contactNumberCell.getStringCellValue();
+                }
+            }
+            if (creditCompanyPhone == null || creditCompanyPhone.trim().equals("")) {
+                creditCompanyPhone = null;
+            }
+
+            Cell emailAddressCell = row.getCell(4);
+
+            if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
+                creditCompanyEmail = emailAddressCell.getStringCellValue();
+
+            }
+            if (creditCompanyEmail == null || creditCompanyEmail.trim().equals("")) {
+                creditCompanyEmail = null;
+            }
+
+
+            Cell addressCell = row.getCell(5);
+
+            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
+                creditCompanyaddress = addressCell.getStringCellValue();
+            }
+            if (creditCompanyaddress == null || creditCompanyaddress.trim().equals("")) {
+                creditCompanyaddress = null;
+            }
+
+            if (creditCompanyName.trim().equals("")) {
+                continue;
+            }
+
+            creditCompany = creditCompanyController.findCreditCompanyByName(creditCompanyName);
+
+            if (creditCompany == null) {
+                creditCompany = new Institution();
+            }
+//            collectingCentre = new Institution();
+            creditCompany.setInstitutionType(InstitutionType.CollectingCentre);
+            creditCompany.setName(creditCompanyName);
+            creditCompany.setChequePrintingName(creditCompanyPrintingName);
+            creditCompany.setPhone(creditCompanyPhone);
+            creditCompany.setEmail(creditCompanyEmail);
+            creditCompany.setAddress(creditCompanyaddress);
+            creditCompany.setInstitutionType(InstitutionType.CreditCompany);
+            creditCompanyController.save(creditCompany);
+            CreditCompanyList.add(creditCompany);
+        }
+
+        return CreditCompanyList;
+    }
+    
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
@@ -3076,6 +3197,50 @@ public class DataUploadController implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
+    
+     public StreamedContent getTemplateForCreditCompanyUpload() {
+        try {
+            createTemplateForCreditCOmpanyUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForCreditCompanyUpload;
+    }
+     
+     public void createTemplateForCreditCOmpanyUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Collecting Centres");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Name", "Printing Name","Contact No", "Email Address","Agent Address"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForCreditCompanyUpload = DefaultStreamedContent.builder()
+                .name("template_for_credit_company_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
 
     public StreamedContent getTemplateForCollectingCentreUpload() {
         try {
@@ -3207,5 +3372,15 @@ public class DataUploadController implements Serializable {
     public void setConsultantsToSave(List<Consultant> consultantsToSave) {
         this.consultantsToSave = consultantsToSave;
     }
+
+    public List<Institution> getCreditCompanies() {
+        return creditCompanies;
+    }
+
+    public void setCreditCompanies(List<Institution> creditCompanies) {
+        this.creditCompanies = creditCompanies;
+    }
+    
+    
 
 }
