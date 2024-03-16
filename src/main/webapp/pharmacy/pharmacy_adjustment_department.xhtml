@@ -42,7 +42,7 @@
                                                 <h:outputText value="#{amp.name}" ></h:outputText>
                                             </p:column>
                                             <p:column headerText="Stock" style="padding: 3px;" >
-                                                <h:outputText value="#{stockController.findStock(amp)}" ></h:outputText>
+                                                <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" ></h:outputText>
                                             </p:column>
                                         </p:autoComplete>
 
