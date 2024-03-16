@@ -692,10 +692,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String loginActionWithoutDepartment() {
+        System.out.println("loginActionWithoutDepartment");
         department = null;
         institution = null;
         boolean l = checkUsersWithoutDepartment();
         System.out.println("l = " + l);
+        System.out.println("logged = " + logged);
         if (l) {
             System.out.println("to index1");
             return "/index1.xhtml?faces-redirect=true";
@@ -1092,6 +1094,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setActivated(u.isActivated());
                     setRole(u.getRole());
 
+                    System.out.println("logged = " + logged);
+                    
                     String sql;
                     UserPreference uf;
                     sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
@@ -1110,6 +1114,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (getApplicationController().isLogged(u) != null) {
                         JsfUtil.addErrorMessage("This user is already logged.");
                     }
+                    System.out.println("1111 logged = " + logged);
                     return true;
                 }
             }
