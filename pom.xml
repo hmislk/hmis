@@ -261,6 +261,12 @@
             <version>2.3</version>
         </dependency>
         
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
+        
     </dependencies>
     
     <build>
