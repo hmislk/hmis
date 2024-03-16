@@ -116,6 +116,8 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
+    @EJB
+    private PatientReportFacade prFacade;
      
     /**
      * Controllers
