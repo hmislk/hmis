@@ -328,7 +328,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         wu.setActivated(true);
         wu.setActivatedAt(new Date());
         wu.setName(userName);
-        wu.setWebUserPassword(getSecurityController().hash(password));
+        wu.setWebUserPassword(getSecurityController().hashAndCheck(password));
         webUserController.save(wu);
 
         for (Privileges pv : Privileges.values()) {
@@ -695,7 +695,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         department = null;
         institution = null;
         boolean l = checkUsersWithoutDepartment();
+        System.out.println("l = " + l);
         if (l) {
+            System.out.println("to index1");
             return "/index1.xhtml?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
@@ -745,7 +747,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         rFacade.create(myRole);
 
         user.setName(userName);
-        user.setWebUserPassword(getSecurityController().hash(password));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(password));
         user.setWebUserPerson(person);
         user.setActivated(true);
         user.setRole(myRole);
@@ -771,7 +773,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         pFacade.create(person);
         user.setName(newUserName);
-        user.setWebUserPassword(getSecurityController().hash(newPassword));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
         user.setWebUserPerson(person);
         user.setTelNo(telNo);
         user.setEmail(email);
@@ -793,7 +795,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        user.setWebUserPassword(getSecurityController().hash(newPassword));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
         uFacade.edit(user);
         //
         JsfUtil.addSuccessMessage("Password changed");
@@ -812,7 +814,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        user.setWebUserPassword(getSecurityController().hash(newPassword));
+        user.setWebUserPassword(getSecurityController().hashAndCheck(newPassword));
         uFacade.edit(user);
         JsfUtil.addSuccessMessage("Password changed");
     }
@@ -1036,19 +1038,22 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
-//        System.out.println("checkUsersWithoutDepartment");
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
+        String jpql;
+        jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL, m);
+        List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
+                boolean passwordIsOk=SecurityController.matchPassword(password, u.getWebUserPassword());
+                if (passwordIsOk) {
+                    
                     departments = listLoggableDepts(u);
+                    
                     if (webUserController.testRun) {
                         departments = departmentController.fillAllItems();
                     }
+                    
                     if (departments.isEmpty()) {
                         JsfUtil.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
                         return false;
@@ -1059,7 +1064,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                             f = true;
                         }
                     }
-
                     if (f) {
                         List<Department> tds = new ArrayList<>();
                         tds.add(u.getDepartment());
@@ -1079,17 +1083,16 @@ public class SessionController implements Serializable, HttpSessionListener {
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
+                    
                     if (webUserController.testRun) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
-
                     loadDashboards();
                     setLogged(true);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
 
                     String sql;
-
                     UserPreference uf;
                     sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
                     m = new HashMap();
@@ -1104,7 +1107,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     JsfUtil.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
                     JsfUtil.addSuccessMessage(setGreetingMsg());
-
                     if (getApplicationController().isLogged(u) != null) {
                         JsfUtil.addErrorMessage("This user is already logged.");
                     }
