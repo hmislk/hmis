@@ -404,7 +404,7 @@ public class GrnController implements Serializable {
                 bi.setItem(i.getBillItem().getItem());
                 bi.setReferanceBillItem(i.getBillItem());
                 bi.setQty(remains);
-                bi.setFreeQty(remainFreeQty);
+//                bi.setFreeQty(remainFreeQty);
                 bi.setTmpQty(remains);
                 bi.setTmpFreeQty(remainFreeQty);
                 //Set Suggession
@@ -413,7 +413,7 @@ public class GrnController implements Serializable {
                 PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
-                double tmpFreeQty = bi.getFreeQty();
+                double tmpFreeQty = remainFreeQty;
 
                 ph.setQty(tmpQty);
                 ph.setQtyInUnit((double) tmpQty);
