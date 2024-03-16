@@ -902,8 +902,10 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return "";
         }
-
-        current.setWebUserPassword(getSecurityController().hash(newPassword));
+        String hashedPassword;
+        hashedPassword=getSecurityController().hash(newPassword);
+        System.out.println("hashedPassword = " + hashedPassword);
+        current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
         JsfUtil.addSuccessMessage("Password changed");
         return navigateToListUsers();

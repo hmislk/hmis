@@ -1036,15 +1036,23 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
-//        System.out.println("checkUsersWithoutDepartment");
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
+        System.out.println("checkUsersWithoutDepartment");
+        String jpql;
+        jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL, m);
+        System.out.println("m = " + m);
+        System.out.println("temSQL = " + jpql);
+        List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
+        System.out.println("allUsers = " + allUsers.size());
         for (WebUser u : allUsers) {
+            System.out.println("u.getName() = " + u.getName());
+            System.out.println("userName = " + userName);
             if ((u.getName()).equalsIgnoreCase(userName)) {
+                System.out.println("password = " + password);
+                System.out.println("u.getWebUserPassword() = " + u.getWebUserPassword());
                 if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
+                    
                     departments = listLoggableDepts(u);
                     if (webUserController.testRun) {
                         departments = departmentController.fillAllItems();
