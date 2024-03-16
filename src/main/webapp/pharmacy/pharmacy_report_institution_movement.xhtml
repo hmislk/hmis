@@ -17,7 +17,7 @@
 
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Item Distributor" ></h:outputLabel>
-                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{itemController.institution}">
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeSuppliers}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{itemController.institution}">
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
