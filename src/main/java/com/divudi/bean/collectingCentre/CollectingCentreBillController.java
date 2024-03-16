@@ -1282,7 +1282,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the fess");
+            JsfUtil.addErrorMessage("Please enter the Fees");
             return;
         }
         clearBillItemValues();
