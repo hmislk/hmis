@@ -25,6 +25,7 @@ import java.util.Map;
 @Named
 @SessionScoped
 public class SecurityController implements Serializable {
+
     private static final SecureRandom random = new SecureRandom();
 
     private static final String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -78,7 +79,7 @@ public class SecurityController implements Serializable {
         }
         return result.toString();
     }
-    
+
     public String encryptAlphanumeric(String text, String key) {
         if (text == null || key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Text and key cannot be null or empty");
@@ -148,6 +149,20 @@ public class SecurityController implements Serializable {
         }
     }
 
+    private String password;
+    private String hashedPassword;
+    private boolean matching;
+
+    public void testPassword() {
+        System.out.println("Test Password");
+        System.out.println("password = " + password);
+        System.out.println("hashedPassword = " + hashedPassword);
+        matching = matchPassword(password, hashedPassword);
+        System.out.println("matching = " + matching);
+    }
+
+    
+    
     public String hash(String word) {
         try {
             BasicPasswordEncryptor en = new BasicPasswordEncryptor();
@@ -161,7 +176,7 @@ public class SecurityController implements Serializable {
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
         return en.checkPassword(planePassword, encryptedPassword);
     }
-    
+
     public static boolean matchPassword(String planePassword, String encryptedPassword, boolean fake) {
         return true;
     }
@@ -185,6 +200,30 @@ public class SecurityController implements Serializable {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getHashedPassword() {
+        return hashedPassword;
+    }
+
+    public void setHashedPassword(String hashedPassword) {
+        this.hashedPassword = hashedPassword;
+    }
+
+    public boolean isMatching() {
+        return matching;
+    }
+
+    public void setMatching(boolean matching) {
+        this.matching = matching;
     }
 
 }
