@@ -294,6 +294,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAmp() {
+        ampController.setItems(null);
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
