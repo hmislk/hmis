@@ -282,6 +282,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToSessionView() {
         if (preSet()) {
+            getChannelReportController().fillNurseView();
             return "/channel/channel_session_view?faces-redirect=true";
         } else {
             return "";
@@ -299,6 +300,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToUserView() {
         if (preSet()) {
+            getChannelReportController().fillDoctorView();
             return "/channel/channel_user_view?faces-redirect=true";
         } else {
             return "";
