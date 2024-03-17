@@ -140,7 +140,7 @@ public class UserPreference implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
-    
+
     private boolean partialPaymentOfPharmacyBillsAllowed;
 
     @Deprecated
@@ -211,7 +211,7 @@ public class UserPreference implements Serializable {
     private String emailRegex;
     private String nicRegex;
 
-    private String otpIndexes;
+    private String lengthOfOTPIndexes;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy opdItemListingStrategy;
@@ -232,6 +232,11 @@ public class UserPreference implements Serializable {
     @Lob
     private String inpatientFinalBillPrintHeader;
     private String changeTextCasesPatientName;
+    
+    @Lob
+    private String smsTemplateForChannelBooking;
+
+    private boolean opdSettleWithoutPatientArea;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -265,10 +270,9 @@ public class UserPreference implements Serializable {
     }
 
     public void setPartialPaymentOfOpdBillsAllowed(boolean partialPaymentOfOpdBillsAllowed) {
-        if(partialPaymentOfOpdBillsAllowed==true){
+        if (partialPaymentOfOpdBillsAllowed == true) {
             this.opdSettleWithoutCashTendered = true;
-        }
-        else {
+        } else {
             this.opdSettleWithoutCashTendered = false;
         }
         this.partialPaymentOfOpdBillsAllowed = partialPaymentOfOpdBillsAllowed;
@@ -1135,8 +1139,6 @@ public class UserPreference implements Serializable {
         }
         return opdBillingStrategy;
     }
-    
-    
 
     public void setOpdBillingStrategy(OpdBillingStrategy opdBillingStrategy) {
         this.opdBillingStrategy = opdBillingStrategy;
@@ -1193,15 +1195,16 @@ public class UserPreference implements Serializable {
         this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
     }
 
-    public String getOtpIndexes() {
-        if (otpIndexes==null || otpIndexes.isEmpty()) {
-            otpIndexes="4";
-        }
-        return otpIndexes;
+    public String getLengthOfOTPIndexes() {
+        return lengthOfOTPIndexes;
     }
 
-    public void setOtpIndexes(String otpIndexes) {
-        this.otpIndexes = otpIndexes;
+    public void setLengthOfOTPIndexes(String lengthOfOTPIndexes) {
+        if (lengthOfOTPIndexes == null || lengthOfOTPIndexes.isEmpty()) {
+            lengthOfOTPIndexes = "4";
+        }
+        this.lengthOfOTPIndexes = lengthOfOTPIndexes;
+      
     }
 
     public boolean isPartialPaymentOfPharmacyBillsAllowed() {
@@ -1211,7 +1214,26 @@ public class UserPreference implements Serializable {
     public void setPartialPaymentOfPharmacyBillsAllowed(boolean partialPaymentOfPharmacyBillsAllowed) {
         this.partialPaymentOfPharmacyBillsAllowed = partialPaymentOfPharmacyBillsAllowed;
     }
+
+    public String getSmsTemplateForChannelBooking() {
+        return smsTemplateForChannelBooking;
+    }
+
+    public void setSmsTemplateForChannelBooking(String smsTemplateForChannelBooking) {
+        this.smsTemplateForChannelBooking = smsTemplateForChannelBooking;
+    }
+
+    public boolean isOpdSettleWithoutPatientArea() {
+        return opdSettleWithoutPatientArea;
+    }
+
+    public void setOpdSettleWithoutPatientArea(boolean opdSettleWithoutPatientArea) {
+        this.opdSettleWithoutPatientArea = opdSettleWithoutPatientArea;
+    }
+
     
     
+    
+
 
 }

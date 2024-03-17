@@ -13,7 +13,81 @@
                 <p:growl ></p:growl>
                 <p:panel class="w-100" style="height: 100vh;">
                     <f:facet name="header" >
-                        <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
+                            </div>
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <h:form >
+                                        <div class="d-flex justify-content-end">
+                                            <p:commandButton
+                                                value="Edit"
+                                                action="#{patientController.navigateToEmrEditPatient()}"
+                                                ajax="false"
+                                                icon="fa fa-pencil"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="OPD Visit"
+                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                                ajax="false"
+                                                icon="fa fa-stethoscope"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Profile Picture"
+                                                action="#{patientController.navigateToCapturePatientPhoto()}"
+                                                ajax="false"
+                                                icon="fa fa-user"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+
+
+                                            <p:commandButton
+                                                value="Data Entry"
+                                                action="#{patientController.navigateToNewDataEntryForm}"
+                                                ajax="false"
+                                                icon="fa fa-keyboard"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="OPD Billing"
+                                                action="#{patientController.navigateToOpdBilling()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Pharmacy Billing"
+                                                action="#{patientController.navigateToPharamecyBilling()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Patient Dashboard"
+                                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                style="float: right;"
+                                                value="Lookup"
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning mx-1"
+                                                action="#{opdBillController.navigateToSearchPatients()}"
+                                                >
+                                            </p:commandButton>
+                                        </div>
+                                    </h:form>
+                                </div>
+                            </div>
+                        </div>
                     </f:facet>
                     <div class="row" >
                         <div class="col-md-4 " >
@@ -40,81 +114,6 @@
                             <emr:patient patient="#{patientController.current}" ></emr:patient>
                         </div>
                         <div class="col-md-8" >
-
-                            <div class="row" >
-                                <div class="col-12 p-2" >
-                                    <h:form >
-                                        <div class="d-flex justify-content-end">
-                                            <p:commandButton 
-                                                value="Edit" 
-                                                action="#{patientController.navigateToEmrEditPatient()}" 
-                                                ajax="false" 
-                                                icon="fa fa-pencil"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="OPD Visit" 
-                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
-                                                ajax="false" 
-                                                icon="fa fa-stethoscope"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="Profile Picture" 
-                                                action="#{patientController.navigateToCapturePatientPhoto()}"
-                                                ajax="false" 
-                                                icon="fa fa-user"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-
-
-                                            <p:commandButton 
-                                                value="Data Entry" 
-                                                action="#{patientController.navigateToNewDataEntryForm}" 
-                                                ajax="false" 
-                                                icon="fa fa-keyboard"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="OPD Billing" 
-                                                action="#{patientController.navigateToOpdBilling()}" 
-                                                ajax="false"
-                                                icon="fa fa-money-bill"
-                                                styleClass="mx-1">
-                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
-                                            </p:commandButton>
-                                             <p:commandButton 
-                                                value="Pharmecy Billing" 
-                                                action="#{patientController.navigateToPharamecyBilling()}" 
-                                                ajax="false"
-                                                icon="fa fa-money-bill"
-                                                styleClass="mx-1">
-                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="Patient Dashboard" 
-                                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                                ajax="false" 
-                                                icon="fa fa-money-bill"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                style="float: right;"
-                                                value="Lookup" 
-                                                ajax="false"
-                                                icon="fa fa-search"
-                                                class="ui-button-warning mx-1" 
-                                                action="#{opdBillController.navigateToSearchPatients()}" 
-                                                >
-                                            </p:commandButton>
-                                        </div>
-                                    </h:form>
-
-
-
-                                </div>
-                            </div>
-
                             <div class="row" >
                                 <div class="col-12" >
                                     <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
@@ -486,8 +485,8 @@
                                                                 <p:commandLink id="billNo" 
                                                                                ajax="false" 
                                                                                value="#{bill.insId}" 
-                                                                               action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
-                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                                               action="#{opdBillController.navigateToViewOpdBatchBill}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                                                 </p:commandLink>
                                                             </p:column>
                                                             <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 

@@ -81,7 +81,7 @@
 
                                 <h:panelGrid columns="2"  class="w-100">
 
-                                    <h:outputLabel 
+                                    <h:outputLabel
                                         class="form-label"
                                         value="Can settle without a phone number"></h:outputLabel>
                                     <p:selectBooleanButton 
@@ -108,6 +108,16 @@
                                         onIcon="fas fa-check"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.canSettleOpdBillWithInvestigationsWithoutReferringDoctor}" ></p:selectBooleanButton>
+
+
+                                    <h:outputLabel 
+                                        value="Can settle OPD Bills without Patient Area"
+                                        class="form-label"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
+                                        class="form-control"
+                                        value="#{sessionController.currentPreference.opdSettleWithoutPatientArea}" ></p:selectBooleanButton>
 
 
 
@@ -200,7 +210,6 @@
                                     <h:outputLabel
                                         class="form-label w-100"
                                         value="Change the case of the patient name "></h:outputLabel>
-
                                     <p:inputText value="#{sessionController.currentPreference.changeTextCasesPatientName}"/>
                                 </h:panelGrid>
 
@@ -247,7 +256,7 @@
                                     {date_of_admission}<br/>
                                     {date_of_discharge}<br/>
                                     {admission_type}<br/>
-                                    
+
                                     {time_of_admission}<br/>
                                     {time_of_discharge}<br/>
 
@@ -330,7 +339,7 @@
                             </p:tab>
                             <p:tab title="Channel" >
                                 <p:panel header="Channel" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" >
+                                    <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
@@ -363,6 +372,10 @@
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
+                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  
+
+                                        </p:inputTextarea>
 
 
                                     </h:panelGrid>

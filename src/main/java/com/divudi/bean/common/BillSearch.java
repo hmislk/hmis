@@ -309,7 +309,7 @@ public class BillSearch implements Serializable {
         }
     }
 
-    public void fillTransactionTypeSummery() {
+    public void processCashierBillSummery() {
         //For Auditing Purposes
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -376,6 +376,97 @@ public class BillSearch implements Serializable {
         } else {
             j += " group by b.paymentMethod, b.billClassType, b.billType";
         }
+        Boolean bf = false;
+        if (bf) {
+            Bill b = new Bill();
+            b.getPaymentMethod();
+            b.getTotal();
+            b.getDiscount();
+            b.getNetTotal();
+            b.getVat();
+            b.getBillType();
+            b.getBillTime();
+            b.getInstitution();
+            b.getCreater();
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
+        billSummeries = new ArrayList<>();
+        Long i = 1l;
+        for (Object o : objs) {
+            BillSummery tbs = (BillSummery) o;
+            tbs.setKey(i);
+            billSummeries.add(tbs);
+            i++;
+        }
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+    }
+
+    public void processCashierPharmacySaleBillSummery() {
+        //For Auditing Purposes
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String url = request.getRequestURL().toString();
+        String ipAddress = request.getRemoteAddr();
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillTransactionTypeSummery()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Map m = new HashMap();
+        String j;
+        j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType, b.creater) "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.billTime between :fd and :td ";
+
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        if (user != null) {
+            j += " and b.creater=:wu ";
+            m.put("wu", user);
+        }
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.PharmacySaleWithoutStock);
+        billTypes.add(BillType.PharmacyWholeSale);
+
+        j += " and b.billType in :bts ";
+        m.put("bts", billTypes);
+
+        j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater";
+
         Boolean bf = false;
         if (bf) {
             Bill b = new Bill();
@@ -1024,8 +1115,6 @@ public class BillSearch implements Serializable {
         return true;
     }
 
-    
-    
     public void calculateRefundTotalForOpdBillForAjex() {
         calculateRefundTotalForOpdBill();
     }
@@ -1461,6 +1550,9 @@ public class BillSearch implements Serializable {
         rb.setPaymentMethod(paymentMethod);
         rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
         rb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
+        rb.setRefunded(Boolean.TRUE);
+        rb.setReferenceBill(bill);
+        rb.setBilledBill(bill);
         billController.save(rb);
         for (BillItem bi : rb.getBillItems()) {
             billController.saveBillItem(bi);
@@ -1468,6 +1560,10 @@ public class BillSearch implements Serializable {
                 billController.saveBillFee(bf);
             }
         }
+        bill.getForwardReferenceBills().add(rb);
+        bill.setRefunded(true);
+        bill.getRefundBills().add(rb);
+        billController.save(bill);
         return true;
     }
 

@@ -26,6 +26,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +73,7 @@ public class PurchaseOrderRequestController implements Serializable {
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     PharmacyCalculation pharmacyBillBean;
+    private PaymentMethodData paymentMethodData;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -84,6 +86,9 @@ public class PurchaseOrderRequestController implements Serializable {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
             BillItem tmp = getBillItems().remove(b.getSearialNo());
+            tmp.setRetired(true);
+            tmp.setRetirer(sessionController.getLoggedUser());
+            tmp.setRetiredAt(new Date());
             //System.err.println("Removed Item " + tmp.getItem().getName());
             calTotal();
         }
@@ -243,11 +248,11 @@ public class PurchaseOrderRequestController implements Serializable {
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
-            tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
+//            tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
             tmp.setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
             tmp.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(bi.getItem(), getSessionController().getDepartment()));
 
-            bi.setTmpQty(tmp.getQty());
+//            bi.setTmpQty(tmp.getQty());
             bi.setPharmaceuticalBillItem(tmp);
 
             getBillItems().add(bi);
@@ -279,6 +284,42 @@ public class PurchaseOrderRequestController implements Serializable {
             } else {
                 getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
+
+        }
+    }
+
+    public void finalizeBillComponent() {
+        for (BillItem b : getBillItems()) {
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setBill(getCurrentBill());
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            double qty = 0.0;
+            qty = b.getQty()+b.getPharmaceuticalBillItem().getFreeQty();
+            if (qty <= 0.0) {
+                b.setRetired(true);
+                b.setRetirer(sessionController.getLoggedUser());
+                b.setRetiredAt(new Date());
+                b.setRetireComments("Retired at Finalising PO");
+                
+            }
+
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
+            }
+
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+
 
         }
     }
@@ -347,8 +388,9 @@ public class PurchaseOrderRequestController implements Serializable {
 //            return;
 //        }
 
+        
         finalizeBill();
-        saveBillComponent();
+        finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
@@ -517,6 +559,14 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
 }

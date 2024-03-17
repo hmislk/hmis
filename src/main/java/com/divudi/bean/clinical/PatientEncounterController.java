@@ -51,7 +51,11 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PrescriptionFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.bean.lab.CommonReportItemController;
+import com.divudi.bean.lab.PatientReportController;
+import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.lab.PatientReport;
+import com.divudi.facade.PatientReportFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,6 +75,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -111,6 +116,9 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
+    @EJB
+    private PatientReportFacade prFacade;
+     
     /**
      * Controllers
      */
@@ -128,6 +136,10 @@ public class PatientEncounterController implements Serializable {
     DocumentTemplateController documentTemplateController;
     @Inject
     SearchController searchController;
+    @Inject
+    CommonReportItemController commonReportItemController;
+    @Inject
+    private PatientReportController patientReportController;
 
     /**
      * Properties
@@ -173,6 +185,7 @@ public class PatientEncounterController implements Serializable {
     private ClinicalFindingValue encounterReferral;
     private ClinicalFindingValue encounterPrescreption;
     private ClinicalFindingValue encounterPlanOfAction;
+    private ClinicalFindingValue encounterInvestigationResult;
 
     private List<ClinicalFindingValue> encounterMedicines;
     private List<ClinicalFindingValue> encounterDiagnosticImages;
@@ -184,6 +197,12 @@ public class PatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> encounterPrescreptions;
     private List<ClinicalFindingValue> encounterFindingValues;
     private List<ClinicalFindingValue> encounterPlanOfActions;
+    private List<ClinicalFindingValue> encounterInvestigationResults;
+    
+    private PatientInvestigation currentPtIx;
+    private ClinicalFindingValue currentEIResult;
+    private PatientReport currentPatientReport;
+    private Investigation currentReportInvestigation;
 
     public List<ClinicalFindingValue> getEncounterPlanOfActions() {
         return encounterPlanOfActions;
@@ -697,6 +716,71 @@ public class PatientEncounterController implements Serializable {
         JsfUtil.addSuccessMessage("Investigation added");
 
     }
+    
+    public void createNewResultReport(ClinicalFindingValue pf , Investigation ix){
+        currentPtIx = createPatientInvestigation(pf ,ix);
+ 
+        patientReportController.setCurrentPtIx(currentPtIx);
+        patientReportController.createNewReport(currentPtIx);
+    }
+    
+    public void addEncounterInvestigationResults() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select a visit");
+            return;
+        }
+        if (encounterInvestigationResult == null) {
+            JsfUtil.addErrorMessage("Please select a test");
+            return;
+        }
+        if (encounterInvestigationResult.getItemValue() == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        System.out.println("encounterInvestigationResult.getItemValue() = " + encounterInvestigationResult.getItemValue());
+        if (encounterInvestigationResult.getId() == null) {
+            clinicalFindingValueFacade.create(encounterInvestigationResult);
+        } else {
+            clinicalFindingValueFacade.edit(encounterInvestigationResult);
+        }
+        current.getClinicalFindingValues().add(encounterInvestigationResult);
+        getFacade().edit(current);
+
+        getEncounterFindingValues().add(encounterInvestigationResult);
+        setEncounterInvestigationResults(fillEncounterInvestigationResults(current));
+
+        encounterInvestigationResult = null;
+
+        JsfUtil.addSuccessMessage("Investigation Result added");
+
+    }
+    
+    public PatientInvestigation createPatientInvestigation (ClinicalFindingValue pf , Investigation ix){
+        PatientInvestigation pi = new PatientInvestigation();
+        if(pf.getClinicalFindingValueType() != ClinicalFindingValueType.VisitInvestigationResult ){
+            return pi;
+        }
+        pi.setCreatedAt(Calendar.getInstance().getTime());
+        pi.setCreater(sessionController.getLoggedUser());
+        pi.setApproved(Boolean.FALSE);
+        pi.setCancelled(Boolean.FALSE);
+        pi.setCollected(Boolean.TRUE);
+        pi.setDataEntered(Boolean.FALSE);
+        pi.setInvestigation(ix);
+        pi.setOutsourced(Boolean.FALSE);
+        pi.setEncounter(pf.getEncounter());
+        pi.setPatient(pf.getPatient());
+        pi.setPerformed(Boolean.FALSE);
+        pi.setPrinted(Boolean.FALSE);
+        pi.setPrinted(Boolean.FALSE);
+        pi.setReceived(Boolean.TRUE);
+        pi.setRetired(false);
+          if (pi.getId() == null) {
+            getPiFacade().create(pi);
+        }
+        
+        return pi;
+    }
 
     public void addDx() {
         if (diagnosis == null) {
@@ -1163,6 +1247,8 @@ public class PatientEncounterController implements Serializable {
         String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
+        String nic = e.getPatient().getPerson().getNic()!= null ? e.getPatient().getPerson().getNic() : "";
+        String phn = e.getPatient().getPhn()!= null ? e.getPatient().getPhn() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
@@ -1293,7 +1379,11 @@ public class PatientEncounterController implements Serializable {
                 .replace("{bp}", bp)
                 .replace("{pr}",pulseRate)
                 .replace("{pfr}",pfr)
-                .replace("{sat}", saturation);
+                .replace("{sat}", saturation)
+                .replace("{patient_name}", name)
+                .replace("{patient_age}", age)
+                .replace("{patient_phn_number}", phn)
+                .replace("{patient_nic}", nic);
         return output;
 
     }
@@ -2596,6 +2686,12 @@ public class PatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigation);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
+    
+    private List<ClinicalFindingValue> fillEncounterInvestigationResults(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigationResult);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
 
     private List<ClinicalFindingValue> fillEncounterProcedures(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
@@ -2903,6 +2999,93 @@ public class PatientEncounterController implements Serializable {
     public void setSelectedDocumentTemplate(DocumentTemplate selectedDocumentTemplate) {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
+
+    public ClinicalFindingValue getEncounterInvestigationResult() {
+        if (encounterInvestigationResult == null) {
+            encounterInvestigationResult = new ClinicalFindingValue();
+            encounterInvestigationResult.setEncounter(current);
+            encounterInvestigationResult.setClinicalFindingValueType(ClinicalFindingValueType.VisitInvestigationResult);
+            if (current != null) {
+                encounterInvestigationResult.setPatient(current.getPatient());
+            }
+            if (current.getPatient() != null) {
+                encounterInvestigationResult.setPerson(current.getPatient().getPerson());
+            }
+        }
+        return encounterInvestigationResult;
+    }
+
+    public void setEncounterInvestigationResult(ClinicalFindingValue encounterInvestigationResult) {
+        this.encounterInvestigationResult = encounterInvestigationResult;
+    }
+
+    public List<ClinicalFindingValue> getEncounterInvestigationResults() {
+        return encounterInvestigationResults;
+    }
+
+    public void setEncounterInvestigationResults(List<ClinicalFindingValue> encounterInvestigationResults) {
+        this.encounterInvestigationResults = encounterInvestigationResults;
+    }
+
+    public PatientInvestigation getCurrentPtIx() {
+        return currentPtIx;
+    }
+
+    public void setCurrentPtIx(PatientInvestigation currentPtIx) {
+        if (currentPtIx == null) {
+            if (currentPatientReport != null) {
+                currentPtIx = currentPatientReport.getPatientInvestigation();
+            }
+
+        }
+        this.currentPtIx = currentPtIx;
+    }
+
+    public PatientReport getCurrentPatientReport() {
+        return currentPatientReport;
+    }
+
+    public void setCurrentPatientReport(PatientReport currentPatientReport) {
+        this.currentPatientReport = currentPatientReport;
+    }
+
+   
+    public CommonReportItemController getCommonReportItemController() {
+        return commonReportItemController;
+    }
+
+    public void setCommonReportItemController(CommonReportItemController commonReportItemController) {
+        this.commonReportItemController = commonReportItemController;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public void setPatientReportController(PatientReportController patientReportController) {
+        this.patientReportController = patientReportController;
+    }
+
+    public Investigation getCurrentReportInvestigation() {
+        return currentReportInvestigation;
+    }
+
+    public void setCurrentReportInvestigation(Investigation currentReportInvestigation) {
+        this.currentReportInvestigation = currentReportInvestigation;
+    }
+
+    public ClinicalFindingValue getCurrentEIResult() {
+        if(currentEIResult == null){
+            currentEIResult = getEncounterInvestigationResult();
+        }
+        return currentEIResult;
+    }
+
+    public void setCurrentEIResult(ClinicalFindingValue currentEIResult) {
+        this.currentEIResult = currentEIResult;
+    }
+    
+    
 
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {

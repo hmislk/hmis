@@ -20,7 +20,7 @@
 
                 <p:panelGrid columns="2" >
                     <p:outputLabel value="First Registered" ></p:outputLabel>
-                    <p:outputLabel value="#{patientEncounterController.current.createdAt}">
+                    <p:outputLabel value="#{patientController.current.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                     </p:outputLabel>
                     <p:outputLabel value="Last Visit" ></p:outputLabel>

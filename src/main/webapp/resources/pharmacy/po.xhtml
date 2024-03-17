@@ -4,19 +4,21 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="controller" />
         <cc:attribute name="reprint" />
+        <cc:attribute name="Canceled" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class=" noBorder summeryBorder" >
+        <div style="width: 212mm;">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.institution.name}"/>
@@ -42,121 +44,92 @@
                 <h:outputLabel value="Purchase Order" style="text-decoration: underline;"/>
                 <br />
                 <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Canceled***" rendered="#{cc.attrs.Canceled eq true}" style="font-size: 18px;"/>
             </div>
 
-            <div  >
+            <div  class="row">
+                <div class="col-6">
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Supplier Name " />
+                        <h:outputLabel value=" : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"   /> 
+                        <h:outputLabel value="P.O. No"/>
+                        <h:outputLabel value=" : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                        <h:outputLabel value="Payment Type "/>
+                        <h:outputLabel value=" : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                    </h:panelGrid>
 
-
-                <h:panelGrid columns="3" class="my-2 w-50">
-                    <h:outputLabel value="Supplier Name "/>
-                    <h:outputLabel value=" : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"   /> 
-                    <h:outputLabel value="P.O. No"/>
-                    <h:outputLabel value=" : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
-                    <h:outputLabel value="Payment Type "/>
-                    <h:outputLabel value=" : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
-                    <h:outputLabel value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                    <h:outputLabel value=" : " rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                    <h:outputLabel value="P.O. Date "/>
-                    <h:outputLabel value=" : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                    </h:outputLabel>
-                    <h:outputLabel value="P.O. Time "/>
-                    <h:outputLabel value=" : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                    </h:outputLabel>
-                </h:panelGrid>
+                </div>
+                <div class="col-6">
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                        <h:outputLabel value=" : " rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                        <h:outputLabel value="P.O. Date "/>
+                        <h:outputLabel value=" : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+                        <h:outputLabel value="P.O. Time "/>
+                        <h:outputLabel value=" : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </div>
 
                 <!--</h:panelGrid>-->
             </div>
 
-            <p:spacer height="30"/>
+            <p:spacer height="10"/>
 
             <div >
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder" value="#{cc.attrs.bill.billItems}" var="bip"  >
+                <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
+                            <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
+                            <tr>
+                                <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
+                                <td style="text-align: left; min-width: 400px; border: 1px solid black;">#{bip.item.name}</td>
+                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                        <f:convertNumber />
+                                    </h:outputText>
+                                </td>
+                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber />
+                                    </h:outputText>
+                                </td>
+                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate * bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,###.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
 
-                    <p:column 
-                        style="width: 30px!important; text-align: right!important; padding-right: 5px;">
-                        <f:facet name="header">
-                            <h:outputLabel value="No"/>
-                        </f:facet>
-                        <h:outputLabel value="#{rowIndex+1}"/>
-                    </p:column>
-
-                    <p:column style="text-align: left!important; min-width: 400px;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Item Name"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.item.name}"/>
-                    </p:column>
-                    
-                    <p:column 
-                        style="width: 300px!important; text-align: right!important; padding-right: 50px;"
-                        rendered="false">
-                        <f:facet name="header">
-                            <h:outputLabel value="Code"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.item.code}"/>
-                    </p:column>
-                    
-                    <p:column style="width: 100px!important; text-align: right!important; padding-right: 5px;" >
-                        <f:facet name="header">
-                            <h:outputLabel value="P. Rate"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-                    
-
-                    <p:column  style="width: 100px!important; text-align: right!important; padding-right: 5px;" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Free QTY"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
-                            <f:convertNumber integerOnly="true"/>
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column  style="width: 100px!important; text-align: right!important; padding-right: 5px;">
-                        <f:facet name="header">
-                            <h:outputLabel value="QTY"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber integerOnly="true"/>
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="Total">
-                             </h:outputLabel>
-                         </f:facet>
-                    </p:column>
-                    
-                     <p:column  style="width: 100px!important; text-align: right!important; padding-right: 5px;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Total" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber pattern="#,###.00" />
-                        </h:outputLabel>
-                         <f:facet name="footer">
-                             <h:outputLabel value="#{cc.attrs.controller.aprovedBill.netTotal}" rendered="#{cc.attrs.reprint ne true}">
-                                  <f:convertNumber pattern="#,###.00" />
-                             </h:outputLabel>
-                             <h:outputLabel value="#{cc.attrs.bill.referenceBill.total}" rendered="#{cc.attrs.reprint eq true}">
-                                  <f:convertNumber pattern="#,###.00" />
-                             </h:outputLabel>
-                         </f:facet>
-                    </p:column>
-
-                </p:dataTable>
             </div>
 
-            <div class="preparedBy" style="padding: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
+            <div class="preparedBy" style="padding-left: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
                 <h:outputLabel value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
 
             </div>

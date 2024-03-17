@@ -478,6 +478,12 @@ public class PharmacyBillSearch implements Serializable {
         bill.setTransTotalSaleValue(tmp);
 
     }
+    
+    
+    public String navigateToViewPharmacyGrn(){
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true;";
+    }
+    
 
     public String navigateToViewPurchaseOrder() {
         if (bill == null) {
@@ -777,7 +783,7 @@ public class PharmacyBillSearch implements Serializable {
                 + " b.referenceBill=:ref and b.referenceBill.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", BillType.PharmacyOrder);
         List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {

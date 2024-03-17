@@ -8,14 +8,41 @@
 
     <ui:define name="content">        
         <h:form>
-            <p:panel id="phoneView" styleClass="noBorder summeryBorder">
+            <p:panel styleClass="noBorder summeryBorder">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h:outputText value="Channel Phone View" />
+                        <div class="d-flex align-items-center">
 
-                <p:commandButton value="Print" ajax="fasle" action="#" styleClass="noPrintButton">
-                    <p:printer target="phoneView"/>           
-                </p:commandButton>
-                <p:commandButton ajax="false" action="/channel/channel_booking" value="Back" styleClass="noPrintButton"></p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                class="ui-button-secondary"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{bookingController.navigateBackToBookings()}" 
+                                value="Back to Channel Booking" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false"
+                                class="ui-button-secondary mx-1"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{bookingController.navigateToViewSessionData()}" 
+                                value="Back to Sesion Data" >
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+                <div class="d-flex justify-content-end gap-2 mb-4">
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="fasle" 
+                        icon="fa fa-print"
+                        class="ui-button-info"
+                        action="#">
+                        <p:printer target="phoneView"/>
+                    </p:commandButton>
 
-                <p:dataTable  value="#{channelReportController.nurseViewSessions}" var="bs">
+                </div>
+                <p:dataTable  value="#{channelReportController.billSessionsNurse}" var="bs" id="phoneView" style="font-size: 10pt">
                     <f:facet name="header">
                         <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>

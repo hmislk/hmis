@@ -36,8 +36,7 @@
                                     action="#{saleReturnController.settle}"
                                     icon="fa-solid fa-rotate-left"
                                     ajax="false"
-                                    class="w-25"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}">
+                                    class="w-25">
                                 </p:commandButton>
 
                             </div>
@@ -82,7 +81,7 @@
 
                         </p:column>  
 
-                        <p:column headerText="Ballance Qty in Unit" style="width:25px!important;"> 
+                        <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
                             <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
                         </p:column>  
 

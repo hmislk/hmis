@@ -294,6 +294,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAmp() {
+        ampController.setItems(null);
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
@@ -1370,6 +1371,7 @@ public class PharmacyController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyBhtPre);
         bts.add(BillType.PharmacyPre);
+        bts.add(BillType.PharmacyTransferReceive);
         return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
     }
 

@@ -119,6 +119,7 @@ public class GrnController implements Serializable {
         pos = null;
         printPreview = false;
         billItems = null;
+        difference = 0;
         createGrn();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
@@ -214,7 +215,7 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        if (insTotal == 0) {
+        if (insTotal == 0 && difference != 0) {
             JsfUtil.addErrorMessage("Fill the invoice Total");
             return;
         }
@@ -238,7 +239,7 @@ public class GrnController implements Serializable {
         Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
 
         for (BillItem i : getBillItems()) {
-            if (i.getTmpQty() == 0.0) {
+            if (i.getTmpQty() == 0.0 && i.getTmpFreeQty() == 0.0) {
                 continue;
             }
 
@@ -395,26 +396,30 @@ public class GrnController implements Serializable {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
             double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
 
-            if (remains > 0) {
+            if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
                 bi.setSearialNo(getBillItems().size());
                 bi.setItem(i.getBillItem().getItem());
                 bi.setReferanceBillItem(i.getBillItem());
                 bi.setQty(remains);
+//                bi.setFreeQty(remainFreeQty);
                 bi.setTmpQty(remains);
+                bi.setTmpFreeQty(remainFreeQty);
                 //Set Suggession
 //                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
 
                 PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
+                double tmpFreeQty = remainFreeQty;
 
                 ph.setQty(tmpQty);
                 ph.setQtyInUnit((double) tmpQty);
 
-                ph.setFreeQty(i.getFreeQty());
-                ph.setFreeQtyInUnit(i.getFreeQty());
+                ph.setFreeQtyInUnit((double) tmpFreeQty);
+                ph.setFreeQty((double) tmpFreeQty);
 
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
@@ -422,7 +427,6 @@ public class GrnController implements Serializable {
                 ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-                ph.setFreeQty(i.getFreeQty());
 
                 bi.setPharmaceuticalBillItem(ph);
 
@@ -505,7 +509,9 @@ public class GrnController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
+        setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
+        double remainsFreeQuantity = getPharmacyCalculation().getRemainingFreeQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
 //        System.err.println("2 " + tmp.getQty());
@@ -514,6 +520,11 @@ public class GrnController implements Serializable {
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
             JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
+        }
+        
+        if (remainsFreeQuantity < tmp.getPharmaceuticalBillItem().getFreeQtyInUnit()) {
+            tmp.setTmpFreeQty(remainsFreeQuantity);
+            JsfUtil.addErrorMessage("You cant Change Free Qty than Remaining free qty");
         }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
