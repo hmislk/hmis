@@ -1059,11 +1059,11 @@
 
                                     <div class="card m-1 p-1" >
                                         <div class="card-header" >
-                                            <h4>Past Visits</h4>
+                                            <h:outputText value="Past Visits" style="font-size: 16px; font-weight: bold;"/>
                                         </div>
                                         <div class="card-body" >
                                             <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                                <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
+                                                <p:column sortBy="#{visit.encounterDate}" filterMatchMode="date" >
                                                     <f:facet name="header">
                                                         <h:outputText value="Date / Time" />
                                                     </f:facet>

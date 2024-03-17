@@ -255,6 +255,12 @@ public class PharmacyPurchaseController implements Serializable {
         billItems = null;
     }
 
+    public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill(){
+        makeNull();
+        getBill();
+        return "/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true";
+    }
+    
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
 
