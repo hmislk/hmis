@@ -15,7 +15,7 @@
                 </p:commandButton>
                 <p:commandButton ajax="false" action="/channel/channel_booking" value="Back" styleClass="noPrintButton"></p:commandButton>
 
-                <p:dataTable  value="#{channelReportController.billSessionsNurse}" var="bs">
+                <p:dataTable  value="#{channelReportController.nurseViewSessions}" var="bs">
                     <f:facet name="header">
                         <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
