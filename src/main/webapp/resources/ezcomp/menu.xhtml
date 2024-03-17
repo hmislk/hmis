@@ -483,11 +483,10 @@
                                      value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleWholeSaleAddToStock')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true"  
+                            action="#{pharmacyPurchaseController.navigateToAddNewPharmacyWholesaleDirectPurchaseBill}"  
                             value="Wholesale Purchase" 
                             icon="fas fa-balance-scale"
-                            rendered="#{webUserController.hasPrivilege('PharmacyWholeSalePurchase')}" 
-                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem> 
+                            rendered="#{webUserController.hasPrivilege('PharmacyWholeSalePurchase')}" ></p:menuitem> 
                     </p:submenu>
 
                     <p:submenu label="Inpatient Medication Management" icon="fas fa-procedures" rendered="#{webUserController.hasPrivilege('InpatientMedicationManagementMenue')}">
