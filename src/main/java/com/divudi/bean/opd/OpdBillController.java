@@ -1,6 +1,6 @@
-
 package com.divudi.bean.opd;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.hr.WorkingTimeController;
@@ -170,6 +170,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private AuditEventController auditEventController;
     @Inject
     WorkingTimeController workingTimeController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Class Variables
      */
@@ -1963,9 +1965,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return true;
             }
         }
-        
-         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
-            if (getPatient().getPerson().getArea()== null) {
+
+        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
+            if (getPatient().getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please Select Pataient Area");
                 return true;
             }
@@ -2597,14 +2599,30 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToNewOpdBill() {
-        clearBillItemValues();
-        clearBillValues();
-        paymentMethodData = null;
-        paymentScheme = null;
-        paymentMethod = PaymentMethod.Cash;
-        collectingCentreBillController.setCollectingCentre(null);
-
-        return "/opd/opd_bill";
+        if (sessionController.getCurrentPreference().isOpdBillingAftershiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                System.out.println("null");
+                clearBillItemValues();
+                clearBillValues();
+                paymentMethodData = null;
+                paymentScheme = null;
+                paymentMethod = PaymentMethod.Cash;
+                collectingCentreBillController.setCollectingCentre(null);
+                return "/opd/opd_bill";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=false";
+            }
+        } else {
+            clearBillItemValues();
+            clearBillValues();
+            paymentMethodData = null;
+            paymentScheme = null;
+            paymentMethod = PaymentMethod.Cash;
+            collectingCentreBillController.setCollectingCentre(null);
+            return "/opd/opd_bill";
+        }
     }
 
     public String navigateToNewOpdBill(Patient pt) {
