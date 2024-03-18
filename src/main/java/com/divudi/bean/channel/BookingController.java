@@ -290,6 +290,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToPhoneView() {
         if (preSet()) {
+            getChannelReportController().fillNurseView();
             return "/channel/channel_phone_view?faces-redirect=true";
         } else {
             return "";

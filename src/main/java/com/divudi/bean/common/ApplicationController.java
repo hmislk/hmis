@@ -135,10 +135,16 @@ public class ApplicationController {
     }
 
     public void removeLoggins(SessionController sc) {
-        Logins login = sc.getThisLogin();
-        //////// // System.out.println("sessions logged before removing is " + getLoggins().size());
-        loggins.remove(login);
-//        sessionControllers.remove(sc);
+        try {
+            Logins login = sc.getThisLogin();
+            if(login==null){
+                System.err.println("No Login has create for this session. Need to debug the Login session recording");
+                return;
+            }
+            loggins.remove(login);
+        } catch (Exception e) {
+            System.err.println("e = " + e);
+        }
     }
 
     /**
