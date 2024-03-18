@@ -17,10 +17,10 @@
             <p:panel class="mx-1">
                 <f:facet name="header">
                     <i class="fa-solid fa-gears"></i>
-                    <p:outputLabel value="Manage Admission Type Items and Fees" class="m-1"/>
+                    <p:outputLabel value="Manage Admission Type Items" class="m-1"/>
                 </f:facet>
 
-                <p:panelGrid columns="3" >
+                <p:panelGrid columns="3" class="w-100">
                     <p:outputLabel value="Admission Type" ></p:outputLabel>
                     <p:selectOneMenu
                         id="lstSelect" 
@@ -28,14 +28,13 @@
                         filter="true"
                         class="form-control mt-2 h-100"> 
                         <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
-                        <f:ajax render="gpDetail" execute="lstSelect"></f:ajax>
                     </p:selectOneMenu>
                     <p:commandButton 
                         id="btnFill" 
-                        icon="fa fa-trash"
-                        class="w-25 mx-2 ui-button-danger"
+                        icon="fa fa-arrow-down"
+                        class="m-1 ui-button-success"
                         action="#{admissionTypeController.fillCategoryItems()}"  
-                        value="Delete"  >
+                        value="Fill"  >
                     </p:commandButton>
 
 
@@ -60,18 +59,13 @@
                             </h:outputLabel>
                         </p:column>  
                     </p:selectOneMenu>
-
-                    <p:spacer></p:spacer>
-
-
-
                     <p:commandButton 
                         id="btnAdd" 
                         value="Add"
                         icon="fa fa-plus"
-                        class="w-25 ui-button-success"
+                        class="ui-button-success"
                         action="#{admissionTypeController.addItemForAdmissionType()}" 
-                        update="lstSelect gpDetail detailFocus" 
+                        update="lstSelect itm tbl" 
                         process="btnAdd" >
                     </p:commandButton>
 
@@ -79,7 +73,7 @@
                 </p:panelGrid>
 
 
-                <p:dataTable value="#{admissionTypeController.categoryItemList}" var="ci" rowKey="#{ci.id}" >
+                <p:dataTable id="tbl" value="#{admissionTypeController.categoryItemList}" var="ci" rowKey="#{ci.id}" >
                     <p:column headerText="Item" >
                         <h:outputText value="#{ci.item.name}" ></h:outputText>
                     </p:column>
