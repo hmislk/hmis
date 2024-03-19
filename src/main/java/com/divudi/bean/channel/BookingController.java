@@ -371,19 +371,32 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return alreadyExists;
     }
 
-    public String startNewChannelBooking() {
-        makeNull();
+    public String startNewChannelBookingForSelectingSpeciality() {
+        resetToStartFromSelectingSpeciality();
         printPreview = false;
         return navigateBackToBookings();
     }
 
-    public boolean errorCheck() {
-        boolean flag = false;
-//        if (serealNo == 0) {
-//            JsfUtil.addErrorMessage("Cant Add This Number");
-//            return true;
-//        }
+    public String startNewChannelBookingFormSelectingConsultant() {
+        resetToStartFromSelectingConsultant();
+        printPreview = false;
+        return navigateBackToBookings();
+    }
 
+    public String startNewChannelBookingForSelectingSession() {
+        resetToStartFromSameSessionInstance();
+        printPreview = false;
+        return navigateBackToBookings();
+    }
+
+    public String startNewChannelBookingForSameSession() {
+        resetToStartFromSameSessionInstance();
+        printPreview = false;
+        return navigateToAddBooking();
+    }
+
+    public boolean billSessionErrorPresent() {
+        boolean flag = false;
         for (BillSession bs : getBillSessions()) {
             if (selectedBillSession != null) {
                 if (!bs.equals(selectedBillSession)) {
@@ -428,24 +441,66 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Patient Updated");
     }
 
+    public boolean patientErrorPresent(Patient p) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
+            return true;
+        }
+
+        if (p.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Person. Not Saved");
+            return true;
+        }
+
+        if (p.getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return true;
+        }
+
+        if (p.getPerson().getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean paymentMethodErrorPresent() {
+        if (paymentMethod == null) {
+            return true;
+        }
+        return false;
+    }
+
     public void add() {
+        System.out.println("add started = " + new Date());
         errorText = "";
-        if (errorCheck()) {
+        if (billSessionErrorPresent()) {
+            JsfUtil.addErrorMessage("Session Selection Error. Please retry from beginning");
             settleSucessFully = false;
             return;
         }
-        System.out.println("Error check completed");
-        System.out.println("patient = " + patient);
-        System.out.println("patient = " + patient.getPerson());
+        if (patientErrorPresent(patient)) {
+            JsfUtil.addErrorMessage("Please enter patient details.");
+            settleSucessFully = false;
+            return;
+        }
+        if (paymentMethodErrorPresent()) {
+            JsfUtil.addErrorMessage("Please enter Psyment Details");
+            settleSucessFully = false;
+            return;
+        }
+        System.out.println("Error check completed" + new Date());
         patientController.save(patient);
-        System.out.println("Saving patient completed");
+        System.out.println("Saving patient completed" + new Date());
         printingBill = saveBilledBill();
-        System.out.println("Printing bill completed");
+        System.out.println("Printing bill completed" + new Date());
         printingBill = getBillFacade().find(printingBill.getId());
-        System.out.println("printing bill retrieved");
-        fillBillSessions();
-        generateSessions();
+        System.out.println("printing bill retrieved" + new Date());
+//        fillBillSessions();
+//        generateSessions();
         sendSmsAfterBooking();
+        System.out.println("SMS Sent" + new Date());
         settleSucessFully = true;
         printPreview = true;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
@@ -559,7 +614,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (errorCheckForSerial()) {
             return;
         }
-        if (errorCheck()) {
+        if (billSessionErrorPresent()) {
             return;
         }
 
@@ -573,14 +628,32 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Serial Updated");
     }
 
-    public void makeNull() {
+    public void resetToStartFromSelectingSpeciality() {
         speciality = null;
         staff = null;
-        selectedServiceSession = null;
-        /////////////////////
         sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
+        patient = new Patient();
+    }
+
+    public void resetToStartFromSelectingConsultant() {
+        staff = null;
+        sessionInstances = null;
+        billSessions = null;
+        sessionStartingDate = null;
+        patient = new Patient();
+    }
+
+    public void resetToStartFromSelectingSessionInstance() {
+        sessionInstances = null;
+        billSessions = null;
+        sessionStartingDate = null;
+        patient = new Patient();
+    }
+
+    public void resetToStartFromSameSessionInstance() {
+        patient = new Patient();
     }
 
     public List<Staff> completeStaff(String query) {
@@ -1323,23 +1396,27 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private Bill saveBilledBill() {
+        System.out.println("saveBilledBill started at " + new Date());
         Bill savingBill = createBill();
+        System.out.println("saveBilledBill complete at " + new Date());
         BillItem savingBillItem = createBillItem(savingBill);
+        System.out.println("save Bill Item completed at " + new Date());
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem);
-
+        System.out.println("save Bill Session completed at " + new Date());
         List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
+        System.out.println("save Bill Fees completed at " + new Date());
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
 
         getBillItemFacade().edit(savingBillItem);
 
-        //Update Bill Session
+        System.out.println("save Bill Item Edit completed at " + new Date());
         savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
         savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
         savingBillItem.setBillSession(savingBillSession);
         getBillSessionFacade().edit(savingBillSession);
 
-        //Update Bill
+        System.out.println("save Bill Session Edit completed at " + new Date());
         savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
         savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
         savingBill.setSingleBillItem(savingBillItem);
@@ -1365,6 +1442,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         getBillFacade().edit(savingBill);
         getBillSessionFacade().edit(savingBillSession);
+        System.out.println("saving bill completed at " + new Date());
         return savingBill;
     }
 
@@ -1530,6 +1608,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private Bill createBill() {
+        System.out.println("create bill started = " + new Date());
         Bill bill = new BilledBill();
         bill.setStaff(getSelectedSessionInstance().getOriginatingSession().getStaff());
         bill.setToStaff(toStaff);
@@ -1568,24 +1647,26 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillType(BillType.ChannelCredit);
                 break;
         }
+        System.out.println("generate insId started = " + new Date());
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
 
-//        bill.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
-        String insId = generateBillNumberInsId(bill);
-
-        if (insId.equals("")) {
-            return null;
-        }
-        bill.setInsId(insId);
-
+        System.out.println("generate deptId started = " + new Date());
         String deptId = generateBillNumberDeptId(bill);
 
         if (deptId.equals("")) {
             return null;
         }
         bill.setDeptId(deptId);
+        bill.setInsId(deptId);
 
+        System.out.println("saving bill details started = " + new Date());
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
-            bill.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
+//            bill.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
             bill.setPaidAmount(getSelectedSessionInstance().getOriginatingSession().getTotal());
             bill.setPaidAt(new Date());
         }
@@ -1606,7 +1687,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
         }
-
+        System.out.println("create bill Ended = " + new Date());
         return bill;
     }
 
