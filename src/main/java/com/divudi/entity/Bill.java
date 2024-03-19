@@ -206,6 +206,7 @@ public class Bill implements Serializable {
     String insId;
     String catId;
     String sessionId;
+    @Deprecated
     String bookingId;
     String invoiceNumber;
     @Transient
@@ -1544,10 +1545,12 @@ public class Bill implements Serializable {
         this.billedBill = billedBill;
     }
 
+    @Deprecated
     public String getBookingId() {
         return bookingId;
     }
 
+    @Deprecated
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }

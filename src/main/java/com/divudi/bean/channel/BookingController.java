@@ -379,11 +379,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public boolean errorCheck() {
         boolean flag = false;
-//        if (serealNo == 0) {
-//            JsfUtil.addErrorMessage("Cant Add This Number");
-//            return true;
-//        }
-
         for (BillSession bs : getBillSessions()) {
             if (selectedBillSession != null) {
                 if (!bs.equals(selectedBillSession)) {
@@ -429,23 +424,23 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void add() {
+        System.out.println("add started = " + new Date());
         errorText = "";
         if (errorCheck()) {
             settleSucessFully = false;
             return;
         }
-        System.out.println("Error check completed");
-        System.out.println("patient = " + patient);
-        System.out.println("patient = " + patient.getPerson());
+        System.out.println("Error check completed" + new Date());
         patientController.save(patient);
-        System.out.println("Saving patient completed");
+        System.out.println("Saving patient completed" + new Date());
         printingBill = saveBilledBill();
-        System.out.println("Printing bill completed");
+        System.out.println("Printing bill completed" + new Date());
         printingBill = getBillFacade().find(printingBill.getId());
-        System.out.println("printing bill retrieved");
-        fillBillSessions();
-        generateSessions();
+        System.out.println("printing bill retrieved" + new Date());
+//        fillBillSessions();
+//        generateSessions();
         sendSmsAfterBooking();
+        System.out.println("SMS Sent" + new Date());
         settleSucessFully = true;
         printPreview = true;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
@@ -1323,23 +1318,27 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private Bill saveBilledBill() {
+        System.out.println("saveBilledBill started at " + new Date());
         Bill savingBill = createBill();
+        System.out.println("saveBilledBill complete at " + new Date());
         BillItem savingBillItem = createBillItem(savingBill);
+        System.out.println("save Bill Item completed at " + new Date());
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem);
-
+        System.out.println("save Bill Session completed at " + new Date());
         List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
+        System.out.println("save Bill Fees completed at " + new Date());
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
 
         getBillItemFacade().edit(savingBillItem);
 
-        //Update Bill Session
+        System.out.println("save Bill Item Edit completed at " + new Date());
         savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
         savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
         savingBillItem.setBillSession(savingBillSession);
         getBillSessionFacade().edit(savingBillSession);
 
-        //Update Bill
+        System.out.println("save Bill Session Edit completed at " + new Date());
         savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
         savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
         savingBill.setSingleBillItem(savingBillItem);
@@ -1365,6 +1364,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         getBillFacade().edit(savingBill);
         getBillSessionFacade().edit(savingBillSession);
+        System.out.println("saving bill completed at " + new Date());
         return savingBill;
     }
 
@@ -1530,6 +1530,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private Bill createBill() {
+        System.out.println("create bill started = " + new Date());
         Bill bill = new BilledBill();
         bill.setStaff(getSelectedSessionInstance().getOriginatingSession().getStaff());
         bill.setToStaff(toStaff);
@@ -1568,24 +1569,26 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillType(BillType.ChannelCredit);
                 break;
         }
+        System.out.println("generate insId started = " + new Date());
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
 
-//        bill.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
-        String insId = generateBillNumberInsId(bill);
-
-        if (insId.equals("")) {
-            return null;
-        }
-        bill.setInsId(insId);
-
+        System.out.println("generate deptId started = " + new Date());
         String deptId = generateBillNumberDeptId(bill);
 
         if (deptId.equals("")) {
             return null;
         }
         bill.setDeptId(deptId);
+        bill.setInsId(deptId);
 
+        System.out.println("saving bill details started = " + new Date());
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
-            bill.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
+//            bill.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
             bill.setPaidAmount(getSelectedSessionInstance().getOriginatingSession().getTotal());
             bill.setPaidAt(new Date());
         }
@@ -1606,7 +1609,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
         }
-
+        System.out.println("create bill Ended = " + new Date());
         return bill;
     }
 
