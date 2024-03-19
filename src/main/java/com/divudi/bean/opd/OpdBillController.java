@@ -1351,7 +1351,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
-        s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
+        if(getPatient().getPatientPhoneNumber()!=null){
+            s.setReceipientNumber(getPatient().getPatientPhoneNumber().toString());
+        }else{
+            s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
+        }
         String messageBody = smsMessage;
         s.setSendingMessage(messageBody);
         s.setSmsType(MessageType.OpdBillSettle);
