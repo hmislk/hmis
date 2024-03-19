@@ -33,7 +33,7 @@
                                     value="Back to Channel Booking" >
                                 </p:commandButton>
                                 <p:commandButton
-                                    action="#{bookingController.startNewChannelBooking}"
+                                    action="#{bookingController.startNewChannelBookingForAnotherSpeciality}"
                                     value="New Booking"
                                     class="ui-button-primary"
                                     icon="fas fa-plus"
@@ -419,45 +419,66 @@
 
             <p:panel  rendered="#{bookingController.printPreview}" header="Bill View">
                 <div class="row">
-                    <div class="d-flex gap-2">
-                        <p:commandButton 
-                            value="New Bill" 
-                            icon="fa fa-plus"
-                            class="ui-button-success"
-                            action="#{bookingController.startNewChannelBooking()}" 
-                            ajax="false">
-                        </p:commandButton>
+                    <div class="col-md-5">
+                        <p:panelGrid columns="1" >
+                            <p:commandButton 
+                                value="New Bill for Selecting a Speciality" 
+                                icon="fa fa-plus" 
+                                styleClass="ui-button-success" 
+                                action="#{bookingController.startNewChannelBookingForSelectingSpeciality()}" 
+                                ajax="false" />
+                            <p:commandButton 
+                                value="Start New Booking - Consultant" 
+                                icon="pi pi-user-plus" 
+                                styleClass="ui-button-info" 
+                                action="#{bookingController.startNewChannelBookingFormSelectingConsultant()}" 
+                                ajax="false" />
+                            <p:commandButton 
+                                value="Start New Booking - Session" 
+                                icon="pi pi-calendar-plus" 
+                                styleClass="ui-button-warning" 
+                                action="#{bookingController.startNewChannelBookingForSelectingSession()}" 
+                                ajax="false" />
+                            <p:commandButton 
+                                value="New Booking - Same Session" 
+                                icon="fa fa-redo" 
+                                styleClass="ui-button-danger" 
+                                action="#{bookingController.startNewChannelBookingForSameSession()}" 
+                                ajax="false" />
 
-                        <p:commandButton 
-                            value="Back" 
-                            action="#" 
-                            class="ui-button-secondary"
-                            ajax="false" 
-                            icon="fa fa-back"
-                            oncomplete="PF('dlgAdd').hide();"
-                            rendered="#{!bookingController.settleSucessFully}">
-                        </p:commandButton>
 
-                        <p:commandButton 
-                            value="Print" 
-                            ajax="false" 
-                            class="ui-button-info"
-                            icon="fa fa-print"
-                            action="#"
-                            disabled="#{bookingController.printingBill.balance ne 0.0 or !bookingController.settleSucessFully}">
-                            <p:printer 
-                                target="panelAddedBillPrint" >
-                            </p:printer>
-                        </p:commandButton>
+                            <p:commandButton 
+                                value="Back" 
+                                action="#" 
+                                class="ui-button-secondary"
+                                ajax="false" 
+                                icon="fa fa-back"
+                                oncomplete="PF('dlgAdd').hide();"
+                                rendered="#{!bookingController.settleSucessFully}">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                action="#"
+                                disabled="#{bookingController.printingBill.balance ne 0.0 or !bookingController.settleSucessFully}">
+                                <p:printer 
+                                    target="panelAddedBillPrint" >
+                                </p:printer>
+                            </p:commandButton>
+                        </p:panelGrid>
+
+
                     </div>
-                    <div class="d-flex justify-content-center">
+                    <div class="col-md-7">
                         <h:panelGroup 
                             id="panelAddedBillPrint" 
                             class=""
                             styleClass="noBorder"
                             rendered="#{bookingController.settleSucessFully}" >
-
-                            <ez:bmsChannelBill bill="#{bookingController.printingBill}"/>
+                            <ez:bmsChannelBill  bill="#{bookingController.printingBill}"/>
                         </h:panelGroup>
                     </div>
                 </div>

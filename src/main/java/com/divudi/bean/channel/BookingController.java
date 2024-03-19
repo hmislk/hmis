@@ -371,13 +371,31 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return alreadyExists;
     }
 
-    public String startNewChannelBooking() {
-        makeNull();
+    public String startNewChannelBookingForSelectingSpeciality() {
+        resetToStartFromSelectingSpeciality();
         printPreview = false;
         return navigateBackToBookings();
     }
 
-    public boolean errorCheck() {
+    public String startNewChannelBookingFormSelectingConsultant() {
+        resetToStartFromSelectingConsultant();
+        printPreview = false;
+        return navigateBackToBookings();
+    }
+
+    public String startNewChannelBookingForSelectingSession() {
+        resetToStartFromSameSessionInstance();
+        printPreview = false;
+        return navigateBackToBookings();
+    }
+
+    public String startNewChannelBookingForSameSession() {
+        resetToStartFromSameSessionInstance();
+        printPreview = false;
+        return navigateToAddBooking();
+    }
+
+    public boolean billSessionErrorPresent() {
         boolean flag = false;
         for (BillSession bs : getBillSessions()) {
             if (selectedBillSession != null) {
@@ -423,10 +441,52 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Patient Updated");
     }
 
+    public boolean patientErrorPresent(Patient p) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
+            return true;
+        }
+
+        if (p.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Person. Not Saved");
+            return true;
+        }
+
+        if (p.getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return true;
+        }
+
+        if (p.getPerson().getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean paymentMethodErrorPresent() {
+        if (paymentMethod == null) {
+            return true;
+        }
+        return false;
+    }
+
     public void add() {
         System.out.println("add started = " + new Date());
         errorText = "";
-        if (errorCheck()) {
+        if (billSessionErrorPresent()) {
+            JsfUtil.addErrorMessage("Session Selection Error. Please retry from beginning");
+            settleSucessFully = false;
+            return;
+        }
+        if (patientErrorPresent(patient)) {
+            JsfUtil.addErrorMessage("Please enter patient details.");
+            settleSucessFully = false;
+            return;
+        }
+        if (paymentMethodErrorPresent()) {
+            JsfUtil.addErrorMessage("Please enter Psyment Details");
             settleSucessFully = false;
             return;
         }
@@ -554,7 +614,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (errorCheckForSerial()) {
             return;
         }
-        if (errorCheck()) {
+        if (billSessionErrorPresent()) {
             return;
         }
 
@@ -568,14 +628,32 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Serial Updated");
     }
 
-    public void makeNull() {
+    public void resetToStartFromSelectingSpeciality() {
         speciality = null;
         staff = null;
-        selectedServiceSession = null;
-        /////////////////////
         sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
+        patient = new Patient();
+    }
+
+    public void resetToStartFromSelectingConsultant() {
+        staff = null;
+        sessionInstances = null;
+        billSessions = null;
+        sessionStartingDate = null;
+        patient = new Patient();
+    }
+
+    public void resetToStartFromSelectingSessionInstance() {
+        sessionInstances = null;
+        billSessions = null;
+        sessionStartingDate = null;
+        patient = new Patient();
+    }
+
+    public void resetToStartFromSameSessionInstance() {
+        patient = new Patient();
     }
 
     public List<Staff> completeStaff(String query) {
