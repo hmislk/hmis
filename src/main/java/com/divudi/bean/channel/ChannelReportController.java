@@ -3108,8 +3108,6 @@ public class ChannelReportController implements Serializable {
             String sql = "Select bs "
                     + " From BillSession bs "
                     + " where bs.retired=false "
-                    + " and bs.bill.cancelled=false "
-                    + " and bs.bill.refunded=false "
                     + " and bs.bill.billType in :tbs "
                     + " and bs.sessionInstance=:si"
                     + " and bs.sessionDate= :ssDate"

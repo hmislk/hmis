@@ -100,8 +100,9 @@
                     </p:column> 
 
                     <p:column headerText="C / R" style="text-align: center;" >
-                        <p:outputLabel value="CAN" rendered="#{bs.bill.cancelled eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
-                        <p:outputLabel value="REF" rendered="#{bs.bill.refunded eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                        
+                        <p:outputLabel value="CANCELLED" rendered="#{bs.bill.cancelled eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                        <p:outputLabel value="REFUNDED" rendered="#{bs.bill.refunded eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
                         <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
                     </p:column>
                     <p:column headerText="P/A" width="30px;">
@@ -121,10 +122,10 @@
                         <h:outputLabel value="#{bs.bill.staffFee}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.absent eq false and bs.serviceSession.originatingSession.refundable ne false}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
-                        <h:outputLabel value="#{bs.bill.staffFee+bs.bill.cancelledBill.staffFee}" rendered="#{bs.bill.cancelled eq true}">
+                        <h:outputLabel value="#{bs.bill.staffFee+bs.bill.billedBill.staffFee}" rendered="#{bs.bill.cancelled eq true}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
-                        <h:outputLabel value="#{bs.bill.staffFee+bs.bill.refundedBill.staffFee}" rendered="#{bs.bill.refunded eq true}">
+                        <h:outputLabel value="#{bs.bill.staffFee+bs.bill.billedBill.staffFee}" rendered="#{bs.bill.refunded eq true}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
                         <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or(bs.absent ne false and bs.serviceSession.originatingSession.refundable ne false)}" value="0.00"/>
@@ -142,10 +143,10 @@
                         <h:outputLabel value="#{bs.bill.netTotal}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.absent eq false and bs.serviceSession.originatingSession.refundable ne false}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
-                        <h:outputLabel value="#{bs.bill.netTotal+bs.bill.cancelledBill.netTotal}" rendered="#{bs.bill.cancelled eq true}">
+                        <h:outputLabel value="#{bs.bill.netTotal+bs.bill.billedBill.netTotal}" rendered="#{bs.bill.cancelled eq true}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
-                        <h:outputLabel value="#{bs.bill.netTotal+bs.bill.refundedBill.netTotal}" rendered="#{bs.bill.refunded eq true}">
+                        <h:outputLabel value="#{bs.bill.netTotal+bs.bill.billedBill.netTotal}" rendered="#{bs.bill.refunded eq true}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
                         <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or(bs.absent ne false and bs.serviceSession.originatingSession.refundable ne false)}" value="0.00"/>
