@@ -27,19 +27,10 @@
                             <div>
                                 <p:commandButton
                                     ajax="false"
-                                    class="ui-button-secondary"
+                                    class="ui-button-secondary mx-2"
                                     icon="fa-solid fa-arrow-left"
                                     action="#{bookingController.navigateBackToBookings()}"
                                     value="Back to Channel Booking" >
-                                </p:commandButton>
-                                <p:commandButton
-                                    id="btnAdd"
-                                    value="Add"
-                                    ajax="false"
-                                    update="gpThisBookingDetails"
-                                    class="ui-button-success mx-2"
-                                    icon="fas fa-plus"
-                                    action="#{bookingController.add}" >
                                 </p:commandButton>
                                 <p:commandButton
                                     action="#{bookingController.startNewChannelBooking}"
@@ -124,7 +115,7 @@
                                     <h:panelGrid id="pgNewBookingDetail" columns="2"  >
                                         <p:outputLabel value="Amount"/>
 
-                                        <h:panelGroup id="lblSessionTotal">
+                                        <h:panelGroup class="mx-2" id="lblSessionTotal">
                                             <p:outputLabel
                                                 value="#{bookingController.selectedSessionInstance.originatingSession.totalFfee}"
                                                 rendered="#{bookingController.foriegn}">
@@ -245,8 +236,18 @@
                                         <h:outputLabel value="Slip Date" id="slipLblDate" style="display: #{bookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
                                         <p:calendar  value="#{bookingController.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" id="date" style="display: #{bookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                         </p:calendar>
+                                        <h:outputLabel value="" />
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            value="Add"
+                                            ajax="false"
+                                            update="gpThisBookingDetails"
+                                            class="ui-button-success"
+                                            icon="fas fa-plus"
+                                            action="#{bookingController.add}" >
+                                        </p:commandButton>
                                     </h:panelGrid>
-                                    </h:panelGroup>
+                                </h:panelGroup>
                             </p:panel>
                         </div>
                     </div>
