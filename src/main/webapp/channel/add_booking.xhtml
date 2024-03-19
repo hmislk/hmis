@@ -48,63 +48,6 @@
                             <common:patient_details
                                 editable="true"
                                 controller="#{bookingController}"/>
-                        </div>
-                        <div class="col-6">
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fa-solid fa-calendar-plus"/>
-                                    <h:outputText class="mx-4" value="Booking Details"/>
-                                </f:facet>
-                                <h:panelGrid columns="3" class="w-100" >
-                                    <p:outputLabel value="Speciality" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.speciality.name}" ></p:outputLabel>
-                                    <p:outputLabel value="Consultant" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}" ></p:outputLabel>
-                                    <p:outputLabel value="Session" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.name}" ></p:outputLabel>
-                                    <p:outputLabel value="Date" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                    </p:outputLabel>
-                                    <p:outputLabel value="Time" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.sessionTime}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
-                                    </p:outputLabel>
-                                    <p:outputLabel value="Consultant Fee" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.channelStaffFee}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-                                    <p:outputLabel value="Hospital Fee" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.channelHosFee}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-
-                                    <p:outputLabel value="Total Fee" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.total}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
-
-                                    <p:outputLabel value="Session ID" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.id}" ></p:outputLabel>
-
-
-                                    <p:outputLabel value="Original Session ID" ></p:outputLabel>
-                                    <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.id}" ></p:outputLabel>
-
-                                </h:panelGrid>
-                            </p:panel>
-                        </div>
-                        <div class="col-6" >
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
@@ -117,7 +60,7 @@
 
                                         <h:panelGroup class="mx-2" id="lblSessionTotal">
                                             <p:outputLabel
-                                                value="#{bookingController.selectedSessionInstance.originatingSession.totalFfee}"
+                                                value="#{bookingController.selectedSessionInstance.originatingSession.totalForForeigner}"
                                                 rendered="#{bookingController.foriegn}">
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:outputLabel>
@@ -136,7 +79,7 @@
                                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl
                                                         creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank
-                                                        lblChequeDate ChequeDate bankSel :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} :#{p:resolveFirstComponentWithId('acSessions',view).clientId}" event="change" listener="#{bookingController.generateSessions}" />
+                                                        lblChequeDate ChequeDate bankSel :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}" event="change" listener="#{bookingController.generateSessions}" />
                                             </p:selectOneMenu>
                                             <h:outputScript>
                                                 $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
@@ -163,7 +106,7 @@
 
                                         <h:outputLabel/>
                                         <p:selectBooleanCheckbox id="f" value="#{bookingController.foriegn}" itemLabel="Foriegner">
-                                            <f:ajax event="change" execute="@this acSessions" render="lblSessionTotal"/>
+                                            <f:ajax event="change" execute="@this" render="lblSessionTotal panelBookingDetails"/>
                                         </p:selectBooleanCheckbox>
                                         <h:outputLabel id="agent" value="Agent"  style="display: #{bookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                         <p:autoComplete id="agent2" forceSelection="true" style="display: #{bookingController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
@@ -250,6 +193,82 @@
                                 </h:panelGroup>
                             </p:panel>
                         </div>
+                        <div class="col-6">
+                            <p:panel id="panelBookingDetails">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-calendar-plus"/>
+                                    <h:outputText class="mx-4" value="Booking Details"/>
+                                </f:facet>
+                                <p:panelGrid columns="2" class="w-100" >
+                                    <p:outputLabel value="Speciality" ></p:outputLabel>
+                                    
+                                    <p:outputLabel value="#{bookingController.speciality.name}" ></p:outputLabel>
+                                    <p:outputLabel value="Consultant" ></p:outputLabel>
+                                    
+                                    <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    <p:outputLabel value="Session" ></p:outputLabel>
+                                    
+                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.name}" ></p:outputLabel>
+                                    <p:outputLabel value="Date" ></p:outputLabel>
+                                    
+                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                    
+                                    <p:outputLabel value="Time" ></p:outputLabel>
+                                    <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.startingTime}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Total Fee" ></p:outputLabel>
+                                    
+                                    <h:panelGroup >
+                                        <p:outputLabel
+                                            rendered="#{!bookingController.foriegn}"
+                                            value="#{bookingController.selectedSessionInstance.originatingSession.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                        <p:outputLabel
+                                            rendered="#{bookingController.foriegn}"
+                                            value="#{bookingController.selectedSessionInstance.originatingSession.totalForForeigner}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </h:panelGroup>
+
+
+                                </p:panelGrid>
+
+                                <p:dataTable value="#{bookingController.filteredSelectedItemFees}" var="i" >
+                                    <p:column headerText="Name">
+                                        <h:outputLabel value="#{i.name}"/> 
+                                    </p:column>
+                                    <p:column headerText="Fee Type">
+                                        #{i.feeType.label}
+                                    </p:column>
+                                    <p:column headerText="For for">
+                                        <h:outputLabel rendered="#{i.speciality.name ne null}" value="#{i.speciality.name} - "></h:outputLabel>
+
+                                        <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
+
+                                        <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name} - "></h:outputLabel>
+
+                                        <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Local Fee" rendered="#{!bookingController.foriegn}">
+                                        <h:outputText value="#{i.fee}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Foriegn Fee" rendered="#{bookingController.foriegn}">
+                                        <h:outputText value="#{i.ffee}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+                        <div class="col-6" >
+
+                        </div>
                     </div>
                 </p:panel>
             </h:panelGroup>
@@ -274,7 +293,7 @@
                             oncomplete="PF('dlgAdd').hide();"
                             rendered="#{!bookingController.settleSucessFully}">
                         </p:commandButton>
-                        
+
                         <p:commandButton 
                             value="Print" 
                             ajax="false" 
@@ -293,7 +312,7 @@
                             class=""
                             styleClass="noBorder"
                             rendered="#{bookingController.settleSucessFully}" >
-                            
+
                             <ez:bmsChannelBill bill="#{bookingController.printingBill}"/>
                         </h:panelGroup>
                     </div>
