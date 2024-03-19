@@ -8,8 +8,11 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CategoryItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.CategoryItem;
+import com.divudi.entity.Item;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.AdmissionTypeFacade;
 import java.io.Serializable;
@@ -33,15 +36,34 @@ import javax.inject.Named;
 @SessionScoped
 public class AdmissionTypeController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CategoryItemController categoryItemController;
+    
     @EJB
     private AdmissionTypeFacade ejbFacade;
+    
+    
+    private static final long serialVersionUID = 1L;
+    
+    
     List<AdmissionType> selectedItems;
     private AdmissionType current;
+    private Item currentItem;
+    private List<CategoryItem> categoryItemList;
     private List<AdmissionType> items = null;
     String selectText = "";
+    
+    
+    
+    public String navigateToManageAdmissionTypes(){
+        return "/inward/inward_admission_type?faces-redirect=true;";
+    }
+    
+     public String navigateToManageAdmissionItemsAndFees(){
+        return "/inward/inward_admission_items_and_fees?faces-redirect=true;";
+    }
 
     public List<AdmissionType> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from AdmissionType c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -50,6 +72,22 @@ public class AdmissionTypeController implements Serializable {
 
     public void prepareAdd() {
         current = new AdmissionType();
+    }
+    
+    public void addItemForAdmissionType(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No Admission Type");
+            return;
+        }
+        if(currentItem==null){
+            JsfUtil.addErrorMessage("No Item");
+            return;
+        }
+        CategoryItem ci = new CategoryItem();
+        ci.setCategory(current);
+        ci.setItem(currentItem);
+        categoryItemController.save(ci);
+        JsfUtil.addSuccessMessage("Added");
     }
 
     public void setSelectedItems(List<AdmissionType> selectedItems) {
@@ -113,6 +151,10 @@ public class AdmissionTypeController implements Serializable {
         this.current = current;
     }
 
+    public void fillCategoryItems(){
+        categoryItemList = categoryItemController.fillCategoryItems(current);
+    }
+    
     public void delete() {
 
         if (getCurrent() != null) {
@@ -133,6 +175,8 @@ public class AdmissionTypeController implements Serializable {
     private AdmissionTypeFacade getFacade() {
         return ejbFacade;
     }
+    
+    
 
     public List<AdmissionType> getItems() {
         if (items == null) {
@@ -145,6 +189,24 @@ public class AdmissionTypeController implements Serializable {
         }
         return items;
     }
+
+    public Item getCurrentItem() {
+        return currentItem;
+    }
+
+    public void setCurrentItem(Item currentItem) {
+        this.currentItem = currentItem;
+    }
+
+    public List<CategoryItem> getCategoryItemList() {
+        return categoryItemList;
+    }
+
+    public void setCategoryItemList(List<CategoryItem> categoryItemList) {
+        this.categoryItemList = categoryItemList;
+    }
+    
+    
 
     /**
      *
