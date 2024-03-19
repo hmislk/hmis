@@ -135,6 +135,8 @@ public class Person implements Serializable {
     int serealNumber;
     @Transient
     private String smsNumber;
+    
+   
 
 //    @Inject
 //    SessionController SessionController;
