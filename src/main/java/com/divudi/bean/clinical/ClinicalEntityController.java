@@ -68,13 +68,25 @@ public class ClinicalEntityController implements Serializable {
         }
         return c;
     }
-    
-    public List<ClinicalEntity> getRaces(){
+
+    public List<ClinicalEntity> getRaces() {
         return listClinicalEntity(SymanticType.Race);
     }
-    
-    public List<ClinicalEntity> getEhnicity(){
+
+    public List<ClinicalEntity> getEhnicity() {
         return listClinicalEntity(SymanticType.Religion);
+    }
+
+    public List<ClinicalEntity> getOccupation() {
+        return listClinicalEntity(SymanticType.Employment);
+    }
+
+    public List<ClinicalEntity> getBloodGroup() {
+        return listClinicalEntity(SymanticType.Blood_Group);
+    }
+    
+    public List<ClinicalEntity> getCivilStatus() {
+        return listClinicalEntity(SymanticType.Civil_status);
     }
 
     public List<ClinicalEntity> getSelectedItems() {
