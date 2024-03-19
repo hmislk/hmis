@@ -62,6 +62,8 @@ public class PatientEncounter implements Serializable {
     @ManyToOne
     Person guardian;
     @ManyToOne
+    private Item guardianRelationshipToPatient;
+    @ManyToOne
     private PatientRoom currentPatientRoom;
     @ManyToOne
     private Item item;
@@ -1019,5 +1021,15 @@ public class PatientEncounter implements Serializable {
     public void setSaturation(Double saturation) {
         this.saturation = saturation;
     }
+
+    public Item getGuardianRelationshipToPatient() {
+        return guardianRelationshipToPatient;
+    }
+
+    public void setGuardianRelationshipToPatient(Item guardianRelationshipToPatient) {
+        this.guardianRelationshipToPatient = guardianRelationshipToPatient;
+    }
+    
+    
 
 }

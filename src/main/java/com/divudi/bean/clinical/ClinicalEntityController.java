@@ -88,6 +88,10 @@ public class ClinicalEntityController implements Serializable {
     public List<ClinicalEntity> getCivilStatus() {
         return listClinicalEntity(SymanticType.Civil_status);
     }
+    
+     public List<ClinicalEntity> getRelationships() {
+        return listClinicalEntity(SymanticType.Relationships);
+    }
 
     public List<ClinicalEntity> getSelectedItems() {
         Map m = new HashMap();
