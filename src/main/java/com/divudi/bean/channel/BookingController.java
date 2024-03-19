@@ -74,6 +74,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -170,7 +171,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private PaymentScheme paymentScheme;
     boolean settleSucessFully;
     Bill printingBill;
-    
+
     @EJB
     private SmsFacade smsFacade;
 
@@ -179,6 +180,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     @Deprecated
     private ServiceSession selectedServiceSession;
     private SessionInstance selectedSessionInstance;
+    private List<ItemFee> selectedItemFees;
     private BillSession selectedBillSession;
     @Deprecated
     private BillSession managingBillSession;
@@ -211,7 +213,27 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
     public String navigateToAddBooking() {
-        return "/channel/add_booking";
+        fillFees();
+        return "/channel/add_booking?faces-redirect=true";
+    }
+
+    public void fillFees() {
+        selectedItemFees = new ArrayList<>();
+        if (selectedSessionInstance == null) {
+            return;
+        }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            return;
+        }
+
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false "
+                + " and f.serviceSession=:ses "
+                + " order by f.id";
+        m.put("ses", selectedSessionInstance.getOriginatingSession());
+        selectedItemFees = itemFeeFacade.findByJpql(sql, m);
     }
 
     public String navigateToViewSessionData() {
@@ -2218,6 +2240,20 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
+    }
+
+    public List<ItemFee> getSelectedItemFees() {
+        return selectedItemFees;
+    }
+
+    public List<ItemFee> getFilteredSelectedItemFees() {
+        return selectedItemFees.stream()
+                .filter(i -> (foriegn ? i.getFfee() != 0 : i.getFee() != 0))
+                .collect(Collectors.toList());
+    }
+
+    public void setSelectedItemFees(List<ItemFee> selectedItemFees) {
+        this.selectedItemFees = selectedItemFees;
     }
 
 }
