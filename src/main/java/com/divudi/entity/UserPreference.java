@@ -235,8 +235,8 @@ public class UserPreference implements Serializable {
     
     @Lob
     private String smsTemplateForChannelBooking;
-
     private boolean opdSettleWithoutPatientArea;
+    private boolean opdBillingAftershiftStart;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1230,6 +1230,16 @@ public class UserPreference implements Serializable {
     public void setOpdSettleWithoutPatientArea(boolean opdSettleWithoutPatientArea) {
         this.opdSettleWithoutPatientArea = opdSettleWithoutPatientArea;
     }
+
+    public boolean isOpdBillingAftershiftStart() {
+        return opdBillingAftershiftStart;
+    }
+
+    public void setOpdBillingAftershiftStart(boolean opdBillingAftershiftStart) {
+        this.opdBillingAftershiftStart = opdBillingAftershiftStart;
+    }
+
+  
 
     
     

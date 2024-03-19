@@ -153,5 +153,12 @@ public enum SymanticType {
     Neoplastic_Process,
     Cell_or_Molecular_Dysfunction,
     Experimental_Model_of_Disease,
-    Injury_or_Poisoning,;
+    Injury_or_Poisoning,
+    Religion,
+    Race,
+    Employment,
+    Blood_Group,
+    Civil_status,
+    
+    ;
 }
