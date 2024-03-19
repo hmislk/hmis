@@ -230,6 +230,11 @@
                     <p:menuitem ajax="false" 
                                 action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
                                 value="Analytics" icon="fa fa-list-alt"></p:menuitem>
+                    <p:menuitem ajax="false"
+                                styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white' : ''}"
+                                rendered="#{webUserController.hasPrivilege('Opd') and sessionController.currentPreference.opdBillingAftershiftStart eq true}"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                                value="Financial Transaction Manager" icon="fa fa-list-alt"></p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">

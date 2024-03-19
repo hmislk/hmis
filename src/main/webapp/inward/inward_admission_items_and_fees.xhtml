@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+
+
+        <h:form>
+            <p:growl />
+
+
+            <p:panel class="mx-1">
+                <f:facet name="header">
+                    <i class="fa-solid fa-gears"></i>
+                    <p:outputLabel value="Manage Admission Type Items" class="m-1"/>
+                </f:facet>
+
+                <p:panelGrid columns="3" class="w-100">
+                    <p:outputLabel value="Admission Type" ></p:outputLabel>
+                    <p:selectOneMenu
+                        id="lstSelect" 
+                        value="#{admissionTypeController.current}" 
+                        filter="true"
+                        class="form-control mt-2 h-100"> 
+                        <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                    </p:selectOneMenu>
+                    <p:commandButton 
+                        id="btnFill" 
+                        icon="fa fa-arrow-down"
+                        class="m-1 ui-button-success"
+                        action="#{admissionTypeController.fillCategoryItems()}"  
+                        value="Fill"  >
+                    </p:commandButton>
+
+
+                    <p:outputLabel value="Item" ></p:outputLabel>
+                    <p:selectOneMenu value="#{admissionTypeController.items}" filter="true" var="t" id="itm" class="w-100" autoWidth="false">
+                        <f:selectItem itemLabel="Please select inward service"/>
+                        <f:selectItems 
+                            value="#{itemController.inwardItems}" 
+                            var="ix" 
+                            itemLabel="#{ix.name}" 
+                            itemValue="#{ix}" >
+                        </f:selectItems>
+                        <p:column>
+                            <h:outputLabel value="#{t.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{t.department.name}"/>
+                        </p:column>  
+                        <p:column>
+                            <h:outputLabel value="#{t.total}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>  
+                    </p:selectOneMenu>
+                    <p:commandButton 
+                        id="btnAdd" 
+                        value="Add"
+                        icon="fa fa-plus"
+                        class="ui-button-success"
+                        action="#{admissionTypeController.addItemForAdmissionType()}" 
+                        update="lstSelect itm tbl" 
+                        process="btnAdd" >
+                    </p:commandButton>
+
+
+                </p:panelGrid>
+
+
+                <p:dataTable id="tbl" value="#{admissionTypeController.categoryItemList}" var="ci" rowKey="#{ci.id}" >
+                    <p:column headerText="Item" >
+                        <h:outputText value="#{ci.item.name}" ></h:outputText>
+                    </p:column>
+                </p:dataTable>
+                
+            </p:panel>
+        </h:form>
+
+    </ui:define>
+</ui:composition>
