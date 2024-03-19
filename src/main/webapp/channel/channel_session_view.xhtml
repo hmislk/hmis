@@ -18,7 +18,7 @@
                                 value="Refresh"
                                 icon="fas fa-refresh" 
                                 class="ui-button-warning"
-                                action="#{channelReportController.fillSessions()}">
+                                action="#{channelReportController.fillNurseView()}">
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
@@ -49,7 +49,7 @@
 
                 </div>
 
-                <p:dataTable value="#{channelReportController.billSessionsNurse}" var="bs" id="sessionView">
+                <p:dataTable value="#{channelReportController.nurseViewSessions}" var="bs" id="sessionView">
                     <f:facet name="header">
                         <div style="text-align: center;">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
@@ -60,26 +60,26 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <p:outputLabel value="Consultant"/>
-                            <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/>
+                            <p:outputLabel value="Consultant : "/>
+                            <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <p:outputLabel value="Session Name"/>
-                            <h:outputLabel value="#{channelReportController.serviceSession.name}" />
+                            <p:outputLabel value="Session Name : "/>
+                            <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
                         </div>
 
                         <div class="d-flex gap-2">
-                            <p:outputLabel value="Date"/>
-                            <h:outputLabel value="#{channelReportController.serviceSession.sessionAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                            <p:outputLabel value="Date : "/>
+                            <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy"/>
                             </h:outputLabel>
                         </div>
 
                     </f:facet>
 
                     <p:column headerText="No">#{bs.serialNo}</p:column>
-                    <p:column headerText="Booking Id">#{bs.bill.bookingId}</p:column>
+                    <p:column headerText="Booking ID">#{bs.bill.bookingId}</p:column>
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Time">
                         <h:outputLabel value="#{bs.sessionTime}">
