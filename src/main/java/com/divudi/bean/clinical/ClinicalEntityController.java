@@ -35,97 +35,59 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class PlanController implements Serializable {
+public class ClinicalEntityController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
     private ClinicalEntityFacade ejbFacade;
-    List<ClinicalEntity > selectedItems;
+    List<ClinicalEntity> selectedItems;
     private ClinicalEntity current;
     private List<ClinicalEntity> items = null;
     String selectText = "";
 
-    
-    public String navigateToManagePlans(){
-        return "/emr/admin/plans";
-    }
-    
-    public String navigateToManageClinicaEntities(){
+    public String navigateToManageClinicalEntities() {
         return "/emr/admin/clinical_entities";
     }
-    
-    
-    public void downloadAsExcel() {
-        getItems();
-        try {
-            // Create a new Excel workbook
-            Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
 
-            // Create a header row
-            Row headerRow = sheet.createRow(0);
-            headerRow.createCell(0).setCellValue("No");
-            headerRow.createCell(1).setCellValue("Name");
-            // Add more columns as needed
-
-            // Populate the data rows
-            int rowNum = 1;
-            for (ClinicalEntity sym : items) {
-                Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
-                row.createCell(1).setCellValue(sym.getName());
-            }
-
-            // Set the response headers to initiate the download
-            FacesContext context = FacesContext.getCurrentInstance();
-            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"procedures.xlsx\"");
-
-            // Write the workbook to the response output stream
-            workbook.write(response.getOutputStream());
-            workbook.close();
-            context.responseComplete();
-        } catch (Exception e) {
-            // Handle any exceptions
-            e.printStackTrace();
+    public List<ClinicalEntity> listClinicalEntity(SymanticType type) {
+        List<ClinicalEntity> c;
+        Map m = new HashMap();
+        m.put("t", type);
+        String sql;
+        sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t order by c.name";
+        c = getFacade().findByJpql(sql, m, 10);
+        if (c == null) {
+            c = new ArrayList<>();
         }
+        return c;
     }
     
-//    public List<ClinicalEntity> completeDiagnosis(String qry) {
-//        List<ClinicalEntity> c;
-//        Map m = new HashMap();
-//        m.put("t", SymanticType.Preventive_Procedure);
-//        m.put("n", "%" + qry.toUpperCase() + "%");
-//        String sql;
-//        sql="select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-//        c = getFacade().findByJpql(sql,m,10);
-//        if (c == null) {
-//            c = new ArrayList<>();
-//        }
-//        return c;
-//    }
+    public List<ClinicalEntity> getRaces(){
+        return listClinicalEntity(SymanticType.Race);
+    }
+    
+    public List<ClinicalEntity> getEhnicity(){
+        return listClinicalEntity(SymanticType.Religion);
+    }
 
     public List<ClinicalEntity> getSelectedItems() {
         Map m = new HashMap();
-        m.put("t", SymanticType.Preventive_Procedure);
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
-        sql="select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-        selectedItems = getFacade().findByJpql(sql,m);
+        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n order by c.name";
+        selectedItems = getFacade().findByJpql(sql, m);
         return selectedItems;
     }
 
     public void prepareAdd() {
         current = new ClinicalEntity();
-        current.setSymanticType(SymanticType.Preventive_Procedure);
         //TODO:
     }
 
@@ -142,7 +104,6 @@ public class PlanController implements Serializable {
     }
 
     public void saveSelected() {
-        current.setSymanticType(SymanticType.Preventive_Procedure);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Saved");
@@ -176,7 +137,7 @@ public class PlanController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public PlanController() {
+    public ClinicalEntityController() {
     }
 
     public ClinicalEntity getCurrent() {
@@ -212,44 +173,29 @@ public class PlanController implements Serializable {
     }
 
     public List<ClinicalEntity> getItems() {
-               if (items == null) {
+        if (items == null) {
             Map m = new HashMap();
-            m.put("t", SymanticType.Preventive_Procedure);
             String sql;
-            sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t order by c.name";
+            sql = "select c from ClinicalEntity c where c.retired=false order by c.name";
             items = getFacade().findByJpql(sql, m);
         }
         return items;
 
     }
-    
-    public List<ClinicalEntity> completePlanOfActions(String qry) {
-        List<ClinicalEntity> c;
-        Map m = new HashMap();
-        m.put("t", SymanticType.Preventive_Procedure);
-        m.put("n", "%" + qry.toUpperCase() + "%");
-        String sql;
-        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-        c = getFacade().findByJpql(sql, m, 10);
-        if (c == null) {
-            c = new ArrayList<>();
-        }
-        return c;
-    }
 
     /**
      *
      */
-    @FacesConverter("planConverter")
-    public static class PlanConverter implements Converter {
+    @FacesConverter(forClass = ClinicalEntity.class)
+    public static class ClinicalEntityConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            PlanController controller = (PlanController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "planController");
+            ClinicalEntityController controller = (ClinicalEntityController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "clinicalEntityController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
@@ -275,7 +221,7 @@ public class PlanController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PlanController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ClinicalEntity.class.getName());
             }
         }
     }
