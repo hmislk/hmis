@@ -60,32 +60,32 @@
                     <!-- Right aligned quick search -->
                     <h:panelGroup id="quickSearch" >
                         <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
-                            
-                                <p:inputText 
-                                    id="txtQuickSearchPhoneNumber"
-                                    value="#{patientController.quickSearchPhoneNumber}"
-                                    placeholder="Phone Number"
-                                    class="form-control-sm mx-1"
-                                    onfocus="this.select()" 
-                                    />
-                                <p:commandButton 
-                                    id="btnSearchbyPhoneNo"
-                                    icon="fa fa-search" 
-                                    title="Quick Search from Phone Number"
-                                    action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
-                                    process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                    update="ptImp selectPatient editPatient viewPatient"
-                                    ajax="false"
-                                    styleClass="btn-sm mx-1"/>
-                                <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
-                                <p:commandButton 
-                                    id="btnAddNewPatient"
-                                    icon="fa fa-plus-circle" 
-                                    title="Add New Patient"
-                                    action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
-                                    process="btnAddNewPatient"
-                                    update="ptImp selectPatient editPatient viewPatient"
-                                    styleClass="btn-sm mx-1"/>
+
+                            <p:inputText 
+                                id="txtQuickSearchPhoneNumber"
+                                value="#{patientController.quickSearchPhoneNumber}"
+                                placeholder="Phone Number"
+                                class="form-control-sm mx-1"
+                                onfocus="this.select()" 
+                                />
+                            <p:commandButton 
+                                id="btnSearchbyPhoneNo"
+                                icon="fa fa-search" 
+                                title="Quick Search from Phone Number"
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                ajax="false"
+                                styleClass="btn-sm mx-1"/>
+                            <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                            <p:commandButton 
+                                id="btnAddNewPatient"
+                                icon="fa fa-plus-circle" 
+                                title="Add New Patient"
+                                action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
+                                process="btnAddNewPatient"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                styleClass="btn-sm mx-1"/>
 
                         </h:panelGroup>
                     </h:panelGroup>
@@ -283,7 +283,54 @@
                                             inputStyleClass="form-control"
                                             class="w-100"/>
                                     </div>
+                                    <div class="col-md-4 p-1">
+                                        <p:selectOneMenu 
+                                            id="ptReligion"
+                                            class="form-control w-100"
+                                            value="#{cc.attrs.controller.patient.person.religion}">
+                                            <f:selectItem itemLabel="Select Title" />
+                                            <f:selectItems value="#{categoryController.religions}" var="i"
+                                                            itemValue="#{i}"/>
+                                            
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-4 p-1">
+                                        <p:selectOneMenu 
+                                            id="ptCivilStatus"
+                                            class="form-control w-100"
+                                            value="#{cc.attrs.controller.patient.person.title}">
+                                            <f:selectItem itemLabel="Civil Status" />
+                                            <f:selectItems value="#{opdBillController.title}" var="i"
+                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                            
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-4 p-1">
+                                        <p:selectOneMenu 
+                                            id="ptBloodGroop"
+                                            class="form-control w-100"
+                                            value="#{cc.attrs.controller.patient.person.title}">
+                                            <f:selectItem itemLabel="Blood Group" />
+                                            <f:selectItems value="#{opdBillController.title}" var="i"
+                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                           
+                                        </p:selectOneMenu>
+                                    </div>
+                                     <div class="col-md-4 p-1">
+                                        <p:selectOneMenu 
+                                            id="ptEmp"
+                                            class="form-control w-100"
+                                            value="#{cc.attrs.controller.patient.person.title}">
+                                            <f:selectItem itemLabel="Employeement" />
+                                            <f:selectItems value="#{opdBillController.title}" var="i"
+                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                            
+                                        </p:selectOneMenu>
+                                    </div>
+
+
                                 </div>
+                                
 
                                 <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
