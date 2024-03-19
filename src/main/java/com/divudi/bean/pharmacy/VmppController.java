@@ -59,17 +59,9 @@ public class VmppController implements Serializable {
     private VmppFacade ejbFacade;
     private Vmpp current;
     private List<Vmpp> items = null;
-    @EJB
-    VmppFacade vmppFacade;
 
+    @Deprecated
     public String navigateToListAllVmpps() {
-        String jpql = "Select vmpp "
-                + " from Vmpp vmpp "
-                + " where vmpp.retired=:ret "
-                + " order by vmpp.name";
-        Map m = new HashMap();
-        m.put("ret", false);
-        items = getFacade().findByJpql(jpql, m);
         return "/emr/reports/vmpps?faces-redirect=true";
     }
 
@@ -186,23 +178,23 @@ public class VmppController implements Serializable {
     public List<Vmpp> getItems() {
         if (items == null) {
             items = fillItems();
-            
         }
         return items;
     }
 
     public List<Vmpp> fillItems() {
-        System.out.println("fillItems");
-        String j;
-        j = "select v "
-                + " from Vmpp v "
-                + " where v.retired=:ret "
-                + " order by v.name";
-        Map m = new HashMap();
-        m.put("ret", false);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
-        return getFacade().findByJpql(j, m);
+        String jpql = "SELECT v FROM Vmpp v WHERE v.retired = :ret AND v.name IS NOT NULL AND v.name <> '' ORDER BY v.name";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        List<Vmpp> vmpps = getFacade().findByJpql(jpql, parameters);
+
+        // If vmpps is null, initialize it to prevent NullPointerException
+        if (vmpps == null) {
+            vmpps = new ArrayList<>();
+        }
+
+        return vmpps;
     }
 
     /**
