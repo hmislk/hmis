@@ -1255,11 +1255,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sql = "Select bs "
                 + " From BillSession bs "
                 + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
-//        hh.put("bt", bts);
-//        hh.put("class", BilledBill.class);
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
 //        hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
