@@ -26,6 +26,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
 import com.divudi.data.RestAuthenticationType;
+import com.divudi.data.SymanticType;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
@@ -71,6 +72,10 @@ public class EnumController implements Serializable {
 
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
+    }
+    
+    public SymanticType[] getSymanticTypes(){
+        return SymanticType.values();
     }
 
     public ItemListingStrategy[] getOpdItemListingStrategys() {

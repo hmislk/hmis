@@ -256,7 +256,7 @@
                         </p:tooltip>
                         <p:outputLabel />
 
-                        <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                        <h:outputLabel id="ballance" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                         <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
                         <h:outputLabel id="staff" value="Staff"  style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
@@ -822,7 +822,7 @@
                                     <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
                                     <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{channelBillController.settleAgentRefNo}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
-                                    <h:outputLabel id="settleBallance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="settleBallance" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
 
@@ -926,7 +926,7 @@
 
 
                                     <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> #{bs.bill.bookingId}
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> #{bs.bill.bookingId}
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -934,7 +934,7 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Sepeciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">#{bs.serviceSession.staff.speciality.name}
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">#{bs.serviceSession.staff.speciality.name}
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -943,7 +943,7 @@
                                     </p:column>
                                     <p:column headerText="Consultant" filterBy="#{bs.serviceSession.staff.person.nameWithTitle}" filterMatchMode="contains">
 
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  #{bs.serviceSession.staff.person.nameWithTitle}
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">  #{bs.serviceSession.staff.person.nameWithTitle}
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -952,7 +952,7 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Session Name" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  #{bs.serviceSession.name}
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">  #{bs.serviceSession.name}
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -961,7 +961,7 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> #{bs.serialNo}
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> #{bs.serialNo}
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.managingBillSession}"  value="#{bs}"/>
@@ -970,7 +970,7 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Patient Name" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> #{bs.bill.patient.person.nameWithTitle}
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> #{bs.bill.patient.person.nameWithTitle}
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -979,14 +979,14 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
                                             <f:setPropertyActionListener target="#{bookingController.managingBillSession}" value="#{bs}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                         </h:commandLink>
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -995,14 +995,14 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
                                             <f:setPropertyActionListener target="#{bookingController.managingBillSession}" value="#{bs}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
                                         </h:commandLink>
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1011,7 +1011,7 @@
                                         </h:commandLink>
                                     </p:column>   
                                     <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1020,7 +1020,7 @@
                                         </h:commandLink>
                                     </p:column> 
                                     <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>
@@ -1029,7 +1029,7 @@
                                         </h:commandLink>
                                     </p:column> 
                                     <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">                                      
-                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.makeNull}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                        <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
                                             <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                             <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                                             <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>

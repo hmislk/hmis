@@ -230,6 +230,11 @@
                     <p:menuitem ajax="false" 
                                 action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
                                 value="Analytics" icon="fa fa-list-alt"></p:menuitem>
+                    <p:menuitem ajax="false"
+                                styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white' : ''}"
+                                rendered="#{webUserController.hasPrivilege('Opd') and sessionController.currentPreference.opdBillingAftershiftStart eq true}"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                                value="Financial Transaction Manager" icon="fa fa-list-alt"></p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
@@ -483,11 +488,10 @@
                                      value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleWholeSaleAddToStock')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true"  
+                            action="#{pharmacyPurchaseController.navigateToAddNewPharmacyWholesaleDirectPurchaseBill}"  
                             value="Wholesale Purchase" 
                             icon="fas fa-balance-scale"
-                            rendered="#{webUserController.hasPrivilege('PharmacyWholeSalePurchase')}" 
-                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem> 
+                            rendered="#{webUserController.hasPrivilege('PharmacyWholeSalePurchase')}" ></p:menuitem> 
                     </p:submenu>
 
                     <p:submenu label="Inpatient Medication Management" icon="fas fa-procedures" rendered="#{webUserController.hasPrivilege('InpatientMedicationManagementMenue')}">
@@ -830,12 +834,12 @@
                         action="#{channelBookingController.navigateToChannelBookingFromMenu()}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
-                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.makeNull}" rendered="false" ></p:menuitem>
+                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.resetToStartFromSpeciality}" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/channel_booking_past?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="false" ></p:menuitem>
                     <p:submenu label="Doctor Leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" >
-                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.makeNull}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.makeNull}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem  
                         ajax="false"  

@@ -294,6 +294,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAmp() {
+        ampController.setItems(null);
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
@@ -335,6 +336,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVmpp() {
+        System.out.println("navigateToVmpp");
         return "/pharmacy/admin/vmpp?faces-redirect=true";
     }
 
