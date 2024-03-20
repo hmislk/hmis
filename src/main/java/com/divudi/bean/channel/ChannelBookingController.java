@@ -53,7 +53,7 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
 
     public String navigateToChannelBookingFromMenu() {
         prepareForNewChannellingBill();
-        return "/channel/channel_booking";
+        return "/channel/channel_booking?faces-redirect=true";
     }
     
    

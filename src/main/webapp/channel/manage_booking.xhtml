@@ -438,7 +438,7 @@
                             <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
 
-                            <p:commandButton id="setBtn"  value="Settle Credit"
+                            <p:commandButton id="setBtn"  value="Settle Credit Booking"
                                              process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                              update="gpSettlePrint"
                                              action="#{channelBillController.settleCredit}" 
