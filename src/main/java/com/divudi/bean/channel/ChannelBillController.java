@@ -205,11 +205,10 @@ public class ChannelBillController implements Serializable {
         }
 
         Bill b = savePaidBill();
-
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
-
         BillSession bs = savePaidBillSession(b, bi);
+        
         getBillSession().setPaidBillSession(bs);
         getBillSessionFacade().edit(bs);
         getBillSessionFacade().edit(getBillSession());
@@ -222,25 +221,9 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-//        System.err.println("*** Channel Credit Bill Settled ***");
-//        //System.out.println("bs = " + bs);
-//        //System.out.println("getBillSession() = " + getBillSession().getName());
-//        //System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
-//        //System.out.println("getBillSession().getBill().getPaidBill() = " + getBillSession().getBill().getPaidBill());
-//        //System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getName());
-//        //System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
-//        System.err.println("*** Channel Credit Bill Settled ***");
-//        editBillSession(b, bi);
-        JsfUtil.addSuccessMessage("Channel Booking Added");
-
+        JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
-//
-//    private void deductBallance() {
-//        double tmp = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
-//        getBillSession().getBill().getFromInstitution().setBallance(getBillSession().getBill().getFromInstitution().getBallance() - tmp);
-//        getInstitutionFacade().edit(getBillSession().getBill().getFromInstitution());
-//    }
     private Bill savePaidBill() {
         Bill temp = new BilledBill();
         temp.copy(getBillSession().getBill());
@@ -250,13 +233,10 @@ public class ChannelBillController implements Serializable {
         temp.setPaymentMethod(settlePaymentMethod);
         temp.setReferenceBill(getBillSession().getBill());
         temp.setBillType(BillType.ChannelPaid);
-        String insId = generateBillNumberInsId(temp);
-        temp.setInsId(insId);
         String deptId = generateBillNumberDeptId(temp);
+        temp.setInsId(deptId);
         temp.setDeptId(deptId);
-//        temp.setInsId(getBillSession().getBill().getInsId());
-        temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
-
+        temp.setBookingId(deptId);
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
         temp.setBillDate(new Date());
