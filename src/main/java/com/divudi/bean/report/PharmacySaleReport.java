@@ -6,6 +6,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -54,6 +55,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -102,6 +104,7 @@ public class PharmacySaleReport implements Serializable {
     List<String1Value6> unitIssues;
     List<BillItem> billItems;
     List<BillItem> wholeSaleBillItems;
+    private List<Bill> bills;
     private Department department;
     Department toDepartment;
     private Institution institution;
@@ -238,6 +241,8 @@ public class PharmacySaleReport implements Serializable {
     CommonController commonController;
     @Inject
     AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    BillController billController;
 
     private CommonFunctions commonFunctions;
     @EJB
@@ -254,8 +259,14 @@ public class PharmacySaleReport implements Serializable {
     List<DistributerWithDestributorItem> distributerWithDestributorItems;
     List<ItemsWithDistributer> itemsWithDistributers;
 
+    List<BillLight> billLights;
+
     PaymentScheme paymentScheme;
     PaymentMethod paymentMethod;
+
+    public String navigateToReportPharmacyRetailSaleBillList() {
+        return "/pharmacy/report_pharmacy_retail_sale_bill_list";
+    }
 
     public Item getItem() {
         return item;
@@ -660,6 +671,10 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public void listPharmactRetailBills() {
+        bills = billController.listBills(BillType.PharmacySale, null, department, fromDate, toDate);
+    }
+
     public List<BillItem> createSaleBillItems(BillType billType) {
         String sql;
         Map m = new HashMap();
@@ -828,7 +843,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyGrnReturn() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1558,7 +1573,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportIssueByDateSummary() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1594,7 +1609,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_issue_by_date_summery?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportTransferRecieveItemCount() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1630,7 +1645,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportCategoryViceMovement() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1666,7 +1681,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_category_vice_movement?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportCategoryViceMovementItemBach() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1702,7 +1717,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_category_vice_movement_item_batch?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportSummaryAll() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1738,7 +1753,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_summery_all?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportGrnDetail1() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1774,7 +1789,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grn_detail_1?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyBillReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1810,7 +1825,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_bill_report?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyWholeBillReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1846,7 +1861,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy_wholesale/pharmacy_whole_bill_report?faces-redirect=true";
     }
-    
+
     public String navigatePharmacyReportCredit() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1882,8 +1897,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy_wholesale/pharmacy_report_credit?faces-redirect=true";
     }
-    
-    
+
     private List<Object[]> fetchSaleValueByPaymentmethodByBill() {
         String sql;
 
@@ -4109,7 +4123,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createCategoryMovementReportNew() {
-         FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
@@ -4137,7 +4151,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventTrigger("createCategoryMovementReportNew()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         String sql;
         Map m = new HashMap();
 
@@ -4248,7 +4261,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-      
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date(/faces/pharmacy/pharmacy_report_category_vice_movement?faces-redirect=true)");
     }
 
@@ -6255,6 +6268,14 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", toDate);
 
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
     public class ItemWithDepBHTIssue {
@@ -8729,4 +8750,14 @@ public class PharmacySaleReport implements Serializable {
         this.vmp = vmp;
     }
 
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
+    }
+
+    
+    
 }
