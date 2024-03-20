@@ -105,7 +105,9 @@
 
                     <div class="row">
                         <div class="col-5">
-                            <common:patient_details_for_addmission editable="true" controller="#{admissionController}"/>
+                            <h:panelGroup id="ptd">
+                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"/>
+                            </h:panelGroup>
                             <p:panel header="Payment Detail" style="margin-top: 10px;">
 
                                 <div class="row">
@@ -244,7 +246,7 @@
                                                         <p:outputLabel value="Address" />
                                                         <h:panelGrid columns="2">
                                                             <p:inputText class="mx-2 w-100" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
-                                                            <p:commandButton id="btnCopyAdd" class="ui-button-warning mx-2" icon="fas fa-paste" process="btnCopyAdd" update="gadd" action="#{admissionController.copyPatientAddressToGurdian}"/>
+                                                            <p:commandButton id="btnCopyAdd" class="ui-button-warning mx-2" icon="fas fa-paste" process="btnCopyAdd :#{p:resolveClientId('@id(txtAddress)', view)}" update="gadd " action="#{admissionController.copyPatientAddressToGurdian}"/>
                                                         </h:panelGrid>
 
                                                         <p:outputLabel value="Mobile No" />
@@ -255,7 +257,7 @@
                                                         <p:outputLabel value="Home Phone No" />
                                                         <h:panelGrid columns="2">
                                                             <p:inputText class="mx-2 w-100" id="ghno" value="#{admissionController.current.guardian.phone}"  />
-                                                            <p:commandButton id="btnCopyPho" class="ui-button-warning mx-2" icon="fas fa-paste" process="btnCopyPho" update="ghno" action="#{admissionController.copyPatientPhoneNumberToGurdian}"/>
+                                                            <p:commandButton id="btnCopyPho" class="ui-button-warning mx-2" icon="fas fa-paste" process="btnCopyPho :#{p:resolveClientId('@id(txtPhone)', view)}" update="ghno" action="#{admissionController.copyPatientPhoneNumberToGurdian}"/>
                                                         </h:panelGrid>
                                                         <p:outputLabel value="Relationship" />
                                                         <p:selectOneMenu value="#{admissionController.current.guardianRelationshipToPatient}"
