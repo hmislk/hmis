@@ -1244,18 +1244,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedBillSession = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql = "Select bs "
+        String sql =  "Select bs "
                 + " From BillSession bs "
                 + " where bs.retired=false"
-                + " and bs.sessionInstance=:ss "
-                + " and bs.bill.billType in :bt"
+                + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
-                + " and bs.sessionDate= :ssDate "
+                + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
-        hh.put("bt", bts);
+        hh.put("bts", bts);
         hh.put("class", BilledBill.class);
-        hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
+//        hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
