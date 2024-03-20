@@ -138,7 +138,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     public void copyPatientPhoneNumberToGurdian(){
-        current.getGuardian().setPhone(current.getPatient().getPerson().getPhone());
+        current.getGuardian().setMobile(current.getPatient().getPerson().getMobile());
     }
     
     public PatientEncounterFacade getPatientEncounterFacade() {
