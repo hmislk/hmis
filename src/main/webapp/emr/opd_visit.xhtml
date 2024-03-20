@@ -38,7 +38,7 @@
                             </p:commandButton>
                             <p:commandButton class="p-0 m-1 ui-button-warning" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
                             <p:commandButton class="p-0 m-1 ui-button-secondary" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
-                            
+
                             <p:commandButton 
                                 id="btnCommentPrint"
                                 ajax="false"
@@ -252,15 +252,15 @@
                                                         </p:inputText>
                                                         <!--                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>-->
                                                     </div>
-                                                     <div class="col-md-5" >
+                                                    <div class="col-md-5" >
                                                         <p:outputLabel value="Resp. Rate&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText  
                                                             id="txtRr"
                                                             style="width: 5em;"
                                                             value="#{patientEncounterController.current.respiratoryRate}" >
-                                                            
+
                                                         </p:inputText>
-<!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
                                                     </div>
                                                 </div>
                                             </p:panel>
@@ -814,18 +814,18 @@
 
 
 
-                                                    <h:panelGroup id="txtPrescriptionDoc">
-                                                        <p:textEditor
-                                                            styleClass="textEditer"
-                                                            class="my-2"
-                                                            toolbarVisible="false"
-                                                            rendered="#{patientEncounterController.encounterPrescreption ne null}"
-                                                            secure='false'
-                                                            widgetVar="textEditorWidget"
-                                                            value="#{patientEncounterController.encounterPrescreption.lobValue}"
-                                                            >
-                                                        </p:textEditor>
-                                                    </h:panelGroup>
+                                                <h:panelGroup id="txtPrescriptionDoc">
+                                                    <p:textEditor
+                                                        styleClass="textEditer"
+                                                        class="my-2"
+                                                        toolbarVisible="false"
+                                                        rendered="#{patientEncounterController.encounterPrescreption ne null}"
+                                                        secure='false'
+                                                        widgetVar="textEditorWidget"
+                                                        value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                        >
+                                                    </p:textEditor>
+                                                </h:panelGroup>
                                             </p:panel>
                                         </div>
 
@@ -1085,6 +1085,15 @@
                                                     <h:outputText value="#{visit.bmiFormatted}"  escape="false" >
                                                     </h:outputText>
                                                 </p:column>
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Diagnosis" />
+                                                    </f:facet>
+                                                    <ui:repeat value="#{patientEncounterController.fillPastPatientDiagnosis(visit)}" var="diagnosis">
+                                                        <h:outputText value="#{diagnosis.stringValue} - #{diagnosis.lobValue}"/><br/>
+                                                    </ui:repeat>
+                                                </p:column>
+
                                                 <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
                                                     <f:facet name="header">
                                                         <h:outputText value="Comments" />
