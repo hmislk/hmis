@@ -1252,6 +1252,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
+        sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
