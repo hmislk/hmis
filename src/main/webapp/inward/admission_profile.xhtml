@@ -91,7 +91,8 @@
                                     value="Final Bill" 
                                     action="#{inwardSearch.navigateToFinalBillForAdmission}"
                                     icon="fa fa-file"
-                                    class="w-100">
+                                    class="w-100"
+                                    ajax="false">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 
                                         target="#{inwardSearch.admission}" ></f:setPropertyActionListener>

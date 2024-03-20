@@ -145,12 +145,16 @@
                                 <div class="col-6">
                                     <p:panel header="Admission Details">
                                         <p:outputLabel value="Admitted Time"/>
-                                        <p:calendar value="#{admissionController.current.dateOfAdmission}" 
+                                        <p:datePicker value="#{admissionController.current.dateOfAdmission}" 
                                                     id="admissionTimeStamp"
-                                                    pattern="dd/MMM/yyyy - hh:mm:ss a" styleClass="form-control w-100"
+                                                    pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                                    styleClass="form-control w-100"
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true"
                                                     class="w-100" 
                                                     inputStyleClass="w-100" >                               
-                                        </p:calendar>     
+                                        </p:datePicker>     
 
                                         <p:outputLabel value="Consultant" ></p:outputLabel>
                                         <p:autoComplete forceSelection="true" 
