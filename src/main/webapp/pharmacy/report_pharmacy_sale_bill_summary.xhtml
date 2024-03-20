@@ -33,9 +33,9 @@
                                          value="#{billSearch.user}" ></p:autoComplete>
 
                     </h:panelGrid>
-                    
+
                     <div class="d-flex align-items-center my-2">
-                         <p:commandButton 
+                        <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
                             value="Process"
@@ -44,7 +44,7 @@
                             style="float: right;" 
                             actionListener="#{billSearch.processCashierPharmacySaleBillSummery}" />
                         <p:defaultCommand target="btnRefresh"/>
-                        
+
                         <p:commandButton 
                             ajax="false" 
                             value="Excel" 
@@ -67,9 +67,50 @@
                     <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
                         <p:column headerText="Bill Type" >
                             <h:outputText value="#{bs.billType.label}" ></h:outputText>
+                            <f:facet name="footer">
+                                <h:panelGroup>
+                                    <h:outputText value="Cash Total" />
+                                    <br />
+                                    <h:outputText value="Credit Total" />
+                                    <br />
+                                    <h:outputText value="Slip Total" />
+                                    <br />
+                                    <h:outputText value="Card Total " />
+                                    <br />
+                                    <h:outputText value="Multiple Payments Total" />
+                                    <br />
+                                    <h:outputText value="Patient Deposite Total" />
+                                </h:panelGroup>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Payment Method" >
                             <h:outputText value="#{bs.paymentMethod}" ></h:outputText>
+                            <f:facet name="footer">
+                                <h:panelGroup>
+                                    <h:outputText value="#{billSearch.cashTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.creditTotal}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.slipTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.creditCardTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.multiplePaymentsTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value="#{billSearch.patientDepositsTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="User" >
                             <h:outputText value="#{bs.webUser.webUserPerson.name}" ></h:outputText>
@@ -81,8 +122,11 @@
                             <h:outputText value="#{bs.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
+                            
                         </p:column>
                     </p:dataTable>
+
+                    <h1></h1>
                 </p:panel>
             </h:form>
         </h:panelGroup>
