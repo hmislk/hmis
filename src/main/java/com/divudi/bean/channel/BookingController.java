@@ -1244,15 +1244,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedBillSession = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql = "Select bs "
-                + " From BillSession bs "
-                + " where bs.retired=false"
-                + " and bs.sessionInstance=:ss "
-                + " and bs.bill.billType in :bt"
-                + " and type(bs.bill)=:class "
-                + " and bs.sessionDate= :ssDate "
-                + " order by bs.serialNo ";
-        sql = "Select bs "
+        String sql =  "Select bs "
                 + " From BillSession bs "
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
