@@ -15,23 +15,29 @@
                         <div class="d-flex">
                             <h:panelGrid columns="1">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar
+                                <p:datePicker
                                     value="#{searchController.fromDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
-                                
+                                </p:datePicker>
+
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar 
+                                <p:datePicker 
                                     value="#{searchController.toDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
-                                
+                                </p:datePicker>
+
                                 <p:commandButton 
                                     class="mt-2 w-100 mb-3 ui-button-warning" 
                                     icon="fa-solid fa-search"
@@ -68,7 +74,7 @@
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                     >
-                                    
+
 
                                     <p:column headerText="Bill No"  >
                                         <h:outputLabel value="#{bb.insId}" ></h:outputLabel>

@@ -261,10 +261,13 @@
                                                         </div>
                                                         <div class="col-8">
 
-                                                            <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
-                                                                        id="billedTimeStamp"
-                                                                        pattern="dd MMM yyyy HH:mm:ss" >                               
-                                                            </p:calendar>
+                                                            <p:datePicker value="#{billBhtController.currentBillItem.billTime}" 
+                                                                          id="billedTimeStamp"
+                                                                          pattern="dd MMM yyyy HH:mm:ss"
+                                                                          showTime="true"
+                                                                          showButtonBar="true"
+                                                                          timeInput="true">                               
+                                                            </p:datePicker>
                                                         </div>
                                                     </div>
                                                     <div class="row m-1">
@@ -454,19 +457,19 @@
                                                 <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>                        
