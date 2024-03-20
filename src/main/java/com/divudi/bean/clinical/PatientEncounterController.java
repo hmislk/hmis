@@ -3084,12 +3084,34 @@ public class PatientEncounterController implements Serializable {
         this.currentEIResult = currentEIResult;
     }
 
-    public List<ClinicalFindingValue> fillPastPatientDiagnosis(PatientEncounter encounter) {
+    public List<ClinicalFindingValue> fillPastPatientDiagnosisHistory(PatientEncounter encounter) {
         List<ClinicalFindingValue> vs;
         Map<String, Object> m = new HashMap<>();
         m.put("p", encounter);
         m.put("ret", false);
         m.put("ts",ClinicalFindingValueType.VisitDiagnosis);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+        
+        sql += " order by e.orderNo";
+        vs = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (vs == null) {
+            vs = new ArrayList<>();
+        }
+        
+        return vs;
+    }
+    
+    public List<ClinicalFindingValue> fillPastPatientMedicineHistory(PatientEncounter encounter) {
+        List<ClinicalFindingValue> vs;
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts",ClinicalFindingValueType.VisitMedicine);
         String sql;
         sql = "Select e "
                 + " from ClinicalFindingValue e "
@@ -3105,9 +3127,7 @@ public class PatientEncounterController implements Serializable {
         if (vs == null) {
             vs = new ArrayList<>();
         }
-        for (ClinicalFindingValue c : vs) {
-            System.out.println("vs = " + c.getStringValue());
-        }
+        
         return vs;
     }
 
