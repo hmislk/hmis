@@ -124,7 +124,7 @@
                                                               process="chkSampledOutside calSampledDate btnSampleRevert" update="@all">
                                                 <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             </p:commandButton>
-                                            <p:commandButton  disabled="#{!smpIx.collected}"   id="btnPrint" value="Print" 
+                                            <p:commandButton    id="btnPrint" value="Print" 
                                                               ajax="false">
                                                 <p:printer target="stickerPrint" ></p:printer>
                                             </p:commandButton>
