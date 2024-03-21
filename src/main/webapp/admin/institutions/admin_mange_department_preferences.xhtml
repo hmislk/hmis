@@ -312,7 +312,14 @@
                                     <h:outputText value="Template for Inward Deposit Cancel Bill" ></h:outputText>
                                     <h:outputLabel value="Inward Deposit Cancel Bill Template" ></h:outputLabel>
 
-
+                                    <h:outputLabel 
+                                        class="form-label"
+                                        value="Inward Item Listing Strategy" ></h:outputLabel>
+                                    <p:selectOneMenu 
+                                        value="#{sessionController.currentPreference.inwardItemListingStrategy}"
+                                        class="form-control">
+                                        <f:selectItems value="#{enumController.inwardItemListingStrategys}"></f:selectItems>
+                                    </p:selectOneMenu>
 
                                     <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
                                     <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
