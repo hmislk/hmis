@@ -39,6 +39,10 @@
                                                              value="Pharmacy Sale Summery"
                                                              action="#{commonReport.navigateToPharmacySaleSummery()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy Sale Summery Date"
+                                                             action="#{commonReport.navigateToPharmacySaleSummeryByDate()}" 
+                                                             actionListener="#{commonReport.recreteModal}"/>
 
                                         </div>
                                     </p:tab>  
@@ -61,8 +65,15 @@
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                         </div>
                                     </p:tab>  
-                                    <p:tab title="Sale Detail">
+                                    <p:tab title="Sale Reports">
                                         <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Retail Sale Bill List" 
+                                                             action="#{pharmacySaleReport.navigateToReportPharmacyRetailSaleBillList()}"
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+
+
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Sale Detail - By Bill " 
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}"

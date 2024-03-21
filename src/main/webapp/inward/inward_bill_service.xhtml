@@ -425,6 +425,11 @@
                                             <p:commandButton value="Print" class="w-100" ajax="false" action="#" icon="fa-solid fa-print" >
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
+                                            <p:commandButton 
+                                                value="To Print Labels" 
+                                                class="w-100" ajax="false" 
+                                                action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print" >
+                                            </p:commandButton>
                                             <p:commandButton value="New Bill" 
                                                              icon="fa fa-plus"
                                                              class="ui-button-success m-1"  ajax="false"

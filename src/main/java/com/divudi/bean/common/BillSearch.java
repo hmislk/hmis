@@ -204,6 +204,12 @@ public class BillSearch implements Serializable {
     String encryptedPatientReportId;
     String encryptedExpiary;
 
+    private double cashTotal;
+    private double slipTotal;
+    private double creditTotal;
+    private double creditCardTotal;
+    private double multiplePaymentsTotal;
+    private double patientDepositsTotal;
     private OverallSummary overallSummary;
     
     private Bill currentRefundBill;
@@ -495,12 +501,53 @@ public class BillSearch implements Serializable {
             billSummeries.add(tbs);
             i++;
         }
+        calculateTotalForBillSummaries();
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
+
+    }
+    
+    public void processCashierPharmacySaleBillTotalDateWise() {
+        //For Auditing Purposes
+        
+        Map m = new HashMap();
+        String j;
+        j = "select new com.divudi.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.billTime between :fd and :td ";
+
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        
+        j += " group by Function('DATE',(b.createdAt))";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("j = " + j);
+        System.out.println("m = " + m);
+
+        List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
+        billSummeries = new ArrayList<>();
+        Long i = 1l;
+        for (Object o : objs) {
+            BillSummery tbs = (BillSummery) o;
+            tbs.setKey(i);
+            billSummeries.add(tbs);
+            i++;
+            System.out.println("tbs = " + tbs);
+        }
 
     }
 
@@ -3446,12 +3493,51 @@ public class BillSearch implements Serializable {
     public Institution getInstitution() {
         return institution;
     }
+    
+    public void calculateTotalForBillSummaries(){
+        cashTotal=0;
+        slipTotal=0;
+        creditCardTotal=0;
+        creditTotal=0;
+        multiplePaymentsTotal=0;
+        patientDepositsTotal=0;
+        
+        if(getBillSummeries()==null){
+            return;
+        }
+        if(getBillSummeries().isEmpty()){
+            return ;
+        }
+        for (BillSummery bs: getBillSummeries()){
+            if(bs.getPaymentMethod()==PaymentMethod.Cash){
+                cashTotal+=bs.getNetTotal();
+            }
+            else if(bs.getPaymentMethod()==PaymentMethod.Slip){
+                slipTotal+=bs.getNetTotal();
+            }
+            else if(bs.getPaymentMethod()==PaymentMethod.Card){
+                creditCardTotal+=bs.getNetTotal();
+            }
+            else if(bs.getPaymentMethod()==PaymentMethod.Credit){
+                creditTotal+=bs.getNetTotal();
+            }
+            else if(bs.getPaymentMethod()==PaymentMethod.MultiplePaymentMethods){
+                multiplePaymentsTotal+=bs.getNetTotal();
+            }
+            else if(bs.getPaymentMethod()==PaymentMethod.PatientDeposit){
+                patientDepositsTotal+=bs.getNetTotal();
+            }
+        }
+    }
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
 
     public Department getDepartment() {
+        if(department==null){
+            sessionController.getLoggedUser().getDepartment();
+        }
         return department;
     }
 
@@ -3650,6 +3736,54 @@ public class BillSearch implements Serializable {
 
     public void setCurrentRefundBill(Bill currentRefundBill) {
         this.currentRefundBill = currentRefundBill;
+    }
+
+    public double getCashTotal() {
+        return cashTotal;
+    }
+
+    public void setCashTotal(double cashTotal) {
+        this.cashTotal = cashTotal;
+    }
+
+    public double getSlipTotal() {
+        return slipTotal;
+    }
+
+    public void setSlipTotal(double slipTotal) {
+        this.slipTotal = slipTotal;
+    }
+
+    public double getCreditTotal() {
+        return creditTotal;
+    }
+
+    public void setCreditTotal(double creditTotal) {
+        this.creditTotal = creditTotal;
+    }
+
+    public double getCreditCardTotal() {
+        return creditCardTotal;
+    }
+
+    public void setCreditCardTotal(double creditCardTotal) {
+        this.creditCardTotal = creditCardTotal;
+    }
+
+    public double getMultiplePaymentsTotal() {
+        return multiplePaymentsTotal;
+    }
+
+    public void setMultiplePaymentsTotal(double multiplePaymentsTotal) {
+        this.multiplePaymentsTotal = multiplePaymentsTotal;
+    }
+
+    public double getPatientDepositsTotal() {
+        return patientDepositsTotal;
+    }
+
+    public void setPatientDepositsTotal(double patientDepositsTotal) {
+        this.patientDepositsTotal = patientDepositsTotal;
     }
 
     public class PaymentSummary {
