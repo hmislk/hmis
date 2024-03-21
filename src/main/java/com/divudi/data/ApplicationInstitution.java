@@ -11,8 +11,9 @@ public enum ApplicationInstitution {
     BMS("BMS Clinic"),
     Digasiri("Digasiri Health Center"),
     Probhodha("Probhodha Medical Center"),
+    Sethma("Sethma Hospital"),
     Rmh("RMH Hospital");
-
+    
     private final String label;
 
     private ApplicationInstitution(String label) {
