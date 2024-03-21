@@ -19,15 +19,21 @@
                             <h:panelGrid class="col-1 mx-1 mb-auto">
                                 <h:panelGrid columns="1" class="">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar class="w-100" id="fromDate" 
-                                                value="#{inwardReportController.fromDate}" 
-                                                navigator="false" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:calendar>
+                                    <p:datePicker class="w-100" id="fromDate" 
+                                                  value="#{inwardReportController.fromDate}" 
+                                                  showTime="true"                                            
+                                                  showButtonBar="true"   
+                                                  timeInput="true" 
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                    </p:datePicker>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:calendar>                                
+                                    <p:datePicker id="toDate" value="#{inwardReportController.toDate}" 
+
+                                                  showTime="true"                                           
+                                                  showButtonBar="true"   
+                                                  timeInput="true" 
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                    </p:datePicker>                                
 
                                     <h:outputLabel value="BHT No"/>
                                     <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
@@ -49,12 +55,12 @@
                                             <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                                         </p:column>
                                     </p:autoComplete>
-                                    
+
                                     <p:commandButton id="btnSearch" ajax="false" 
-                                                         value="Search All" onclick="onSubmitButton();"
-                                                         action="#{inwardReportController.createPatientInvestigationsTableAll()}" 
-                                                         class="w-100 mt-2"/>
-                                        <p:defaultCommand target="btnSearch" />
+                                                     value="Search All" onclick="onSubmitButton();"
+                                                     action="#{inwardReportController.createPatientInvestigationsTableAll()}" 
+                                                     class="w-100 mt-2"/>
+                                    <p:defaultCommand target="btnSearch" />
                                 </h:panelGrid>
                             </h:panelGrid>
 

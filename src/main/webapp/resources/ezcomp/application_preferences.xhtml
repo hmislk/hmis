@@ -152,7 +152,9 @@
                             <h:outputLabel value="Template for SMS on OPD Bill Settling"></h:outputLabel>
                             <h:inputTextarea value="#{sessionController.currentPreference.smsTemplateForOpdBillSetting}" ></h:inputTextarea>
                             <h:outputLabel value="OPD Billing Can Be Done After Shift Start"></h:outputLabel>
-                            <p:selectBooleanButton value="#{sessionController.currentPreference.opdBillingAftershiftStart}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.opdBillingAftershiftStart}" offLabel="No" onLabel="Yes" >
+                                <p:ajax process="@this" ></p:ajax>
+                            </p:selectBooleanButton>
                             
                         </h:panelGrid>
                     </p:panel>

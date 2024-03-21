@@ -41,7 +41,7 @@
                                     action="#{opdBillController.navigateToSearchPatients()}"
                                     class="ui-button-warning mx-1 ">
                                 </p:commandButton>
-                                
+
                                 <p:commandButton 
                                     value="Profile"
                                     ajax="false" 
@@ -51,11 +51,11 @@
                                     <f:setPropertyActionListener 
                                         target="#{patientController.current}" 
                                         value="#{appointmentController.searchedPatient}">
-                                        
+
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
                             </div>
-                                
+
 
                         </f:facet>
                         <div class="row">
@@ -140,13 +140,16 @@
                                         </p:autoComplete>
 
                                         <p:outputLabel value="Appointment Date"/>
-                                        <p:calendar 
+                                        <p:datePicker 
                                             inputStyleClass="w-100"
                                             class="w-100 my-1"
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
                                             value="#{appointmentController.currentAppointment.appointmentDate}" 
                                             pattern="#{sessionController.applicationPreference.longDateFormat}"
                                             >                            
-                                        </p:calendar>
+                                        </p:datePicker>
                                         <h:outputLabel value="Amount" ></h:outputLabel>
                                         <p:inputText autocomplete="off"
                                                      id="pBillDetails"

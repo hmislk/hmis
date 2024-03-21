@@ -116,7 +116,7 @@
                         </f:facet>
                         <div class="row">
                             <div class="col-6">
-                                <common:patient_details controller="#{bhtEditController}" editable="true"></common:patient_details>
+                                <common:patient_details_for_addmission controller="#{bhtEditController}" editable="true"></common:patient_details_for_addmission>
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
@@ -125,9 +125,16 @@
                                     <h:panelGrid columns="2" class="w-100" >
                                         <p:outputLabel  value="Date of Admission"  />
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                        <p:calendar class="w-100" inputStyleClass="w-100" value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                        <p:datePicker 
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            value="#{bhtEditController.current.dateOfAdmission}"
+                                            pattern="dd/MM/yyyy hh mm ss a" 
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true">
                                             <f:ajax event="dateSelect" execute="@this" />
-                                        </p:calendar>
+                                        </p:datePicker>
                                         <p:outputLabel  value="BHT No(full)"  />
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                         <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>

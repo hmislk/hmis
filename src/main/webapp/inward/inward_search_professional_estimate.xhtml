@@ -16,13 +16,29 @@
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" >
+                                    <p:datePicker 
+                                        id="fromDate"
+                                        value="#{searchController.fromDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        styleClass="dateTimePicker"
+                                        class="w-100" 
+                                        inputStyleClass="form-control"
+                                        showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true">
 
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control"  >
+                                    <p:datePicker 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" 
+                                        showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true">
 
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <p:spacer height="10" width="5" ></p:spacer>
                                     <p:commandButton class="ui-button-warning" icon="fas fa-search" ajax="false" action="#{searchController.createInwardProBills()}" value="Search"  />
                                     <p:spacer height="10" width="5" ></p:spacer>
@@ -35,8 +51,8 @@
                                     <h:outputLabel value="Patient Phone"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                     <h:outputLabel value="Net Total"/>
-                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                              
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+
 
                                 </div>
 
@@ -104,7 +120,7 @@
                                 </p:dataTable>
                             </div>
                         </div>
-                       
+
 
                     </p:panel>
 

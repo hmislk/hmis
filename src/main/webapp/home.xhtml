@@ -8,6 +8,26 @@
 
 
     <ui:define name="content">
+
+<!--        <h:form >
+            <p:panelGrid columns="2" class="w-100" >
+                <p:outputLabel value="Password" ></p:outputLabel>
+                <p:inputText value="#{securityController.password}" class="w-100"></p:inputText>
+
+                <p:outputLabel value="Encrypted Password" ></p:outputLabel>
+                <p:inputText value="#{securityController.hashedPassword}" class="w-100" ></p:inputText>
+
+                <p:spacer></p:spacer>
+                <p:commandButton ajax="false" value="Check" action="#{securityController.testPassword}" >
+                </p:commandButton>
+                
+                
+                <p:outputLabel value="Matching" ></p:outputLabel>
+                <p:inputText value="#{securityController.matching}" class="w-100" ></p:inputText>
+            </p:panelGrid>
+
+        </h:form>-->
+
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
