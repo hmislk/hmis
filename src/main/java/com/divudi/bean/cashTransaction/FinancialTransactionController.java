@@ -81,6 +81,7 @@ public class FinancialTransactionController implements Serializable {
     private double totalOpdBillCanceled;
     private double totalPharmecyBillCanceled;
     private double totalCCBillCanceled;
+    private int fundTransferBillsToReceiveCount;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -91,6 +92,7 @@ public class FinancialTransactionController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
+        fillFundTransferBillsForMeToReceive();
         return "/cashier/index?faces-redirect=false;";
     }
 
@@ -583,12 +585,15 @@ public class FinancialTransactionController implements Serializable {
         totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
         totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
         totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
-        double totalBillValues = totalBilledBillValue;
+        double totalBillValues = totalBilledBillValue+totalTransferRecive;
 
         aditions = totalBillValues + totalShiftStart;
         Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds;
         totalFunds = aditions - Deductions;
         shiftEndTotalValue = totalFunds;
+        
+        System.out.println("totalBilledBillValue = " + totalBilledBillValue);
+         System.out.println("totalBilledBillValue = " + totalBilledBillValue);
 
     }
 
@@ -710,6 +715,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
+        fundTransferBillsToReceiveCount=fundTransferBillsToReceive.size();
 
     }
 
@@ -1080,5 +1086,15 @@ public class FinancialTransactionController implements Serializable {
     public void setTotalCCBillCanceled(double totalCCBillCanceled) {
         this.totalCCBillCanceled = totalCCBillCanceled;
     }
+
+    public int getFundTransferBillsToReceiveCount() {
+        return fundTransferBillsToReceiveCount;
+    }
+
+    public void setFundTransferBillsToReceiveCount(int fundTransferBillsToReceiveCount) {
+        this.fundTransferBillsToReceiveCount = fundTransferBillsToReceiveCount;
+    }
+    
+    
 
 }
