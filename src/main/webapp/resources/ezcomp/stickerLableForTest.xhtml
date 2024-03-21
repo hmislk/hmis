@@ -19,26 +19,27 @@
         <div class="fivebytwo">
 
             <div>
-                <table class="w-100" style="margin-top: -5px">
+                <table class="w-100">
+                    <tr>
+                        <td colspan="3"><strong><h:outputText style="font-size: 1.1em" value="#{sticker.patientName}"/></strong> </td>
+                        <td style="text-align: right;"> <h:outputText value="#{sticker.patientAge}"/></td>
+                    </tr>
                     <tr style="text-align: center">
-                        <td colspan="3">
+                        <td colspan="4">
                             <p:graphicImage
                                 cache="false"
                                 style="max-width: 1.5in; align-content: center"
                                 value="#{barcodeController.createBarcodeCode128}">
                                 <f:param name="code" value="#{sticker.sampleId}" />
-                            </p:graphicImage><h:outputText value="#{sticker.sampleId}"/></td>
+                            </p:graphicImage><br/><h:outputText value="#{sticker.sampleId}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3"><strong><h:outputText  style="font-size: 1.1em" value="#{sticker.tests}"/></strong></td>
+                        <td style="text-align: right;"><h:outputText value="M"/></td>
                     </tr>
                     <tr>
-                        <td colspan="2"><strong><h:outputText style="font-size: 1.1em" value="#{sticker.patientName}"/></strong> </td>
-                        <td style="text-align: right;"> <h:outputText value="M"/></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><strong><h:outputText  style="font-size: 1.1em" value="#{sticker.tests}"/></strong></td>
-                        <td style="text-align: right;"><h:outputText value="#{sticker.patientAge}"/></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><h:outputText value="#{sticker.insid}"/></td>
+                        <td colspan="3"><h:outputText value="#{sticker.insid}"/></td>
                         <td style="text-align: right;"> <h:outputText value="#{sticker.billDateString}"/></td>
                     </tr>
                 </table>
