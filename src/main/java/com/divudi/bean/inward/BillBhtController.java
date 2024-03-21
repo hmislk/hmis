@@ -184,14 +184,19 @@ public class BillBhtController implements Serializable {
         }
         String username = sessionController.getUserName();
         String password = sessionController.getPassword();
+        int count =0;
         for (Bill b : bills) {
             String billId = b.getIdStr();
             String result = lims.generateSamplesFromBill(billId, username, password);
             JSONObject resultJson = new JSONObject(result);
-            JSONArray barcodes = resultJson.getJSONArray("Barcodes");
-            for (int i = 0; i < barcodes.length(); i++) {
-                combinedBarcodes.put(barcodes.getJSONObject(i));
+            System.out.println("resultJson = " + resultJson);
+            if (resultJson.has("Barcodes")) {
+                JSONArray barcodes = resultJson.getJSONArray("Barcodes");
+                for (int i = 0; i < barcodes.length(); i++) {
+                    combinedBarcodes.put(barcodes.getJSONObject(i));
+                }
             }
+            count++;
         }
         JSONObject finalJson = new JSONObject();
         finalJson.put("Barcodes", combinedBarcodes);
