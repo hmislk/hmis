@@ -34,7 +34,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
-                                    <p:badge rendered="#{financialTransactionController.fundTransferBillsToReceiveCount ne 0}" severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
+                                    <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
                                         <p:commandButton 
                                             value=" Fund Transfers for me to Receive"
                                             icon=""
