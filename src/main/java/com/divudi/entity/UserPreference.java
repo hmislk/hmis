@@ -221,6 +221,9 @@ public class UserPreference implements Serializable {
 
     @Enumerated(value = EnumType.STRING)
     private OpdBillingStrategy opdBillingStrategy;
+    
+    @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy inwardItemListingStrategy;
 
     @Enumerated(value = EnumType.STRING)
     private OpdTokenNumberGenerationStrategy opdTokenNumberGenerationStrategy;
@@ -1237,6 +1240,17 @@ public class UserPreference implements Serializable {
 
     public void setOpdBillingAftershiftStart(boolean opdBillingAftershiftStart) {
         this.opdBillingAftershiftStart = opdBillingAftershiftStart;
+    }
+
+    public ItemListingStrategy getInwardItemListingStrategy() {
+        if (inwardItemListingStrategy == null) {
+            inwardItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return inwardItemListingStrategy;
+    }
+
+    public void setInwardItemListingStrategy(ItemListingStrategy inwardItemListingStrategy) {
+        this.inwardItemListingStrategy = inwardItemListingStrategy;
     }
 
   

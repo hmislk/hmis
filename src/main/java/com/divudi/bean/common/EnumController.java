@@ -101,6 +101,16 @@ public class EnumController implements Serializable {
                     ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
         return sts;
     }
+    
+    public ItemListingStrategy[] getInwardItemListingStrategys() {
+        ItemListingStrategy[] sts
+                = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
+        return sts;
+    }
 
     public RestAuthenticationType[] getRestAuthenticationTypes() {
         return RestAuthenticationType.values();
