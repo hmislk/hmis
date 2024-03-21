@@ -48,10 +48,10 @@
                                 <p:column>
                                     #{myItem.currentPatientRoom.roomFacilityCharge.name}
                                 </p:column>
-                                
+
 
                             </p:autoComplete>   
-                            
+
                             <p:commandButton ajax="false"  
                                              value="Select" 
                                              class="ml-2"
@@ -176,16 +176,19 @@
                                         <h:panelGrid columns="2">
                                             <p:outputLabel value="Discharge Time"/>
 
-                                            <p:calendar 
+                                            <p:datePicker 
                                                 value="#{bhtSummeryController.date}"
                                                 id="dischargeTimeStamp"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                class="mx-2">                               
+                                                class="mx-2"
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true">                               
                                                 <!--                                                <f:ajax execute="@this" 
                                                                                                         render="sum tvPt tot"
                                                                                                         event="dateSelect" 
                                                                                                         listener="#{bhtSummeryController.checkDate}" />-->
-                                            </p:calendar> 
+                                            </p:datePicker>
                                         </h:panelGrid>
                                         <div class="d-flex justify-content-end my-2">
                                             <p:commandButton 
@@ -266,18 +269,24 @@
                                                            rendered="#{rm.patientRoomClass eq 'class com.divudi.entity.inward.GuardianRoom'}"/>
                                         </p:column>
                                         <p:column headerText="Admission" style="min-width:10em;">
-                                            <p:calendar navigator="true"  
-                                                        id="roomAdmittedTimeStamp"
-                                                        value="#{rm.admittedAt}" 
-                                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
-                                                        size="11"/>     
+                                            <p:datePicker   
+                                                id="roomAdmittedTimeStamp"
+                                                value="#{rm.admittedAt}" 
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
+                                                size="11"/>     
                                         </p:column>
                                         <p:column headerText="Discharge" style="min-width:10em;" >                                      
-                                            <p:calendar navigator="true"  
-                                                        id="roomDischargeTimeStamp"
-                                                        value="#{rm.dischargedAt}" 
-                                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
-                                                        size="11"/> 
+                                            <p:datePicker   
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                id="roomDischargeTimeStamp"
+                                                value="#{rm.dischargedAt}" 
+                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
+                                                size="11"/> 
                                         </p:column>
                                         <p:column headerText="Room"   style="width: 5em; text-align: right;" >
                                             <h:outputLabel value="#{rm.calculatedRoomCharge}" style="text-align: center" >
