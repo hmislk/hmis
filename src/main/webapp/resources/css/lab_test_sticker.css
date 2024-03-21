@@ -20,8 +20,8 @@
 @media screen{
     .fivebytwo{
         padding: 5px!important;
-        width: 2.5in!important;
-        height: 1.3in!important;
+        width: 3.96in!important;
+        height: 1.96in!important;
         border: 1px solid;
          
         font-family: sans-serif!important; 
@@ -30,7 +30,7 @@
         background-color: lightgray;
         /*        border: 1px solid!important;*/
         text-transform: capitalize!important;
-        margin: 2cm!important;
+        margin: 1px!important;
         
     }
 }

@@ -14,6 +14,7 @@ public class InvestigationTubeSticker {
     private String tests;
     private String patientName;
     private String patientAge;
+     private String patientSex;
     private String patientGender;
     private String sampleId;
     private String billDateString;
@@ -81,5 +82,15 @@ public class InvestigationTubeSticker {
     public void setPatientGender(String patientGender) {
         this.patientGender = patientGender;
     }
+
+    public String getPatientSex() {
+        return patientSex;
+    }
+
+    public void setPatientSex(String patientSex) {
+        this.patientSex = patientSex;
+    }
+    
+    
     
 }
