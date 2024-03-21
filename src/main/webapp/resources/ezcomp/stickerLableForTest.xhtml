@@ -22,10 +22,10 @@
                 <table class="w-100">
                     <tr>
                         <td colspan="3"><strong><h:outputText style="font-size: 1.1em" value="#{sticker.patientName}"/></strong> </td>
-                        <td style="text-align: right;"> <h:outputText value="#{sticker.patientAge}"/></td>
+                        <td  colspan="2" style="text-align: right;"> <h:outputText value="#{sticker.patientAge}"/></td>
                     </tr>
                     <tr style="text-align: center">
-                        <td colspan="4">
+                        <td colspan="5">
                             <p:graphicImage
                                 cache="false"
                                 style="max-width: 1.5in; align-content: center"
@@ -36,11 +36,11 @@
 
                     <tr>
                         <td colspan="3"><strong><h:outputText  style="font-size: 1.1em" value="#{sticker.tests}"/></strong></td>
-                        <td style="text-align: right;"><h:outputText value="M"/></td>
+                        <td colspan="2" style="text-align: right;"><h:outputText value="#{sticker.patientSex eq 'Male' ? 'M' : sticker.patientSex eq 'Female' ? 'F' : 'O'}"/></td>
                     </tr>
                     <tr>
                         <td colspan="3"><h:outputText value="#{sticker.insid}"/></td>
-                        <td style="text-align: right;"> <h:outputText value="#{sticker.billDateString}"/></td>
+                        <td colspan="2" style="text-align: right;"> <h:outputText value="#{sticker.billDateString}"/></td>
                     </tr>
                 </table>
             </div>
