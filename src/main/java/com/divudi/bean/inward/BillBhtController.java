@@ -200,6 +200,7 @@ public class BillBhtController implements Serializable {
         }
         JSONObject finalJson = new JSONObject();
         finalJson.put("Barcodes", combinedBarcodes);
+        System.out.println("finalJson = " + finalJson);
         return finalJson.toString();
     }
 
