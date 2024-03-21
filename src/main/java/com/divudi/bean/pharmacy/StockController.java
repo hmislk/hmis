@@ -315,7 +315,12 @@ public class StockController implements Serializable {
         String jpql;
         Map m = new HashMap();
         Vmp tvmp = amps.get(0).getVmp();
-        int daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        int daysToMarkAsExpiaring ;
+        if(tvmp!=null){
+            daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        }else{
+            daysToMarkAsExpiaring = 30;
+        }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, daysToMarkAsExpiaring);
         Date doe = c.getTime();

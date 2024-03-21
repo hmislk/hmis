@@ -1301,6 +1301,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public int getNumberOfDaysToMarkAsShortExpiary() {
+        if(numberOfDaysToMarkAsShortExpiary==0){
+            numberOfDaysToMarkAsShortExpiary = 30;
+        }
         return numberOfDaysToMarkAsShortExpiary;
     }
 
