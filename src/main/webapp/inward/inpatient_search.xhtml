@@ -17,20 +17,26 @@
                         <div class="row">
                             <div class="col-3">
                                 <p:outputLabel value="From Date"></p:outputLabel>
-                                <p:calendar
+                                <p:datePicker
                                     value="#{admissionController.fromDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
                                 <p:outputLabel value="To Date"></p:outputLabel>
-                                <p:calendar 
+                                <p:datePicker 
                                     class="w-100"
+                                    showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
                                     inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
 
                                 <p:commandButton 
                                     ajax="false"

@@ -261,10 +261,13 @@
                                                         </div>
                                                         <div class="col-8">
 
-                                                            <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
-                                                                        id="billedTimeStamp"
-                                                                        pattern="dd MMM yyyy HH:mm:ss" >                               
-                                                            </p:calendar>
+                                                            <p:datePicker value="#{billBhtController.currentBillItem.billTime}" 
+                                                                          id="billedTimeStamp"
+                                                                          pattern="dd MMM yyyy HH:mm:ss"
+                                                                          showTime="true"
+                                                                          showButtonBar="true"
+                                                                          timeInput="true">                               
+                                                            </p:datePicker>
                                                         </div>
                                                     </div>
                                                     <div class="row m-1">
