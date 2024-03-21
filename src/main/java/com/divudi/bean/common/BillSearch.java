@@ -510,6 +510,46 @@ public class BillSearch implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
+    
+    public void processCashierPharmacySaleBillTotalDateWise() {
+        //For Auditing Purposes
+        
+        Map m = new HashMap();
+        String j;
+        j = "select new com.divudi.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.billTime between :fd and :td ";
+
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        
+        j += " group by Function('DATE',(b.createdAt))";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("j = " + j);
+        System.out.println("m = " + m);
+
+        List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
+        billSummeries = new ArrayList<>();
+        Long i = 1l;
+        for (Object o : objs) {
+            BillSummery tbs = (BillSummery) o;
+            tbs.setKey(i);
+            billSummeries.add(tbs);
+            i++;
+            System.out.println("tbs = " + tbs);
+        }
+
+    }
 
     public void fillCashierSummery() {
         //For Auditing Purposes
