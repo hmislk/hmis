@@ -25,6 +25,8 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.DoctorSpeciality;
+import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -58,9 +60,11 @@ public class ChannelScheduleController implements Serializable {
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    DoctorSpecialityFacade doctorSpecialityFacade;
     @Inject
     private SessionController sessionController;
-    private Speciality speciality;
+    private DoctorSpeciality speciality;
     ServiceSession current;
     private Staff currentStaff;
     private List<ServiceSession> filteredValue;
@@ -89,6 +93,21 @@ public class ChannelScheduleController implements Serializable {
     
     public String navigateToChannelSchedule(){
         return "/channel/channel_shedule?faces-redirect=true";
+    }
+    
+    
+    public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
+        List<DoctorSpeciality> lst;
+        String jpql = "Select d "
+                + " from DoctorSpeciality d "
+                + " where d.retired=:ret "
+                + " and d.name like :na "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("na", "%" + qry + "%");
+        m.put("ret", false);
+        lst = getFacade().findByJpql(jpql, m);
+        return lst;
     }
     
     public void fillFees() {
@@ -240,14 +259,14 @@ public class ChannelScheduleController implements Serializable {
     public ChannelScheduleController() {
     }
 
-    public Speciality getSpeciality() {
+    public DoctorSpeciality getSpeciality() {
+        System.out.println("get speciality " + speciality);
         return speciality;
     }
 
-    public void setSpeciality(Speciality speciality) {
-        currentStaff = null;
+    public void setSpeciality(DoctorSpeciality speciality) {
+        System.out.println("set speciality = " + speciality);
         this.speciality = speciality;
-
     }
 
     public StaffFacade getStaffFacade() {
@@ -514,7 +533,10 @@ public class ChannelScheduleController implements Serializable {
         saveFees(getCurrent());
 
         getCurrent().setTotal(calTot());
-        getCurrent().setTotalFfee(calFTot());
+        getCurrent().setTotalForForeigner(calFTot());
+        
+        System.out.println("getCurrent().getTotalFfee() = " + getCurrent().getTotalFfee());
+        
         
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
@@ -608,10 +630,14 @@ public class ChannelScheduleController implements Serializable {
     }
 
     private double calFTot() {
+        System.out.println("calFTot");
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
+            System.out.println("i = " + i);
+            System.out.println("i.getFfee() = " + i.getFfee());
             tot += i.getFfee();
         }
+        System.out.println("tot = " + tot);
         return tot;
     }
 

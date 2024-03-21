@@ -1860,7 +1860,7 @@ public class PatientController implements Serializable {
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
     }
-    
+
     public String navigateToEmrEditPatient() {
         getCurrent();
         return "/emr/patient?faces-redirect=true;";
@@ -2058,6 +2058,11 @@ public class PatientController implements Serializable {
 
         if (p.getPerson() == null) {
             JsfUtil.addErrorMessage("No Person. Not Saved");
+            return;
+        }
+
+        if (p.getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
 

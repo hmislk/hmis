@@ -367,7 +367,7 @@ public class SpecialityController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + SpecialityController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Speciality.class.getName());
             }
         }
     }

@@ -58,10 +58,9 @@
                                                     <p:printer target="gpBillPreview" ></p:printer>
                                                 </p:commandButton>
                                             </div>
-                                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
-
+                                           
                                             <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
-                                                <bi:opdBillPrintRuhunu bill="#{bill}" dup="true" />
+                                               
                                             </ui:repeat>
                                             <ui:repeat value="#{billPackageController.bills}" var="bill">
                                                 <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>

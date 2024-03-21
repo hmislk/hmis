@@ -38,7 +38,7 @@
                         <div class="d-flex justify-content-center align-items-center">
                             <p:commandButton 
                                 ajax="false" 
-                                value="Add Booking" 
+                                value="To Add Booking" 
                                 icon="fas fa-plus"
                                 class="ui-button-success"
                                 action="#{bookingController.navigateToAddBooking()}"
@@ -118,7 +118,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 p-0" >
+                    <div class="col-md-5 p-0" >
                         <p:watermark for="acSessions" value="Select Session" ></p:watermark>
                         <p:selectOneListbox 
                             id="acSessions"
@@ -126,39 +126,45 @@
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
+
                             <f:selectItems 
                                 value="#{bookingController.sessionInstances}" 
                                 var="ses" 
                                 itemValue="#{ses}"
-                                itemLabel="#{ses.name}"/>
-                            <p:column>
+                                itemLabel="#{ses.name}">
+                            </f:selectItems>
+                            <p:column headerText="Name">
+                                <f:facet name="header" >
+                                    <h:outputText value="Name" ></h:outputText>
+                                </f:facet>
                                 <h:outputText value="#{s.name}" />
                             </p:column>
-                            <p:column style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.displayCount}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 50px!important; text-align: center;">
+                            <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{s.sessionDate}">
                                     <f:convertDateTime pattern="dd MMM"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column style="width: 40px!important; text-align: center;">
+                            <p:column headerText="Start" style="width: 40px!important; text-align: center;">
                                 <h:outputText value="#{s.startingTime}">
                                     <f:convertDateTime pattern="hh:mm"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.totalFee}">
+                            <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Booked" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.displayCount}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.total}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
+
                             <p:ajax 
                                 event="change" 
                                 process="@this"
@@ -167,7 +173,7 @@
                         </p:selectOneListbox>
                     </div>
 
-                    <div class="col-4" >
+                    <div class="col-3" >
                         <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
                         <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
                         <p:selectOneListbox 

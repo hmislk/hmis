@@ -411,7 +411,12 @@ public class CommonReport implements Serializable {
     }
 
     public String navigateToPharmacySaleSummery() {
+        billSearch.setBillSummeries(null);
         return "/pharmacy/report_pharmacy_sale_bill_summary.xhtml?faces-redirect=true";
+    }
+    public String navigateToPharmacySaleSummeryByDate() {
+        billSearch.setBillSummeries(null);
+        return "/pharmacy/report_pharmacy_sale_bill_summary_date.xhtml?faces-redirect=true";
     }
     
     public String navigateToReportCashierDetailedByDepartment() {

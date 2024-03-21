@@ -56,7 +56,9 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.java.CommonFunctions;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -377,7 +379,7 @@ public class BillController implements Serializable {
         if (sb == null) {
             return;
         }
-       
+
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
@@ -1894,6 +1896,144 @@ public class BillController implements Serializable {
         } else if (billSessions == null || !billSessions.isEmpty()) {
             billSessions = new ArrayList<>();
         }
+    }
+
+    public List<BillLight> listBillsLights(
+            BillType bt,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        if (bt == null) {
+            return null;
+        }
+//        List<BillType> bts = new ArrayList<>();
+//        bts.add(bt);
+//        System.out.println("listBillsLights = ");
+//        return listBillsLights(bts, ins, dep, fd, td);
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType=:bt ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("bt", bt);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        System.out.println("sql = " + sql);
+        System.out.println("temMap = " + temMap);
+        List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("lst = " + lst);
+        return lst;
+
+    }
+
+    public List<BillLight> listBillsLights(
+            List<BillType> billTypes,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType in :billTypes ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("billTypes", billTypes);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        System.out.println("sql = " + sql);
+        System.out.println("temMap = " + temMap);
+        List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("lst = " + lst);
+        return lst;
+    }
+
+    public List<Bill> listBills(
+            BillType bt,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        if (bt == null) {
+            return null;
+        }
+        List<BillType> bts = new ArrayList<>();
+        bts.add(bt);
+        return listBills(bts, ins, dep, fd, td);
+
+    }
+
+    public List<Bill> listBills(
+            List<BillType> billTypes,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType in :billTypes ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("billTypes", billTypes);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        System.out.println("sql = " + sql);
+        System.out.println("temMap = " + temMap);
+        List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("lst = " + lst);
+        return lst;
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
