@@ -39,22 +39,27 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class DealorDueController implements Serializable {
 
+    @EJB
+    private InstitutionFacade institutionFacade;
+    @EJB
+    private BillFacade billFacade;
+    private CommonFunctions commonFunctions;
+    @EJB
+    private CreditBean creditBean;
+
+    @Inject
+    CommonController commonController;
+    @Inject
+    private BillController billController;
+    @Inject
+    private PharmacyDealorBill pharmacyDealorBill;
+
     private Date fromDate;
     private Date toDate;
     private List<InstitutionBills> items;
     private List<String1Value5> dealorCreditAge;
     private List<String1Value5> filteredList;
-    @EJB
-    private InstitutionFacade institutionFacade;
-    @EJB
-    private BillFacade billFacade;
-
-    private CommonFunctions commonFunctions;
-    @EJB
-    private CreditBean creditBean;
-    
-    @Inject
-    CommonController commonController;
+    private List<Bill> bills;
 
     public void makeNull() {
         fromDate = null;
@@ -102,7 +107,6 @@ public class DealorDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount() + b.getTmpReturnTotal());
 
-
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
             } else if (dayCount < 60) {
@@ -117,44 +121,61 @@ public class DealorDueController implements Serializable {
 
     }
 
-    @Inject
-    private BillController billController;
-    @Inject
-    private PharmacyDealorBill pharmacyDealorBill;
-
     public void fillPharmacyDue() {
         Date startTime = new Date();
-        
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit);
+
         BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process Pharmacy Due)(/faces/dealorPayment/dealor_due.xhtml )");
+    }
+
+    public void fillPharmacyDue1() {
+        Date startTime = new Date();
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, null);
+    }
+
+    public void fillPharmacyDue2() {
+        Date startTime = new Date();
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, null, PaymentMethod.Credit);
+    }
+
+    public void fillPharmacyDue3() {
+        Date startTime = new Date();
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, null, null);
     }
 
     public void fillStoreDue() {
         Date startTime = new Date();
-        
+
         BillType[] billTypesArrayBilled = {BillType.StoreGrnBill, BillType.StorePurchase};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         BillType[] billTypesArrayReturn = {BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process Store Due)(/faces/dealorPayment/dealor_due.xhtml)");
     }
 
     public void fillPharmacyStoreDue() {
         Date startTime = new Date();
-        
+
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process All Due)(/faces/dealorPayment/dealor_due.xhtml)");
     }
 
@@ -202,39 +223,39 @@ public class DealorDueController implements Serializable {
 
     public void fillStoreDueAge() {
         Date startTime = new Date();
-        
+
         BillType[] billTypesArrayBilled = {BillType.StoreGrnBill, BillType.StorePurchase};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         BillType[] billTypesArrayReturn = {BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
 
         createAgeTable(billTypesListBilled, billTypesListReturn);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due by age(Process Store Due Age)(/faces/inward/discharge_book_no_changes_due.xhtml)");
     }
 
     public void fillPharmacyDueAge() {
         Date startTime = new Date();
-        
+
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
 
         createAgeTable(billTypesListBilled, billTypesListReturn);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due by age(Process Pharmacy Due Age)(/faces/inward/discharge_book_no_changes_due.xhtml)");
     }
 
     public void fillPharmacyStoreDueAge() {
         Date startTime = new Date();
-        
+
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         createAgeTable(billTypesListBilled, billTypesListReturn);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due by age(Process All Due Age)(/faces/inward/discharge_book_no_changes_due.xhtml)");
     }
 
@@ -267,7 +288,6 @@ public class DealorDueController implements Serializable {
 
     }
 
- 
     private Institution institution;
 
     public List<Bill> getItems2() {
@@ -387,6 +407,13 @@ public class DealorDueController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
 }

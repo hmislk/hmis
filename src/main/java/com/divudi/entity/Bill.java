@@ -149,6 +149,7 @@ public class Bill implements Serializable {
 
     double billTotal;
     double paidAmount;
+    private double refundAmount;
     double balance;
     double serviceCharge;
     Double tax = 0.0;
@@ -2095,5 +2096,15 @@ public class Bill implements Serializable {
     public void setCreditDuration(int creditDuration) {
         this.creditDuration = creditDuration;
     }
+
+    public double getRefundAmount() {
+        return refundAmount;
+    }
+
+    public void setRefundAmount(double refundAmount) {
+        this.refundAmount = refundAmount;
+    }
+    
+    
 
 }

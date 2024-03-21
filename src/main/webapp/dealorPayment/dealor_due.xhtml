@@ -40,6 +40,24 @@
 
                             </div>
                             <div class="col-10">
+                                <p:dataTable value="#{dealorDueController.bills}" var="b" >
+                                
+                                    <p:column headerText="Bill No" >
+                                        <h:outputText value="#{b.deptId}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type" >
+                                        <h:outputText value="#{b.billType}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Total" >
+                                        <h:outputText value="#{b.netTotal}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Paid Total" >
+                                        <h:outputText value="#{b.paidAmount}" ></h:outputText>
+                                    </p:column>
+                                    
+                                    
+                                </p:dataTable>
+                                
                                 <p:dataTable 
                                     id="lst" 
                                     value="#{dealorDueController.items}" 

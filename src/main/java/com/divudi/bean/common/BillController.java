@@ -1998,6 +1998,35 @@ public class BillController implements Serializable {
 
     }
 
+    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillType> billTypes, PaymentMethod pm) {
+        String jpql;
+        HashMap hm;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+abs(b.refundAmount)))> :val) "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        if (pm != null) {
+            hm.put("pm", PaymentMethod.Credit);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billType in :bts";
+        }
+        System.out.println("hm = " + hm);
+        System.out.println("jpql = " + jpql);
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public List<Bill> listBills(
             List<BillType> billTypes,
             Institution ins,
