@@ -270,13 +270,13 @@
                                     </div>
                                     <div class="col-md-4 p-1">
                                         <p:autoComplete 
-
                                             id="acNewPtArea" 
-
                                             placeholder="Search &amp; Select Area"
                                             completeMethod="#{areaController.completeArea}"
-                                            var="pta" itemLabel="#{pta.name}"
-                                            itemValue="#{pta}" forceSelection="true"
+                                            var="pta" 
+                                            itemLabel="#{pta.name}"
+                                            itemValue="#{pta}" 
+                                            forceSelection="true"
                                             value="#{cc.attrs.controller.patient.person.area}"
                                             inputStyleClass="form-control"
                                             class="w-100"/>
@@ -288,7 +288,7 @@
                                             value="#{cc.attrs.controller.patient.person.religion}">
                                             <f:selectItem itemLabel="Select Religion" />
                                             <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
-                                                           itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                            itemValue="#{i.name}"/>
                                             
                                         </p:selectOneMenu>
                                     </div>
@@ -299,7 +299,7 @@
                                             value="#{cc.attrs.controller.patient.person.civilStatus}">
                                             <f:selectItem itemLabel="Civil Status" />
                                             <f:selectItems value="#{clinicalEntityController.civilStatus}" var="i"
-                                                           itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                           itemLabel="#{i.name}" itemValue="#{i}"/>
                                             
                                         </p:selectOneMenu>
                                     </div>
@@ -310,7 +310,7 @@
                                             value="#{cc.attrs.controller.patient.person.bloodGroup}">
                                             <f:selectItem itemLabel="Blood Group" />
                                             <f:selectItems value="#{clinicalEntityController.bloodGroup}" var="i"
-                                                           itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                           itemLabel="#{i.name}" itemValue="#{i}"/>
                                            
                                         </p:selectOneMenu>
                                     </div>
@@ -321,7 +321,7 @@
                                             value="#{cc.attrs.controller.patient.person.occupation}">
                                             <f:selectItem itemLabel="Employeement" />
                                             <f:selectItems value="#{clinicalEntityController.occupation}" var="i"
-                                                           itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                           itemLabel="#{i.name}" itemValue="#{i}"/>
                                             
                                         </p:selectOneMenu>
                                     </div>
@@ -393,22 +393,6 @@
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.area.name}" />
-                            
-                            <h:outputLabel value="Religion " class="mx-3"/>
-                            <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.religion.name}" />
-                            
-                            <h:outputLabel value="Blood Group " class="mx-3"/>
-                            <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.bloodGroup.name}" />
-                            
-                            <h:outputLabel value="Employment" class="mx-3"/>
-                            <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.occupation.name}" />
-                            
-                            <h:outputLabel value="Civil Status" class="mx-3"/>
-                            <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.civilStatus.name}" />
 
                         </h:panelGrid>
                     </h:panelGroup>
