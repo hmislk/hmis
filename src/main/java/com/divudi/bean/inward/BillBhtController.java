@@ -178,6 +178,7 @@ public class BillBhtController implements Serializable {
     }
 
     public String generateStockerPrinterString() {
+        //TODO: Prevent Duplicates
         JSONArray combinedBarcodes = new JSONArray();
         if (bills == null) {
             return "";
