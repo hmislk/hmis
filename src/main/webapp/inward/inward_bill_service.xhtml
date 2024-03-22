@@ -214,11 +214,10 @@
                                                             <h:outputLabel value="Investigation or Service"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:selectOneMenu value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100" autoWidth="false">
-                                                                <f:selectItem itemLabel="Please select service"/>
-                                                                <f:selectItems value="#{itemController.investigationsAndServices}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                                            <p:selectOneListbox value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100" >
+                                                            
+                                                                <f:selectItems value="#{itemController.investigationsAndServices}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
 
-                                                                </f:selectItems>
                                                                 <p:column>
                                                                     <h:outputLabel value="#{t.name}"/>
                                                                 </p:column>
@@ -232,15 +231,14 @@
                                                                     </h:outputLabel>
                                                                 </p:column>  
                                                                 <p:ajax process="itm" update="gpQtyLbl gpQtyTxt" />
-
-                                                            </p:selectOneMenu>
+                                                            </p:selectOneListbox>
                                                         </div>
                                                     </div>
 
                                                     <div class="row m-1">
                                                         <div class="col-4">
                                                             <h:panelGroup id="gpQtyLbl">
-                                                                <h:outputLabel id="lblQty" value="Quentity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
+                                                                <h:outputLabel id="lblQty" value="Quantity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
                                                             </h:panelGroup>
                                                         </div>
                                                         <div class="col-8">

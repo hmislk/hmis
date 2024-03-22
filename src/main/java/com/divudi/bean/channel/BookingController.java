@@ -213,6 +213,18 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
     public String navigateToAddBooking() {
+        if(speciality == null){
+            JsfUtil.addErrorMessage("Please select a Speciality");
+            return "";
+        }
+        if(staff == null){
+            JsfUtil.addErrorMessage("Please select a Docter");
+            return "";
+        }
+        if(selectedSessionInstance == null){
+            JsfUtil.addErrorMessage("Please select a Session Instance");
+            return "";
+        }
         fillFees();
         return "/channel/add_booking?faces-redirect=true";
     }
