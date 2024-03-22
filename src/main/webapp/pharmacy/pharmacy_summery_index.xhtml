@@ -112,6 +112,8 @@
                                     <p:tab title="Purchase">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Order Summary" action="#{commonReport.navigateToPharmacyPurchaseOrderReportDetail()}" actionListener="#{commonReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Purchase Bills by Department" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseBillByDepartment()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Purchase Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>

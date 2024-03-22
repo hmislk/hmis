@@ -213,7 +213,20 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
     public String navigateToAddBooking() {
+        if (speciality == null) {
+            JsfUtil.addErrorMessage("Please select a Speciality");
+            return "";
+        }
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Please select a Docter");
+            return "";
+        }
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a Session Instance");
+            return "";
+        }
         fillFees();
+        printPreview = false;
         return "/channel/add_booking?faces-redirect=true";
     }
 
@@ -379,12 +392,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String startNewChannelBookingFormSelectingConsultant() {
         resetToStartFromSelectingConsultant();
+        generateSessions();
         printPreview = false;
         return navigateBackToBookings();
     }
 
     public String startNewChannelBookingForSelectingSession() {
         resetToStartFromSameSessionInstance();
+        fillBillSessions();
         printPreview = false;
         return navigateBackToBookings();
     }
@@ -1065,10 +1080,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     + " and s.originatingSession is null"
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
-            List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
-            calculateFee(tmp, channelBillController.getPaymentMethod());
+            List<ServiceSession> selectedDoctorsServiceSessions = getServiceSessionFacade().findByJpql(sql, m);
+            calculateFee(selectedDoctorsServiceSessions, channelBillController.getPaymentMethod());
             try {
-                sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(tmp, sessionStartingDate);
+                sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedDoctorsServiceSessions, sessionStartingDate);
             } catch (Exception e) {
             }
             generateSessionEvents(sessionInstances);
@@ -1244,7 +1259,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedBillSession = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql =  "Select bs "
+        String sql = "Select bs "
                 + " From BillSession bs "
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
