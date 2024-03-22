@@ -4388,7 +4388,7 @@ public class CommonReport implements Serializable {
         return items;
     }
 
-    public void createPurchaseOrderDetailTable() {
+    public void createPurchaseOrderDetailApprovedTable() {
         bills = new ArrayList<>();
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.PharmacyOrder);
@@ -4423,7 +4423,83 @@ public class CommonReport implements Serializable {
         System.out.println("sql = " + sql);
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
-        System.out.println("bills = " + bills);
+        calculateTotalOfPuchaseOrderSummaryBills();
+    }
+    
+    public void createPurchaseOrderDetailNotApprovedTable() {
+        bills = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyOrder);
+        billTypes.add(BillType.PharmacyOrderApprove);
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "select b From Bill b where"
+                + " b.referenceBill is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType in :bTp  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billTypes);
+        if(department!=null){
+            sql+=" and b.department =:dept ";
+            tmp.put("dept", department);
+        }
+        if(institution!=null){
+            sql+=" and b.institution =:ins ";
+            tmp.put("ins", institution);
+        }
+        if (!getDepartmentId().trim().equals("")) {
+            sql+= " and b.deptId like :deptId";
+            tmp.put("deptId", "%" + getDepartmentId() + "%");     
+        }
+        
+        sql += " order by b.createdAt desc  ";
+        System.out.println("tmp = " + tmp);
+        System.out.println("sql = " + sql);
+       
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+        calculateTotalOfPuchaseOrderSummaryBills();
+
+    }
+    
+    public void createPurchaseOrderDetailAllTable() {
+        bills = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyOrder);
+        billTypes.add(BillType.PharmacyOrderApprove);
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "select b From Bill b where"
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType in :bTp  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billTypes);
+        if(department!=null){
+            sql+=" and b.department =:dept ";
+            tmp.put("dept", department);
+        }
+        if(institution!=null){
+            sql+=" and b.institution =:ins ";
+            tmp.put("ins", institution);
+        }
+        if (!getDepartmentId().trim().equals("")) {
+            sql+= " and b.deptId like :deptId";
+            tmp.put("deptId", "%" + getDepartmentId() + "%");     
+        }
+        
+        sql += " order by b.createdAt desc  ";
+        System.out.println("tmp = " + tmp);
+        System.out.println("sql = " + sql);
+       
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+        calculateTotalOfPuchaseOrderSummaryBills();
 
     }
     public void createGrnDetailTable() {
@@ -6319,6 +6395,23 @@ public class CommonReport implements Serializable {
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc detail(/faces/reportLab/report_lab_collection_centre.xhtml)");
+    }
+    
+    public void calculateTotalOfPuchaseOrderSummaryBills(){
+        pharmacyCashBilledBillTotals = 0;
+        pharmacyCreditBilledBillTotals = 0;
+        if(bills==null){
+            JsfUtil.addErrorMessage("No bill get selected");
+            return;
+        }
+        for (Bill b:bills){
+            if(b.getPaymentMethod()==PaymentMethod.Cash){
+                pharmacyCashBilledBillTotals+=b.getNetTotal();
+            }
+            else if(b.getPaymentMethod()==PaymentMethod.Credit){
+                pharmacyCreditBilledBillTotals+=b.getNetTotal();
+            }
+        }
     }
 
     public void createCollectingCenterSummeryTable() {
