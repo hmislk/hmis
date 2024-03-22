@@ -366,18 +366,7 @@
                     </div>
                 </f:facet>
 
-                <h:panelGroup id="gpBillPreview">
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Sethma'}" class="d-flex justify-content-center">
-                        <bill:bht admission="#{admissionController.current}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Sethma'}" class="d-flex justify-content-center">
-                        <bill:bht_sethma admission="#{admissionController.current}"/>
-                    </h:panelGroup>
-                </h:panelGroup>
-
-
-
+                <bill:bht_sethma admission="#{admissionController.current}"/>
 
             </p:panel>
 
