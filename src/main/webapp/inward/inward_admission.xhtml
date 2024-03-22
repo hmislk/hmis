@@ -395,8 +395,9 @@
                         icon="fa fa-fw fa-bed" > <!-- Font Awesome icon for user -->
                         <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                     </p:commandButton>
-
-                    <bill:bht_sethma admission="#{admissionController.current}"/>
+                    <h:panelGroup id="gpBillPreview">
+                        <bill:bht_sethma admission="#{admissionController.current}"/>
+                    </h:panelGroup>
                 </p:panel>
 
 
