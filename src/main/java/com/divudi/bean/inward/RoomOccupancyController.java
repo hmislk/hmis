@@ -134,12 +134,11 @@ public class RoomOccupancyController implements Serializable {
         Date toDate = null;
         String sql = "SELECT rf FROM RoomFacilityCharge rf "
                 + " where rf.retired=false "
-                + " and rf.room.filled=false"
+                + " and rf.room.filled=true"
                 + " and rf.room.retired=false"
                 + " order by rf.name";
 
         roomFacilityCharges = getRoomFacilityChargeFacade().findByJpql(sql);
-
         commonController.printReportDetails(fromDate, toDate, startTime, "Room Vacancy(/faces/inward/inward_room_occupancy.xhtml)");
     }
 
