@@ -51,6 +51,7 @@ public class UserNotificationController implements Serializable {
     private UserNotificationFacade ejbFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
+    
 
     public void save(UserNotification userNotification) {
         if (userNotification == null) {
@@ -93,6 +94,22 @@ public class UserNotificationController implements Serializable {
         return ejbFacade;
     }
 
+    public void fillLoggedUserNotifications(){
+        String jpql = "select un "
+                + " from UserNotification un "
+                + " where un.seen=:seen "
+                + " and un.webUser=:wu "
+                + " and un.notification.completed=:com";
+        Map m = new HashMap();
+        m.put("seen", false);
+        m.put("com", false);
+        m.put("wu", sessionController.getLoggedUser());
+        items = getFacade().findByJpql(jpql, m);
+        for(UserNotification un:items){
+            String msg = un.getNotification().getMessage();
+        }
+    }
+    
     public void createUserNotifications(Notification notification) {
         if (notification == null) {
             return;
@@ -113,6 +130,8 @@ public class UserNotificationController implements Serializable {
 
     }
     
+    
+    
     private void createUserNotificationsForPharmacyTransferRequest(Notification n){
         List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
         List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
@@ -122,8 +141,17 @@ public class UserNotificationController implements Serializable {
             System.out.println("number = " + number);
             //TODo
         }
-        
-        
+        for(WebUser u:emailUsers){
+            String number = u.getWebUserPerson().getMobile();
+            System.out.println("number = " + number);
+            //TODo
+        }
+        for(WebUser u:notificationUsers){
+            UserNotification nun = new UserNotification();
+            nun.setNotification(n);
+            nun.setWebUser(u);
+            getFacade().create(nun);
+        }
     }
 
     public SessionController getSessionController() {
