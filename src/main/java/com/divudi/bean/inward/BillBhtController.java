@@ -167,6 +167,7 @@ public class BillBhtController implements Serializable {
             sticker.setTests(barcode.getString("tests"));
             sticker.setPatientName(barcode.getString("name"));
             sticker.setPatientAge(barcode.getString("age"));
+            sticker.setPatientSex(barcode.getString("sex"));
             sticker.setSampleId(barcode.getString("id"));
             sticker.setBillDateString(barcode.getString("billDate"));
 

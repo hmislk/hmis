@@ -138,7 +138,10 @@
                                          value="#{sessionController.currentPreference.nicRegex}" >
                             </p:inputText>
 
-
+                            <h:outputLabel
+                                class="form-label w-100"
+                                value="Change the case of the patient name "></h:outputLabel>
+                            <p:inputText value="#{sessionController.currentPreference.changeTextCasesPatientName}"/>
 
 
 
@@ -155,7 +158,7 @@
                             <p:selectBooleanButton value="#{sessionController.currentPreference.opdBillingAftershiftStart}" offLabel="No" onLabel="Yes" >
                                 <p:ajax process="@this" ></p:ajax>
                             </p:selectBooleanButton>
-                            
+
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>

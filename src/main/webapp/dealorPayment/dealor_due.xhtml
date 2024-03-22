@@ -26,10 +26,15 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{dealorDueController.toDate}" navigator="false" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                             class="w-100" inputStyleClass="w-100">
+                                            class="w-100" inputStyleClass="w-100">
 
                                 </p:calendar>
-                                <p:commandButton value="Process Pharmacy Due" action="#{dealorDueController.fillPharmacyDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100 ui-button-warning" />
+                                <p:commandButton 
+                                    value="Process Pharmacy Due" 
+                                    action="#{dealorDueController.fillPharmacyDue()}" 
+                                    ajax="false"  
+                                    icon="fas fa-search" 
+                                    class="my-1 w-100 ui-button-warning" />
                                 <p:commandButton value="Process Store Due" action="#{dealorDueController.fillStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100 ui-button-warning" />
                                 <p:commandButton value="Process All Due" action="#{dealorDueController.fillPharmacyStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100 ui-button-warning" />
 

@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 
@@ -38,6 +39,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -76,6 +78,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     RoomChangeController roomChangeController;
     @Inject
     InpatientClinicalDataController inpatientClinicalDataController;
+    @Inject
+    CommonFunctionsController commonFunctionsController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -91,12 +95,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private RoomFacade roomFacade;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
-            
+
     @Inject
     BhtEditController bhtEditController;
     @Inject
     BhtSummeryController bhtSummeryController;
-    
+
     ////////////////////////////
     private CommonFunctions commonFunctions;
     ///////////////////////
@@ -133,15 +137,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
 
-    public void copyPatientAddressToGurdian(){
+    public void copyPatientAddressToGurdian() {
         current.getGuardian().setAddress(current.getPatient().getPerson().getAddress());
     }
-    
-    public void copyPatientPhoneNumberToGurdian(){
-        System.out.println("this = " + current.getPatient().getPerson().getPhone());
-        current.getGuardian().setPhone(current.getPatient().getPerson().getPhone());
+
+    public void copyPatientPhoneNumberToGurdian() {
+        current.getGuardian().setMobile(current.getPatient().getPerson().getMobile());
     }
-    
+
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
     }
@@ -167,21 +170,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
     }
-    
-    public void addCreditCompnay(){
+
+    public void addCreditCompnay() {
         // need to add encounterCreditCompany to list
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
             encounterCreditCompanies.add(encounterCreditCompany);
-            encounterCreditCompany=new EncounterCreditCompany();
+            encounterCreditCompany = new EncounterCreditCompany();
         }
-        
+
     }
-    
-    public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany){
+
+    public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         if (encounterCreditCompany != null) {
             encounterCreditCompanies.remove(encounterCreditCompany);
-            encounterCreditCompany=new EncounterCreditCompany();
+            encounterCreditCompany = new EncounterCreditCompany();
         }
     }
 
@@ -362,7 +365,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToSearchInwardBills() {
         return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
     }
-    
+
     public String navigateToSearchAdmissions() {
         return "/inward/inpatient_search?faces-redirect=true";
     }
@@ -755,6 +758,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     private void savePatient() {
+        String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
+        String updatedPersonName = commonFunctionsController.changeTextCases(getPatient().getPerson().getName(), tc);
+        String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
+        if (updatedPersonName == null) {
+            getPatient().getPerson().setName(updatedPersonName);
+        }
+        if (updatedAddress == null) {
+            getPatient().getPerson().setAddress(updatedAddress);
+        }
         Person person = getPatient().getPerson();
         getPatient().setPerson(null);
 
@@ -805,25 +817,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return true;
         }
-        
+
+        if (getCurrent().getDateOfAdmission() == null) {
+            JsfUtil.addErrorMessage("Pleace Select Admitted Time");
+            return true;
+        }
+
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
-            if(encounterCreditCompany.getInstitution()!=null){
-                    getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
-                    getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
-                    getCurrent().setPolicyNo(encounterCreditCompany.getPolicyNo());
-                    getCurrent().setReferanceNo(encounterCreditCompany.getReferanceNo());
-                    //TO DO - Add credit limit, etc
-                }
-            
-            if(!getEncounterCreditCompanies().isEmpty()){
-                    EncounterCreditCompany tec = getEncounterCreditCompanies().get(0);
-                    getCurrent().setCreditCompany(tec.getInstitution());
-                    getCurrent().setCreditLimit(tec.getCreditLimit());
-                    getCurrent().setPolicyNo(tec.getPolicyNo());
-                    getCurrent().setReferanceNo(tec.getReferanceNo());
-                    //TO Do - add other fields
-                }
-            
+            if (encounterCreditCompany.getInstitution() != null) {
+                getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
+                getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
+                getCurrent().setPolicyNo(encounterCreditCompany.getPolicyNo());
+                getCurrent().setReferanceNo(encounterCreditCompany.getReferanceNo());
+                //TO DO - Add credit limit, etc
+            }
+
+            if (!getEncounterCreditCompanies().isEmpty()) {
+                EncounterCreditCompany tec = getEncounterCreditCompanies().get(0);
+                getCurrent().setCreditCompany(tec.getInstitution());
+                getCurrent().setCreditLimit(tec.getCreditLimit());
+                getCurrent().setPolicyNo(tec.getPolicyNo());
+                getCurrent().setReferanceNo(tec.getReferanceNo());
+                //TO Do - add other fields
+            }
+
             if (getCurrent().getCreditCompany() == null) {
                 JsfUtil.addErrorMessage("Select Credit Company");
                 return true;
@@ -1006,31 +1023,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getInwardPaymentController().pay();
             getInwardPaymentController().makeNull();
         }
-        
+
         saveEncounterCreditCompanies(current);
-        
-       
+
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         printPreview = true;
     }
-    
-    
-    public void saveEncounterCreditCompanies(PatientEncounter current){
-         if (!encounterCreditCompanies.isEmpty() && current != null) {
-            for(EncounterCreditCompany ecc:encounterCreditCompanies){
+
+    public void saveEncounterCreditCompanies(PatientEncounter current) {
+        if (!encounterCreditCompanies.isEmpty() && current != null) {
+            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
                 ecc.setPatientEncounter(current);
                 ecc.setCreatedAt(new Date());
                 ecc.setCreater(sessionController.getLoggedUser());
                 if (ecc.getInstitution() != null) {
-                getEncounterCreditCompanyFacade().create(ecc);
+                    getEncounterCreditCompanyFacade().create(ecc);
                 } else {
-                getEncounterCreditCompanyFacade().edit(ecc);
+                    getEncounterCreditCompanyFacade().edit(ecc);
                 }
-            } 
+            }
         }
-        encounterCreditCompanies=new ArrayList<>();
-        encounterCreditCompany= new EncounterCreditCompany();
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
     }
 
     public void setSelectText(String selectText) {
@@ -1240,7 +1255,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
-        if(current!=null){
+        if (current != null) {
             current.setPatient(patient);
         }
     }
@@ -1361,8 +1376,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.bhtNumberForSearch = bhtNumberForSearch;
     }
 
-    
-    
     public Doctor getReferringDoctorForSearch() {
         return referringDoctorForSearch;
     }
@@ -1434,9 +1447,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setPatientNumberForSearch(String patientNumberForSearch) {
         this.patientNumberForSearch = patientNumberForSearch;
     }
-    
-    
-    
 
     @Override
     public boolean isPatientDetailsEditable() {
@@ -1449,7 +1459,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public List<EncounterCreditCompany> getEncounterCreditCompanies() {
-        if(encounterCreditCompanies==null){
+        if (encounterCreditCompanies == null) {
             encounterCreditCompanies = new ArrayList<>();
         }
         return encounterCreditCompanies;
@@ -1460,7 +1470,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public EncounterCreditCompany getEncounterCreditCompany() {
-        if(encounterCreditCompany==null){
+        if (encounterCreditCompany == null) {
             encounterCreditCompany = new EncounterCreditCompany();
             encounterCreditCompany.setPatientEncounter(current);
         }
