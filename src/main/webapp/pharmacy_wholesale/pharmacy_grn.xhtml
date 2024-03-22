@@ -28,7 +28,7 @@
                         <f:selectItem itemLabel="SelectPayment method"/>
                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
                     </p:selectOneMenu>
-                    <p:commandButton  value="Settle" action="#{grnController.settle}"
+                    <p:commandButton  value="Settle" action="#{grnController.settleWholesale()}"
                                       
                                     ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
