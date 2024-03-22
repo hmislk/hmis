@@ -763,9 +763,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
         if (updatedPersonName == null) {
             getPatient().getPerson().setName(updatedPersonName);
+            System.out.println("updatedAddress = " + updatedPersonName);
         }
         if (updatedAddress == null) {
             getPatient().getPerson().setAddress(updatedAddress);
+            System.out.println("updatedAddress = " + updatedAddress);
         }
         Person person = getPatient().getPerson();
         getPatient().setPerson(null);
