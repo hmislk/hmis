@@ -4,12 +4,9 @@
  */
 package com.divudi.entity;
 
-import com.divudi.data.TriggerType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -18,27 +15,23 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author L C J Samarasekara
+ * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Entity
-public class TriggerSubscription implements Serializable {
+public class UserNotification implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
-    @Enumerated(EnumType.ORDINAL)
-    private TriggerType triggerType;
+    @ManyToOne
+    private Notification notification;
     @ManyToOne
     private WebUser webUser;
-    @ManyToOne
-    private Department department;
-    @ManyToOne
-    private WebUserRole webUserRole;
-    private double orderNumber;
+    private boolean seen;
     
-    //Created Properties
+        //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -50,13 +43,7 @@ public class TriggerSubscription implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    //Editer Properties
-    @ManyToOne
 
-    private WebUser editer;
-
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date editedAt;
 
     public Long getId() {
         return id;
@@ -65,6 +52,8 @@ public class TriggerSubscription implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
 
     @Override
     public int hashCode() {
@@ -76,10 +65,10 @@ public class TriggerSubscription implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TriggerSubscription)) {
+        if (!(object instanceof UserNotification)) {
             return false;
         }
-        TriggerSubscription other = (TriggerSubscription) object;
+        UserNotification other = (UserNotification) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -88,15 +77,15 @@ public class TriggerSubscription implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.TriggerSubscription[ id=" + id + " ]";
+        return "com.divudi.entity.UserNotification[ id=" + id + " ]";
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public Notification getNotification() {
+        return notification;
     }
 
-    public void setTriggerType(TriggerType triggerType) {
-        this.triggerType = triggerType;
+    public void setNotification(Notification notification) {
+        this.notification = notification;
     }
 
     public WebUser getWebUser() {
@@ -107,13 +96,13 @@ public class TriggerSubscription implements Serializable {
         this.webUser = webUser;
     }
 
-    public Department getDepartment() {
-        return department;
+    public boolean isSeen() {
+        return seen;
     }
 
-    public void setDepartment(Department department) {
-        this.department = department;
-    }  
+    public void setSeen(boolean seen) {
+        this.seen = seen;
+    }
 
     public WebUser getCreater() {
         return creater;
@@ -162,36 +151,5 @@ public class TriggerSubscription implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
-
-    public double getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(double orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-
-    public WebUserRole getWebUserRole() {
-        return webUserRole;
-    }
-
-    public void setWebUserRole(WebUserRole webUserRole) {
-        this.webUserRole = webUserRole;
-    } 
+    
 }
