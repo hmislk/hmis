@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.InstitutionType;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -1444,6 +1445,51 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashierBillFeePayment/report_cashier_summery_by_user.xhtml?faces-redirect=true";
+    }
+    
+    public void makeNull(){
+        institution=null;
+        department=null;
+        fromDate=null;
+        toDate=null;
+        departmentId=null;
+    }
+    
+     public String navigateToPharmacyPurchaseOrderReportDetail() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToPharmacyPurchaseOrderReportDetail()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_purchase_order_report_detail.xhtml?faces-redirect=true";
     }
 
     public String navigateToReportCashierSummeryByDepartmentwise() {
@@ -4342,6 +4388,44 @@ public class CommonReport implements Serializable {
         return items;
     }
 
+    public void createPurchaseOrderDetailTable() {
+        bills = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyOrder);
+        billTypes.add(BillType.PharmacyOrderApprove);
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "select b From Bill b where"
+                + " b.referenceBill is not null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType in :bTp  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billTypes);
+        if(department!=null){
+            sql+=" and b.department =:dept ";
+            tmp.put("dept", department);
+        }
+        if(institution!=null){
+            sql+=" and b.institution =:ins ";
+            tmp.put("ins", institution);
+        }
+        if (!getDepartmentId().trim().equals("")) {
+            sql+= " and b.deptId like :deptId";
+            tmp.put("deptId", "%" + getDepartmentId() + "%");     
+        }
+        
+        sql += " order by b.createdAt desc  ";
+        System.out.println("tmp = " + tmp);
+        System.out.println("sql = " + sql);
+       
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+        System.out.println("bills = " + bills);
+
+    }
     public void createGrnDetailTable() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
