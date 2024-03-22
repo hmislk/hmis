@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 
@@ -38,6 +39,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -76,6 +78,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     RoomChangeController roomChangeController;
     @Inject
     InpatientClinicalDataController inpatientClinicalDataController;
+    @Inject
+    CommonFunctionsController commonFunctionsController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -754,6 +758,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     private void savePatient() {
+        String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
+        String updatedPersonName = commonFunctionsController.changeTextCases(getPatient().getPerson().getName(), tc);
+        String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
+        if (updatedPersonName == null) {
+            getPatient().getPerson().setName(updatedPersonName);
+        }
+        if (updatedAddress == null) {
+            getPatient().getPerson().setAddress(updatedAddress);
+        }
         Person person = getPatient().getPerson();
         getPatient().setPerson(null);
 

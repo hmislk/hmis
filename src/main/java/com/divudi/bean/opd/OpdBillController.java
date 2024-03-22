@@ -1308,7 +1308,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getPatient().getId() == null) {
             if (getPatient().getPerson().getName() != null) {
                 String updatedPatientName;
-                updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getLoggedPreference().getChangeTextCasesPatientName());
+                updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
                 System.out.println("updatedPatientName = " + updatedPatientName);
                 getPatient().getPerson().setName(updatedPatientName);
             }
