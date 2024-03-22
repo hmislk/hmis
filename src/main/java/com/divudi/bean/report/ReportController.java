@@ -379,6 +379,39 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
     
+    private List<BillLight> ReferralDocCount = new ArrayList<>();
+    
+    public void processPharmacySaleReferralCount() {
+        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.name, count(bi), count(bi.netTotal)) "
+                + " from Bill bi "
+                + " where bi.cancelled=:can "
+                + " and bi.createdAt between :fd and :td "
+                + " and bi.billType=:bitype ";
+        Map m = new HashMap();
+
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype", BillType.PharmacySale);
+
+
+        if (department  != null) {
+            jpql += " and bi.fromDepartment=:fdept ";
+            m.put("fdept", department);
+        }
+        
+        if (referingDoctor  != null) {
+            jpql += " and bi.referredBy=:refDoc ";
+            m.put("refDoc", referingDoctor);
+        }
+
+        jpql += " group by bi.referredBy.name ";
+        jpql += " order by bi.referredBy.name ";
+
+        ReferralDocCount = (List<BillLight>) billFacade.findLightsByJpql(jpql, m);
+        System.out.println("ReferralDocCount = " + ReferralDocCount);
+    }
+    
     public void processPharmacySaleItemCount() {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
@@ -1548,6 +1581,14 @@ public class ReportController implements Serializable {
 
     public void setCollectionCenters(List<Institution> collectionCenters) {
         this.collectionCenters = collectionCenters;
+    }
+
+    public List<BillLight> getReferralDocCount() {
+        return ReferralDocCount;
+    }
+
+    public void setReferralDocCount(List<BillLight> ReferralDocCount) {
+        this.ReferralDocCount = ReferralDocCount;
     }
 
     

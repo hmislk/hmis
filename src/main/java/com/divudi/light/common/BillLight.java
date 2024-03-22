@@ -1,5 +1,6 @@
 package com.divudi.light.common;
 
+import com.divudi.entity.Staff;
 import java.util.Date;
 
 /**
@@ -21,7 +22,17 @@ public class BillLight {
     private Double netValue;
     private Long patientId;
 
+    private String refDocter;
+    private double billCount;
+    private double countIncome;
+
     public BillLight() {
+    }
+
+    public BillLight(String refDocter, double billCount, double countIncome) {
+        this.refDocter = refDocter;
+        this.billCount = billCount;
+        this.countIncome = countIncome;
     }
 
     public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue) {
@@ -37,7 +48,7 @@ public class BillLight {
         this.discount = discount;
         this.netValue = netValue;
     }
-    
+
     public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue, Long patientId) {
         this.id = id;
         this.billNo = billNo;
@@ -147,6 +158,30 @@ public class BillLight {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    public double getBillCount() {
+        return billCount;
+    }
+
+    public void setBillCount(double billCount) {
+        this.billCount = billCount;
+    }
+
+    public double getCountIncome() {
+        return countIncome;
+    }
+
+    public void setCountIncome(double countIncome) {
+        this.countIncome = countIncome;
+    }
+
+    public String getRefDocter() {
+        return refDocter;
+    }
+
+    public void setRefDocter(String refDocter) {
+        this.refDocter = refDocter;
     }
 
 }
