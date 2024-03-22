@@ -260,21 +260,19 @@
                                                             <p:spacer />
                                                         </h:panelGrid>
 
-                                                        <h:panelGrid columns="2">
-                                                            <p:outputLabel value="Home Phone No" />
-                                                            <p:inputText class="mx-2 w-100" id="ghno" value="#{admissionController.current.guardian.phone}"  />
-                                                        </h:panelGrid>
 
-                                                        <h:panelGrid columns="2">
-                                                            <p:outputLabel value="Relationship" />
-                                                            <p:selectOneMenu value="#{admissionController.current.guardianRelationshipToPatient}"
-                                                                             filter="true"
-                                                                             filterMatchMode="contains"
-                                                                             class="w-100 mx-2 w-100">
-                                                                <f:selectItems value="#{clinicalEntityController.relationships}" var="r"
-                                                                               itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
-                                                            </p:selectOneMenu>
-                                                        </h:panelGrid>
+                                                        <p:outputLabel value="Home Phone No" />
+                                                        <p:inputText class="mx-2 w-100" id="ghno" value="#{admissionController.current.guardian.phone}"  />
+
+                                                        <p:outputLabel value="Relationship" />
+                                                        <p:selectOneMenu value="#{admissionController.current.guardianRelationshipToPatient}"
+                                                                         filter="true"
+                                                                         filterMatchMode="contains"
+                                                                         class="w-100 mx-2 w-100">
+                                                            <f:selectItems value="#{clinicalEntityController.relationships}" var="r"
+                                                                           itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
+                                                        </p:selectOneMenu>
+
 
                                                         <p:watermark value="Guardian Name" for="gname" />
                                                         <p:watermark value="Guardian NIC" for="gnic" />
