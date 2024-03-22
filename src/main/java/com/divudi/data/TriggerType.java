@@ -7,7 +7,9 @@ package com.divudi.data;
  * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
  */
 public enum TriggerType {
-    Order_Request("Order Request"),
+    Order_Request("Order Request - System Notification"),
+    Order_Request_Sms("Order Request - SMS"),
+    Order_Request_Email("Order Request - Email"),
     Transfer_Issue("Transfer Isuue"),
     Order_Approval("Order Aproval");
 

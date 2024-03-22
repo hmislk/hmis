@@ -55,8 +55,8 @@ public enum BillTypeAtomic {
     PHARMACY_ADJUSTMENT("Pharmacy Adjustment"),
     PHARMACY_ADJUSTMENT_CANCELLED("Pharmacy Adjustment Cancelled"),
 
-    PHARMACY_TRANSFER("Pharmacy Transfer"),
-    PHARMACY_TRANSFER_CANCELLED("Pharmacy Transfer Cancelled"),
+    PHARMACY_TRANSFER_REQUEST("Pharmacy Transfer Request"),
+    PHARMACY_TRANSFER_REQUEST_CANCELLED("Pharmacy Transfer Request Cancelled"),
     PHARMACY_ISSUE("Pharmacy Issue"),
     PHARMACY_ISSUE_CANCELLED("Pharmacy Issue Cancelled"),
     PHARMACY_RECEIVE("Pharmacy Receive"),
