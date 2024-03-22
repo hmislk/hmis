@@ -1028,6 +1028,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml?faces-redirect=true";
     }
+    
+   
 
     public String navigatePharmacyReportPurchaseDetailBySupplier() {
         FacesContext context = FacesContext.getCurrentInstance();
