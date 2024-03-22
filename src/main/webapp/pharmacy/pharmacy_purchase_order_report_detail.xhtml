@@ -49,25 +49,31 @@
 
 
 
-                    <h:panelGrid columns="3" class="my-2">
+                    <h:panelGrid columns="4" class="my-2">
                         <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
-                            value="Fill" 
+                            value="Fill Approved PO" 
                             icon="fa-solid fa-fill"
                             class="ui-button-warning"
-                            actionListener="#{commonReport.createPurchaseOrderDetailTable()}"
+                            actionListener="#{commonReport.createPurchaseOrderDetailApprovedTable()}"
                             style="float: right;" />  
 
-                        <p:commandButton 
-                            actionListener="#{commonReport.createGrnDetailTable()}" 
+                       <p:commandButton 
                             ajax="false" 
-                            value="Excel" 
-                            icon="fa-solid fa-file-excel"
-                            class="ui-button-success mx-2" 
-                            style="float: right;" >
-                            <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
-                        </p:commandButton>
+                            value="Fill Not Approved PO" 
+                            icon="fa-solid fa-fill"
+                            class="mx-1 ui-button-warning"
+                            actionListener="#{commonReport.createPurchaseOrderDetailNotApprovedTable()}"
+                            style="float: right;" />  
+                       
+                       <p:commandButton  
+                            ajax="false" 
+                            value="Fill All PO" 
+                            icon="fa-solid fa-fill"
+                            class="ui-button-warning"
+                            actionListener="#{commonReport.createPurchaseOrderDetailAllTable()}"
+                            style="float: right;" />  
 
                         <p:commandButton 
                             ajax="false" 
@@ -115,8 +121,7 @@
                                 &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
                                 <h:outputLabel  value="#{commonReport.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel>
-                               
+                                </h:outputLabel><br/>
                             </f:facet>
 
                             <p:column headerText="PO No" >
@@ -124,6 +129,10 @@
                                     <h:outputLabel value="PO No"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.deptId}"/>
+                                <f:facet name="footer">  
+                                    <h:outputLabel value="Total Cash P. Value"/><br/>
+                                    <h:outputLabel value="Total Credit P. Value"/><br/>
+                                </f:facet> 
                             </p:column>
 
 
@@ -135,6 +144,10 @@
                                 <h:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
+                                <f:facet name="footer">  
+                                    <h:outputLabel value="#{commonReport.pharmacyCashBilledBillTotals}"/><br/>
+                                    <h:outputLabel value="#{commonReport.pharmacyCreditBilledBillTotals}"/><br/>
+                                </f:facet> 
                             </p:column>
 
                             <p:column headerText="Suplier Name"  >
@@ -174,25 +187,7 @@
                                 <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                             </p:column>
 
-                            <p:column headerText="Sale Value Cash" style=" text-align: right"  >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Sale Value Cash"/>
-                                </f:facet> 
-                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
-                            </p:column>
-
-                            <p:column headerText="Sale Value Credit" style=" text-align: right" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Sale Value Credit"/>
-                                </f:facet> 
-                                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}"  >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
-                            </p:column>
+                           
 
                             <p:column headerText="Remark" >
                                 <f:facet name="header">  
