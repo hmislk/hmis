@@ -1,6 +1,5 @@
 package com.divudi.light.common;
 
-import com.divudi.entity.Staff;
 import java.util.Date;
 
 /**
@@ -12,6 +11,7 @@ public class BillLight {
     private Long id;
     private String billNo;
     private Date billDate;
+    private Date billTime;
     private String institutionName;
     private String departmentName;
     private String userName;
@@ -22,18 +22,26 @@ public class BillLight {
     private Double netValue;
     private Long patientId;
 
-    private String refDocter;
-    private double billCount;
-    private double countIncome;
+    private String referringDoctorName;
+
 
     public BillLight() {
     }
 
-    public BillLight(String refDocter, double billCount, double countIncome) {
-        this.refDocter = refDocter;
-        this.billCount = billCount;
-        this.countIncome = countIncome;
+    public BillLight(Long id, String billNo, Date billDate, Date billTime, String patientName, Double netValue) {
+        this.id = id;
+        this.billNo = billNo;
+        this.billDate = billDate;
+        this.billTime = billTime;
+        this.patientName = patientName;
+        this.netValue = netValue;
     }
+
+    
+
+    
+    
+    
 
     public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue) {
         this.id = id;
@@ -83,6 +91,8 @@ public class BillLight {
     public Date getBillDate() {
         return billDate;
     }
+    
+    
 
     public void setBillDate(Date billDate) {
         this.billDate = billDate;
@@ -160,28 +170,22 @@ public class BillLight {
         this.patientId = patientId;
     }
 
-    public double getBillCount() {
-        return billCount;
+    
+
+    public String getReferringDoctorName() {
+        return referringDoctorName;
     }
 
-    public void setBillCount(double billCount) {
-        this.billCount = billCount;
+    public void setReferringDoctorName(String referringDoctorName) {
+        this.referringDoctorName = referringDoctorName;
     }
 
-    public double getCountIncome() {
-        return countIncome;
+    public Date getBillTime() {
+        return billTime;
     }
 
-    public void setCountIncome(double countIncome) {
-        this.countIncome = countIncome;
-    }
-
-    public String getRefDocter() {
-        return refDocter;
-    }
-
-    public void setRefDocter(String refDocter) {
-        this.refDocter = refDocter;
+    public void setBillTime(Date billTime) {
+        this.billTime = billTime;
     }
 
 }
