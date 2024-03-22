@@ -56,6 +56,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
@@ -1998,23 +1999,27 @@ public class BillController implements Serializable {
 
     }
 
-    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillType> billTypes, PaymentMethod pm) {
+    @Deprecated
+    public List<Bill> findUnpaidBillsOld(Date frmDate, Date toDate, List<BillType> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         String jpql;
         HashMap hm;
         jpql = "Select b "
                 + " From Bill b "
                 + " where b.retired=:ret "
                 + " and b.cancelled=:can "
-                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+abs(b.refundAmount)))> :val) "
                 + " and b.createdAt between :frm and :to ";
         hm = new HashMap();
         hm.put("frm", frmDate);
         hm.put("ret", false);
         hm.put("can", false);
         hm.put("to", toDate);
-        hm.put("val", 0.01);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) > :val) ";
+            hm.put("val", balanceGraterThan);
+        }
         if (pm != null) {
-            hm.put("pm", PaymentMethod.Credit);
+            hm.put("pm", pm);
             jpql += " and b.paymentMethod=:pm ";
         }
         if (billTypes != null) {
@@ -2027,6 +2032,40 @@ public class BillController implements Serializable {
 
     }
 
+    
+    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        String jpql;
+        HashMap hm;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) > :val) ";
+            hm.put("val", balanceGraterThan);
+        }
+        if (pm != null) {
+            hm.put("pm", pm);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billTypeAtomic in :bts";
+        }
+        System.out.println("hm = " + hm);
+        System.out.println("jpql = " + jpql);
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    
     public List<Bill> listBills(
             List<BillType> billTypes,
             Institution ins,

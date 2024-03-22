@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.table.String1Value5;
@@ -121,11 +122,20 @@ public class DealorDueController implements Serializable {
 
     }
 
+    
+    public void fillUnsettledCreditPharmacyBills() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_GRN_WHOLESALE , BillTypeAtomic.PHARMACY_DIRECT_PURCHASE};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+    }
+    
+    
+    @Deprecated
     public void fillPharmacyDue() {
         Date startTime = new Date();
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit);
+        bills = billController.findUnpaidBillsOld(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
 
         BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn};
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
@@ -138,21 +148,21 @@ public class DealorDueController implements Serializable {
         Date startTime = new Date();
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, null);
+        bills = billController.findUnpaidBillsOld(fromDate, toDate, billTypesListBilled, null, null);
     }
 
     public void fillPharmacyDue2() {
         Date startTime = new Date();
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        bills = billController.findUnpaidBills(fromDate, toDate, null, PaymentMethod.Credit);
+        bills = billController.findUnpaidBillsOld(fromDate, toDate, null, PaymentMethod.Credit, null);
     }
 
     public void fillPharmacyDue3() {
         Date startTime = new Date();
         BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
         List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        bills = billController.findUnpaidBills(fromDate, toDate, null, null);
+        bills = billController.findUnpaidBillsOld(fromDate, toDate, null, null, null);
     }
 
     public void fillStoreDue() {
@@ -217,6 +227,7 @@ public class DealorDueController implements Serializable {
         }
     }
 
+    @Deprecated
     public List<InstitutionBills> getItems() {
         return items;
     }

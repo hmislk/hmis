@@ -26,6 +26,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -214,6 +215,8 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setEditedAt(null);
         getCurrentBill().setEditor(null);
 
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
+
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
         } else {
@@ -234,6 +237,7 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setEditor(sessionController.getLoggedUser());
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
 
         getBillFacade().edit(getCurrentBill());
 
@@ -297,13 +301,13 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreater(getSessionController().getLoggedUser());
 
             double qty = 0.0;
-            qty = b.getQty()+b.getPharmaceuticalBillItem().getFreeQty();
+            qty = b.getQty() + b.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 b.setRetired(true);
                 b.setRetirer(sessionController.getLoggedUser());
                 b.setRetiredAt(new Date());
                 b.setRetireComments("Retired at Finalising PO");
-                
+
             }
 
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
@@ -319,7 +323,6 @@ public class PurchaseOrderRequestController implements Serializable {
             } else {
                 getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
-
 
         }
     }
@@ -388,7 +391,6 @@ public class PurchaseOrderRequestController implements Serializable {
 //            return;
 //        }
 
-        
         finalizeBill();
         finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
