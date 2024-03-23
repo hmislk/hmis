@@ -3573,7 +3573,7 @@ public class CommonReport implements Serializable {
         auditEvent.setEventTrigger("createCashierTableByUser()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        header = "Cashier Summery ";
+        header = "Cashier Summery";
         recreteModal();
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
@@ -3937,7 +3937,7 @@ public class CommonReport implements Serializable {
 
         Date startTime = new Date();
 
-        header = "Channel Summery";
+        header = "Cashier Summery";
 
         recreteModal();
 //        //Opd Billed Bills
