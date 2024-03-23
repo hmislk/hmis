@@ -386,6 +386,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         return suggestions;
     }
+    
 
     public void searchAdmissions() {
         if (fromDate == null || toDate == null) {

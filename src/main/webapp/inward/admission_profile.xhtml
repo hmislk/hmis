@@ -48,6 +48,7 @@
                                         target="#{bhtEditController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton 
+                                    disabled="#{admissionController.current.discharged eq true}"
                                     value="Room Change" 
                                     action="#{admissionController.navigateToRoomChange}" 
                                     icon="fa fa-exchange-alt"
@@ -59,6 +60,7 @@
 
                                 <p:commandButton 
                                     value="Guardian Room Change" 
+                                    disabled="#{admissionController.current.discharged eq true}"
                                     action="#{admissionController.navigateToGuardianRoomChange}" 
                                     actionListener="#{roomChangeController.recreate}"
                                     icon="fa fa-users"
