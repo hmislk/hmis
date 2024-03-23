@@ -781,6 +781,9 @@ public class PatientController implements Serializable {
 
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
+        if (ad.getDateOfAdmission()==null) {
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+        }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
         return "/inward/inward_admission?faces-redirect=true;";
