@@ -602,8 +602,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
         String time = CommonController.getDateFormat(
-                b.getSingleBillSession().getSessionTime(),
-                "hh:mm a");
+                b.getSingleBillSession().getServiceSession().getStartingTime(),
+                sessionController.getApplicationPreference().getShortTimeFormat());
 
         String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");

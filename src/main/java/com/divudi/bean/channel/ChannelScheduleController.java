@@ -26,7 +26,11 @@ import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.DoctorSpeciality;
+import com.divudi.entity.ServiceSessionInstance;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.DoctorSpecialityFacade;
+import com.divudi.facade.ServiceSessionInstanceFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +52,7 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class ChannelScheduleController implements Serializable {
 //SheduleController
+
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -62,6 +67,8 @@ public class ChannelScheduleController implements Serializable {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     DoctorSpecialityFacade doctorSpecialityFacade;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
     @Inject
     private SessionController sessionController;
     private DoctorSpeciality speciality;
@@ -90,12 +97,10 @@ public class ChannelScheduleController implements Serializable {
     @EJB
     ItemFeeFacade itemFeeFacade;
 
-    
-    public String navigateToChannelSchedule(){
+    public String navigateToChannelSchedule() {
         return "/channel/channel_shedule?faces-redirect=true";
     }
-    
-    
+
     public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
         List<DoctorSpeciality> lst;
         String jpql = "Select d "
@@ -109,7 +114,7 @@ public class ChannelScheduleController implements Serializable {
         lst = getFacade().findByJpql(jpql, m);
         return lst;
     }
-    
+
     public void fillFees() {
         String sql;
         Map m = new HashMap();
@@ -144,7 +149,7 @@ public class ChannelScheduleController implements Serializable {
         hos.setInstitution(getCurrent().getInstitution());
         if (getCurrent().getDepartment() != null) {
             hos.setDepartment(getCurrent().getDepartment());
-        }else{
+        } else {
             hos.setDepartment(getSessionController().getDepartment());
         }
         hos.setServiceSession(current);
@@ -518,7 +523,6 @@ public class ChannelScheduleController implements Serializable {
             current.setSessionNumberGenerator(ss);
         }
 
-        
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -534,10 +538,9 @@ public class ChannelScheduleController implements Serializable {
 
         getCurrent().setTotal(calTot());
         getCurrent().setTotalForForeigner(calFTot());
-        
+
         System.out.println("getCurrent().getTotalFfee() = " + getCurrent().getTotalFfee());
-        
-        
+
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
         prepareAdd();
@@ -545,9 +548,7 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void updateCreatedServicesesions(ServiceSession ss) {
-        for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
-            System.out.println("i.getName() = " + i.getName());
-
+        for (SessionInstance i : fetchCreatedSessionsInstances(ss)) {
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
             i.setDepartment(ss.getDepartment());
@@ -557,7 +558,6 @@ public class ChannelScheduleController implements Serializable {
             i.setDuration(ss.getDuration());
             i.setRoomNo(ss.getRoomNo());
             i.setAfterSession(ss.getAfterSession());
-            i.setBeforeSession(ss.getBeforeSession());
             i.setDisplayCount(ss.getDisplayCount());
             i.setDisplayPercent(ss.getDisplayPercent());
             i.setRefundable(ss.isRefundable());
@@ -568,8 +568,11 @@ public class ChannelScheduleController implements Serializable {
             i.setReserveName(ss.getReserveName());
             i.setMaxTableRows(ss.getMaxTableRows());
             i.setSessionWeekday(ss.getSessionWeekday());
-
-            getFacade().edit(i);
+            if (i.getId() == null) {
+                sessionInstanceFacade.create(i);
+            }else{
+                sessionInstanceFacade.edit(i);
+            }
         }
     }
 
@@ -587,6 +590,23 @@ public class ChannelScheduleController implements Serializable {
         m.put("class", ServiceSession.class);
         m.put("sd", CommonFunctions.getStartOfDay());
         items = getFacade().findByJpql(sql, m);
+        return items;
+    }
+
+    public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
+        List<SessionInstance> items;
+        String sql;
+        HashMap m = new HashMap();
+        sql = "Select s From SessionInstance s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.originatingSession=:ss"
+                + " and s.sessionDate>=:sd "
+                + " order by s.sessionWeekday,s.startingTime ";
+        m.put("ss", ss);
+        m.put("class", ServiceSession.class);
+        m.put("sd", CommonFunctions.getStartOfDay());
+        items = sessionInstanceFacade.findByJpql(sql, m);
         return items;
     }
 
@@ -825,8 +845,6 @@ public class ChannelScheduleController implements Serializable {
     public void setFeeChanges(List<FeeChange> feeChanges) {
         this.feeChanges = feeChanges;
     }
-
-    
 
     public FeeChangeFacade getFeeChangeFacade() {
         return feeChangeFacade;
