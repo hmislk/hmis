@@ -1226,34 +1226,37 @@ public class ItemController implements Serializable {
 
     }
 
-    public List<Item> completeAmps(String query) {
-        String sql;
-        HashMap tmpMap = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c "
-                    + " from Item c "
-                    + " where c.retired=false "
-                    + " and (type(c)= :amp) "
-                    + " and "
-                    + " (c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and "
-                    + " ("
-                    + " (c.name) like :str "
-                    + " or "
-                    + " (c.code) like :str "
-                    + " or "
-                    + " (c.barcode) like :str ) "
-                    + "order by c.name";
-            tmpMap.put("dep", DepartmentType.Pharmacy);
-            tmpMap.put("amp", Amp.class);
-            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
-        }
-        return suggestions;
-
-    }
+//    @Deprecated(forRemoval = true)
+//    public List<Item> completeAmps(String query) {
+//        // Please use Amp Controller completeAmps
+//        //#{ampController.completeAmp}
+//        String jpql;
+//        HashMap params = new HashMap();
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            jpql = "select c "
+//                    + " from Amp c "
+//                    + " where c.retired=false "
+//                    + " and "
+//                    + " (c.departmentType is null or c.departmentType!=:dep ) "
+//                    + " and "
+//                    + " ("
+//                    + " (c.name) like :str "
+//                    + " or "
+//                    + " (c.code) like :str "
+//                    + " or "
+//                    + " (c.barcode) like :str ) "
+//                    + "order by c.name";
+//            params.put("dep", DepartmentType.Pharmacy);
+//            params.put("str", "%" + query.toUpperCase() + "%");
+//            System.out.println("jpql = " + jpql);
+//            System.out.println("params = " + params);
+//            suggestions = getFacade().findByJpql(jpql, params, 30);
+//        }
+//        return suggestions;
+//
+//    }
 
     public List<Item> completeAmpItemAll(String query) {
         String sql;
