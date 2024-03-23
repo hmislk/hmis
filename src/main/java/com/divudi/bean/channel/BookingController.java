@@ -227,6 +227,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         fillFees();
         printPreview = false;
+        patient = new Patient();
         return "/channel/add_booking?faces-redirect=true";
     }
 
@@ -265,7 +266,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (selectedBillSession.getBill().getBillItems() == null) {
             selectedBillSession.getBill().setBillItems(billController.billItemsOfBill(selectedBillSession.getBill()));
         }
-
+        channelBillController.setBillSession(selectedBillSession);
         if (selectedBillSession.getBill().getBillItems() == null) {
             JsfUtil.addErrorMessage("Bill Items Null");
             return "";
@@ -409,10 +410,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
         printPreview = false;
         return navigateToAddBooking();
     }
-    
-     public String startManageBookingForSameSession() {
-       
+
+    public String navigateToManageBookingForSameSession() {
         printPreview = false;
+        if (printingBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        selectedBillSession = printingBill.getSingleBillSession();
         return navigateToManageBooking();
     }
 
@@ -516,7 +521,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         System.out.println("Saving patient completed" + new Date());
         printingBill = saveBilledBill();
         System.out.println("Printing bill completed" + new Date());
-        printingBill = getBillFacade().find(printingBill.getId());
+//        printingBill = getBillFacade().find(printingBill.getId());
         System.out.println("printing bill retrieved" + new Date());
 //        fillBillSessions();
 //        generateSessions();
