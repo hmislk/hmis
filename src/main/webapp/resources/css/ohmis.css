@@ -113,3 +113,16 @@ th.align-right-header .ui-column-title {
 .no-header-table .ui-datatable-header {
     display: none;
 }
+
+.custom-panel-grid .ui-panelgrid-cell {
+    border: 1px solid black;
+    padding: 5px; /* Adjust padding as needed */
+}
+
+.col-label {
+    width: 40%; /* Adjust label column width as needed */
+}
+
+.col-value {
+    width: 60%; /* Adjust value column width as needed */
+}
