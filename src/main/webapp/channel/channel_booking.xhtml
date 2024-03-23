@@ -23,7 +23,7 @@
                 }
 
                 .fullHeightListbox .ui-selectlistbox-listcontainer {
-                    height: 100% !important;
+                    height: 80vh !important;
                 }
             </style>
 
@@ -83,9 +83,10 @@
                                     value="#{bookingController.speciality}"
                                     class="w-100 fullHeightListbox"
                                     >
-                                    <p:ajax  
+                                    <p:ajax
+                                        event="change"
                                         process="@this" 
-                                        update="scStaff acSessions acBookings"
+                                        update="acBookings scStaff acSessions"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
                                     <f:selectItems 
                                         value="#{doctorSpecialityController.selectedItems}"
