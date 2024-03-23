@@ -182,6 +182,8 @@
                                     </p:tab>  
                                     <p:tab title="Transfer Report">
                                         <div class="d-grid gap-2">
+                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Transfer Report Summary" action="#{commonReport.navigateToPharmacyTransferReportSummary()}" actionListener="#{commonReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Transfer Issue Summary Report By Date" action="#{pharmacySaleReport.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
