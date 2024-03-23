@@ -82,7 +82,6 @@
                                 </ui:repeat>
 
                                 <h:panelGroup id="groupPrint" >
-                                    
                                     <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{opdBillController.bills}" var="ffb">
