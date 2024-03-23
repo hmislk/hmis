@@ -17,6 +17,11 @@ import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.WorkingTime;
 import com.divudi.facade.WorkingTimeFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.inward.AdmissionController;
+import com.divudi.entity.BillFee;
+import com.divudi.entity.Doctor;
+import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Staff;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,7 +46,11 @@ import javax.inject.Named;
 @SessionScoped
 public class WorkingTimeController implements Serializable {
 
+    @EJB
+    private WorkingTimeFacade ejbFacade;
+
     private static final long serialVersionUID = 1L;
+
     @Inject
     SessionController sessionController;
     @Inject
@@ -52,16 +61,32 @@ public class WorkingTimeController implements Serializable {
     OpdBillController opdBillController;
     @Inject
     OpdPreBillController opdPreBillController;
-    @EJB
-    private WorkingTimeFacade ejbFacade;
+    @Inject
+    AdmissionController admissionController;
+
     List<WorkingTime> selectedItems;
     private WorkingTime current;
     private List<WorkingTime> items = null;
     String selectText = "";
+    Doctor doctor;
+    private Staff staff;
+    List<PatientEncounter> staffAdmissionsForPayments;
+    List<BillFee> staffBillFeesForPayment;
+    List<WorkingTime> staffWorkingTimesForPayment;
 
     public List<WorkingTime> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
+    }
+
+    public String selectStaffForOpdPayment() {
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Select staff");
+            return "";
+        }
+        WorkingTime lastWorkingTime = findLastWorkingTime(staff);
+        
+        staffAdmissionsForPayments = admissionController.completeAdmission(selectText);
     }
 
     public String navigateToMarkIn() {
@@ -71,7 +96,7 @@ public class WorkingTimeController implements Serializable {
         FingerPrintRecord sr = new FingerPrintRecord();
         sr.setRecordTimeStamp(new Date());
         current.setStartRecord(sr);
-        return "/opd/markIn";
+        return "/opd/markIn?faces-redirect=true";
     }
 
     public String markIn() {
@@ -121,7 +146,7 @@ public class WorkingTimeController implements Serializable {
 
     public String navigateToListCurrentWorkTimes() {
         items = findCurrentlyActiveWorkingTimes();
-        return "/opd/marked_ins_current";
+        return "/opd/marked_ins_current?faces-redirect=true";
     }
 
     public List<WorkingTime> findCurrentlyActiveWorkingTimes() {
@@ -134,6 +159,21 @@ public class WorkingTimeController implements Serializable {
         return getFacade().findByJpql(j, m);
     }
 
+    
+    public WorkingTime findLastWorkingTime(Staff staff) {
+        String j = "select w "
+                + " from WorkingTime w "
+                + " where w.retired=:ret "
+                + " and w.endRecord is not null "
+                + " and w.staffShift.staff=:staff "
+                + " order by w.endRecord.id desc";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("staff", staff);
+        return getFacade().findFirstByJpql(j, m);
+    }
+    
+    
     public String navigateToListWorkTimes() {
         String j = "select w "
                 + " from WorkingTime w "
@@ -142,7 +182,18 @@ public class WorkingTimeController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         items = getFacade().findByJpql(j, m);
-        return "/opd/workTimes";
+        return "/opd/workTimes?faces-redirect=true";
+    }
+
+    public String navigateToPay() {
+        String j = "select w "
+                + " from WorkingTime w "
+                + " where w.retired=:ret "
+                + " and w.endRecord is null";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findByJpql(j, m);
+        return "/opd/workTimes?faces-redirect=true";
     }
 
     public List<WorkingTime> completeWorkingTime(String qry) {
@@ -259,6 +310,22 @@ public class WorkingTimeController implements Serializable {
             items = getFacade().findByJpql(j);
         }
         return items;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
     /**

@@ -40,6 +40,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.entity.Staff;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -492,6 +493,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " or (c.patient.code) like :q) "
                 + " order by c.bhtNo ";
         hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = getFacade().findByJpql(sql, hm, 20);
+
+        return suggestions;
+    }
+    
+    public List<Admission> findAdmissions(Staff admittingOfficer, Date fromDate, Date toDate) {
+        List<Admission> suggestions;
+        String sql;
+        
+        HashMap hm = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.retired=:ret "
+                + " where c.opdDoctor=:admittingOfficer "
+                + " order by c.bhtNo ";
+        hm.put("admittingOfficer",admittingOfficer);
+        hm.put("ret",false);
+        
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
