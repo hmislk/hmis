@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling'))}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
+
+
+
+
+
+                    <h:form class="container-fluid" >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputText value="Pay Staff" >
+                                </h:outputText>
+                            </f:facet>
+
+
+
+
+                            <p:panelGrid columns="3" class="w-75" rendered="#{workingTimeController.staff eq null}">
+                                <f:facet name="header" >
+                                    <h:outputText value="Select Doctor" ></h:outputText>
+                                </f:facet>
+
+                                <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
+                                <p:autoComplete value="#{workingTimeController.staff}" 
+                                                completeMethod="#{doctorController.completeDoctor}"
+                                                var="s"
+                                                itemLabel="#{s.person.name}"
+                                                itemValue="#{s}"
+                                                >
+                                </p:autoComplete>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Select"
+                                    action="#{workingTimeController.selectStaffForOpdPayment}" ></p:commandButton>
+
+                            </p:panelGrid>
+
+
+
+                            <h:panelGroup rendered="#{workingTimeController.staff ne null}" >
+
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Doctor" />
+                                    <h:outputText value="#{workingTimeController.staff.person.name}" />
+
+                                    <p:outputLabel value="Shift Start" />
+                                    <h:outputText value="#{workingTimeController.workingTimeForPayment.startRecord.recordTimeStamp}" />
+
+                                    <p:outputLabel value="Shift End" />
+                                    <h:outputText value="#{workingTimeController.workingTimeForPayment.endRecord.recordTimeStamp}" />
+
+                                    
+                                    <p:outputLabel value="Bill Fee Value" />
+                                    <p:inputText value="#{workingTimeController.billFeeValue}" />
+
+                                    <p:outputLabel value="Admission Fee Value" />
+                                    <p:inputText value="#{workingTimeController.admissionFeeValue}" />
+
+                                    <p:outputLabel value="Other Fee Value" />
+                                    <p:inputText value="#{workingTimeController.otherFeeValue}" />
+
+                                    <p:outputLabel value="Shift Payment Value" />
+                                    <p:inputText value="#{workingTimeController.shiftPaymentValue}" />
+
+                                    <p:outputLabel value="Admission Rate" />
+                                    <p:inputText value="#{workingTimeController.admissionRate}" />
+
+
+                                    <p:spacer ></p:spacer>
+                                    <p:commandButton ajax="false" value="Calculate" action="#{workingTimeController.calculateStaffPayments()}" >
+                                    </p:commandButton>
+
+                                    <p:outputLabel value="Total Value Paying" />
+                                    <p:inputText value="#{workingTimeController.staffWorkingTimeForPayment}" />
+                                    
+                                    <p:spacer ></p:spacer>
+                                    <p:commandButton ajax="false" value="Pay" action="#{workingTimeController.calculateStaffPayments()}" >
+                                    </p:commandButton>
+
+
+
+                                </p:panelGrid>
+
+
+                            </h:panelGroup>
+
+
+
+
+                        </p:panel>
+
+                    </h:form>
+
+
+                </h:panelGroup>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
+
+
+
+

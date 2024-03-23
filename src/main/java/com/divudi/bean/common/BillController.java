@@ -242,6 +242,8 @@ public class BillController implements Serializable {
         return billFacade.findByJpql(j, m);
     }
 
+    
+    
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -1568,6 +1570,24 @@ public class BillController implements Serializable {
         m.put("b", bill);
         m.put("ret", false);
         return billFeeFacade.findByJpql(jpql, m);
+    }
+    
+    public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
+        System.out.println("findBillFees");
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.bill.billTime between :fromDate and :toDate "
+                + " and bf.staff=:staff";
+        m.put("staff", staff);
+        m.put("ret", false);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        return billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public List<BillFee> billFeesOfBillItem(BillItem billItem) {
