@@ -1410,6 +1410,9 @@ public class CommonReport implements Serializable {
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml?faces-redirect=true";
     }
 
+    public String navigateToPharmacyTransferReportSummary(){
+        return "/pharmacy/pharmacy_transer_request_report_detail.xhtml?faces-redirect=true";
+    }
     public String navigateToReportCashierSummeryByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -4424,6 +4427,84 @@ public class CommonReport implements Serializable {
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
         calculateTotalOfPuchaseOrderSummaryBills();
+    }
+    
+    public void fillToBeTranserDeatilReport() {
+        if (department==null){
+            JsfUtil.addErrorMessage("Please select department");
+            return ;
+        }
+        bills = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyTransferRequest);
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "select b From Bill b where"
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType in :bTp  "
+                + " and b.toDepartment =:dept";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billTypes);
+        tmp.put("dept", department);
+        
+        if(institution!=null){
+            sql+=" and b.toInstitution =:ins ";
+            tmp.put("ins", institution);
+        }
+        
+        
+        if (!getDepartmentId().trim().equals("")) {
+            sql+= " and b.deptId like :deptId";
+            tmp.put("deptId", "%" + getDepartmentId() + "%");     
+        }
+        
+        sql += " order by b.createdAt desc  ";
+        System.out.println("tmp = " + tmp);
+        System.out.println("sql = " + sql);
+       
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+    }
+    
+    public void fillTranserDeatilReport() {
+        if (department==null){
+            JsfUtil.addErrorMessage("Please select department");
+            return ;
+        }
+        bills = new ArrayList<>();
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyTransferIssue);
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "select b From Bill b where"
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType in :bTp  "
+                + " and b.department =:dept";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("bTp", billTypes);
+        tmp.put("dept", department);
+        
+        if(institution!=null){
+            sql+=" and b.institution =:ins ";
+            tmp.put("ins", institution);
+        }
+        if (!getDepartmentId().trim().equals("")) {
+            sql+= " and b.deptId like :deptId";
+            tmp.put("deptId", "%" + getDepartmentId() + "%");     
+        }
+        
+        sql += " order by b.createdAt desc  ";
+        System.out.println("tmp = " + tmp);
+        System.out.println("sql = " + sql);
+       
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
     }
     
     public void createPurchaseOrderDetailNotApprovedTable() {
