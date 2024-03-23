@@ -409,6 +409,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
         printPreview = false;
         return navigateToAddBooking();
     }
+    
+     public String startManageBookingForSameSession() {
+       
+        printPreview = false;
+        return navigateToManageBooking();
+    }
 
     public boolean billSessionErrorPresent() {
         boolean flag = false;
