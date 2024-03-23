@@ -121,7 +121,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-5 p-0" >
+                    <div class="col-md-4 p-0" >
                         <p:watermark for="acSessions" value="Select Session" ></p:watermark>
                         <p:selectOneListbox 
                             id="acSessions"
@@ -148,8 +148,8 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Start" style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.startingTime}">
-                                    <f:convertDateTime pattern="hh:mm"/>
+                                <h:outputText value="#{s.originatingSession.startingTime}">
+                                    <f:convertDateTime pattern="hh:mm a"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Max" style="width: 20px!important; text-align: center;">
@@ -157,10 +157,16 @@
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Booked" style="width: 20px!important; text-align: center;">
+                            <p:column rendered="false" headerText="Booked" style="width: 20px!important; text-align: center;">
                                 <h:outputText value="#{s.displayCount}">
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
+                                <h:outputText value="&nbsp;"></h:outputText>
+                                <h:outputText value="(" class="text-danger"></h:outputText>
+                                <h:outputText value="#{s.transCreditBillCount}"  class="text-danger">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value=")"  class="text-danger"></h:outputText>
                             </p:column>
                             <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
                                 <h:outputText value="#{s.originatingSession.total}">
@@ -176,14 +182,14 @@
                         </p:selectOneListbox>
                     </div>
 
-                    <div class="col-3" >
+                    <div class="col-4" >
                         <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
                         <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
                         <p:selectOneListbox 
                             id="acBookings" 
                             value="#{bookingController.selectedBillSession}" 
                             filter="true" 
-                            
+
                             var="bs" 
                             class="w-100 fullHeightListbox">
                             <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />

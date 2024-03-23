@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
@@ -341,6 +342,23 @@ public class DoctorController implements Serializable {
         this.speciality = speciality;
     }
 
+    public Doctor findDoctor(Long id) {
+        return getFacade().find(id);
+    }
+
+    public Doctor findDoctor(Person person) {
+        String jpql = "select d "
+                + " from Staff d "
+                + " where d.person = :person "
+                + " and d.retired = :ret";
+        
+        Map<String, Object> m = new HashMap<>();
+        m.put("person", person);
+        m.put("ret", false);
+        
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     /**
      *
      */
@@ -379,7 +397,7 @@ public class DoctorController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Doctor.class.getName());
             }
         }
     }

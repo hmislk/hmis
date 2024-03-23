@@ -7,13 +7,18 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Person;
-import com.divudi.facade.PersonFacade;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Bill;
+import com.divudi.entity.Notification;
+import com.divudi.facade.NotificationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -25,70 +30,67 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class PersonController implements Serializable {
+public class NotificationController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
-    private PersonFacade ejbFacade;
-    List<Person> selectedItems;
-    private Person current;
-    private List<Person> items = null;
-    String selectText = "";
+    private NotificationFacade ejbFacade;
+    private Notification current;
+    private List<Notification> items = null;
 
-    public List<Person> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
-    }
-    
-    public Person findPerson(Long id){
-        return getFacade().find(id);
-    }
-
-    public List<Person> completePerson(String qry) {
-        List<Person> a = null;
-        if (qry != null) {
-            a = getFacade().findByJpql("select c from Person c where c.retired=false and "
-                    + "  (c.name) like '%" + qry.toUpperCase() + "%' order by c.name", 20);
+    public void save(Notification notification) {
+        if (notification == null) {
+            return;
         }
-        if (a == null) {
-            a = new ArrayList<Person>();
+        if (notification.getId() != null) {
+            getFacade().edit(notification);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            notification.setCreatedAt(new Date());
+            notification.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(notification);
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
-        return a;
     }
 
-    public void prepPersondd() {
-        current = new Person();
+    public void prepareAdd() {
+        current = new Notification();
     }
 
-    public void setSelectedItems(List<Person> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
-    }
-
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 
-    public void save(Person p) {
-        if (p.getId() == null) {
-            getFacade().create(p);
-        } else {
-            getFacade().edit(p);
+    
+    public void createNotification(Bill bill){
+        if(bill==null){
+            return;
+        }
+        BillTypeAtomic type = bill.getBillTypeAtomic();
+        switch (type) {
+            case PHARMACY_TRANSFER_REQUEST:
+                createPharmacyTransferRequestNotification(bill);
+                break;
+            default:
+                throw new AssertionError();
         }
     }
-
+    
+    private void createPharmacyTransferRequestNotification(Bill bill){
+        Notification nn = new Notification();
+        nn.setBill(bill);
+        nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
+        getFacade().create(nn);
+    }
+    
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -102,34 +104,25 @@ public class PersonController implements Serializable {
         getItems();
     }
 
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
-    }
-
-    public PersonFacade getEjbFacade() {
+    public NotificationFacade getEjbFacade() {
         return ejbFacade;
-    }
-
-    public void setEjbFacade(PersonFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
     }
 
     public SessionController getSessionController() {
         return sessionController;
     }
 
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
+    public NotificationController() {
     }
 
-    public PersonController() {
-    }
-
-    public Person getCurrent() {
+    public Notification getCurrent() {
+        if (current == null) {
+            current = new Notification();
+        }
         return current;
     }
 
-    public void setCurrent(Person current) {
+    public void setCurrent(Notification current) {
         this.current = current;
     }
 
@@ -150,28 +143,27 @@ public class PersonController implements Serializable {
         getCurrent();
     }
 
-    private PersonFacade getFacade() {
+    private NotificationFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<Person> getItems() {
-        items = getFacade().findAll("name", true);
+    public List<Notification> getItems() {
         return items;
     }
 
     /**
      *
      */
-    @FacesConverter(forClass = Person.class)
-    public static class PersonControllerConverter implements Converter {
+    @FacesConverter(forClass = Notification.class)
+    public static class NotificationConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            PersonController controller = (PersonController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "personController");
+            NotificationController controller = (NotificationController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "notificationController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
@@ -192,13 +184,14 @@ public class PersonController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Person) {
-                Person o = (Person) object;
+            if (object instanceof Notification) {
+                Notification o = (Notification) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + Person.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Notification.class.getName());
             }
         }
     }
+
 }

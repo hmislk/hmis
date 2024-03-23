@@ -64,7 +64,8 @@
                                     <p:commandButton class="w-100" value="Fast Moving" action="pharmacy_report_department_fast_moving?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                     <p:commandButton class="w-100" value="Slow Moving" action="pharmacy_report_department_slow_moving?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                     <p:commandButton class="w-100" value="Non Moving" action="pharmacy_report_department_non_moving?faces-redirect=true" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton class="w-100" value="Sale Report" action="pharmacy_sale_report?faces-redirect=true" ajax="false" ></p:commandButton>   
+                                    <p:commandButton class="w-100" value="Prescription Summery" action="#{reportController.navigateToPrescriptionSummaryReport()}" actionListener="#{reportController.makeNull()}" ajax="false" ></p:commandButton>   
+                                    <p:commandButton class="w-100" value="Presciption List" action="#{reportController.navigateToPrescriptionList()}" actionListener="#{reportController.makeNull()}" ajax="false" ></p:commandButton>   
                                 </div>
                             </p:tab>
                             <p:tab title="Stock Taking Reports">
