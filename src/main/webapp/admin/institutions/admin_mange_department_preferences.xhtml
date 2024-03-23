@@ -205,6 +205,14 @@
                                         offIcon="fas fa-times" 
                                         onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.printBarcodeInOpdBill}"/>
+                                    <h:outputLabel
+                                        class="form-label w-100"
+                                        value="Number of OPD Bill Copies"></h:outputLabel>
+                                    <p:inputText value="#{sessionController.currentPreference.numberOfOPDBillCopies}"/>
+                                    <h:outputLabel
+                                        class="form-label w-100"
+                                        value="Number of Collection Centre Bill Copies"></h:outputLabel>
+                                    <p:inputText value="#{sessionController.currentPreference.numberOfCCBillCopies}"/>
                                 </h:panelGrid>
 
 
@@ -374,10 +382,12 @@
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
                                         <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
 
-                                        </p:inputTextarea>
-
+                                        <h:outputLabel
+                                        class="form-label w-100"
+                                        value="Number of Channelling Bill Copies"></h:outputLabel>
+                                        <p:inputText value="#{sessionController.currentPreference.numberOfChannellingBillCopies}"/>
 
                                     </h:panelGrid>
 
