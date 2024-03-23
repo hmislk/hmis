@@ -340,6 +340,10 @@ public class DoctorController implements Serializable {
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
     }
+    
+    public Doctor findDoctor(Long id){
+        return getFacade().find(id);
+    }
 
     /**
      *
@@ -379,7 +383,7 @@ public class DoctorController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Doctor.class.getName());
             }
         }
     }

@@ -1,8 +1,10 @@
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.CategoryCount;
@@ -29,6 +31,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
+import com.divudi.light.common.PrescriptionSummaryReportRow;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.inject.Named;
@@ -58,6 +61,10 @@ import javax.servlet.http.HttpServletResponse;
 @Named
 @SessionScoped
 public class ReportController implements Serializable {
+
+    @Inject
+    DoctorController doctorController;
+
     public void processCollectionCenterBalance() {
         String jpql = "select cc"
                 + " from Institution cc"
@@ -70,7 +77,28 @@ public class ReportController implements Serializable {
 
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
-    
+
+    public String navigateToPrescriptionSummaryReport() {
+        return "/pharmacy/prescription_summary_report?faces-redirect=true";
+    }
+
+    public String navigateToPrescriptionList() {
+        return "/pharmacy/prescription_list?faces-redirect=true";
+    }
+
+    public String navigateToPrescriptionListFromPrescriptionSummery(Long doctorId) {
+        if (doctorId == null || doctorId == 0) {
+            JsfUtil.addErrorMessage("Error 1");
+            return "";
+        }
+        referringDoctor = doctorController.findDoctor(doctorId);
+        if (referringDoctor == null) {
+            JsfUtil.addErrorMessage("Error 2");
+            return "";
+        }
+        return navigateToPrescriptionList();
+    }
+
     public void processCollectingCentreBillWiseDetailReport() {
         String jpql = "select bill "
                 + " from Bill bill "
@@ -118,7 +146,6 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.item.id = :item ";
 //            m.put("item", itemLight.getId());
 //        }
-
         if (referringDoctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
             m.put("refDoc", referringDoctor);
@@ -128,7 +155,6 @@ public class ReportController implements Serializable {
 //            jpql += " and billItemStatus = :status ";
 //            m.put("status", status);
 //        }
-
         bills = billFacade.findByJpql(jpql, m);
     }
 
@@ -137,10 +163,10 @@ public class ReportController implements Serializable {
 
     @EJB
     BillFacade billFacade;
-    
+
     @EJB
     InstitutionFacade institutionFacade;
-    
+
     @Inject
     private InstitutionController institutionController;
 
@@ -172,7 +198,6 @@ public class ReportController implements Serializable {
     private String visitType;
     private Patient patient;
     private String diagnosis;
-    private Doctor referingDoctor;
 
     private Investigation investigation;
     private Speciality currentSpeciality;
@@ -203,6 +228,9 @@ public class ReportController implements Serializable {
 
     private List<ItemLight> investigationsAndServices;
     private ItemLight itemLight;
+
+    private List<PrescriptionSummaryReportRow> prescriptionSummaryReportRows;
+    private List<BillLight> billLights;
 
     public ReportController() {
     }
@@ -335,7 +363,6 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.bill.fromInstitution.route = :route ";
 //            m.put("route", route);
 //        }
-
         if (institution != null) {
             jpql += " and bi.bill.institution = :ins ";
             m.put("ins", institution);
@@ -355,7 +382,6 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.bill.patient.phn = :phn ";
 //            m.put("phn", phn);
 //        }
-
         if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
             jpql += " and bi.bill.deptId = :inv ";
             m.put("inv", invoiceNumber);
@@ -375,10 +401,129 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.billItemStatus = :status ";
 //            m.put("status", status);
 //        }
-
         billItems = billItemFacade.findByJpql(jpql, m);
     }
-    
+
+//    
+//    public void processPharmacySaleReferralCount() {
+//        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
+//                + " from Bill bi "
+//                + " where bi.cancelled=:can "
+//                + " and bi.createdAt between :fd and :td "
+//                + " and bi.billType=:bitype ";
+//        Map m = new HashMap();
+//
+//        m.put("can", false);
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        m.put("bitype", BillType.PharmacySale);
+//
+//
+//        if (department  != null) {
+//            jpql += " and bi.fromDepartment=:fdept ";
+//            m.put("fdept", department);
+//        }
+//        
+//        if (referingDoctor  != null) {
+//            jpql += " and bi.referredBy=:refDoc ";
+//            m.put("refDoc", referingDoctor);
+//        }
+//        jpql += " group by bi.referredBy.person.name ";
+//        jpql += " order by bi.referredBy.person.name ";
+//        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m);
+//    }
+//    
+    public void processPresciptionSummeryReport() {
+        String jpql = "select new "
+                + " com.divudi.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
+                + " from Bill bi "
+                + " where bi.cancelled=:can "
+                + " and bi.billDate between :fd and :td "
+                + " and bi.billType=:bitype ";
+        Map m = new HashMap();
+
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype", BillType.PharmacySale);
+
+        if (department != null) {
+            jpql += " and bi.fromDepartment=:fdept ";
+            m.put("fdept", department);
+        }
+
+        if (referringDoctor != null) {
+            jpql += " and bi.referredBy=:refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+        jpql += " group by bi.referredBy ";
+        jpql += " order by bi.referredBy.person.name ";
+        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
+    }
+
+    public void processPresciptionListEvenWhenNoPatientData() {
+        String jpql = "select new "
+                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
+                + " coalesce(p.person.name, 'No Patient'), bi.netTotal) "
+                + " from Bill bi "
+                + " left join bi.patient p " 
+                + " where bi.cancelled=:can "
+                + " and bi.billDate between :fd and :td "
+                + " and bi.billType=:bitype ";
+        Map m = new HashMap();
+
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype", BillType.PharmacySale);
+
+        if (department != null) {
+            jpql += " and bi.fromDepartment=:fdept ";
+            m.put("fdept", department);
+        }
+
+        if (referringDoctor != null) {
+            jpql += " and bi.referredBy=:refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+        jpql += " order by bi.id ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        billLights = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
+    }
+
+    public void processPresciptionList() {
+        String jpql = "select new "
+                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
+                + " from Bill bi "
+                + " where bi.cancelled=:can "
+                + " and bi.billDate between :fd and :td "
+                + " and bi.billType=:bitype ";
+        Map m = new HashMap();
+
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype", BillType.PharmacySale);
+
+        if (department != null) {
+            jpql += " and bi.fromDepartment=:fdept ";
+            m.put("fdept", department);
+        }
+
+        if (referringDoctor != null) {
+            jpql += " and bi.referredBy=:refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+        jpql += " order by bi.id ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        billLights = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
+    }
+
     public void processPharmacySaleItemCount() {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
@@ -470,7 +615,7 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
-    
+
     public void processCollectingCentreTransactionReport() {
         String jpql = "select bill "
                 + " from Bill bill "
@@ -518,7 +663,6 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.item.id = :item ";
 //            m.put("item", itemLight.getId());
 //        }
-
         if (referringDoctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
             m.put("refDoc", referringDoctor);
@@ -528,10 +672,9 @@ public class ReportController implements Serializable {
 //            jpql += " and billItemStatus = :status ";
 //            m.put("status", status);
 //        }
-
         bills = billFacade.findByJpql(jpql, m);
     }
-    
+
     public void processCollectingCentreReciptReport() {
         String jpql = "select bill "
                 + " from Bill bill "
@@ -579,7 +722,6 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.item.id = :item ";
 //            m.put("item", itemLight.getId());
 //        }
-
         if (referringDoctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
             m.put("refDoc", referringDoctor);
@@ -589,7 +731,6 @@ public class ReportController implements Serializable {
 //            jpql += " and billItemStatus = :status ";
 //            m.put("status", status);
 //        }
-
         bills = billFacade.findByJpql(jpql, m);
     }
 
@@ -1240,14 +1381,6 @@ public class ReportController implements Serializable {
         this.diagnosis = diagnosis;
     }
 
-    public Doctor getReferingDoctor() {
-        return referingDoctor;
-    }
-
-    public void setReferingDoctor(Doctor referingDoctor) {
-        this.referingDoctor = referingDoctor;
-    }
-
     public Investigation getInvestigation() {
         return investigation;
     }
@@ -1450,7 +1583,7 @@ public class ReportController implements Serializable {
     public void setReferringDoctor(Doctor referringDoctor) {
         this.referringDoctor = referringDoctor;
     }
-    
+
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -1460,12 +1593,12 @@ public class ReportController implements Serializable {
                 + "sum(bi.staffFee), "
                 + "sum(bi.netValue)"
                 + ") "
-                + " from BillItem bi " 
+                + " from BillItem bi "
                 + " where bi.retired=:ret"
                 + " and bi.bill.billDate between :fd and :td "
                 + " and bi.bill.billType = :bType ";
 
-        if (false){
+        if (false) {
             BillItem bi = new BillItem();
             bi.getItem();
             bi.getHospitalFee();
@@ -1473,7 +1606,7 @@ public class ReportController implements Serializable {
             bi.getStaffFee();
             bi.getNetValue();
         }
-        
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
@@ -1524,14 +1657,13 @@ public class ReportController implements Serializable {
             jpql += " and bi.billItemStatus = :status ";
             m.put("status", status);
         }
-        
+
         jpql += " group by bi.item.name";
 
-        
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
 
     }
-    
+
     private List<TestWiseCountReport> testWiseCounts;
 
     public List<TestWiseCountReport> getTestWiseCounts() {
@@ -1550,7 +1682,20 @@ public class ReportController implements Serializable {
         this.collectionCenters = collectionCenters;
     }
 
-    
-   
+    public List<PrescriptionSummaryReportRow> getPrescriptionSummaryReportRows() {
+        return prescriptionSummaryReportRows;
+    }
+
+    public void setPrescriptionSummaryReportRows(List<PrescriptionSummaryReportRow> prescriptionSummaryReportRows) {
+        this.prescriptionSummaryReportRows = prescriptionSummaryReportRows;
+    }
+
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
+    }
 
 }
