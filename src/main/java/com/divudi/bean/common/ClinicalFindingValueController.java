@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import java.io.Serializable;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -27,8 +29,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -42,7 +44,6 @@ public class ClinicalFindingValueController implements Serializable {
     private ClinicalFindingValue current;
     private List<ClinicalFindingValue> items = null;
 
-    
     public void prepareAdd() {
         current = new ClinicalFindingValue();
     }
@@ -121,6 +122,19 @@ public class ClinicalFindingValueController implements Serializable {
                     + " order by a.name";
             items = getFacade().findByJpql(j);
         }
+        return items;
+    }
+
+    public List<ClinicalFindingValue> fillClinicalFindingValuesByType() {
+        String j;
+        items=new ArrayList<>();
+        Map m=new HashMap<>();
+        j = "select a "
+                + " from ClinicalFindingValue a "
+                + " where a.retired=false "
+                + " and a.clinicalFindingValueType = :vt";
+        m.put("vt", ClinicalFindingValueType.PatientAllergy);
+        items = getFacade().findByJpql(j,m);
         return items;
     }
 

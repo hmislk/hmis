@@ -69,6 +69,7 @@
                                         value="#{admissionController.current}" 
                                         target="#{roomChangeController.current}" />
                                 </p:commandButton>
+                                
                                 <p:commandButton 
                                     rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" 
                                     action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
