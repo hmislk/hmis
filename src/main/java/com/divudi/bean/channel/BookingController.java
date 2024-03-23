@@ -1857,6 +1857,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
         setStaff(null);
+        sessionInstances = new ArrayList<>();
+        selectedBillSession = null;
     }
 
     public void listnerStaffRowSelect() {
