@@ -599,14 +599,13 @@ public class ChannelScheduleController implements Serializable {
         HashMap m = new HashMap();
         sql = "Select s From SessionInstance s "
                 + " where s.retired=false "
-                + " and type(s)=:class "
                 + " and s.originatingSession=:ss"
                 + " and s.sessionDate>=:sd "
                 + " order by s.sessionWeekday,s.startingTime ";
         m.put("ss", ss);
-        m.put("class", ServiceSession.class);
         m.put("sd", CommonFunctions.getStartOfDay());
         items = sessionInstanceFacade.findByJpql(sql, m);
+        SessionInstance s = new SessionInstance();
         return items;
     }
 
