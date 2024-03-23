@@ -240,6 +240,10 @@ public class UserPreference implements Serializable {
     private String smsTemplateForChannelBooking;
     private boolean opdSettleWithoutPatientArea;
     private boolean opdBillingAftershiftStart;
+    
+    private Integer numberOfOPDBillCopies;
+    private Integer numberOfCCBillCopies;
+    private Integer numberOfChannellingBillCopies;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1253,11 +1257,40 @@ public class UserPreference implements Serializable {
         this.inwardItemListingStrategy = inwardItemListingStrategy;
     }
 
-  
+    public Integer getNumberOfOPDBillCopies() {
+        if (numberOfOPDBillCopies == null || numberOfOPDBillCopies == 0){
+            numberOfOPDBillCopies = 1;
+        }
+        return numberOfOPDBillCopies;
+    }
+
+    public void setNumberOfOPDBillCopies(Integer numberOfOPDBillCopies) {
+        
+        this.numberOfOPDBillCopies = numberOfOPDBillCopies;
+    }
+
+    public Integer getNumberOfCCBillCopies() {
+        if (numberOfCCBillCopies == null || numberOfCCBillCopies == 0){
+            numberOfCCBillCopies = 1;
+        }
+        return numberOfCCBillCopies;
+    }
+
+    public void setNumberOfCCBillCopies(Integer numberOfCCBillCopies) {
+        this.numberOfCCBillCopies = numberOfCCBillCopies;
+    }
+
+    public Integer getNumberOfChannellingBillCopies() {
+        if (numberOfChannellingBillCopies == null || numberOfChannellingBillCopies == 0){
+            numberOfChannellingBillCopies = 1;
+        }
+        return numberOfChannellingBillCopies;
+    }
+
+    public void setNumberOfChannellingBillCopies(Integer numberOfChannellingBillCopies) {
+        this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
+    }
 
     
-    
-    
-
 
 }
