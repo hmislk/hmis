@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -18,6 +19,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -136,6 +138,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     private Bill batchBill;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    NotificationController notificationController;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -745,8 +749,8 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
-
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
+        
     }
 
     public void settleStoreBhtIssue() {
@@ -837,7 +841,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
-
+        Bill bill=getBillFacade().find(getPreBill().getId());
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
+        notificationController.createNotification(bill);
+        System.out.println("bill = " + bill);
         clearBill();
         clearBillItem();
         billPreview = true;
