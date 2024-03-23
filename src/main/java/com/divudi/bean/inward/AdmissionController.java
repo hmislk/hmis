@@ -499,20 +499,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     public List<Admission> findAdmissions(Staff admittingOfficer, Date fromDate, Date toDate) {
-        List<Admission> suggestions;
-        String sql;
-        
-        HashMap hm = new HashMap();
-        sql = "select c from Admission c "
+        List<Admission> admissions;
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select c from Admission c "
                 + " where c.retired=:ret "
-                + " where c.opdDoctor=:admittingOfficer "
+                + " and c.opdDoctor=:admittingOfficer "
+                + " and c.dateOfAdmission between :fromDate and :toDate "
                 + " order by c.bhtNo ";
-        hm.put("admittingOfficer",admittingOfficer);
-        hm.put("ret",false);
-        
-        suggestions = getFacade().findByJpql(sql, hm, 20);
-
-        return suggestions;
+        params.put("admittingOfficer",admittingOfficer);
+        params.put("ret",false);
+        params.put("fromDate",fromDate);
+        params.put("toDate",toDate);
+        admissions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return admissions;
     }
 
     public List<Admission> completePatientAll(String query) {

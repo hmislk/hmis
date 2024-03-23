@@ -20,6 +20,7 @@ public enum BillType {
     ChannelCreditFlow(null),
     OpdBathcBill,
     OpdBathcBillPre,
+    OpdProfessionalFeePayment,
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
