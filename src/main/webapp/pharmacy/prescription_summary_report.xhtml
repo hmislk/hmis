@@ -10,73 +10,88 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Sale Report by Referral Doctor" >
-                        <h:panelGrid columns="2" class="my-2" >
-                            <p:outputLabel value="Department" >
-                            </p:outputLabel>
-                            <p:autoComplete 
-                                completeMethod="#{departmentController.completeDept}" 
-                                var="dept" 
-                                itemLabel="#{dept.name}" 
-                                itemValue="#{dept}" 
-                                forceSelection="true" 
-                                value="#{reportController.department}" 
-                                class="w-100 mx-2"
-                                inputStyleClass="w-100">
-                            </p:autoComplete>
-                            <h:outputLabel value="Bill Date From" ></h:outputLabel>
-                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" value="#{reportController.fromDate}" pattern="dd MMMM yyyy"></p:datePicker>
-                            <h:outputLabel value="Bill Date To" ></h:outputLabel>
-                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" value="#{reportController.toDate}" pattern="dd MMMM yyyy"></p:datePicker>
-                        </h:panelGrid>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <h:outputLabel value="Bill Date From" ></h:outputLabel>
+                                <p:calendar 
+                                    class="w-100 mx-4"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    styleClass="dateTimePicker" 
+                                    inputStyleClass="form-control"
+                                    value="#{reportController.fromDate}" >
+                                </p:calendar>
+                                <h:outputLabel value="Bill Date To" ></h:outputLabel>
+                                <p:calendar 
+                                    class="w-100 mx-4" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    styleClass="dateTimePicker" 
+                                    inputStyleClass="form-control"
+                                    value="#{reportController.toDate}">
+                                </p:calendar>
 
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton 
-                                class="ui-button-warning" 
-                                icon="fas fa-cogs" 
-                                ajax="false" 
-                                value="Process" 
-                                action="#{reportController.processPresciptionSummeryReport()}" > 
-                            </p:commandButton>
-                            <p:commandButton 
-                                class="ui-button-success mx-2" 
-                                icon="fas fa-file-excel" 
-                                ajax="false" 
-                                value="Excel" >
+                                <p:outputLabel value="Department" >
+                                </p:outputLabel>
+                                <p:autoComplete 
+                                    completeMethod="#{departmentController.completeDept}" 
+                                    var="dept" 
+                                    itemLabel="#{dept.name}" 
+                                    itemValue="#{dept}" 
+                                    forceSelection="true" 
+                                    value="#{reportController.department}" 
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                                </p:autoComplete>
 
-                            </p:commandButton>
-                        </h:panelGrid>
+                                <p:commandButton 
+                                    class="ui-button-warning w-100 my-2" 
+                                    icon="fas fa-cogs" 
+                                    ajax="false"
+                                    value="Process" 
+                                    action="#{reportController.processPresciptionSummeryReport()}" > 
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-success w-100 " 
+                                    icon="fas fa-file-excel" 
+                                    ajax="false"
+                                    value="Excel" >
+                                </p:commandButton>
+                            </div>
+                            
+                            <div class="col-md-10">
+                                <p:dataTable 
+                                    id="tbl" 
+                                    value="#{reportController.prescriptionSummaryReportRows}" 
+                                    var="doc"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="10"
+                                    >
+                                    <p:column headerText="Docter">
+                                        <p:commandLink 
+                                            ajax="false"
+                                            action="#{reportController.navigateToPrescriptionListFromPrescriptionSummery(doc.doctorId)}" >
+                                            <h:outputText value="#{doc.doctorName}" />
+                                        </p:commandLink>
+                                    </p:column>
 
+                                    <p:column headerText="Presciption Count">
+                                        <h:outputText value="#{doc.prescriptionCount}">
+                                            <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
 
-                        <p:dataTable 
-                            id="tbl" 
-                            value="#{reportController.prescriptionSummaryReportRows}" 
-                            var="doc"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            rows="10"
-                            >
-                            <p:column headerText="Docter">
-                                <h:outputText value="#{doc.doctorName}" />
-                            </p:column>
+                                    <p:column headerText="Presciption Value" style="text-align: right;">
+                                        <h:outputText value="#{doc.prescriptionValue}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
 
-                            <p:column headerText="Presciption Count">
-                                <h:outputText value="#{doc.prescriptionCount}" />
-                            </p:column>
-
-                            <p:column headerText="Presciption Value">
-                                <h:outputText value="#{doc.prescriptionValue}" />
-                            </p:column>
-
-                            <p:column headerText="Actions">
-                                <p:commandButton value="Details" ajax="false" action="#{reportController.navigateToPrescriptionListFromPrescriptionSummery(doc.doctorId)}" ></p:commandButton>
-                            </p:column>
-
-                        </p:dataTable>
+                                </p:dataTable>
+                            </div>
+                        </div>
                     </p:panel>
                 </h:form>
-
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

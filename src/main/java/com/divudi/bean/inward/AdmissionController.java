@@ -40,8 +40,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.facade.ClinicalFindingValueFacade;
+import com.divudi.entity.Staff;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -97,8 +96,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private RoomFacade roomFacade;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
-    @EJB
-    ClinicalFindingValueFacade clinicalFindingValueFacade;
 
     @Inject
     BhtEditController bhtEditController;
@@ -140,28 +137,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
-    private List<ClinicalFindingValue> patientAllergies;
-    private ClinicalFindingValue currentAllaergie;
-
-    public void addPatientAllergies() {
-        System.out.println("this = add al ");
-        if (currentAllaergie == null) {
-             System.out.println("this = add al null ");
-            return;
-        }
-        patientAllergies.add(currentAllaergie);
-        System.out.println("this = " + patientAllergies.size());
-    }
-    
-    public void savePatientAllergies(){
-        if (patientAllergies==null) {
-            return;
-        }
-        for(ClinicalFindingValue al:patientAllergies){
-            al.setPatient(current.getPatient());
-            clinicalFindingValueFacade.create(al);
-        }
-    }
 
     public void copyPatientAddressToGurdian() {
         current.getGuardian().setAddress(current.getPatient().getPerson().getAddress());
@@ -521,6 +496,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
+    }
+    
+    public List<Admission> findAdmissions(Staff admittingOfficer, Date fromDate, Date toDate) {
+        List<Admission> admissions;
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select c from Admission c "
+                + " where c.retired=:ret "
+                + " and c.opdDoctor=:admittingOfficer "
+                + " and c.dateOfAdmission between :fromDate and :toDate "
+                + " order by c.bhtNo ";
+        params.put("admittingOfficer",admittingOfficer);
+        params.put("ret",false);
+        params.put("fromDate",fromDate);
+        params.put("toDate",toDate);
+        admissions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return admissions;
     }
 
     public List<Admission> completePatientAll(String query) {
@@ -1515,22 +1507,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setEncounterCreditCompanyFacade(EncounterCreditCompanyFacade encounterCreditCompanyFacade) {
         this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
-    }
-
-    public ClinicalFindingValue getCurrentAllaergie() {
-        return currentAllaergie;
-    }
-
-    public void setCurrentAllaergie(ClinicalFindingValue currentAllaergie) {
-        this.currentAllaergie = currentAllaergie;
-    }
-
-    public List<ClinicalFindingValue> getPatientAllergies() {
-        return patientAllergies;
-    }
-
-    public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
-        this.patientAllergies = patientAllergies;
     }
 
     /**

@@ -4,6 +4,8 @@ import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.PatientController;
+import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
@@ -21,6 +23,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Person;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
@@ -64,6 +67,8 @@ public class ReportController implements Serializable {
 
     @Inject
     DoctorController doctorController;
+    
+    CommonFunctions commonFunctions;
 
     public void processCollectionCenterBalance() {
         String jpql = "select cc"
@@ -86,17 +91,37 @@ public class ReportController implements Serializable {
         return "/pharmacy/prescription_list?faces-redirect=true";
     }
 
-    public String navigateToPrescriptionListFromPrescriptionSummery(Long doctorId) {
-        if (doctorId == null || doctorId == 0) {
+    private Person person;
+
+    @Inject
+    PersonController personController;
+
+    public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
+        if (personId == null || personId == 0) {
             JsfUtil.addErrorMessage("Error 1");
             return "";
         }
-        referringDoctor = doctorController.findDoctor(doctorId);
+
+        person = personController.findPerson(personId);
+        
+        referringDoctor = doctorController.findDoctor(person);
+        
         if (referringDoctor == null) {
             JsfUtil.addErrorMessage("Error 2");
             return "";
         }
+        
+        processPresciptionList();
+        
         return navigateToPrescriptionList();
+    }
+
+    public void makeNull() {
+        referringDoctor = null;
+        prescriptionSummaryReportRows = null;
+        fromDate = null;
+        toDate = null;
+        person = null;
     }
 
     public void processCollectingCentreBillWiseDetailReport() {
@@ -452,22 +477,17 @@ public class ReportController implements Serializable {
             m.put("fdept", department);
         }
 
-        if (referringDoctor != null) {
-            jpql += " and bi.referredBy=:refDoc ";
-            m.put("refDoc", referringDoctor);
-        }
-
         jpql += " group by bi.referredBy ";
         jpql += " order by bi.referredBy.person.name ";
         prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
     }
-
+    
     public void processPresciptionListEvenWhenNoPatientData() {
         String jpql = "select new "
                 + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
                 + " coalesce(p.person.name, 'No Patient'), bi.netTotal) "
                 + " from Bill bi "
-                + " left join bi.patient p " 
+                + " left join bi.patient p "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
                 + " and bi.billType=:bitype ";
@@ -519,8 +539,8 @@ public class ReportController implements Serializable {
         }
 
         jpql += " order by bi.id ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+//        System.out.println("jpql = " + jpql);
+//        System.out.println("m = " + m);
         billLights = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
     }
 
@@ -742,7 +762,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -758,7 +778,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -774,7 +794,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1277,7 +1297,7 @@ public class ReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
+            fromDate = commonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1288,7 +1308,7 @@ public class ReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = CommonFunctions.getEndOfDay();
+            toDate = commonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1696,6 +1716,14 @@ public class ReportController implements Serializable {
 
     public void setBillLights(List<BillLight> billLights) {
         this.billLights = billLights;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
     }
 
 }
