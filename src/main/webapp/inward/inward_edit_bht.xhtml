@@ -394,12 +394,22 @@
                                 <h:panelGroup id="grpBill">
                                     <p:panel id="panPrint" class="w-100" >
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                            <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                    <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
+                                                </div>
+                                                <div>
+                                                    <p:commandButton class="  ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
+                                                        <p:printer target="gpBillPreview" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+
                                         </f:facet>
-
-                                        <bill:bht admission="#{bhtEditController.current}"/>
-
+                                        <h:panelGroup id="gpBillPreview" >
+                                             <bill:bht_sethma admission="#{bhtEditController.current}"/>
+                                        </h:panelGroup>
                                     </p:panel>
                                 </h:panelGroup>
 
