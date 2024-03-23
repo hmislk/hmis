@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Notification;
 import com.divudi.facade.NotificationFacade;
@@ -40,6 +41,8 @@ public class NotificationController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    UserNotificationController userNotificationController;
     @EJB
     private NotificationFacade ejbFacade;
     private Notification current;
@@ -73,10 +76,14 @@ public class NotificationController implements Serializable {
         if(bill==null){
             return;
         }
+        System.out.println("bill = " + bill);
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_TRANSFER_REQUEST:
                 createPharmacyTransferRequestNotification(bill);
+                break;
+            case PHARMACY_ORDER:
+                createPharmacyReuestForBht(bill);
                 break;
             default:
                 throw new AssertionError();
@@ -87,6 +94,16 @@ public class NotificationController implements Serializable {
         Notification nn = new Notification();
         nn.setBill(bill);
         nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
+        System.out.println("nn = " + nn.getMessage());
+        getFacade().create(nn);
+    }
+    
+     private void createPharmacyReuestForBht(Bill bill){
+        Notification nn = new Notification();
+        nn.setBill(bill);
+        nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
+        System.out.println("nn = " + nn.getMessage());
+        userNotificationController.createUserNotifications(nn);
         getFacade().create(nn);
     }
     

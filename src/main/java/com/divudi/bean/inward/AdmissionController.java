@@ -40,6 +40,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.entity.Staff;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -496,6 +497,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         return suggestions;
     }
+    
+    public List<Admission> findAdmissions(Staff admittingOfficer, Date fromDate, Date toDate) {
+        List<Admission> admissions;
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select c from Admission c "
+                + " where c.retired=:ret "
+                + " and c.opdDoctor=:admittingOfficer "
+                + " and c.dateOfAdmission between :fromDate and :toDate "
+                + " order by c.bhtNo ";
+        params.put("admittingOfficer",admittingOfficer);
+        params.put("ret",false);
+        params.put("fromDate",fromDate);
+        params.put("toDate",toDate);
+        admissions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return admissions;
+    }
 
     public List<Admission> completePatientAll(String query) {
         List<Admission> suggestions;
@@ -763,9 +781,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
         if (updatedPersonName == null) {
             getPatient().getPerson().setName(updatedPersonName);
+            System.out.println("updatedAddress = " + updatedPersonName);
         }
         if (updatedAddress == null) {
             getPatient().getPerson().setAddress(updatedAddress);
+            System.out.println("updatedAddress = " + updatedAddress);
         }
         Person person = getPatient().getPerson();
         getPatient().setPerson(null);

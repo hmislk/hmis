@@ -366,7 +366,15 @@
                     </div>
                 </f:facet>
 
-                <bill:bht_sethma admission="#{admissionController.current}"/>
+                <p:panel rendered="#{admissionController.printPreview}">
+
+                    <h:panelGroup id="gpBillPreview">
+                        <bill:bht_sethma admission="#{admissionController.current}"/>
+                    </h:panelGroup>
+                </p:panel>
+
+
+
 
             </p:panel>
 
