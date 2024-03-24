@@ -289,7 +289,7 @@
                                             <f:selectItem itemLabel="Select Religion" />
                                             <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i.name}"/>
-                                            
+
                                         </p:selectOneMenu>
                                     </div>
                                     <div class="col-md-4 p-1">
@@ -300,7 +300,7 @@
                                             <f:selectItem itemLabel="Civil Status" />
                                             <f:selectItems value="#{clinicalEntityController.civilStatus}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}"/>
-                                            
+
                                         </p:selectOneMenu>
                                     </div>
                                     <div class="col-md-4 p-1">
@@ -311,10 +311,10 @@
                                             <f:selectItem itemLabel="Blood Group" />
                                             <f:selectItems value="#{clinicalEntityController.bloodGroup}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}"/>
-                                           
+
                                         </p:selectOneMenu>
                                     </div>
-                                     <div class="col-md-4 p-1">
+                                    <div class="col-md-4 p-1">
                                         <p:selectOneMenu 
                                             id="ptEmp"
                                             class="form-control w-100"
@@ -322,9 +322,58 @@
                                             <f:selectItem itemLabel="Employment" />
                                             <f:selectItems value="#{clinicalEntityController.occupation}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}"/>
-                                            
+
                                         </p:selectOneMenu>
                                     </div>
+                                    <p:panel header="Add Patient Allergies">
+                                        <div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <p:autoComplete 
+                                                        id="acAllergy"
+                                                        placeholder="Search Patient Allergies"
+                                                        completeMethod="#{vtmController.completeVtm}"
+                                                        var="pta" 
+                                                        itemLabel="#{pta}"
+                                                        itemValue="#{pta}" 
+                                                        forceSelection="true"
+                                                        value="#{admissionController.currentPatientAllaergy.itemValue}"
+                                                        inputStyleClass="form-control w-100"
+                                                        class="w-100"/>
+                                                    <p:inputTextarea id="txtAllergy" value="#{admissionController.currentPatientAllaergy.lobValue}" ></p:inputTextarea>
+                                                </div>
+                                                <div class="col-6">
+                                                    <p:commandButton 
+                                                        id="btnAddAllergy" 
+                                                        value="Add" 
+                                                        process="btnAddAllergy acAllergy txtAllergy" 
+                                                        update="ptAl txtAllergy acAllergy" 
+                                                        action="#{admissionController.addPatientAllergy}"/>
+
+                                                </div>
+                                            </div>
+                                            <div class="row" >
+                                                <div class="col-12" >
+                                                    <h:panelGroup id="ptAl">
+                                                        <p:repeat value="#{admissionController.patientAllergies}" var="al">
+                                                            <div class="card">
+                                                                <h:outputText class="text-danger  bg-warning" rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                                              value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                                <h:outputText class="text-danger bg-warning" rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                                            </div>
+                                                        </p:repeat>
+                                                    </h:panelGroup>
+
+
+
+                                                </div>
+                                            </div>
+
+
+
+                                        </div>
+                                    </p:panel>
 
 
                                 </div>
@@ -393,20 +442,20 @@
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.area.name}" />
-                            
+
                             <h:outputLabel value="Religion " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.religion.name}" />
-                            
+
                             <h:outputLabel value="Occupation " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.occupation.name}" />
-                            
+
                             <h:outputLabel value="Civil Status " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.civilStatus.name}" />
-                            
-                             <h:outputLabel value="Blood Group" class="mx-3"/>
+
+                            <h:outputLabel value="Blood Group" class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.bloodGroup.name}" />
 

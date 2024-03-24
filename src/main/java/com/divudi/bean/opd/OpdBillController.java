@@ -264,6 +264,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private boolean duplicatePrint;
 
+    
+
     /**
      *
      * Navigation Methods
@@ -1351,9 +1353,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
-        if(getPatient().getPatientPhoneNumber()!=null){
+        if (getPatient().getPatientPhoneNumber() != null) {
             s.setReceipientNumber(getPatient().getPatientPhoneNumber().toString());
-        }else{
+        } else {
             s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
         }
         String messageBody = smsMessage;
@@ -2014,6 +2016,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
+       
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -2617,7 +2620,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return "/opd/opd_bill";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/cashier/index?faces-redirect=false";
+                return "/cashier/index?faces-redirect=true";
             }
         } else {
             clearBillItemValues();
@@ -3612,5 +3615,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setDuplicatePrint(boolean duplicatePrint) {
         this.duplicatePrint = duplicatePrint;
     }
+
+    
 
 }
