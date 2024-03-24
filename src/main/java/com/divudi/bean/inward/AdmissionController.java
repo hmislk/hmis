@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
@@ -41,7 +40,6 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
@@ -107,8 +105,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     BhtEditController bhtEditController;
     @Inject
     BhtSummeryController bhtSummeryController;
-    @Inject
-    ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
     private CommonFunctions commonFunctions;
@@ -146,14 +142,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
-    private ClinicalFindingValue currentPatientAllaergy;
+    private ClinicalFindingValue currentAllaergie;
 
-    public void addPatientAllergy() {
-        if (currentPatientAllaergy == null) {
+    public void addPatientAllergies() {
+        if (currentAllaergie == null) {
             return;
         }
-        patientAllergies.add(currentPatientAllaergy);
-        currentPatientAllaergy = null;
+        patientAllergies.add(currentAllaergie);
     }
 
     public void savePatientAllergies() {
@@ -161,14 +156,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null) {
-                al.setPatient(getCurrent().getPatient());
-            }
-            if (al.getId() == null) {
-                clinicalFindingValueFacade.create(al);
-            }else{
-                clinicalFindingValueFacade.edit(al);
-            }
+            al.setPatient(current.getPatient());
+            clinicalFindingValueFacade.create(al);
         }
     }
 
@@ -1042,7 +1031,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         savePatient();
-        savePatientAllergies();
         saveGuardian();
         bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
@@ -1312,7 +1300,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.patient = patient;
         if (current != null) {
             current.setPatient(patient);
-            patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
         }
     }
 
@@ -1545,23 +1532,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
-    public ClinicalFindingValue getCurrentPatientAllaergy() {
-        if (currentPatientAllaergy == null) {
-            currentPatientAllaergy = new ClinicalFindingValue();
-            currentPatientAllaergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
-            currentPatientAllaergy.setPatient(getPatient());
-        }
-        return currentPatientAllaergy;
+    public ClinicalFindingValue getCurrentAllaergie() {
+        return currentAllaergie;
     }
 
-    public void setCurrentPatientAllaergy(ClinicalFindingValue currentPatientAllaergy) {
-        this.currentPatientAllaergy = currentPatientAllaergy;
+    public void setCurrentAllaergie(ClinicalFindingValue currentAllaergie) {
+        this.currentAllaergie = currentAllaergie;
     }
 
     public List<ClinicalFindingValue> getPatientAllergies() {
-        if (patientAllergies == null) {
-            patientAllergies = new ArrayList<>();
-        }
         return patientAllergies;
     }
 
