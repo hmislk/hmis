@@ -171,6 +171,7 @@ public class UserNotificationController implements Serializable {
             System.out.println("number = " + number);
             //TODo
         }
+        System.out.println("user notification = " + notificationUsers.size());
         for (WebUser u : notificationUsers) {
             UserNotification nun = new UserNotification();
             nun.setNotification(n);
