@@ -535,8 +535,6 @@ public class BillSearch implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("j = " + j);
-        System.out.println("m = " + m);
 
         List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
         billSummeries = new ArrayList<>();
@@ -546,7 +544,6 @@ public class BillSearch implements Serializable {
             tbs.setKey(i);
             billSummeries.add(tbs);
             i++;
-            System.out.println("tbs = " + tbs);
         }
 
     }
@@ -637,8 +634,6 @@ public class BillSearch implements Serializable {
 
         // queryString.append(bct == null ? " group by b.paymentMethod, b.billType" : " group by b.paymentMethod, b.billClassType, b.billType");
         List<BillSummery> bss = (List<BillSummery>) billFacade.findLightsByJpql(queryString.toString(), parameters, TemporalType.TIMESTAMP);
-        System.out.println("bss = " + bss.size());
-        System.out.println("parameters = " + parameters);
         if (bss == null || bss.isEmpty()) {
             return new ArrayList<>();
         }
@@ -704,7 +699,6 @@ public class BillSearch implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        System.out.println("j = " + j);
 
         bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
 
@@ -2751,7 +2745,6 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToRefundOpdBill() {
-        System.out.println("navigateToRefundOpdBill");
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -2858,17 +2851,13 @@ public class BillSearch implements Serializable {
                 nbf.setReferenceBillFee(bf);
                 nbf.setReferenceBillItem(bi);
                 nbf.setFeeValue(0.0);
-                System.out.println("1 nbi.getBillFees() = " + nbi.getBillFees());
                 nbi.getBillFees().add(nbf);
-                System.out.println("2 nbi.getBillFees() = " + nbi.getBillFees());
                 refundingFees.add(nbf);
 
             }
             refundingBill.getBillItems().add(nbi);
             System.out.println("3 nbi.getBillFees() = " + nbi.getBillFees());
-            System.out.println("1 refundingBill.getBillItems() = " + refundingBill.getBillItems());
             refundingItems.add(nbi);
-            System.out.println("2 refundingBill.getBillItems() = " + refundingBill.getBillItems());
 
         }
 
@@ -2882,7 +2871,6 @@ public class BillSearch implements Serializable {
                 + " and b.bill=:b";
         hm.put("b", getBillSearch());
         billItems = getBillItemFacede().findByJpql(sql, hm);
-        System.out.println("billItems = " + billItems.size());
 
         for (BillItem bi : billItems) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();

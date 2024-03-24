@@ -382,11 +382,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-        System.out.println("tmp1 = " + tmp);
         if (tmp == null) {
             return;
         }
-        System.out.println("tmp2 = " + tmp);
         onEdit(tmp);
     }
 

@@ -27,8 +27,6 @@ import java.util.List;
 public class CommonFunctionsController {
 
     public String changeTextCases(String nm, String tc) {
-        System.out.println("nm = " + nm);
-        System.out.println("tc = " + tc);
         if (tc == null) {
             return nm;
         }

@@ -522,11 +522,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         printingBill = saveBilledBill();
         System.out.println("Printing bill completed" + new Date());
 //        printingBill = getBillFacade().find(printingBill.getId());
-        System.out.println("printing bill retrieved" + new Date());
+//        printingBill = getBillFacade().find(printingBill.getId());
 //        fillBillSessions();
 //        generateSessions();
         sendSmsAfterBooking();
-        System.out.println("SMS Sent" + new Date());
         settleSucessFully = true;
         printPreview = true;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
@@ -607,7 +606,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String genarateTemplateForSms(Bill b) {
-        System.out.println("working genarate");
         String s;
         ServiceSession ss = null;
 
@@ -1441,7 +1439,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         savingBillItem.setBillSession(savingBillSession);
         getBillSessionFacade().edit(savingBillSession);
 
-        System.out.println("save Bill Session Edit completed at " + new Date());
         savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
         savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
         savingBill.setSingleBillItem(savingBillItem);
@@ -1467,7 +1464,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         getBillFacade().edit(savingBill);
         getBillSessionFacade().edit(savingBillSession);
-        System.out.println("saving bill completed at " + new Date());
         return savingBill;
     }
 
@@ -1529,7 +1525,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return billFeeList;
         }
         for (ItemFee f : sessionsFees) {
-            System.out.println("f = " + f);
             if (paymentMethod != PaymentMethod.Agent) {
                 if (f.getFeeType() == FeeType.OtherInstitution) {
                     continue;
@@ -1672,6 +1667,24 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillType(BillType.ChannelCredit);
                 break;
         }
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
         System.out.println("generate insId started = " + new Date());
 //        String insId = generateBillNumberInsId(bill);
 //
@@ -1689,7 +1702,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
 
-        System.out.println("saving bill details started = " + new Date());
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
 //            bill.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
             bill.setPaidAmount(getSelectedSessionInstance().getOriginatingSession().getTotal());
@@ -1712,7 +1724,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
         }
-        System.out.println("create bill Ended = " + new Date());
         return bill;
     }
 

@@ -844,7 +844,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         Bill bill=getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
        notificationController.createNotification(bill);
-        System.out.println("bill = " + bill);
         clearBill();
         clearBillItem();
         billPreview = true;

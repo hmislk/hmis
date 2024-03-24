@@ -12,6 +12,9 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemApplicationController;
+import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
@@ -50,7 +53,9 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.ItemLight;
 import com.divudi.data.lab.InvestigationTubeSticker;
+import com.divudi.entity.UserPreference;
 import com.divudi.java.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
@@ -80,6 +85,12 @@ public class BillBhtController implements Serializable {
     SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -139,6 +150,9 @@ public class BillBhtController implements Serializable {
     private String stickerPrinterString;
     private List<InvestigationTubeSticker> stickers;
 
+    private List<ItemLight> inwardItems;
+    private ItemLight itemLight;
+
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
@@ -146,9 +160,7 @@ public class BillBhtController implements Serializable {
 
     public String navigateToPrintLabelsForInvestigations() {
         String json = generateStockerPrinterString();
-        System.out.println("json = " + json);
         stickers = convertJsonToList(json);
-        System.out.println("stickers = " + stickers);
         return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
     }
 
@@ -186,12 +198,11 @@ public class BillBhtController implements Serializable {
         }
         String username = sessionController.getUserName();
         String password = sessionController.getPassword();
-        int count =0;
+        int count = 0;
         for (Bill b : bills) {
             String billId = b.getIdStr();
             String result = lims.generateSamplesFromBill(billId, username, password);
             JSONObject resultJson = new JSONObject(result);
-            System.out.println("resultJson = " + resultJson);
             if (resultJson.has("Barcodes")) {
                 JSONArray barcodes = resultJson.getJSONArray("Barcodes");
                 for (int i = 0; i < barcodes.length(); i++) {
@@ -202,7 +213,6 @@ public class BillBhtController implements Serializable {
         }
         JSONObject finalJson = new JSONObject();
         finalJson.put("Barcodes", combinedBarcodes);
-        System.out.println("finalJson = " + finalJson);
         return finalJson.toString();
     }
 
@@ -424,6 +434,24 @@ public class BillBhtController implements Serializable {
         getBillBean().updateBillByBillFee(bill);
 
         return list;
+    }
+
+    public List<ItemLight> fillInwardItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getInwardItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
     }
 
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
@@ -993,6 +1021,20 @@ public class BillBhtController implements Serializable {
         this.cashPaid = cashPaid;
     }
 
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
+    }
+
     public double getCashBalance() {
         return cashBalance;
     }
@@ -1216,6 +1258,17 @@ public class BillBhtController implements Serializable {
 
     public void setStickers(List<InvestigationTubeSticker> stickers) {
         this.stickers = stickers;
+    }
+
+    public List<ItemLight> getInwardItems() {
+        if (inwardItems == null) {
+            inwardItems = fillInwardItems();
+        }
+        return inwardItems;
+    }
+
+    public void setInwardItems(List<ItemLight> inwardItems) {
+        this.inwardItems = inwardItems;
     }
 
 }

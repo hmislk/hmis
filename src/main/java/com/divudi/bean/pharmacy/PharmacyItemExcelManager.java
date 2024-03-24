@@ -1243,7 +1243,6 @@ public class PharmacyItemExcelManager implements Serializable {
             out.close();
 
             inputWorkbook = new File(f.getAbsolutePath());
-            System.out.println("file input  = " + "file open excel");
             JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
@@ -1470,9 +1469,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
                 System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setItem(amp) = " + getPharmacyPurchaseController().getCurrentBillItem().getItem());
                 getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
-                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty) = " + getPharmacyPurchaseController().getCurrentBillItem().getTmpQty());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
-                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
                 if (batch == null || batch.trim().equals("")) {

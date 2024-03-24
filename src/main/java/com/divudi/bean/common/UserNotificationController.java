@@ -143,12 +143,10 @@ public class UserNotificationController implements Serializable {
         List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
         for(WebUser u:smsUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
         for(WebUser u:emailUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
         for(WebUser u:notificationUsers){
@@ -165,19 +163,16 @@ public class UserNotificationController implements Serializable {
         List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
         for(WebUser u:smsUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
         for(WebUser u:emailUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
         for(WebUser u:notificationUsers){
             UserNotification nun = new UserNotification();
             nun.setNotification(n);
             nun.setWebUser(u);
-            System.out.println("user notification = " + nun.getNotification().getMessage());
             getFacade().create(nun);
         }
     }
