@@ -264,7 +264,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private boolean duplicatePrint;
 
-    private boolean opdBillingForOtherServicesWithoutOpdDoctor=false;
+    
 
     /**
      *
@@ -2016,10 +2016,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
-        if (opdBillingForOtherServicesWithoutOpdDoctor) {
-            selectedCurrentlyWorkingStaff = null;
-        }
-
+       
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -2623,7 +2620,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return "/opd/opd_bill";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/cashier/index?faces-redirect=false";
+                return "/cashier/index?faces-redirect=true";
             }
         } else {
             clearBillItemValues();
@@ -3619,12 +3616,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.duplicatePrint = duplicatePrint;
     }
 
-    public boolean isOpdBillingForOtherServicesWithoutOpdDoctor() {
-        return opdBillingForOtherServicesWithoutOpdDoctor;
-    }
-
-    public void setOpdBillingForOtherServicesWithoutOpdDoctor(boolean opdBillingForOtherServicesWithoutOpdDoctor) {
-        this.opdBillingForOtherServicesWithoutOpdDoctor = opdBillingForOtherServicesWithoutOpdDoctor;
-    }
+    
 
 }
