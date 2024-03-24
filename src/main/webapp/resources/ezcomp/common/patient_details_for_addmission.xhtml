@@ -330,27 +330,48 @@
                                             <div class="row">
                                                 <div class="col-6">
                                                     <p:autoComplete 
+                                                        id="acAllergy"
                                                         placeholder="Search Patient Allergies"
-                                                        completeMethod="#{clinicalFindingValueController.fillClinicalFindingValuesByType()}"
+                                                        completeMethod="#{vtmController.completeVtm}"
                                                         var="pta" 
                                                         itemLabel="#{pta}"
                                                         itemValue="#{pta}" 
                                                         forceSelection="true"
-                                                        value="#{admissionController.currentAllaergie}"
+                                                        value="#{admissionController.currentPatientAllaergy.itemValue}"
                                                         inputStyleClass="form-control w-100"
                                                         class="w-100"/>
+                                                    <p:inputTextarea id="txtAllergy" value="#{admissionController.currentPatientAllaergy.lobValue}" ></p:inputTextarea>
                                                 </div>
                                                 <div class="col-6">
-                                                    <p:commandButton id="btnAdd" value="Add" process="btnAdd" update="ptAl" action="#{admissionController.addPatientAllergies}"/>
+                                                    <p:commandButton 
+                                                        id="btnAddAllergy" 
+                                                        value="Add" 
+                                                        process="btnAddAllergy acAllergy txtAllergy" 
+                                                        update="ptAl txtAllergy acAllergy" 
+                                                        action="#{admissionController.addPatientAllergy}"/>
+
                                                 </div>
                                             </div>
-                                            <p:panel>
-                                                <p:repeat id="ptAl" value="#{admissionController.patientAllergies}" var="al">
-                                                    <div class="card">
-                                                        <h:outputText class="bg-danger" value="#{al}"/>
-                                                    </div>
-                                                </p:repeat>
-                                            </p:panel>
+                                            <div class="row" >
+                                                <div class="col-12" >
+                                                    <h:panelGroup id="ptAl">
+                                                        <p:repeat value="#{admissionController.patientAllergies}" var="al">
+                                                            <div class="card">
+                                                                <h:outputText class="text-danger  bg-warning" rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                                              value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                                <h:outputText class="text-danger bg-warning" rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                                            </div>
+                                                        </p:repeat>
+                                                    </h:panelGroup>
+
+
+
+                                                </div>
+                                            </div>
+
+
+
                                         </div>
                                     </p:panel>
 
