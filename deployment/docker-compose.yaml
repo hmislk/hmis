@@ -1,0 +1,25 @@
+services:
+  hmis:
+    build:
+      context: ../
+      dockerfile: deployment/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "4848:4848"
+      - "8080:8080"
+    environment: {}
+  db:
+    image: "mysql:8.2.0"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: hmis
+      MYSQL_USER: hmis
+      MYSQL_PASSWORD: hmis
+    volumes:
+      - .data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+volumes:
+  data:

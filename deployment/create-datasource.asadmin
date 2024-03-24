@@ -1,0 +1,3 @@
+create-jdbc-connection-pool --datasourceclassname=com.mysql.cj.jdbc.MysqlDataSource --restype=javax.sql.ConnectionPoolDataSource --property user=hmis:password=hmis:serverName=db:portNumber=3306:databaseName=hmis:useSSL=false dbPool
+create-jdbc-resource --connectionpoolid dbPool jdbc/arogya
+create-jdbc-resource --connectionpoolid dbPool jdbc/arogyaAudit
