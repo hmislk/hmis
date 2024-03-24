@@ -968,7 +968,6 @@ public class PastPatientEncounterController implements Serializable {
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
         Map m = new HashMap();
         m.put("p", patient);
-
         m.put("ret", false);
         String jpql;
         ClinicalFindingValue e = new ClinicalFindingValue();

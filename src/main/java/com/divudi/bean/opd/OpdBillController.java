@@ -264,6 +264,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private boolean duplicatePrint;
 
+    private boolean opdBillingForOtherServicesWithoutOpdDoctor=false;
+
     /**
      *
      * Navigation Methods
@@ -1351,9 +1353,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
-        if(getPatient().getPatientPhoneNumber()!=null){
+        if (getPatient().getPatientPhoneNumber() != null) {
             s.setReceipientNumber(getPatient().getPatientPhoneNumber().toString());
-        }else{
+        } else {
             s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
         }
         String messageBody = smsMessage;
@@ -2012,6 +2014,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 }
             }
 
+        }
+
+        if (opdBillingForOtherServicesWithoutOpdDoctor) {
+            selectedCurrentlyWorkingStaff = null;
         }
 
         boolean checkAge = false;
@@ -3611,6 +3617,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public void setDuplicatePrint(boolean duplicatePrint) {
         this.duplicatePrint = duplicatePrint;
+    }
+
+    public boolean isOpdBillingForOtherServicesWithoutOpdDoctor() {
+        return opdBillingForOtherServicesWithoutOpdDoctor;
+    }
+
+    public void setOpdBillingForOtherServicesWithoutOpdDoctor(boolean opdBillingForOtherServicesWithoutOpdDoctor) {
+        this.opdBillingForOtherServicesWithoutOpdDoctor = opdBillingForOtherServicesWithoutOpdDoctor;
     }
 
 }
