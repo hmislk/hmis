@@ -65,16 +65,17 @@
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
                                                 value="#{opdBillController.itemLight}" 
-                                                var="ix"
-
-                                                >
-                                                <f:selectItems value="#{opdBillController.opdItems}"
-                                                               var="item" 
-                                                               itemLabel="#{item.name}"
-                                                               itemValue="#{item}"
-                                                               >
+                                                var="ix">
+                                                <f:selectItems 
+                                                    value="#{opdBillController.opdItems}"
+                                                    var="item" 
+                                                    itemLabel="#{item.name}"
+                                                    itemValue="#{item}">
                                                 </f:selectItems>
-                                                <p:ajax listener="#{opdBillController.fillBillSessions}" process="acIx" update="tblSs txtQty" ></p:ajax>
+                                                <p:ajax 
+                                                    listener="#{opdBillController.fillBillSessions}" 
+                                                    process="acIx" 
+                                                    update="tblSs txtQty" ></p:ajax>
                                                 <p:column  headerText="Name">
                                                     <f:facet name="header" >
                                                         Name

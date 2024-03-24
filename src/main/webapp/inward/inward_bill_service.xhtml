@@ -214,10 +214,14 @@
                                                             <h:outputLabel value="Investigation or Service"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:selectOneListbox value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100" >
-                                                            
-                                                                <f:selectItems value="#{inwardServiceController.items}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
-
+                                                            <p:selectOneListbox 
+                                                                value="#{billBhtController.itemLight}" 
+                                                                filter="true" 
+                                                                var="t" 
+                                                                id="itm" 
+                                                                class="w-100" 
+                                                                converter="itemLightConverter">
+                                                                <f:selectItems value="#{billBhtController.inwardItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
                                                                 <p:column>
                                                                     <h:outputLabel value="#{t.name}"/>
                                                                 </p:column>
