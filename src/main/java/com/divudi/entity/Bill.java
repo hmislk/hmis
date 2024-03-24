@@ -1077,7 +1077,6 @@ public class Bill implements Serializable {
     }
 
     public Institution getToInstitution() {
-        System.out.println("toInstitution = " + toInstitution);
         return toInstitution;
     }
 

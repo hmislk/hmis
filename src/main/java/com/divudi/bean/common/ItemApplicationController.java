@@ -142,9 +142,7 @@ public class ItemApplicationController {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
         System.out.println("parameters = " + parameters);
-        System.out.println("jpql = " + jpql);
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
     }
 

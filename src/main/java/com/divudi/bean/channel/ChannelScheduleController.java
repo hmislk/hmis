@@ -265,12 +265,10 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public DoctorSpeciality getSpeciality() {
-        System.out.println("get speciality " + speciality);
         return speciality;
     }
 
     public void setSpeciality(DoctorSpeciality speciality) {
-        System.out.println("set speciality = " + speciality);
         this.speciality = speciality;
     }
 
@@ -539,7 +537,6 @@ public class ChannelScheduleController implements Serializable {
         getCurrent().setTotal(calTot());
         getCurrent().setTotalForForeigner(calFTot());
 
-        System.out.println("getCurrent().getTotalFfee() = " + getCurrent().getTotalFfee());
 
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
@@ -649,14 +646,10 @@ public class ChannelScheduleController implements Serializable {
     }
 
     private double calFTot() {
-        System.out.println("calFTot");
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
-            System.out.println("i = " + i);
-            System.out.println("i.getFfee() = " + i.getFfee());
             tot += i.getFfee();
         }
-        System.out.println("tot = " + tot);
         return tot;
     }
 
@@ -722,8 +715,6 @@ public class ChannelScheduleController implements Serializable {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {
                         System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
-                        System.out.println("c.getFee().getName() = " + c.getFee().getName());
-                        System.out.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());

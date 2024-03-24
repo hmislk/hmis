@@ -334,9 +334,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<ItemLight> fillOpdItems() {
-        System.out.println("fillOpdItems");
         UserPreference up = sessionController.getDepartmentPreference();
-        System.out.println("up.getOpdItemListingStrategy() = " + up.getOpdItemListingStrategy());
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
                 return itemApplicationController.getInvestigationsAndServices();
@@ -1276,8 +1274,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String changeTextCases(String nm, String tc) {
-        System.out.println("nm = " + nm);
-        System.out.println("tc = " + tc);
         if (tc == null) {
             return nm;
         }
@@ -1313,7 +1309,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (getPatient().getPerson().getName() != null) {
                 String updatedPatientName;
                 updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
-                System.out.println("updatedPatientName = " + updatedPatientName);
                 getPatient().getPerson().setName(updatedPatientName);
             }
             getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
@@ -2216,8 +2211,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             getCurrentBillItem().setQty(1.0);
         }
         for (BillEntry bi : lstBillEntries) {
-            System.out.println("bi = " + bi.getBillItem().getItem());
-            System.out.println("getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
             if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
                 JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
                 return;
@@ -2612,7 +2605,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
-                System.out.println("null");
                 clearBillItemValues();
                 clearBillValues();
                 paymentMethodData = null;

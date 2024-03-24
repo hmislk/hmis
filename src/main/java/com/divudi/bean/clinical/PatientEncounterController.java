@@ -737,7 +737,6 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
-        System.out.println("encounterInvestigationResult.getItemValue() = " + encounterInvestigationResult.getItemValue());
         if (encounterInvestigationResult.getId() == null) {
             clinicalFindingValueFacade.create(encounterInvestigationResult);
         } else {
@@ -3120,8 +3119,6 @@ public class PatientEncounterController implements Serializable {
                 + " and e.clinicalFindingValueType = :ts ";
         
         sql += " order by e.orderNo";
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
 
         vs = clinicalFindingValueFacade.findByJpql(sql, m);
         if (vs == null) {

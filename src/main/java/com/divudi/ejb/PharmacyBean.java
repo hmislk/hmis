@@ -192,7 +192,6 @@ public class PharmacyBean {
         }
 
         for (BillItem bItem : bill.getBillItems()) {
-            System.out.println("bItem = " + bItem.getItem().getName());
             BillItem newBillItem = new BillItem();
             newBillItem.copy(bItem);
             newBillItem.invertValue(bItem);
@@ -446,7 +445,6 @@ public class PharmacyBean {
     }
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
-        System.err.println("Adding Stock : ");
         System.out.println("qty = " + qty);
         String sql;
         HashMap hm = new HashMap();
@@ -454,7 +452,6 @@ public class PharmacyBean {
         hm.put("bch", pharmaceuticalBillItem.getItemBatch());
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstByJpql(sql, hm);
-        System.err.println("ss" + s);
         if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
@@ -462,16 +459,12 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
         if (s.getId() == null || s.getId() == 0) {
-            System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
             s.setCode(pharmaceuticalBillItem.getCode());
-            System.err.println("Initial Stock After Updation" + s.getStock());
             getStockFacade().create(s);
             addToStockHistoryInitial(pharmaceuticalBillItem, s, department);
         } else {
-            System.err.println("Before Stock Update " + s.getStock());
             s.setStock(s.getStock() + qty);
-            System.err.println("After Stock Update " + s.getStock());
             getStockFacade().edit(s);
             addToStockHistory(pharmaceuticalBillItem, s, department);
         }
@@ -622,7 +615,6 @@ public class PharmacyBean {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         List<Stock> stocks = getStockFacade().findByJpql(sql, m);
-        System.out.println("stocks = " + stocks);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
@@ -634,7 +626,6 @@ public class PharmacyBean {
                 list.add(new StockQty(s, s.getStock()));
             }
         }
-        System.out.println("list = " + list);
         return list;
     }
 
@@ -771,9 +762,7 @@ public class PharmacyBean {
         sh.setInstitution(d.getInstitution());
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
-        System.out.println("fetchedStock = " + fetchedStock);
         sh.setStockQty(fetchedStock.getStock());
-        System.out.println("fetchedStock.getStock() = " + fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));

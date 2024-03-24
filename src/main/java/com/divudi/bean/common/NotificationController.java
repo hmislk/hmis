@@ -76,7 +76,6 @@ public class NotificationController implements Serializable {
         if(bill==null){
             return;
         }
-        System.out.println("bill = " + bill);
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_TRANSFER_REQUEST:
@@ -94,7 +93,6 @@ public class NotificationController implements Serializable {
         Notification nn = new Notification();
         nn.setBill(bill);
         nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
-        System.out.println("nn = " + nn.getMessage());
         getFacade().create(nn);
     }
     
@@ -102,7 +100,6 @@ public class NotificationController implements Serializable {
         Notification nn = new Notification();
         nn.setBill(bill);
         nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
-        System.out.println("nn = " + nn.getMessage());
         getFacade().create(nn);
         userNotificationController.createUserNotifications(nn);
         

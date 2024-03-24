@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -53,6 +52,7 @@ public class UserNotificationController implements Serializable {
     private UserNotificationFacade ejbFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
+    
 
     public void save(UserNotification userNotification) {
         if (userNotification == null) {
@@ -95,7 +95,7 @@ public class UserNotificationController implements Serializable {
         return ejbFacade;
     }
 
-    public void fillLoggedUserNotifications() {
+    public void fillLoggedUserNotifications(){
         String jpql = "select un "
                 + " from UserNotification un "
                 + " where un.seen=:seen "
@@ -106,11 +106,11 @@ public class UserNotificationController implements Serializable {
         m.put("com", false);
         m.put("wu", sessionController.getLoggedUser());
         items = getFacade().findByJpql(jpql, m);
-        for (UserNotification un : items) {
+        for(UserNotification un:items){
             String msg = un.getNotification().getMessage();
         }
     }
-
+    
     public void createUserNotifications(Notification notification) {
         if (notification == null) {
             return;
@@ -126,7 +126,7 @@ public class UserNotificationController implements Serializable {
             case PHARMACY_TRANSFER_REQUEST:
                 createUserNotificationsForPharmacyTransferRequest(notification);
                 break;
-
+                
             case PHARMACY_ORDER:
                 createUserNotificationsForPharmacyReuestForBht(notification);
                 break;
@@ -134,22 +134,22 @@ public class UserNotificationController implements Serializable {
         }
 
     }
-
-    private void createUserNotificationsForPharmacyTransferRequest(Notification n) {
+    
+    
+    
+    private void createUserNotificationsForPharmacyTransferRequest(Notification n){
         List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
         List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
         List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
-        for (WebUser u : smsUsers) {
+        for(WebUser u:smsUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
-        for (WebUser u : emailUsers) {
+        for(WebUser u:emailUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
-        for (WebUser u : notificationUsers) {
+        for(WebUser u:notificationUsers){
             UserNotification nun = new UserNotification();
             nun.setNotification(n);
             nun.setWebUser(u);
@@ -157,35 +157,27 @@ public class UserNotificationController implements Serializable {
         }
     }
 
-    private void createUserNotificationsForPharmacyReuestForBht(Notification n) {
+    private void createUserNotificationsForPharmacyReuestForBht(Notification n){
         List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
         List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
         List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
-        for (WebUser u : smsUsers) {
+        for(WebUser u:smsUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
-        for (WebUser u : emailUsers) {
+        for(WebUser u:emailUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
-        for (WebUser u : notificationUsers) {
+        for(WebUser u:notificationUsers){
             UserNotification nun = new UserNotification();
             nun.setNotification(n);
             nun.setWebUser(u);
-            System.out.println("user notification = " + nun.getNotification().getMessage());
-            createAllertMessage(n);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
             getFacade().create(nun);
         }
     }
 
-    public void createAllertMessage(Notification n) {
-        FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage("Successful", "Your message: " + n.getMessage()));
-    }
-
+    
     public SessionController getSessionController() {
         return sessionController;
     }
