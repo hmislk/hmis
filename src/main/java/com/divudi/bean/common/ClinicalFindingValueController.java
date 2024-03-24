@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.clinical.ClinicalFindingValueType;
+import com.divudi.entity.Patient;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import java.io.Serializable;
@@ -114,27 +115,23 @@ public class ClinicalFindingValueController implements Serializable {
     }
 
     public List<ClinicalFindingValue> getItems() {
+        return items;
+    }
+    
+    public List<ClinicalFindingValue> findClinicalFindingValues(Patient pt, ClinicalFindingValueType type) {
         if (items == null) {
             String j;
             j = "select a "
                     + " from ClinicalFindingValue a "
-                    + " where a.retired=false "
-                    + " order by a.name";
-            items = getFacade().findByJpql(j);
+                    + " where a.retired=:ret "
+                    + " and a.patient=:pt "
+                    + " and a.clinicalFindingValueType=:type";
+            Map params = new HashMap();
+            params.put("ret", false);
+            params.put("pt", pt);
+            params.put("type", type);
+            items = getFacade().findByJpql(j,params);
         }
-        return items;
-    }
-
-    public List<ClinicalFindingValue> fillClinicalFindingValuesByType() {
-        String j;
-        items=new ArrayList<>();
-        Map m=new HashMap<>();
-        j = "select a "
-                + " from ClinicalFindingValue a "
-                + " where a.retired=false "
-                + " and a.clinicalFindingValueType = :vt";
-        m.put("vt", ClinicalFindingValueType.PatientAllergy);
-        items = getFacade().findByJpql(j,m);
         return items;
     }
 
