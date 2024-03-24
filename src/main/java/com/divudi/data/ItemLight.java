@@ -117,6 +117,20 @@ public class ItemLight {
         this.total = total;
     }
 
+    public ItemLight(Long id,
+            String name,
+            String code,
+            String fullName,
+            String departmentName,
+            Double total) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.fullName = fullName;
+        this.departmentName = departmentName;
+        this.total = total;
+    }
+
     public ItemLight(Item item) {
         this.id = item.getId();
         this.orderNo = item.getOrderNo();
