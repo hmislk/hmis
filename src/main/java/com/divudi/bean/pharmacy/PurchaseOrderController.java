@@ -213,7 +213,6 @@ public class PurchaseOrderController implements Serializable {
                 getBillFacade().edit(getAprovedBill());
             }
         } catch (Exception e) {
-            System.err.println("e = " + e);
         }
 
     }
@@ -234,7 +233,6 @@ public class PurchaseOrderController implements Serializable {
                     getBillItemFacade().edit(i);
                 }
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
 
             phItem.setBillItem(i);
@@ -246,7 +244,6 @@ public class PurchaseOrderController implements Serializable {
                     getPharmaceuticalBillItemFacade().edit(phItem);
                 }
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
 
             i.setPharmaceuticalBillItem(phItem);

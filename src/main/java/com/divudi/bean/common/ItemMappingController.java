@@ -362,8 +362,6 @@ public class ItemMappingController implements Serializable {
                 + "ORDER BY im.item.name";
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("dept", dept);
-        System.out.println("parameters = " + parameters);
-        System.out.println("jpql = " + jpql);
         results = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }

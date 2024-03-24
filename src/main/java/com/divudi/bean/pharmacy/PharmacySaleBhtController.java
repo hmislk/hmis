@@ -1303,8 +1303,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public String navigateToIssueMedicinesDirectlyForBhtRequest() {
-        System.out.println("navigateToIssueMedicinesDirectlyForBhtRequest");
-        System.out.println("bhtRequestBill");
         if (bhtRequestBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return "";
@@ -1314,7 +1312,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void generateIssueBillComponentsForBhtRequest(Bill b) {
-        System.out.println("generateIssueBillComponentsForBhtRequest");
         if (b == null) {
             JsfUtil.addErrorMessage("No bill");
             return;
@@ -1334,13 +1331,10 @@ public class PharmacySaleBhtController implements Serializable {
         billItems = new ArrayList<>();
 
         for (BillItem i : b.getBillItems()) {
-            System.out.println("i = " + i);
             if (i.getItem() == null) {
-                System.out.println("No Item in Bill Item = " + i);
                 continue;
             }
             if (i.getQty() == null) {
-                System.out.println("No Qty in Bill Item = " + i);
                 continue;
             }
             Item item = i.getItem();
@@ -1368,7 +1362,6 @@ public class PharmacySaleBhtController implements Serializable {
 
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
 
-            System.out.println("stockQtys = " + stockQtys);
 
             if (stockQtys != null && !stockQtys.isEmpty()) {
 
@@ -1402,8 +1395,8 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-                    System.out.println("3 = " + billItem.getPharmaceuticalBillItem().getItemBatch());
-                    System.out.println("4 = " + billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
+//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
+//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                     billItem.setGrossValue(sq.getStock().getItemBatch().getRetailsaleRate() * sq.getQty());
                     billItem.setNetValue(sq.getQty() * sq.getStock().getItemBatch().getRetailsaleRate());
 
@@ -1416,7 +1409,6 @@ public class PharmacySaleBhtController implements Serializable {
 
                 }
             } else {
-                System.out.println("no stocks");
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                 billItem.getPharmaceuticalBillItem().setQtyInUnit(issuableQty);
@@ -1428,7 +1420,6 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
                 billItem.setReferanceBillItem(i);
                 billItem.setSearialNo(getBillItems().size() + 1);
-                System.out.println("billItems = " + billItems);
                 billItems.add(billItem);
             }
 

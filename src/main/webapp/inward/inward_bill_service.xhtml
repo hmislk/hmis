@@ -226,11 +226,10 @@
                                                                     <h:outputLabel value="#{t.name}"/>
                                                                 </p:column>
                                                                 <p:column>
-                                                                    <h:outputLabel value="#{t.department.name}"/>
+                                                                    <h:outputLabel value="#{t.departmentName}"/>
                                                                 </p:column>  
                                                                 <p:column>
-                                                                    <h:outputLabel value="#{t.total}" 
-                                                                                   rendered="#{t.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
+                                                                    <h:outputLabel value="#{t.total}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>  

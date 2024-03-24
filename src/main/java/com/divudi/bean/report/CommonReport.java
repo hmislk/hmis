@@ -1950,7 +1950,6 @@ public class CommonReport implements Serializable {
         }
         
         if (!getDepartmentId().trim().equals("")) {
-            System.out.println("test = "+getDepartmentId());
             sql+= " and b.deptId like :deptId";
             temMap.put("deptId", "%" + getDepartmentId() + "%");     
         }
@@ -4422,8 +4421,6 @@ public class CommonReport implements Serializable {
         }
         
         sql += " order by b.createdAt desc  ";
-        System.out.println("tmp = " + tmp);
-        System.out.println("sql = " + sql);
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
         calculateTotalOfPuchaseOrderSummaryBills();
@@ -4463,8 +4460,6 @@ public class CommonReport implements Serializable {
         }
         
         sql += " order by b.createdAt desc  ";
-        System.out.println("tmp = " + tmp);
-        System.out.println("sql = " + sql);
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
     }
@@ -4501,8 +4496,6 @@ public class CommonReport implements Serializable {
         }
         
         sql += " order by b.createdAt desc  ";
-        System.out.println("tmp = " + tmp);
-        System.out.println("sql = " + sql);
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
     }
@@ -4538,8 +4531,6 @@ public class CommonReport implements Serializable {
         }
         
         sql += " order by b.createdAt desc  ";
-        System.out.println("tmp = " + tmp);
-        System.out.println("sql = " + sql);
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
         calculateTotalOfPuchaseOrderSummaryBills();
@@ -4576,8 +4567,6 @@ public class CommonReport implements Serializable {
         }
         
         sql += " order by b.createdAt desc  ";
-        System.out.println("tmp = " + tmp);
-        System.out.println("sql = " + sql);
        
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
         calculateTotalOfPuchaseOrderSummaryBills();

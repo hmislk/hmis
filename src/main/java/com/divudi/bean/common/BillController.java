@@ -1585,8 +1585,6 @@ public class BillController implements Serializable {
         m.put("ret", false);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         return billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
@@ -1959,9 +1957,7 @@ public class BillController implements Serializable {
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
         List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
 
     }
@@ -1998,9 +1994,7 @@ public class BillController implements Serializable {
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
         List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
     }
 
@@ -2046,8 +2040,6 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billType in :bts";
         }
-        System.out.println("hm = " + hm);
-        System.out.println("jpql = " + jpql);
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -2079,8 +2071,6 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
-        System.out.println("hm = " + hm);
-        System.out.println("jpql = " + jpql);
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -2118,9 +2108,7 @@ public class BillController implements Serializable {
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
         List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
     }
 

@@ -259,7 +259,6 @@ public class Lims {
     }
 
     private JSONObject constructPatientSampleJson(PatientSample ps) {
-        System.out.println("constructPatientSampleJson = " + ps);
         JSONObject jSONObject = new JSONObject();
         if (ps == null) {
             return null;
@@ -317,7 +316,6 @@ public class Lims {
     }
 
     private JSONObject constructPatientSampleJson(Bill b) {
-        System.out.println("constructPatientSampleJson = " + b);
         JSONObject jSONObject = new JSONObject();
         if (b == null) {
             return null;
@@ -430,7 +428,6 @@ public class Lims {
     }
 
     public List<Item> testComponantsForPatientSample(PatientSample ps) {
-        System.out.println("ps = " + ps);
         if (ps == null) {
             return new ArrayList<>();
         }

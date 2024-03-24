@@ -160,9 +160,7 @@ public class BillBhtController implements Serializable {
 
     public String navigateToPrintLabelsForInvestigations() {
         String json = generateStockerPrinterString();
-        System.out.println("json = " + json);
         stickers = convertJsonToList(json);
-        System.out.println("stickers = " + stickers);
         return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
     }
 
@@ -205,7 +203,6 @@ public class BillBhtController implements Serializable {
             String billId = b.getIdStr();
             String result = lims.generateSamplesFromBill(billId, username, password);
             JSONObject resultJson = new JSONObject(result);
-            System.out.println("resultJson = " + resultJson);
             if (resultJson.has("Barcodes")) {
                 JSONArray barcodes = resultJson.getJSONArray("Barcodes");
                 for (int i = 0; i < barcodes.length(); i++) {
@@ -216,7 +213,6 @@ public class BillBhtController implements Serializable {
         }
         JSONObject finalJson = new JSONObject();
         finalJson.put("Barcodes", combinedBarcodes);
-        System.out.println("finalJson = " + finalJson);
         return finalJson.toString();
     }
 
@@ -441,9 +437,7 @@ public class BillBhtController implements Serializable {
     }
 
     public List<ItemLight> fillInwardItems() {
-        System.out.println("fillOpdItems");
         UserPreference up = sessionController.getDepartmentPreference();
-        System.out.println("up.getOpdItemListingStrategy() = " + up.getInwardItemListingStrategy());
         switch (up.getInwardItemListingStrategy()) {
             case ALL_ITEMS:
                 return itemApplicationController.getInvestigationsAndServices();
