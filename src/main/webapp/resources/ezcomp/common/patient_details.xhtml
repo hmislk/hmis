@@ -16,9 +16,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation >
-
         <p:panel id="ptImp">
-
             <p:growl id="msg"/>
             <f:facet name="header">
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
@@ -30,7 +28,7 @@
                             rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                             <h:outputText
                                 rendered="#{cc.attrs.controller.patient.id eq null}"
-                                value="New Patient Details" 
+                                value="Patient" 
                                 class="mx-4"
                                 >
                             </h:outputText>
@@ -54,7 +52,6 @@
                             </h:panelGroup>
 
                         </h:panelGroup>
-
                     </h:panelGroup>
 
                     <!-- Right aligned quick search -->
