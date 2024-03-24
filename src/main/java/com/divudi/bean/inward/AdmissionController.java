@@ -1532,6 +1532,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
+    public ClinicalFindingValue getCurrentAllaergie() {
+        return currentAllaergie;
+    }
+
+    public void setCurrentAllaergie(ClinicalFindingValue currentAllaergie) {
+        this.currentAllaergie = currentAllaergie;
+    }
+
     /**
      *
      */
