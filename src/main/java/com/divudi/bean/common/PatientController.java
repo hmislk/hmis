@@ -1451,6 +1451,7 @@ public class PatientController implements Serializable {
             return;
         }
         controller.setPatient(current);
+        admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }

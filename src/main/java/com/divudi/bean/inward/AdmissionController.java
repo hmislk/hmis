@@ -52,6 +52,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -177,6 +178,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 clinicalFindingValueFacade.edit(al);
             }
         }
+    }
+    
+    public void fillCurrentPatientAllergies(Patient pt) {
+        if (pt==null) {
+            return;
+        }
+        patientAllergies =new ArrayList<>();
+        Map params =new HashMap<>();
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        params.put("pt", pt);
+        patientAllergies=clinicalFindingValueFacade.findByJpql(s,params); 
     }
 
     public void copyPatientAddressToGurdian() {
