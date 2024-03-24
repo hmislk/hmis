@@ -1276,6 +1276,16 @@ public class UserPreference implements Serializable {
         }
         return copiesList;
     }
+    
+    @Transient
+    public List<Integer> getChannellingBillCopiesList() {
+        int copies = getNumberOfChannellingBillCopies(); // Ensures the default is applied if null or 0
+        List<Integer> copiesList = new ArrayList<>(copies);
+        for (int i = 1; i <= copies; i++) {
+            copiesList.add(i);
+        }
+        return copiesList;
+    }
 
     public void setNumberOfOPDBillCopies(Integer numberOfOPDBillCopies) {
 
