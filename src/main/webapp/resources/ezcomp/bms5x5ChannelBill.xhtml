@@ -53,7 +53,7 @@
 
             <table style="margin-left: 6%;font-size: 12px; margin-top: -2mm" >
 
-                <tr>
+                <tr style="font-size:1.3em">
                     <td>
                         <b>
                             <h:outputLabel value="Consultant" ></h:outputLabel>
@@ -101,7 +101,7 @@
 
                 </tr>
 
-                <tr>
+                <tr style="font-size:1.3em">
                     <td>
                         <b>
                             <h:outputLabel value="Room No." ></h:outputLabel>
@@ -120,6 +120,53 @@
 
                     </td>
 
+                </tr>
+
+                <tr>
+                    <td>
+                        <h:outputLabel value="Name" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" ></h:outputLabel>
+                    </td>
+
+                </tr>
+
+                <tr>
+                    <td>
+                        <h:outputLabel value="Gender / Age " ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.sex} (#{cc.attrs.bill.patient.person.ageAsString})" ></h:outputLabel>
+                    </td>
+
+                </tr>
+
+                <tr>
+                    <td>
+                        <h:outputLabel value="Phone" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                    </td>
                 </tr>
 
                 <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
@@ -230,54 +277,6 @@
 
                 </h:panelGroup>
 
-
-                <tr>
-                    <td>
-                        <h:outputLabel value="Name" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" ></h:outputLabel>
-                    </td>
-
-                </tr>
-
-                <tr>
-                    <td>
-                        <h:outputLabel value="Gender / Age " ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.sex} (#{cc.attrs.bill.patient.person.ageAsString})" ></h:outputLabel>
-                    </td>
-
-                </tr>
-
-                <tr>
-                    <td>
-                        <h:outputLabel value="Phone" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
-                    </td>
-                </tr>
-
                 <tr>
                     <td>
                         <h:outputLabel value="Session Name" ></h:outputLabel>
@@ -310,7 +309,7 @@
 
                 <tr>
                     <td>
-                        <h:outputLabel value="Bill At" ></h:outputLabel>
+                        <h:outputLabel value="Issued By" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -319,15 +318,18 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                            <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
-                        </h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}"
+                                       ></h:outputLabel>
+                        &emsp;
+                        <p:spacer height="1" width="100" ></p:spacer>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"
+                                       ></h:outputLabel>
+
                     </td>
                 </tr>
-
                 <tr>
                     <td>
-                        <h:outputLabel value="Cashier Name" ></h:outputLabel>
+                        <h:outputLabel value="Billed At" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -336,8 +338,16 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill eq null}" ></h:outputLabel>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.name}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}"
+                                       >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                        </h:outputLabel>
+                        <p:spacer height="1" width="20" ></p:spacer>
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}"
+                                       >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                        </h:outputLabel>
+
                     </td>
                 </tr>
 
