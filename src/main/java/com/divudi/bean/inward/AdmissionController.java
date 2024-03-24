@@ -141,7 +141,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
-    private List<ClinicalFindingValue> patientAllergies;
+     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentAllaergie;
 
     public void addPatientAllergies() {
@@ -1538,6 +1538,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrentAllaergie(ClinicalFindingValue currentAllaergie) {
         this.currentAllaergie = currentAllaergie;
+    }
+
+    public List<ClinicalFindingValue> getPatientAllergies() {
+        return patientAllergies;
+    }
+
+    public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
+        this.patientAllergies = patientAllergies;
     }
 
     /**
