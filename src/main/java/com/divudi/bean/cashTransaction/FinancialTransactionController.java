@@ -93,13 +93,13 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/index?faces-redirect=false;";
+        return "/cashier/index?faces-redirect=true;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
-        return "/cashier/initial_fund_bill?faces-redirect=false;";
+        return "/cashier/initial_fund_bill?faces-redirect=true;";
     }
 
     public String navigateToFundTransferBill() {
@@ -822,7 +822,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=false;";
+        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=true;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
