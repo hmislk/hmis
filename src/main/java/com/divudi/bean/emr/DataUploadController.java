@@ -78,6 +78,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.inward.InwardService;
 import com.divudi.java.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -613,7 +614,7 @@ public class DataUploadController implements Serializable {
             String departmentName = null;
             String inwardName = null;
 
-            String itemType = "Service";
+            String itemType = "Investigation";
             Double hospitalFee = 0.0;
 
             Cell insCell = row.getCell(5);
@@ -808,6 +809,34 @@ public class DataUploadController implements Serializable {
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
+            }else if (itemType.equals("InwardService")) {
+
+                if (masterItem == null) {
+                    masterItem = new Investigation();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setIsMasterItem(true);
+                    masterItem.setCategory(category);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    masterItemsToSave.add(masterItem);
+                }
+                InwardService iwdService = new InwardService();
+                iwdService.setName(name);
+                iwdService.setPrintName(printingName);
+                iwdService.setFullName(fullName);
+                iwdService.setCode(code);
+                iwdService.setCategory(category);
+                iwdService.setInstitution(institution);
+                iwdService.setDepartment(department);
+                iwdService.setInwardChargeType(iwct);
+                iwdService.setMasterItemReference(masterItem);
+                iwdService.setCreater(sessionController.getLoggedUser());
+                iwdService.setCreatedAt(new Date());
+                item = iwdService;
             }
 
             if (item == null) {
