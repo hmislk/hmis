@@ -156,6 +156,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         currentPatientAllaergy = null;
     }
 
+    public void removePatientAllergy(ClinicalFindingValue pa) {
+        if (currentPatientAllaergy == null) {
+            return;
+        }
+        patientAllergies.remove(pa);
+    }
+
     public void savePatientAllergies() {
         if (patientAllergies == null) {
             return;
@@ -166,7 +173,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
             if (al.getId() == null) {
                 clinicalFindingValueFacade.create(al);
-            }else{
+            } else {
                 clinicalFindingValueFacade.edit(al);
             }
         }
