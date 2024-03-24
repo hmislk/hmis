@@ -291,7 +291,7 @@
                                             value="#{cc.attrs.controller.patient.person.religion}">
                                             <f:selectItem itemLabel="Select Religion" />
                                             <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
-                                                           itemLabel="#{i.name}" itemValue="#{i.name}"/>
+                                                           itemLabel="#{i.name}" itemValue="#{i}"/>
 
                                         </p:selectOneMenu>
                                     </div>
@@ -448,11 +448,11 @@
 
                         </div>
                     </div>
-                    <div class="row" >
+                    <div class="row" >                                    
                         <div class="col-12" >
                             <h:panelGroup id="ptAl" >
                                 <p:repeat value="#{admissionController.patientAllergies}" var="al">
-                                    <div class="card my-1">
+                                    <div class="card my-1 w-100">
                                         <div class="d-flex justify-content-between align-items-center p-2">
                                             <div>
                                                 <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
