@@ -340,7 +340,7 @@
                                                         value="#{admissionController.currentPatientAllaergy.itemValue}"
                                                         inputStyleClass="form-control w-100"
                                                         class="w-100"/>
-                                                    <p:inputTextarea id="txtAllergy" value="#{admissionController.currentPatientAllaergy.lobValue}" ></p:inputTextarea>
+                                                    <p:inputTextarea class="my-1 w-100" id="txtAllergy" value="#{admissionController.currentPatientAllaergy.lobValue}" ></p:inputTextarea>
                                                 </div>
                                                 <div class="col-6">
                                                     <p:commandButton 
@@ -354,13 +354,26 @@
                                             </div>
                                             <div class="row" >
                                                 <div class="col-12" >
-                                                    <h:panelGroup id="ptAl">
+                                                    <h:panelGroup id="ptAl" >
                                                         <p:repeat value="#{admissionController.patientAllergies}" var="al">
-                                                            <div class="card">
-                                                                <h:outputText class="text-danger  bg-warning" rendered="#{not empty al.itemValue and not empty al.lobValue}" 
-                                                                              value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
-                                                                <h:outputText class="text-danger bg-warning" rendered="#{empty al.itemValue or empty al.lobValue}" 
-                                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                                            <div class="card my-1">
+                                                                <div class="d-flex justify-content-between align-items-center p-2">
+                                                                    <div>
+                                                                        <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                                                       value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                                        <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                                                      value="#{al.itemValue.name}#{al.lobValue}"/>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p:commandButton 
+                                                                            id="btnRemove" 
+                                                                            class="ui-button-danger" 
+                                                                            process="btnRemove" 
+                                                                            update=":#{p:resolveClientId('@id(ptAl)', view)}"
+                                                                            icon="fas fa-trash"
+                                                                            action="#{admissionController.removePatientAllergy(al)}" />
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </p:repeat>
                                                     </h:panelGroup>
