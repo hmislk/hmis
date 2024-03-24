@@ -1167,10 +1167,17 @@
                     </p:menuitem>
                 </p:submenu>
 
-
-
                 <f:facet name="options">
-                    <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
+                    <div class="d-flex align-items-center">
+                        <div class="mx-4">
+                            <p:badge severity="danger" value="#{webUserController.userNotificationCount}" >
+                                <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell " action="#{webUserController.notificationCountForUser()}" />
+                            </p:badge>
+                        </div>
+
+                        <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
+                    </div>
+                    
                     <p:tooltip for="btnLogout" value="df"  >
                         <h:panelGrid columns="3" >
                             <h:outputText value="Institution" ></h:outputText>
