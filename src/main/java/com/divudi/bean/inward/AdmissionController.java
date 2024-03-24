@@ -141,7 +141,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
-     private List<ClinicalFindingValue> patientAllergies;
+    private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentAllaergie;
 
     public void addPatientAllergies() {
@@ -150,12 +150,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         patientAllergies.add(currentAllaergie);
     }
-    
-    public void savePatientAllergies(){
-        if (patientAllergies==null) {
+
+    public void savePatientAllergies() {
+        if (patientAllergies == null) {
             return;
         }
-        for(ClinicalFindingValue al:patientAllergies){
+        for (ClinicalFindingValue al : patientAllergies) {
             al.setPatient(current.getPatient());
             clinicalFindingValueFacade.create(al);
         }
@@ -520,7 +520,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         return suggestions;
     }
-    
+
     public List<Admission> findAdmissions(Staff admittingOfficer, Date fromDate, Date toDate) {
         List<Admission> admissions;
         String jpql;
@@ -530,10 +530,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and c.opdDoctor=:admittingOfficer "
                 + " and c.dateOfAdmission between :fromDate and :toDate "
                 + " order by c.bhtNo ";
-        params.put("admittingOfficer",admittingOfficer);
-        params.put("ret",false);
-        params.put("fromDate",fromDate);
-        params.put("toDate",toDate);
+        params.put("admittingOfficer", admittingOfficer);
+        params.put("ret", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
         admissions = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return admissions;
     }
