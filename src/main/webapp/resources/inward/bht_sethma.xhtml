@@ -51,11 +51,11 @@
                         <tr>
                             <td><h:outputLabel value="Consultant Doctor"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><p:outputLabel  value="#{cc.attrs.admission.referringConsultant.person.name}" /></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" /></td>
                             <td></td>
                             <td><h:outputLabel value="OPD Doctor"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><p:outputLabel  value="#{cc.attrs.admission.opdDoctor.person.name}" /></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.opdDoctor.person.nameWithTitle}" /></td>
                         </tr>
                         <tr>
                             <td><p:outputLabel   value="BHT No " /></td>
@@ -158,7 +158,7 @@
                             <td></td>
                             <td><h:outputLabel value="Referring Doctor "></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.name}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" ></h:outputLabel></td>
                         </tr>
                     </table>
 
