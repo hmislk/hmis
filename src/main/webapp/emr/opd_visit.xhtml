@@ -409,10 +409,11 @@
                                         </div>
 
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel class="w-100 m-0 p-0">
+                                            <p:panel class="w-100 m-0 p-0" id="medicines">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
+                                                    <p:commandButton value="Fill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="medicines" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
                                                 </f:facet>
                                                 <div class="container-fluid m-0 p-0 w-100">
                                                     <div class="d-flex flex-wrap w-100">
