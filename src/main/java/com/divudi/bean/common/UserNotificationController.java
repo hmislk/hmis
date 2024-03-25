@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import com.divudi.data.TriggerType;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
@@ -125,6 +126,10 @@ public class UserNotificationController implements Serializable {
             case PHARMACY_TRANSFER_REQUEST:
                 createUserNotificationsForPharmacyTransferRequest(notification);
                 break;
+                
+            case PHARMACY_ORDER:
+                createUserNotificationsForPharmacyReuestForBht(notification);
+                break;
             default:
         }
 
@@ -138,12 +143,10 @@ public class UserNotificationController implements Serializable {
         List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
         for(WebUser u:smsUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
         for(WebUser u:emailUsers){
             String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
             //TODo
         }
         for(WebUser u:notificationUsers){
@@ -154,6 +157,27 @@ public class UserNotificationController implements Serializable {
         }
     }
 
+    private void createUserNotificationsForPharmacyReuestForBht(Notification n){
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
+        List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
+        List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
+        for(WebUser u:smsUsers){
+            String number = u.getWebUserPerson().getMobile();
+            //TODo
+        }
+        for(WebUser u:emailUsers){
+            String number = u.getWebUserPerson().getMobile();
+            //TODo
+        }
+        for(WebUser u:notificationUsers){
+            UserNotification nun = new UserNotification();
+            nun.setNotification(n);
+            nun.setWebUser(u);
+            getFacade().create(nun);
+        }
+    }
+
+    
     public SessionController getSessionController() {
         return sessionController;
     }

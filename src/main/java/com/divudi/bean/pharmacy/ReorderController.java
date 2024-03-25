@@ -130,7 +130,6 @@ public class ReorderController implements Serializable {
         String sql = "select r from Reorder r where r.department=:dep";
         m.put("dep", department);
         reorders = reorderFacade.findByJpql(sql, m);
-        System.out.println("reorders dep = " + reorders.size());
         return reorders;
 
     }
@@ -141,7 +140,6 @@ public class ReorderController implements Serializable {
         String sql = "select r from Reorder r where r.institution=:ins";
         m.put("ins", institution);
         reorders = reorderFacade.findByJpql(sql, m);
-        System.out.println("reorders ins = " + reorders.size());
         return reorders;
     }
 
@@ -191,7 +189,6 @@ public class ReorderController implements Serializable {
     
     public void createReOrdersByInstituion() {
         List<Amp> amps = getAmpController().findItems();
-        System.out.println("amps by ins = " + amps.size());
         for (Amp amp : amps) {
             if (isAmpHaveReorder(amp, null, institution) == false) {
                 Reorder ro = new Reorder();

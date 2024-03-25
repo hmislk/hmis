@@ -264,6 +264,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private boolean duplicatePrint;
 
+    
+
     /**
      *
      * Navigation Methods
@@ -1272,8 +1274,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String changeTextCases(String nm, String tc) {
-        System.out.println("nm = " + nm);
-        System.out.println("tc = " + tc);
         if (tc == null) {
             return nm;
         }
@@ -1309,7 +1309,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (getPatient().getPerson().getName() != null) {
                 String updatedPatientName;
                 updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
-                System.out.println("updatedPatientName = " + updatedPatientName);
                 getPatient().getPerson().setName(updatedPatientName);
             }
             getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
@@ -1351,9 +1350,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
-        if(getPatient().getPatientPhoneNumber()!=null){
+        if (getPatient().getPatientPhoneNumber() != null) {
             s.setReceipientNumber(getPatient().getPatientPhoneNumber().toString());
-        }else{
+        } else {
             s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
         }
         String messageBody = smsMessage;
@@ -2014,6 +2013,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
+       
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -2211,8 +2211,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             getCurrentBillItem().setQty(1.0);
         }
         for (BillEntry bi : lstBillEntries) {
-            System.out.println("bi = " + bi.getBillItem().getItem());
-            System.out.println("getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
             if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
                 JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
                 return;
@@ -2607,7 +2605,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
-                System.out.println("null");
                 clearBillItemValues();
                 clearBillValues();
                 paymentMethodData = null;
@@ -2617,7 +2614,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return "/opd/opd_bill";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/cashier/index?faces-redirect=false";
+                return "/cashier/index?faces-redirect=true";
             }
         } else {
             clearBillItemValues();
@@ -3612,5 +3609,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setDuplicatePrint(boolean duplicatePrint) {
         this.duplicatePrint = duplicatePrint;
     }
+
+    
 
 }

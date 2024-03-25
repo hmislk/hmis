@@ -16,7 +16,7 @@
                     font-size: 18px !important;
                 }
             </style>
-            
+
             <p:tooltip for="home" value="Home" ></p:tooltip>
             <p:tooltip for="smOpd" value="OPD" ></p:tooltip>
             <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
@@ -31,9 +31,9 @@
             <p:tooltip for="smEmr" value="EMR" ></p:tooltip>
             <p:tooltip for="smReports" value="Reports" ></p:tooltip>
             <p:tooltip for="smSettings" value="Settings" ></p:tooltip>
-            
-            
-            
+
+
+
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
                 <p:menuitem 
                     id="home"
@@ -217,6 +217,12 @@
                             action="#{workingTimeController.navigateToListWorkTimes()}" 
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            value="Pay" 
+                            action="#{workingTimeController.navigateToPay()}" 
+                            icon="fa fa-search"
+                            rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>
                     <p:menuitem 
@@ -371,7 +377,7 @@
                         <p:menuitem ajax="false" action="/inward/inward_bill_service?faces-redirect=true" value="In-patient Billing" actionListener="#{billBhtController.resetBillData}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                     </p:submenu>
-                    
+
 
                     <p:menuitem ajax="false" action="/lab/sample?faces-redirect=true" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
@@ -643,7 +649,7 @@
                         <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>
                     </p:submenu>
-                    
+
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Item Search" icon="fas fa-search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Generate Reports" icon="fas fa-chart-line" rendered="#{webUserController.hasPrivilege('PharmacyGenarateReports')}" ></p:menuitem>
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summary Views" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>

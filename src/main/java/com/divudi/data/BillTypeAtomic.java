@@ -60,7 +60,17 @@ public enum BillTypeAtomic {
     PHARMACY_ISSUE("Pharmacy Issue"),
     PHARMACY_ISSUE_CANCELLED("Pharmacy Issue Cancelled"),
     PHARMACY_RECEIVE("Pharmacy Receive"),
-    PHARMACY_RECEIVE_CANCELLED("Pharmacy Receive Cancelled");
+    PHARMACY_RECEIVE_CANCELLED("Pharmacy Receive Cancelled"),
+    
+    
+    OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill"),
+    //TO DO : Add more bill Types
+    
+    
+    ;
+    
+    
+    
 
     private final String label;
 

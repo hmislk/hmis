@@ -336,7 +336,6 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVmpp() {
-        System.out.println("navigateToVmpp");
         return "/pharmacy/admin/vmpp?faces-redirect=true";
     }
 

@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" styleClass="noBorder" value="#{cc.attrs.data.bills}"  var="bPh" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{bPh.billType}"  >
+        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}"  var="bPh" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{bPh.billType}"  >
             <f:facet name="header">
                 <h:outputLabel value="Pharmacy GRN Payment Cancel"/>
             </f:facet>

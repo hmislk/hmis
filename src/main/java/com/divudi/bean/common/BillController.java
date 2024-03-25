@@ -242,6 +242,8 @@ public class BillController implements Serializable {
         return billFacade.findByJpql(j, m);
     }
 
+    
+    
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -1569,6 +1571,22 @@ public class BillController implements Serializable {
         m.put("ret", false);
         return billFeeFacade.findByJpql(jpql, m);
     }
+    
+    public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
+        System.out.println("findBillFees");
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.bill.billTime between :fromDate and :toDate "
+                + " and bf.staff=:staff";
+        m.put("staff", staff);
+        m.put("ret", false);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        return billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
 
     public List<BillFee> billFeesOfBillItem(BillItem billItem) {
         String jpql;
@@ -1939,9 +1957,7 @@ public class BillController implements Serializable {
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
         List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
 
     }
@@ -1978,9 +1994,7 @@ public class BillController implements Serializable {
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
         List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
     }
 
@@ -2026,8 +2040,6 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billType in :bts";
         }
-        System.out.println("hm = " + hm);
-        System.out.println("jpql = " + jpql);
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -2059,8 +2071,6 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
-        System.out.println("hm = " + hm);
-        System.out.println("jpql = " + jpql);
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -2098,9 +2108,7 @@ public class BillController implements Serializable {
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
         List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lst = " + lst);
         return lst;
     }
 

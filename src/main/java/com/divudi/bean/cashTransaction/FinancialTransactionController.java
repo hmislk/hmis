@@ -93,13 +93,13 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/index?faces-redirect=false;";
+        return "/cashier/index?faces-redirect=true;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
-        return "/cashier/initial_fund_bill?faces-redirect=false;";
+        return "/cashier/initial_fund_bill?faces-redirect=true;";
     }
 
     public String navigateToFundTransferBill() {
@@ -156,23 +156,18 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
-        System.out.println("this = " + "prepareToAddNewFundTransferReceiveBill working start");
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferReceivedBill);
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setReferenceBill(selectedBill);
         if (selectedBill != null) {
-            System.out.println("selectedBill id = " + selectedBill.getId());
-            System.out.println("currentBill id = " + currentBill.getId());
         }
         currentBillPayments = new ArrayList<>();
-        System.out.println("selected bill payments = " + selectedBill.getPayments().size());
         if (selectedBill.getPayments() == null || selectedBill.getPayments().isEmpty()) {
             selectedBill.setPayments(findPaymentsForBill(selectedBill));
         }
 
         for (Payment p : selectedBill.getPayments()) {
-            System.out.println("p = " + p);
             Payment np = p.copyAttributes();
             currentBillPayments.add(np);
 
@@ -255,7 +250,6 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
-        System.out.println("currentPayments = " + currentPayment.getPaidValue());
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -403,12 +397,10 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             System.out.println("p = " + p);
-            System.out.println("p = " + p.getId());
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
-            System.out.println("p = " + p.getId());
         }
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
@@ -592,8 +584,6 @@ public class FinancialTransactionController implements Serializable {
         totalFunds = aditions - Deductions;
         shiftEndTotalValue = totalFunds;
         
-        System.out.println("totalBilledBillValue = " + totalBilledBillValue);
-         System.out.println("totalBilledBillValue = " + totalBilledBillValue);
 
     }
 
@@ -822,7 +812,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=false;";
+        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=true;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
