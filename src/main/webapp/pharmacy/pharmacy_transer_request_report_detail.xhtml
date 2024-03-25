@@ -31,8 +31,8 @@
                                          forceSelection="true" rendered="true"
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
-                        
-                        
+
+
 
                         <h:outputLabel value="Institution"/>
                         <p:autoComplete  value="#{commonReport.institution}"
@@ -133,7 +133,10 @@
                                 <h:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
-
+                                <h:outputLabel value="Cancelled. #{b.cancelledBill.deptId}" rendered="#{b.cancelledBill.deptId ne null}" style="color: red;"></h:outputLabel>   
+                                <h:outputLabel value="#{b.cancelledBill.createdAt}" rendered="#{b.cancelledBill.deptId ne null}" style="color: red;">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>   
                             </p:column>
 
                             <p:column headerText="Transefring Department"  >
@@ -149,29 +152,37 @@
                                     <h:outputLabel value="Transefring Institution"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.fromInstitution.name}" rendered="#{b.billType eq 'PharmacyTransferRequest'}"/>
-                                 <h:outputLabel value="#{b.toInstitution.name}" rendered="#{b.billType eq 'PharmacyTransferIssue'}"/>
+                                <h:outputLabel value="#{b.toInstitution.name}" rendered="#{b.billType eq 'PharmacyTransferIssue'}"/>
 
                             </p:column>
-                            
+
+
                             <p:column headerText="Net Total">
-                                <h:outputLabel value="#{b.netTotal}">
-                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
+                                <ui:fragment rendered="#{b.netTotal ne 0.00}">
+                                    <h:outputLabel value="#{b.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputLabel>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{b.netTotal eq 0.00}">
+                                    <h:outputLabel value="Not issued"/>
+                                </ui:fragment>
                             </p:column>
+
+
 
                             <p:column headerText="Staff">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Staff"/>
                                 </f:facet> 
-                                <h:outputLabel value="#{b.toStaff.name}"/>
+                                <ui:fragment rendered="#{b.toStaff ne null}">
+                                    <h:outputLabel value="#{b.toStaff.name}"/>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{b.toStaff eq null}">
+                                    <h:outputLabel value="Not issued"/>
+                                </ui:fragment>
 
                             </p:column>
-                            <p:column headerText="Remark" >
-                                <f:facet name="header">  
-                                    <h:outputLabel value="Remark"/>
-                                </f:facet> 
-                                <h:outputLabel value="Cancelled. #{b.cancelledBill.deptId}" rendered="#{b.cancelledBill.deptId ne null}" style="color: red;"></h:outputLabel>   
-                            </p:column>
+
 
                             <p:column headerText="View Bill" exportable="false" >
                                 <div class="d-flex">
