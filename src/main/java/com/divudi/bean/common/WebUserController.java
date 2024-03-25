@@ -28,8 +28,6 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.UserNotification;
-import com.divudi.facade.UserNotificationFacade;
 import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -73,8 +71,6 @@ public class WebUserController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private WebUserDashboardFacade webUserDashboardFacade;
-    @EJB
-    UserNotificationFacade userNotificationFacade;
     /**
      * Controllers
      */
@@ -128,23 +124,12 @@ public class WebUserController implements Serializable {
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
     private int manageDiscountIndex;
+
     private int manageUsersIndex;
+
     private List<Department> departmentsOfSelectedUsersInstitution;
-    boolean testRun = true;
-
-    private List<UserNotification> userNotifications;
-    private int userNotificationCount;
-
-    public void notificationCountForUser() {
-        System.out.println("this = " + sessionController.getLoggedUser());
-        Map params = new HashMap<>();
-        String s = "select u from UserNotification u where u.retired=false and u.webUser= :cu";
-        params.put("cu", sessionController.getLoggedUser());
-        userNotifications = userNotificationFacade.findByJpql(s, params);
-        userNotificationCount = userNotifications.size();
-        System.out.println("userNotificationCount = " + userNotificationCount);
-        
-    }
+    
+    boolean testRun = false;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -277,7 +262,7 @@ public class WebUserController implements Serializable {
 
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
-        if (testRun) {
+        if(testRun){
             return true;
         }
         if (getSessionController().getLoggedUser() == null) {
@@ -804,7 +789,7 @@ public class WebUserController implements Serializable {
         userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_icons";
     }
-
+    
     public String navigateToManageUserSubscriptions() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -843,7 +828,7 @@ public class WebUserController implements Serializable {
         listWebUserDashboards();
         return "/admin_manage_dashboards";
     }
-
+    
     public String toManageUserPreferences() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -919,8 +904,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         String hashedPassword;
-        hashedPassword = getSecurityController().hashAndCheck(newPassword);
-        System.out.println("hashedPassword = " + hashedPassword);
+        hashedPassword=getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
         JsfUtil.addSuccessMessage("Password changed");
@@ -1089,21 +1073,5 @@ public class WebUserController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + WebUserController.class.getName());
             }
         }
-    }
-
-    public List<UserNotification> getUserNotifications() {
-        return userNotifications;
-    }
-
-    public void setUserNotifications(List<UserNotification> userNotifications) {
-        this.userNotifications = userNotifications;
-    }
-
-    public int getUserNotificationCount() {
-        return userNotificationCount;
-    }
-
-    public void setUserNotificationCount(int userNotificationCount) {
-        this.userNotificationCount = userNotificationCount;
     }
 }
