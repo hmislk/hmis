@@ -261,6 +261,9 @@
 
                                     {time_of_admission}<br/>
                                     {time_of_discharge}<br/>
+                                    
+                                    {patient_count}<br/>
+                                    
 
                                 </h:panelGroup>
                             </p:tab>
@@ -390,6 +393,12 @@
                                             class="form-label w-100"
                                             value="Number of Channelling Bill Copies"></h:outputLabel>
                                         <p:inputText value="#{sessionController.currentPreference.numberOfChannellingBillCopies}"/>
+                                        
+                                        <h:outputLabel value="Docter Payment SMS"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.docterPaymentSMS}"/>
+
+                                        <h:outputLabel value="SMS Template For Channel Docter Payment"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.docterPaymentSMSTemplate}" class="w-100">  </p:inputTextarea>
 
                                     </h:panelGrid>
 

@@ -247,6 +247,9 @@ public class UserPreference implements Serializable {
     private Integer numberOfOPDBillCopies;
     private Integer numberOfCCBillCopies;
     private Integer numberOfChannellingBillCopies;
+    
+    private boolean docterPaymentSMS;
+    private String docterPaymentSMSTemplate;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1312,6 +1315,22 @@ public class UserPreference implements Serializable {
 
     public void setNumberOfChannellingBillCopies(Integer numberOfChannellingBillCopies) {
         this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
+    }
+
+    public boolean isDocterPaymentSMS() {
+        return docterPaymentSMS;
+    }
+
+    public void setDocterPaymentSMS(boolean docterPaymentSMS) {
+        this.docterPaymentSMS = docterPaymentSMS;
+    }
+
+    public String getDocterPaymentSMSTemplate() {
+        return docterPaymentSMSTemplate;
+    }
+
+    public void setDocterPaymentSMSTemplate(String docterPaymentSMSTemplate) {
+        this.docterPaymentSMSTemplate = docterPaymentSMSTemplate;
     }
 
 }
