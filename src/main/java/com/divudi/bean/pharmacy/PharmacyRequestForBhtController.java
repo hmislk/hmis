@@ -238,6 +238,8 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     //Check when edititng Qty
     //
+    
+    @Deprecated
     public boolean onEdit(BillItem tmp) {
         //Cheking Minus Value && Null
         if (tmp.getQty() <= 0 || tmp.getQty() == null) {
@@ -1012,21 +1014,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
-        if (b.getTransUserStock()==null) {
-            System.out.println("b = " + "Transfer Stock Null");
-            return;
-        }
-        if (b.getTransUserStock().isRetired()) {
-            JsfUtil.addErrorMessage("This Item Already removed");
-            return;
-        }
-        System.out.println("b = " + b);
-        System.out.println("lu = " + getSessionController().getLoggedUser());
-        System.out.println("stock = " + b.getTransUserStock());
-        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
-
         getPreBill().getBillItems().remove(b.getSearialNo());
-
         calTotal();
     }
 
