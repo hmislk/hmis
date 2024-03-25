@@ -14,6 +14,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.SurgeryBillType;
 
@@ -49,6 +50,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.EncounterCreditCompanyFacade;
+import java.util.Map;
 
 /**
  *
@@ -110,6 +112,51 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     EncounterCreditCompany encounterCreditCompany;
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
+    
+
+    public void addPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            return;
+        }
+        patientAllergies.add(currentPatientAllergy);
+        currentPatientAllergy = null;
+    }
+
+    public void removePatientAllergy(ClinicalFindingValue pa) {
+        if (currentPatientAllergy == null) {
+            return;
+        }
+        pa.setRetired(true);
+        clinicalFindingValueFacade.edit(pa);
+        patientAllergies.remove(pa);
+    }
+
+    public void savePatientAllergies() {
+        if (patientAllergies == null) {
+            return;
+        }
+        for (ClinicalFindingValue al : patientAllergies) {
+            if (al.getPatient() == null) {
+                al.setPatient(getCurrent().getPatient());
+            }
+            if (al.getId() == null) {
+                clinicalFindingValueFacade.create(al);
+            } else {
+                clinicalFindingValueFacade.edit(al);
+            }
+        }
+    }
+    
+    public void fillCurrentPatientAllergies(Patient pt) {
+        if (pt==null) {
+            return;
+        }
+        patientAllergies =new ArrayList<>();
+        Map params =new HashMap<>();
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        params.put("pt", pt);
+        patientAllergies=clinicalFindingValueFacade.findByJpql(s,params); 
+    }
 
     public void setSelectedCompany(EncounterCreditCompany ecc) {
         current.setCreditCompany(ecc.getInstitution());
@@ -347,38 +394,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         prepereForNew();
     }
 
-    public void addPatientAllergy() {
-        if (currentPatientAllergy == null) {
-            return;
-        }
-        patientAllergies.add(currentPatientAllergy);
-        currentPatientAllergy = null;
-    }
-    
-    public void removePatientAllergy(ClinicalFindingValue pa) {
-        if (currentPatientAllergy == null) {
-            return;
-        }
-        pa.setRetired(true);
-        clinicalFindingValueFacade.edit(pa);
-        patientAllergies.remove(pa);
-    }
 
-    public void savePatientAllergies() {
-        if (patientAllergies == null) {
-            return;
-        }
-        for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null) {
-                al.setPatient(getCurrent().getPatient());
-            }
-            if (al.getId() == null) {
-                clinicalFindingValueFacade.create(al);
-            } else {
-                clinicalFindingValueFacade.edit(al);
-            }
-        }
-    }
 
     public void saveCurrent() {
         getPatientFacade().edit(getCurrent().getPatient());
@@ -435,29 +451,33 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public Admission getCurrent() {
-        if (current == null) {
-            current = new Admission();
-            Person p = new Person();
-            Patient pp = new Patient();
-            pp.setPerson(p);
-            current.setPatient(pp);
-        }
+//        if (current == null) {
+//            current = new Admission();
+//            Person p = new Person();
+//            Patient pp = new Patient();
+//            pp.setPerson(p);
+//            current.setPatient(pp);
+//        }
         return current;
+    }
+    
+    public String navigateToEditAdmissionDetails(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No Admission to edit");
+            return "";
+        }
+        createPatientRoom();
+        fillCreditCompaniesByPatient();
+        fillCurrentPatientAllergies(current.getPatient());
+        return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
     public void setCurrent(Admission current) {
         this.current = current;
-        createPatientRoom();
-        if (current == null) {
-            getYearMonthDay().setDay("0");
-            getYearMonthDay().setMonth("0");
-            getYearMonthDay().setYear("0");
-        } else {
-            getYearMonthDay().setDay(current.getPatient().getAgeDays() + "");
-            getYearMonthDay().setMonth(current.getPatient().getAgeMonths() + "");
-            getYearMonthDay().setYear(current.getPatient().getAgeYears() + "");
-        }
+        
     }
+    
+    
 
     private AdmissionFacade getFacade() {
         return ejbFacade;
@@ -665,6 +685,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public ClinicalFindingValue getCurrentPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            currentPatientAllergy = new ClinicalFindingValue();
+            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+            currentPatientAllergy.setPatient(getPatient());
+        }
         return currentPatientAllergy;
     }
 

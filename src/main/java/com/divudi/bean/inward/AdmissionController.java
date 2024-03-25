@@ -374,8 +374,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
+        bhtEditController.setCurrent(current);
         bhtEditController.getCurrent().getPatient().setEditingMode(true);
-        return "/inward/inward_edit_bht?faces-redirect=true";
+        return bhtEditController.navigateToEditAdmissionDetails();
     }
 
     public String navigateToRoomOccupancy() {

@@ -436,7 +436,7 @@
                                 value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
                                 inputStyleClass="form-control w-100"
                                 class="w-100"/>
-                            <p:inputTextarea class="my-1 w-100" id="txtAllergy" value="#{admissionController.currentPatientAllergy.lobValue}" ></p:inputTextarea>
+                            <p:inputText class="my-1 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
                         </div>
                         <div class="col-6">
                             <p:commandButton 
@@ -455,10 +455,10 @@
                                     <div class="card my-1 w-100">
                                         <div class="d-flex justify-content-between align-items-center p-2">
                                             <div>
-                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
-                                                               value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
-                                                <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
-                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.stringValue}" 
+                                                               value="#{al.itemValue.name.concat(' - ').concat(al.stringValue)}"/>
+                                                <h:outputText rendered="#{empty al.itemValue or empty al.stringValue}" 
+                                                              value="#{al.itemValue.name}#{al.stringValue}"/>
                                             </div>
                                             <div>
                                                 <p:commandButton 

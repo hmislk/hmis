@@ -35,6 +35,7 @@
                     <h:panelGroup rendered="#{patientEncounterController.patientAllergies != null and not empty patientEncounterController.patientAllergies}">
                         <ui:repeat value="#{patientEncounterController.patientAllergies}" var="allergy">
                             <p:tag value="#{allergy.itemValue.name}" severity="danger" class="mt-1 mx-1" style="font-size: 1.02em" />
+                            <p:tag value="#{allergy.stringValue}" severity="danger" class="mt-1 mx-1" style="font-size: 1.02em" />
 <!--                            <h:outputText value="#{allergy.itemValue.name}" styleClass="ui-messages-error" />
                             <h:outputText value="#{not loop.last ? ', ' : ''}" styleClass="ui-messages-error"/>-->
                         </ui:repeat>
