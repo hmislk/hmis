@@ -433,10 +433,10 @@
                                 itemLabel="#{pta}"
                                 itemValue="#{pta}" 
                                 forceSelection="true"
-                                value="#{admissionController.currentPatientAllaergy.itemValue}"
+                                value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
                                 inputStyleClass="form-control w-100"
                                 class="w-100"/>
-                            <p:inputTextarea class="my-1 w-100" id="txtAllergy" value="#{admissionController.currentPatientAllaergy.lobValue}" ></p:inputTextarea>
+                            <p:inputTextarea class="my-1 w-100" id="txtAllergy" value="#{admissionController.currentPatientAllergy.lobValue}" ></p:inputTextarea>
                         </div>
                         <div class="col-6">
                             <p:commandButton 
@@ -444,14 +444,14 @@
                                 value="Add" 
                                 process="btnAddAllergy acAllergy txtAllergy" 
                                 update="ptAl txtAllergy acAllergy" 
-                                action="#{admissionController.addPatientAllergy}"/>
+                                action="#{cc.attrs.controller.addPatientAllergy()}"/>
 
                         </div>
                     </div>
                     <div class="row" >                                    
                         <div class="col-12" >
                             <h:panelGroup id="ptAl" >
-                                <p:repeat value="#{admissionController.patientAllergies}" var="al">
+                                <p:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
                                     <div class="card my-1 w-100">
                                         <div class="d-flex justify-content-between align-items-center p-2">
                                             <div>
@@ -467,7 +467,7 @@
                                                     process="btnRemove" 
                                                     update=":#{p:resolveClientId('@id(ptAl)', view)}"
                                                     icon="fas fa-trash"
-                                                    action="#{admissionController.removePatientAllergy(al)}" />
+                                                    action="#{cc.attrs.controller.removePatientAllergy(al)}" />
                                             </div>
                                         </div>
                                     </div>

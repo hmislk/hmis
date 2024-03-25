@@ -147,20 +147,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
-    private ClinicalFindingValue currentPatientAllaergy;
+    private ClinicalFindingValue currentPatientAllergy;
 
     public void addPatientAllergy() {
-        if (currentPatientAllaergy == null) {
+        if (currentPatientAllergy == null) {
             return;
         }
-        patientAllergies.add(currentPatientAllaergy);
-        currentPatientAllaergy = null;
+        patientAllergies.add(currentPatientAllergy);
+        currentPatientAllergy = null;
     }
 
     public void removePatientAllergy(ClinicalFindingValue pa) {
-        if (currentPatientAllaergy == null) {
+        if (currentPatientAllergy == null) {
             return;
         }
+        pa.setRetired(true);
+        clinicalFindingValueFacade.edit(pa);
         patientAllergies.remove(pa);
     }
 
@@ -1562,17 +1564,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
-    public ClinicalFindingValue getCurrentPatientAllaergy() {
-        if (currentPatientAllaergy == null) {
-            currentPatientAllaergy = new ClinicalFindingValue();
-            currentPatientAllaergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
-            currentPatientAllaergy.setPatient(getPatient());
+    public ClinicalFindingValue getCurrentPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            currentPatientAllergy = new ClinicalFindingValue();
+            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+            currentPatientAllergy.setPatient(getPatient());
         }
-        return currentPatientAllaergy;
+        return currentPatientAllergy;
     }
 
-    public void setCurrentPatientAllaergy(ClinicalFindingValue currentPatientAllaergy) {
-        this.currentPatientAllaergy = currentPatientAllaergy;
+    public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
+        this.currentPatientAllergy = currentPatientAllergy;
     }
 
     public List<ClinicalFindingValue> getPatientAllergies() {
