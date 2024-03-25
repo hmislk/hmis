@@ -50,16 +50,8 @@
                                     id="btnSelect"
                                     ajax="false"
                                     value="Select"
-                                    action="#{bhtEditController.fillCreditCompaniesByPatient}"
+                                    action="#{bhtEditController.navigateToEditAdmissionDetails()}"
                                     />
-
-                                <!--                                <h:commandButton
-                                                                    id="btnSelectJsf"
-                                                                    value="Select**"
-                                                                    action="#{admissionController.navigateToAdmitFromMenu()}"
-                                                                    />-->
-
-
 
                             </p:panel>
                         </h:panelGroup>
@@ -166,7 +158,7 @@
                                         <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
     <!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringDoctor}" ></p:inputText>-->
                                         <p:autoComplete forceSelection="true"
-                                                        value="#{bhtEditController.current.referringDoctor}"
+                                                        value="#{bhtEditController.current.referringConsultant}"
                                                         completeMethod="#{doctorController.completeDoctor}" var="ix"
                                                         itemLabel="#{ix.person.name}" itemValue="#{ix}" 
                                                         styleClass="form-control w-100"

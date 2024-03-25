@@ -163,7 +163,18 @@
                     </p:panel>
                 </p:tab>
 
-
+                <p:tab title="InWard" >
+                    <p:panel header="InWard" class="w-100" >
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                            <h:outputLabel value="Admission Statement in English "></h:outputLabel>
+                            <p:inputTextarea class="w-100" style="height: 100vh" value="#{sessionController.currentPreference.inwardAddmissionStatemenetEnglish}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                            <h:outputLabel value="Admission Statement in Sinhala "></h:outputLabel>
+                            <p:inputTextarea class="w-100" style="height: 100vh" value="#{sessionController.currentPreference.inwardAddmissionStatemenetSinhala}"/>
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
 
                 <p:tab title="Miscellaneous" >
                     <p:panel header="Miscellaneous" class="w-100" >

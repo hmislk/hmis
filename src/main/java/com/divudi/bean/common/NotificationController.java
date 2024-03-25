@@ -101,7 +101,8 @@ public class NotificationController implements Serializable {
         nn.setBill(bill);
         nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
         getFacade().create(nn);
-         userNotificationController.createUserNotifications(nn);
+        userNotificationController.createUserNotifications(nn);
+        
     }
     
     public void saveSelected() {
