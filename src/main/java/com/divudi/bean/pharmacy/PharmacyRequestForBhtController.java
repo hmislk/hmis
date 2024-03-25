@@ -1012,11 +1012,17 @@ public class PharmacyRequestForBhtController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
+        if (b.getTransUserStock()==null) {
+            System.out.println("b = " + "Transfer Stock Null");
+            return;
+        }
         if (b.getTransUserStock().isRetired()) {
             JsfUtil.addErrorMessage("This Item Already removed");
             return;
         }
-
+        System.out.println("b = " + b);
+        System.out.println("lu = " + getSessionController().getLoggedUser());
+        System.out.println("stock = " + b.getTransUserStock());
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
 
         getPreBill().getBillItems().remove(b.getSearialNo());

@@ -883,7 +883,7 @@ public class BillNumberGenerator {
             billNumber.setBillClassType(billClassType);
             billNumber.setInstitution(institution);
             billNumber.setToDepartment(toDepartment);
-
+ 
             sql = "SELECT count(b) FROM Bill b "
                     + " where b.billType=:bTp "
                     + " and b.retired=false"

@@ -45,10 +45,13 @@
                                     offIcon="pi pi-pencil" 
                                     onIcon="pi pi-eye"                                 
                                     class="mx-2"
+
                                     >
                                     <p:ajax 
                                         process="@this" 
                                         update="viewPatient editPatient btnDone edit" />
+
+
                                 </p:selectBooleanButton>
                                 <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
                             </h:panelGroup>
@@ -288,7 +291,7 @@
                                             value="#{cc.attrs.controller.patient.person.religion}">
                                             <f:selectItem itemLabel="Select Religion" />
                                             <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
-                                                           itemLabel="#{i.name}" itemValue="#{i.name}"/>
+                                                           itemLabel="#{i.name}" itemValue="#{i}"/>
 
                                         </p:selectOneMenu>
                                     </div>
@@ -325,68 +328,7 @@
 
                                         </p:selectOneMenu>
                                     </div>
-                                    <p:panel header="Add Patient Allergies">
-                                        <div>
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p:autoComplete 
-                                                        id="acAllergy"
-                                                        placeholder="Search Patient Allergies"
-                                                        completeMethod="#{vtmController.completeVtm}"
-                                                        var="pta" 
-                                                        itemLabel="#{pta}"
-                                                        itemValue="#{pta}" 
-                                                        forceSelection="true"
-                                                        value="#{admissionController.currentPatientAllaergy.itemValue}"
-                                                        inputStyleClass="form-control w-100"
-                                                        class="w-100"/>
-                                                    <p:inputTextarea class="my-1 w-100" id="txtAllergy" value="#{admissionController.currentPatientAllaergy.lobValue}" ></p:inputTextarea>
-                                                </div>
-                                                <div class="col-6">
-                                                    <p:commandButton 
-                                                        id="btnAddAllergy" 
-                                                        value="Add" 
-                                                        process="btnAddAllergy acAllergy txtAllergy" 
-                                                        update="ptAl txtAllergy acAllergy" 
-                                                        action="#{admissionController.addPatientAllergy}"/>
 
-                                                </div>
-                                            </div>
-                                            <div class="row" >
-                                                <div class="col-12" >
-                                                    <h:panelGroup id="ptAl" >
-                                                        <p:repeat value="#{admissionController.patientAllergies}" var="al">
-                                                            <div class="card my-1">
-                                                                <div class="d-flex justify-content-between align-items-center p-2">
-                                                                    <div>
-                                                                        <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
-                                                                                       value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
-                                                                        <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
-                                                                                      value="#{al.itemValue.name}#{al.lobValue}"/>
-                                                                    </div>
-                                                                    <div>
-                                                                        <p:commandButton 
-                                                                            id="btnRemove" 
-                                                                            class="ui-button-danger" 
-                                                                            process="btnRemove" 
-                                                                            update=":#{p:resolveClientId('@id(ptAl)', view)}"
-                                                                            icon="fas fa-trash"
-                                                                            action="#{admissionController.removePatientAllergy(al)}" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </p:repeat>
-                                                    </h:panelGroup>
-
-
-
-                                                </div>
-                                            </div>
-
-
-
-                                        </div>
-                                    </p:panel>
 
 
                                 </div>
@@ -478,6 +420,69 @@
                 </h:panelGroup>
 
             </h:panelGroup>
+
+            <p:panel header="Add Patient Allergies" >
+                <div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p:autoComplete 
+                                id="acAllergy"
+                                placeholder="Search Patient Allergies"
+                                completeMethod="#{vtmController.completeVtm}"
+                                var="pta" 
+                                itemLabel="#{pta}"
+                                itemValue="#{pta}" 
+                                forceSelection="true"
+                                value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
+                                inputStyleClass="form-control w-100"
+                                class="w-100"/>
+                            <p:inputTextarea class="my-1 w-100" id="txtAllergy" value="#{admissionController.currentPatientAllergy.lobValue}" ></p:inputTextarea>
+                        </div>
+                        <div class="col-6">
+                            <p:commandButton 
+                                id="btnAddAllergy" 
+                                value="Add" 
+                                process="btnAddAllergy acAllergy txtAllergy" 
+                                update="ptAl txtAllergy acAllergy" 
+                                action="#{cc.attrs.controller.addPatientAllergy()}"/>
+
+                        </div>
+                    </div>
+                    <div class="row" >                                    
+                        <div class="col-12" >
+                            <h:panelGroup id="ptAl" >
+                                <p:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
+                                    <div class="card my-1 w-100">
+                                        <div class="d-flex justify-content-between align-items-center p-2">
+                                            <div>
+                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                               value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                            </div>
+                                            <div>
+                                                <p:commandButton 
+                                                    id="btnRemove" 
+                                                    class="ui-button-danger" 
+                                                    process="btnRemove" 
+                                                    update=":#{p:resolveClientId('@id(ptAl)', view)}"
+                                                    icon="fas fa-trash"
+                                                    action="#{cc.attrs.controller.removePatientAllergy(al)}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:repeat>
+                            </h:panelGroup>
+
+
+
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </p:panel>
 
         </p:panel>
     </cc:implementation>

@@ -51,11 +51,11 @@
                         <tr>
                             <td><h:outputLabel value="Consultant Doctor"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><p:outputLabel  value="#{cc.attrs.admission.referringConsultant.person.name}" /></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" /></td>
                             <td></td>
                             <td><h:outputLabel value="OPD Doctor"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><p:outputLabel  value="#{cc.attrs.admission.opdDoctor.person.name}" /></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.opdDoctor.person.nameWithTitle}" /></td>
                         </tr>
                         <tr>
                             <td><p:outputLabel   value="BHT No " /></td>
@@ -111,7 +111,28 @@
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td><h:outputLabel value="#{cc.attrs.admission.patient.person.civilStatus.name}" ></h:outputLabel></td>
                         </tr>
-
+                        <tr class="p-2">
+                            <td><h:outputLabel value="Allergies"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <p:repeat value="#{admissionController.patientAllergies}" var="al">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                               value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:repeat>
+                            </td>
+                            <td></td>
+                            <td><h:outputLabel value="Work Place"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.workplace.name}" ></h:outputLabel></td>
+                        </tr>
                         <tr>
                             <td><h:outputLabel value="Address "></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
@@ -137,7 +158,7 @@
                             <td></td>
                             <td><h:outputLabel value="Referring Doctor "></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.name}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" ></h:outputLabel></td>
                         </tr>
                     </table>
 
@@ -185,10 +206,13 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><h:outputLabel value="Relationship "/></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </td>                        
                         </tr>
                     </table>
 
@@ -222,17 +246,20 @@
                 </div>
 
                 <div class="mt-4" style="font-weight: bold">
-                    <p>
-                        I agree to Abide by the terms and conditions of admission prevailing 
-                        at this hospital and hold myself responsible for payment of all bills of 
-                        this patient before discharge from this hospital.
-                        
-                        
-                        
-                    </p>
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish ne null}"  >
+                        <p>
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish}"/>
+                        </p>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala ne null}"  >
+                        <p>
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala}"/>
+                        </p>
+                    </h:panelGroup>
                 </div>
 
-                <div class="d-flex justify-content-end mt-4">
+                <div class="d-flex justify-content-end mt-5">
                     <h:outputLabel value="Guardian" style="text-decoration: overline; margin-left: 10mm;"></h:outputLabel>
                 </div>
 

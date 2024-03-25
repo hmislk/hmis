@@ -46,22 +46,26 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.entity.EncounterCreditCompany;
 import com.divudi.entity.Institution;
+import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.EncounterCreditCompanyFacade;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class BhtEditController implements Serializable, ControllerWithPatient  {
+public class BhtEditController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @Inject
     BillBeanController billBean;
+    @Inject
+    AdmissionController admissionController;
     /////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -73,10 +77,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
-    @EJB 
+    @EJB
     EncounterCreditCompanyFacade encounterCreditCompanyFacade;
-  
-    
+    @EJB
+    ClinicalFindingValueFacade clinicalFindingValueFacade;
+
     ////////////////
     private List<PatientRoom> patientRoom;
     List<Admission> selectedItems;
@@ -91,7 +96,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     @EJB
     private BillFacade billFacade;
     String comment;
-   
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
@@ -99,18 +103,20 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
-    
+
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
     private List<EncounterCreditCompany> encounterCreditCompanys;
     EncounterCreditCompany encounterCreditCompany;
-    
-    public void setSelectedCompany(EncounterCreditCompany ecc){
+    private ClinicalFindingValue currentPatientAllergy;
+    private List<ClinicalFindingValue> patientAllergies;
+
+    public void setSelectedCompany(EncounterCreditCompany ecc) {
         current.setCreditCompany(ecc.getInstitution());
     }
-    
-    public void removeCreditCompany(EncounterCreditCompany ecc){
-        for(EncounterCreditCompany e:encounterCreditCompanys){
+
+    public void removeCreditCompany(EncounterCreditCompany ecc) {
+        for (EncounterCreditCompany e : encounterCreditCompanys) {
             if (e == ecc) {
                 e.setRetired(true);
                 encounterCreditCompanyFacade.edit(e);
@@ -120,16 +126,16 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         fillCreditCompaniesByPatient();
 //        current.setCreditCompany(encounterCreditCompanys.get(0).getInstitution());
     }
-    
-    public void fillCreditCompaniesByPatient(){
-        encounterCreditCompanys=new ArrayList<>();
+
+    public void fillCreditCompaniesByPatient() {
+        encounterCreditCompanys = new ArrayList<>();
         String sql = "select ecc from EncounterCreditCompany ecc"
                 + "  where ecc.retired=false "
                 + " and ecc.patientEncounter=:pEnc ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
-        encounterCreditCompanys= encounterCreditCompanyFacade.findByJpql(sql, hm);
-        
+        encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
+
     }
 
     public void resetSpecialities() {
@@ -165,7 +171,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
                     }
                 }
             } else {
-                flag=true;
+                flag = true;
             }
         }
         if (bills.size() > 1) {
@@ -277,7 +283,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     public void prepareAdd() {
         current = new Admission();
     }
-    
+
     public Patient getNewPatient() {
         if (newPatient == null) {
             Person p = new Person();
@@ -286,6 +292,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         }
         return newPatient;
     }
+
     public void setNewPatient(Patient newPatient) {
         this.newPatient = newPatient;
     }
@@ -324,6 +331,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         selectText = "";
         yearMonthDay = new YearMonthDay();
     }
+
     @Deprecated
     public void save() {
         getPatientFacade().edit(getCurrent().getPatient());
@@ -338,15 +346,48 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         JsfUtil.addSuccessMessage("Detail Updated");
         prepereForNew();
     }
+
+    public void addPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            return;
+        }
+        patientAllergies.add(currentPatientAllergy);
+        currentPatientAllergy = null;
+    }
     
+    public void removePatientAllergy(ClinicalFindingValue pa) {
+        if (currentPatientAllergy == null) {
+            return;
+        }
+        pa.setRetired(true);
+        clinicalFindingValueFacade.edit(pa);
+        patientAllergies.remove(pa);
+    }
+
+    public void savePatientAllergies() {
+        if (patientAllergies == null) {
+            return;
+        }
+        for (ClinicalFindingValue al : patientAllergies) {
+            if (al.getPatient() == null) {
+                al.setPatient(getCurrent().getPatient());
+            }
+            if (al.getId() == null) {
+                clinicalFindingValueFacade.create(al);
+            } else {
+                clinicalFindingValueFacade.edit(al);
+            }
+        }
+    }
+
     public void saveCurrent() {
         getPatientFacade().edit(getCurrent().getPatient());
         getPersonFacade().edit(getCurrent().getPatient().getPerson());
         getPersonFacade().edit(getCurrent().getGuardian());
         getEjbFacade().edit(current);
+        savePatientAllergies();
         JsfUtil.addSuccessMessage("Detail Updated");
     }
-    
 
     public void updateFirstPatientRoomAdmissionTime() {
         HashMap hm = new HashMap();
@@ -365,9 +406,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         getPatientRoomFacade().edit(tmp);
     }
 
-    
-    
-    
     public void dateChangeListen() {
         getCurrent().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
@@ -453,24 +491,21 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     public void setPatientFacade(PatientFacade patientFacade) {
         this.patientFacade = patientFacade;
     }
-    
+
     public void displayDetails() {
-    if (getCurrent() == null || getCurrent().getId() == null) {
-        JsfUtil.addErrorMessage("Please select an admission to display details.");
-        return;
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Please select an admission to display details.");
+            return;
+        }
+
+        current = getFacade().find(getCurrent().getId());
+
+        if (current != null) {
+            JsfUtil.addSuccessMessage("Details displayed successfully.");
+        } else {
+            JsfUtil.addErrorMessage("Failed to fetch admission details.");
+        }
     }
-
-
-    current = getFacade().find(getCurrent().getId());
-
-    if (current != null) {
-        JsfUtil.addSuccessMessage("Details displayed successfully.");
-    } else {
-        JsfUtil.addErrorMessage("Failed to fetch admission details.");
-    }
-}
-
-
 
     public List<Patient> getPatientList() {
         if (patientList == null) {
@@ -510,7 +545,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         this.roomFacade = roomFacade;
     }
 
-    
     private void createPatientRoom() {
 
         HashMap hm = new HashMap();
@@ -607,7 +641,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         this.patient = patient;
     }
 
-   @Override
+    @Override
     public boolean isPatientDetailsEditable() {
         return patientDetailsEditable;
     }
@@ -620,6 +654,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     @Override
     public void toggalePatientEditable() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public List<ClinicalFindingValue> getPatientAllergies() {
+        return patientAllergies;
+    }
+
+    public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
+        this.patientAllergies = patientAllergies;
+    }
+
+    public ClinicalFindingValue getCurrentPatientAllergy() {
+        return currentPatientAllergy;
+    }
+
+    public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
+        this.currentPatientAllergy = currentPatientAllergy;
     }
 
     /**
