@@ -509,8 +509,6 @@ public class ReportController implements Serializable {
         }
 
         jpql += " order by bi.id ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         billLights = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
     }
 

@@ -512,7 +512,6 @@ public class ChannelBillController implements Serializable {
     List<BillFee> listBillFees;
 
     public void createBillfees(SelectEvent event) {
-        System.out.println("event = " + event);
         BillSession bs = ((BillSession) event.getObject());
         String sql;
         HashMap hm = new HashMap();
@@ -568,7 +567,6 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckCancelling() {
-        System.out.println("errorCheckCancelling");
         if (getBillSession() == null) {
             return true;
         }
@@ -697,12 +695,10 @@ public class ChannelBillController implements Serializable {
             JsfUtil.addErrorMessage("Already Refunded");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill().isCancelled() = " + getBillSession().getPaidBillSession().getBill().isCancelled());
         if (getBillSession().getPaidBillSession().getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
             return;
         }
-        System.out.println("getComment() = " + getComment());
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
@@ -714,7 +710,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
-        System.out.println("cancel");
         if (errorCheckCancelling()) {
             return;
         }
@@ -1404,9 +1399,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         System.out.println("Printing bill completed");
         printingBill = getBillFacade().find(printingBill.getId());
-        System.out.println("printing bill retrieved");
         bookingController.fillBillSessions();
-        System.out.println("bill sessions filled ");
         bookingController.generateSessions();
         sendSmsAfterBooking();
         settleSucessFully = true;

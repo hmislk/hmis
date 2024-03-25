@@ -2778,8 +2778,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Item> itemFromPackage(Item packege) {
-        System.out.println("packege = " + packege.getName());
-        System.out.println("packege ID = " + packege.getId());
         String sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
         List<Item> packageItems = getItemFacade().findByJpql(sql);
 

@@ -59,12 +59,11 @@ public class CommonFunctions {
 
         int intPart = (int) number;
         int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
-
         //System.out.println(number);
         //System.out.println(number - intPart);
-        System.out.println(intPart);
         //System.out.println(String.format("%.2f", number%1));
-        System.out.println(decimalPart);
+        //System.out.println(number);
+        //System.out.println(number - intPart);
 
         // System.out.println(String.format("%.2f", decimalPart));
         StringBuilder result = new StringBuilder();

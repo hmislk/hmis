@@ -1009,7 +1009,6 @@ public class DataUploadController implements Serializable {
     }
 
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
-        System.out.println("readCollectingCentreItemsAndFeesFromExcel");
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -1027,7 +1026,6 @@ public class DataUploadController implements Serializable {
         Department runningDept = null;
         Category runningCategory = null;
 
-        System.out.println("1");
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
@@ -1108,9 +1106,7 @@ public class DataUploadController implements Serializable {
             name = CommonFunctions.sanitizeStringForDatabase(name);
             System.out.println("2 name = " + name);
 
-            System.out.println("department = " + department);
             item = itemController.findItemByName(name, code, department);
-            System.out.println("item = " + item);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;

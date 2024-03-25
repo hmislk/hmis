@@ -136,8 +136,6 @@ public class StockController implements Serializable {
     }
 
     public void relistExpiaringStocks() {
-        System.out.println("relistExpiaringStocks");
-        System.out.println("selectedItem = " + selectedItem);
         if (selectedItem instanceof Amp) {
             Amp amp = (Amp) selectedItem;
             List<Amp> amps = new ArrayList<>();

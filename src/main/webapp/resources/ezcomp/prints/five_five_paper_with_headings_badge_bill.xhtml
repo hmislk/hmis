@@ -17,830 +17,214 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <ui:repeat value="#{cc.attrs.billController.bills}" var="ffb">
-            <div class="fiveinchbill" style="page-break-after: always">
-                <div class="institutionName">
-                    <h:outputLabel value="#{ffb.department.printingName}" />
+        <div class="fiveinchbill" style="page-break-after: always">
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.billController.batchBill.department.printingName}" />
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.billController.batchBill.department.address}"/>
                 </div>
-                <div class="institutionContact" >
-                    <div>
-                        <h:outputLabel value="#{ffb.department.address}"/>
-                    </div>
-                    <div >
-                        <h:outputLabel value="#{ffb.department.telephone1} "/>
-                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                        <h:outputLabel value="#{ffb.department.telephone2}"/>
-                    </div>
-                    <div >
-                        <h:outputLabel value="#{ffb.department.fax}"/>                                                 
-                    </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.billController.batchBill.department.telephone1} "/>
+                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
+                    <h:outputLabel value="#{cc.attrs.billController.batchBill.department.telephone2}"/>
                 </div>
-
-                <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                    <h:outputLabel value="RECEIPT"   />    
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{ffb.cancelled eq true}" /> 
+                <div >
+                    <h:outputLabel value="#{cc.attrs.billController.batchBill.department.fax}"/>                                                 
                 </div>
-
-                <div class="billline">
-                    <br/>
-                    <hr></hr>   
-                    <br/>
-                </div>
-
-
-
-                <div class="billDetailsFiveFive">
-                    <table style="width: 99%!important;" >
-
-
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{ffb.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{ffb.createdAt}" class="billDetailsFiveFive">
-                                    <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{ffb.patient.age}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{ffb.createdAt}" class="billDetailsFiveFive">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{ffb.patient.person.sex}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{ffb.insId}" class="billDetailsFiveFive">
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{ffb.patient.person.phone}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{ffb.paymentMethod}" class="billDetailsFiveFive">
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{ffb.patient.phn}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{ffb.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-                    </table>
-                </div>
-
-
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
-                    <div class="billline">
-<!--                        <div style="width: 100%;text-align: center;font-size: 10px;">
-                            <p:barcode value="#{ffb.idStr}" type="code39" cache="false" 
-                                       />
-                        </div>-->
-                    </div>
-                </h:panelGroup>
-
-                <div class="itemHeadingsFiveFive" >
-
-                    <table width="100%" style="width: 100%;" >
-                        <tr>
-                            <td colspan="2" style="text-align: center;" class="billline">
-                                <hr/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:55%!important;">
-                                <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
-                                <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="text-align: center;" class="billline">
-                                <hr/>
-                            </td>
-                        </tr>
-
-                        <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                            <ui:repeat value="#{ffb.billItems}" var="bip"   >
-                                <tr>
-                                    <td  style="overflow: visible;">
-                                        <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                        </h:outputLabel>
-                                    </td>
-                                    <td style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-
-                            </ui:repeat>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.margin ne 0.0}">
-                            <ui:repeat value="#{ffb.billItems}" var="bip"   >
-                                <tr>
-                                    <td  style="overflow: visible;">
-                                        <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                        </h:outputLabel>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}"     style="text-align: right;" >
-                                            <f:convertNumber integerOnly="true" />
-                                        </h:outputLabel>
-                                    </td>
-                                    <td    style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-
-                                    <td style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-
-                                </tr>
-                            </ui:repeat>
-                        </h:panelGroup>
-
-
-
-
-                    </table>
-
-
-                </div>
-
-
-                <div class="billline">
-                    <br/>
-                    <hr/>
-                    <br/>
-
-                </div>
-
-
-
-                <div  >
-
-                    <table style="width: 100%;">
-
-                        <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{ffb.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.margin ne 0.0}">
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{ffb.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.discount ne 0.0}">
-                            <tr>
-                                <td  class="totalsBlock" style="text-align: left;">
-                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                                    <h:outputLabel rendered="#{ffb.discount ne 0.0}"   value="#{-ffb.discount}" style="font-weight: bolder!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{cc.attrs.billController.bills.size() eq 1}">
-<!--                            <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                <tr>
-                                    <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                        <h:outputLabel value="Total" />
-                                    </td>
-                                    <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                        <h:outputLabel value="#{cc.attrs.billController.batchBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </h:panelGroup>-->
-
-                            <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                <tr>
-                                    <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                        <h:outputLabel value="Cash Paid" />
-                                    </td>
-                                    <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                        <h:outputLabel value="#{cc.attrs.billController.cashPaid}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                <tr>
-                                    <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                        <h:outputLabel value="Balance" />
-                                    </td>
-                                    <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                        <h:outputLabel value="#{cc.attrs.billController.cashBalance}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </h:panelGroup>
-
-
-
-                           <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                <tr>
-                                    <td  class="totalsBlock" style="text-align: left;">
-                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                                    </td>
-                                    <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                                        <h:outputLabel rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"   value="#{-cc.attrs.billController.batchBill.discount}" style="font-weight: bolder!important;" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </h:panelGroup>
-
-                            <tr>
-                                <td  class="totalsBlock" style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="Net Total" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td  class="totalsBlock" style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="VAT" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.vat}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="Net Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="#{ffb.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="VAT" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="#{ffb.vat}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-
-                    </table>
-
-                </div>
-
-                <div style="text-decoration: overline; margin-top: 20px;">
-                    <h:outputLabel value="Cashier : #{ffb.creater.webUserPerson.name}"/>
-                </div>
-
-                <div class="footer" style="text-align: center;">
-                    <br/>
-                    <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
-                    <br/>
-                </div>
-
-
-
             </div>
 
-        </ui:repeat>
-        <h:panelGroup rendered="#{cc.attrs.billController.bills.size() ne 1}">
-            <div class="fiveinchbill">
-                <div class="institutionName">
-                    <h:outputLabel value="#{cc.attrs.billController.batchBill.department.printingName}" />
-                </div>
-                <div class="institutionContact" >
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.billController.batchBill.department.address}"/>
-                    </div>
-                    <div >
-                        <h:outputLabel value="#{cc.attrs.billController.batchBill.department.telephone1} "/>
-                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                        <h:outputLabel value="#{cc.attrs.billController.batchBill.department.telephone2}"/>
-                    </div>
-                    <div >
-                        <h:outputLabel value="#{cc.attrs.billController.batchBill.department.fax}"/>                                                 
-                    </div>
-                </div>
-
-                <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                    <h:outputLabel value="RECEIPT"   />    
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.billController.batchBill.cancelled eq true}" /> 
-                </div>
-
-                <div class="billline">
-                    <br/>
-                    <hr></hr>   
-                    <br/>
-                </div>
-
-
-
-                <div class="billDetailsFiveFive">
-                    <table style="width: 99%!important;" >
-
-
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.createdAt}" class="billDetailsFiveFive">
-                                    <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.age}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.createdAt}" class="billDetailsFiveFive">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.person.sex}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.insId}" class="billDetailsFiveFive">
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.person.phone}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.paymentMethod}" class="billDetailsFiveFive">
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td style="width: 10px;"></td>
-                            <td >:</td>
-                            <td style="width: 5px;"></td>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.phn}" class="billDetailsFiveFive" >
-                                </h:outputLabel>
-
-                            </td>
-                            <td style="width: 50px;"></td>
-                            <td>
-                                <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.billController.batchBill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-                    </table>
-                </div>
-
-
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
-                    <div class="billline">
-                        <div style="width: 100%;text-align: center;font-size: 10px;">
-                            <p:barcode value="#{cc.attrs.billController.batchBill.idStr}" type="code39" cache="false" 
-                                       />
-                        </div>
-                    </div>
-                </h:panelGroup>
-
-                <!--            <div class="itemHeadingsFiveFive" >
-                                <table width="100%" style="width: 100%;" >
-                                    <tr>
-                                        <td style="width:55%!important;">
-                                            <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                                        </td>
-                                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
-                                            <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                            <td colspan="2" style="text-align: center;" class="billline">
-                                                <hr/>
-                                            </td>
-                                        </tr>
-                                    <ui:repeat value="#{cc.attrs.billController.bills}" var="ffb">
-                
-                                       
-                                        <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                            <ui:repeat value="#{ffb.billItems}" var="bip"   >
-                                                <tr>
-                                                    <td  style="overflow: visible;">
-                                                        <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                                        </h:outputLabel>
-                                                    </td>
-                                                    <td style="text-align: right;" >
-                                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                                                </tr>
-                
-                                            </ui:repeat>
-                                        </h:panelGroup>
-                
-                                        <h:panelGroup rendered="#{ffb.margin ne 0.0}">
-                                            <ui:repeat value="#{ffb.billItems}" var="bip"   >
-                                                <tr>
-                                                    <td  style="overflow: visible;">
-                                                        <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                                        </h:outputLabel>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}"     style="text-align: right;" >
-                                                            <f:convertNumber integerOnly="true" />
-                                                        </h:outputLabel>
-                                                    </td>
-                                                    <td    style="text-align: right;" >
-                                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                
-                                                    <td style="text-align: right;" >
-                                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                
-                                                </tr>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                                    </ui:repeat>
-                                </table>
-                            </div>-->
-
-
-                <div class="billline">
-                    <br/>
-                    <hr/>
-                    <br/>
-
-                </div>
-
-
-
-                <div  >
-
-                    <table style="width: 100%;">
-
-                        <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.billController.batchBill.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.margin ne 0.0}">
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.billController.batchBill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.margin ne 0.0}">
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Cash Paid" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.billController.cashPaid}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.margin ne 0.0}">
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Balance" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.billController.cashBalance}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-
-
-                        <h:panelGroup rendered="#{ffb.discount ne 0.0}">
-                            <tr>
-                                <td  class="totalsBlock" style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                                    <h:outputLabel rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"   value="#{-cc.attrs.billController.batchBill.discount}" style="font-weight: bolder!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
-
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="Net Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="VAT" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.vat}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-
-                    </table>
-
-                </div>
-
-                <div style="text-decoration: overline; margin-top: 20px;">
-                    <h:outputLabel value="Cashier : #{cc.attrs.billController.batchBill.creater.webUserPerson.name}"/>
-                </div>
-
-                <div class="footer" style="text-align: center;">
-                    <br/>
-                    <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
-                    <br/>
-                </div>
-
-
-
+            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                <h:outputLabel value="RECEIPT"   />    
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.billController.batchBill.cancelled eq true}" /> 
             </div>
-        </h:panelGroup>
+
+            <div class="billline">
+                <br/>
+                <hr></hr>   
+                <br/>
+            </div>
+
+
+
+            <div class="billDetailsFiveFive">
+                <table style="width: 99%!important;" >
+
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.createdAt}" class="billDetailsFiveFive">
+                                <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.age}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.createdAt}" class="billDetailsFiveFive">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.person.sex}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.insId}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.person.phone}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.paymentMethod}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.patient.phn}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.billController.batchBill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                </table>
+            </div>
+
+
+            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
+                <div class="billline">
+                    <!--                        <div style="width: 100%;text-align: center;font-size: 10px;">
+                                                <p:barcode value="#{cc.attrs.billController.batchBill.idStr}" type="code39" cache="false" 
+                                                           />
+                                            </div>-->
+                </div>
+            </h:panelGroup>
+
+
+            
+
+            <div style="text-decoration: overline; margin-top: 20px;">
+                <h:outputLabel value="Net Total : #{cc.attrs.billController.batchBill.netTotal}"/>
+            </div>
+
+
+
+            <div style="text-decoration: overline; margin-top: 20px;">
+                <h:outputLabel value="Cashier : #{cc.attrs.billController.batchBill.creater.webUserPerson.name}"/>
+            </div>
+
+
+
+
+
+        </div>
+
+
     </cc:implementation>
 </html>

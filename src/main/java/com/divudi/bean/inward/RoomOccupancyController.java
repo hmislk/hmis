@@ -153,7 +153,6 @@ public class RoomOccupancyController implements Serializable {
                 + " order by pr.roomFacilityCharge.name";
 
         patientRooms = getPatientRoomFacade().findByJpql(sql);
-        System.out.println("patientRooms = " + patientRooms.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "Room OccupancyAll( /faces/inward/inward_room_occupancy.xhtml)");
         
     }
