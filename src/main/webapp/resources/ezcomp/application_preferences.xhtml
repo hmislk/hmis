@@ -163,7 +163,14 @@
                     </p:panel>
                 </p:tab>
 
-
+                <p:tab title="InWard" >
+                    <p:panel header="InWard" class="w-100" >
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                            <h:outputLabel value="Admission Statement In Sinhala"></h:outputLabel>
+                            <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.inwardAdmissionStatementInSinhala}"/>
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
 
                 <p:tab title="Miscellaneous" >
                     <p:panel header="Miscellaneous" class="w-100" >
