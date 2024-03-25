@@ -243,9 +243,15 @@
                 </div>
 
                 <div class="mt-4" style="font-weight: bold">
-                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenet ne null}"  >
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish ne null}"  >
                         <p>
-                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenet}"/>
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish}"/>
+                        </p>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala ne null}"  >
+                        <p>
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala}"/>
                         </p>
                     </h:panelGroup>
                 </div>
