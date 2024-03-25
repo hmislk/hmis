@@ -81,7 +81,7 @@
                                                         Name
                                                     </f:facet>
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
-                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName or false}" >
                                                         <h:outputText value=" (#{ix.fullName})" ></h:outputText>
                                                     </h:panelGroup>
                                                 </p:column>
