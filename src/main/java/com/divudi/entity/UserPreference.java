@@ -250,6 +250,11 @@ public class UserPreference implements Serializable {
     
     private boolean docterPaymentSMS;
     private String docterPaymentSMSTemplate;
+    @Lob
+    private String inwardAddmissionStatemenetEnglish;
+    @Lob
+    private String inwardAddmissionStatemenetSinhala;
+
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1331,6 +1336,22 @@ public class UserPreference implements Serializable {
 
     public void setDocterPaymentSMSTemplate(String docterPaymentSMSTemplate) {
         this.docterPaymentSMSTemplate = docterPaymentSMSTemplate;
+    }
+
+    public String getInwardAddmissionStatemenetEnglish() {
+        return inwardAddmissionStatemenetEnglish;
+    }
+
+    public void setInwardAddmissionStatemenetEnglish(String inwardAddmissionStatemenetEnglish) {
+        this.inwardAddmissionStatemenetEnglish = inwardAddmissionStatemenetEnglish;
+    }
+
+    public String getInwardAddmissionStatemenetSinhala() {
+        return inwardAddmissionStatemenetSinhala;
+    }
+
+    public void setInwardAddmissionStatemenetSinhala(String inwardAddmissionStatemenetSinhala) {
+        this.inwardAddmissionStatemenetSinhala = inwardAddmissionStatemenetSinhala;
     }
 
 }
