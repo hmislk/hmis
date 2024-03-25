@@ -27,6 +27,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +42,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -79,14 +81,20 @@ public class WorkingTimeController implements Serializable {
     private Staff staff;
     private List<Admission> staffAdmissionsForPayments;
     private List<BillFee> staffBillFeesForPayment;
+    private Integer staffBillFeesForPaymentCount;
+    private Integer admissionCount;
     private List<WorkingTime> staffWorkingTimesForPayment;
+     private List<WorkingTime> staffPaymentsCompleted;
     private WorkingTime workingTimeForPayment;
-    private Double staffWorkingTimeForPayment;
+    private Double totalStaffWorkingPayment;
     private Double billFeeValue;
     private Double admissionFeeValue;
     private Double otherFeeValue;
     private Double shiftPaymentValue;
     private Double admissionRate;
+    private boolean printPreview;
+    Date fromDate;
+    Date toDate;
 
     public List<WorkingTime> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -99,27 +107,69 @@ public class WorkingTimeController implements Serializable {
             return "";
         }
         workingTimeForPayment = findLastWorkingTime(staff);
+        if (workingTimeForPayment == null) {
+            JsfUtil.addErrorMessage("No Work Time Recorded");
+            return "";
+        }
+        if (workingTimeForPayment.getProfessinoalPaymentBill() != null) {
+            return toViewOpdPaymentsDone();
+        }
         staffAdmissionsForPayments = admissionController.findAdmissions(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
         staffBillFeesForPayment = billController.findBillFees(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
         calculateStaffPayments();
-        return "/opd/pay_doctor";
+        return "/opd/pay_doctor?faces-redirect=true";
+    }
+
+    public String toViewOpdPaymentsDone() {
+        fillDoctorPaymentBills();
+        return "/opd/pay_doctor_bills?faces-redirect=true";
+    }
+
+    public void fillDoctorPaymentBills() {
+        String jpql = "select w "
+                + " from WorkingTime w "
+                + " where w.retired=:retw "
+                + " and w.professinoalPaymentBill.retired=:retb "
+                + " and w.professinoalPaymentBill.billDate between :fd and :td "
+                + " and w.staffShift.staff=:staff";
+        Map params = new HashMap();
+        params.put("retw", false);
+        params.put("retb", false);
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+        params.put("staff", staff);
+        staffPaymentsCompleted = getFacade().findByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    public void prepareForMakingPaymentForOpdDoctor() {
+        staff = null;
+        printPreview = false;
+        workingTimeForPayment = null;
+        staffAdmissionsForPayments = null;
+        staffBillFeesForPayment = null;
     }
 
     public void settleStaffPayments() {
+
         Bill bill = new Bill();
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());
-        bill.setBillType(BillType.OpdPreBill);
+        bill.setBillType(BillType.OpdProfessionalFeePayment);
         bill.setBillTypeAtomic(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
-        
+        bill.setNetTotal(totalStaffWorkingPayment);
+        bill.setTotal(totalStaffWorkingPayment);
+        bill.setDiscount(0.0);
+        bill.setDepartment(sessionController.getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
         billController.save(bill);
-        
+
         workingTimeForPayment.setProfessinoalPaymentBill(bill);
         save(workingTimeForPayment);
+        printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
-        
+
     }
-    
+
     public void calculateStaffPayments() {
         // Initialize Double objects to avoid NullPointerException due to auto-unboxing
         if (otherFeeValue == null) {
@@ -147,8 +197,8 @@ public class WorkingTimeController implements Serializable {
         // Initialize admissionFeeValue based on staffAdmissionsForPayments size and admissionRate
         admissionFeeValue = (staffAdmissionsForPayments != null) ? staffAdmissionsForPayments.size() * admissionRate : 0.0;
 
-        // Calculate staffWorkingTimeForPayment considering potential null values
-        staffWorkingTimeForPayment = (otherFeeValue != null ? otherFeeValue : 0.0)
+        // Calculate totalStaffWorkingPayment considering potential null values
+        totalStaffWorkingPayment = (otherFeeValue != null ? otherFeeValue : 0.0)
                 + (billFeeValue != null ? billFeeValue : 0.0)
                 + (admissionFeeValue != null ? admissionFeeValue : 0.0)
                 + (shiftPaymentValue != null ? shiftPaymentValue : 0.0);
@@ -249,13 +299,7 @@ public class WorkingTimeController implements Serializable {
     }
 
     public String navigateToPay() {
-        String j = "select w "
-                + " from WorkingTime w "
-                + " where w.retired=:ret "
-                + " and w.endRecord is null";
-        Map m = new HashMap();
-        m.put("ret", false);
-        items = getFacade().findByJpql(j, m);
+        prepareForMakingPaymentForOpdDoctor();
         return "/opd/pay_doctor?faces-redirect=true";
     }
 
@@ -423,15 +467,16 @@ public class WorkingTimeController implements Serializable {
         this.staffWorkingTimesForPayment = staffWorkingTimesForPayment;
     }
 
-    public Double getStaffWorkingTimeForPayment() {
-        return staffWorkingTimeForPayment;
+    public Double getTotalStaffWorkingPayment() {
+        return totalStaffWorkingPayment;
     }
 
-    public void setStaffWorkingTimeForPayment(Double staffWorkingTimeForPayment) {
-        this.staffWorkingTimeForPayment = staffWorkingTimeForPayment;
+    public void setTotalStaffWorkingPayment(Double totalStaffWorkingPayment) {
+        this.totalStaffWorkingPayment = totalStaffWorkingPayment;
     }
 
     public Double getBillFeeValue() {
+
         return billFeeValue;
     }
 
@@ -441,6 +486,28 @@ public class WorkingTimeController implements Serializable {
 
     public Double getAdmissionFeeValue() {
         return admissionFeeValue;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     public void setAdmissionFeeValue(Double admissionFeeValue) {
@@ -478,8 +545,48 @@ public class WorkingTimeController implements Serializable {
     public void setWorkingTimeForPayment(WorkingTime workingTimeForPayment) {
         this.workingTimeForPayment = workingTimeForPayment;
     }
-    
-    
+
+    public Integer getStaffBillFeesForPaymentCount() {
+        if (staffBillFeesForPayment != null) {
+            staffBillFeesForPaymentCount = staffBillFeesForPayment.size();
+        } else {
+            staffBillFeesForPaymentCount = 0;
+        }
+        return staffBillFeesForPaymentCount;
+    }
+
+    public void setStaffBillFeesForPaymentCount(Integer staffBillFeesForPaymentCount) {
+        this.staffBillFeesForPaymentCount = staffBillFeesForPaymentCount;
+    }
+
+    public Integer getAdmissionCount() {
+        if (staffAdmissionsForPayments != null) {
+            admissionCount = staffAdmissionsForPayments.size();
+        } else {
+            admissionCount = 0;
+        }
+        return admissionCount;
+    }
+
+    public void setAdmissionCount(Integer admissionCount) {
+        this.admissionCount = admissionCount;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public List<WorkingTime> getStaffPaymentsCompleted() {
+        return staffPaymentsCompleted;
+    }
+
+    public void setStaffPaymentsCompleted(List<WorkingTime> staffPaymentsCompleted) {
+        this.staffPaymentsCompleted = staffPaymentsCompleted;
+    }
     
     
 
