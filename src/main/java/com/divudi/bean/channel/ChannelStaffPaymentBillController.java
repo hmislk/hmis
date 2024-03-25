@@ -754,9 +754,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
     
     public String genarateTemplateForSms(Bill b) {
         String s;
-        ServiceSession ss = null;
+//         ss = null;
 
-        ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+//        ServiceSession ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
         String time = CommonController.getDateFormat(
                 b.getBillTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
