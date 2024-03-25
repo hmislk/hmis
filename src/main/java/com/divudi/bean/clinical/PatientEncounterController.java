@@ -1082,39 +1082,25 @@ public class PatientEncounterController implements Serializable {
         }
         List<ClinicalFindingValueType> temp = new ArrayList<>();
         temp.add(ClinicalFindingValueType.PatientMedicine);
-        if (encounterMedicines.isEmpty()) {
-            encounterMedicines = fillCurrentPatientClinicalFindingValues(patient, temp);
-            for (ClinicalFindingValue cli : encounterMedicines) {
-                cli.setEncounter(current);
-                cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-                if (cli.getPrescription().getId() == null) {
-                    prescriptionFacade.create(cli.getPrescription());
-                } else {
-                    prescriptionFacade.edit(cli.getPrescription());
-                }
-                if (cli.getId() == null) {
-                    clinicalFindingValueFacade.create(cli);
-                } else {
-                    clinicalFindingValueFacade.edit(cli);
-                }
+
+        for (ClinicalFindingValue cli : fillCurrentPatientClinicalFindingValues(patient, temp)) {
+            cli.setEncounter(current);
+            cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            if (cli.getPrescription().getId() == null) {
+                prescriptionFacade.create(cli.getPrescription());
+            } else {
+                prescriptionFacade.edit(cli.getPrescription());
             }
-        } else if (!encounterMedicines.isEmpty()) {
-            for (ClinicalFindingValue cli : fillCurrentPatientClinicalFindingValues(patient, temp)) {
-                cli.setEncounter(current);
-                cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-                if (cli.getPrescription().getId() == null) {
-                    prescriptionFacade.create(cli.getPrescription());
-                } else {
-                    prescriptionFacade.edit(cli.getPrescription());
-                }
-                if (cli.getId() == null) {
-                    clinicalFindingValueFacade.create(cli);
-                } else {
-                    clinicalFindingValueFacade.edit(cli);
-                }
-                encounterMedicines.add(cli);
+            if (cli.getId() == null) {
+                clinicalFindingValueFacade.create(cli);
+            } else {
+                clinicalFindingValueFacade.edit(cli);
             }
+            getEncounterFindingValues().add(cli);
+            encounterMedicines.add(cli);
+
         }
+        updateOrGeneratePrescription();
     }
 
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
@@ -1555,6 +1541,7 @@ public class PatientEncounterController implements Serializable {
         }
 
         getEncounterFindingValues().add(getEncounterMedicine());
+
         encounterMedicines = fillEncounterMedicines(current);
 
         updateOrGeneratePrescription();
@@ -3167,6 +3154,29 @@ public class PatientEncounterController implements Serializable {
         }
 
         return vs;
+    }
+
+    public void fillMedicinesFromPastVisitHistory(ClinicalFindingValue cli) {
+        if (encounterMedicines == null) {
+            encounterMedicines = new ArrayList<>();
+        }
+        cli.setEncounter(current);
+        cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+        if (cli.getPrescription().getId() == null) {
+            prescriptionFacade.create(cli.getPrescription());
+        } else {
+            prescriptionFacade.edit(cli.getPrescription());
+        }
+        if (cli.getId() == null) {
+            clinicalFindingValueFacade.create(cli);
+        } else {
+            clinicalFindingValueFacade.edit(cli);
+        }
+        getEncounterFindingValues().add(cli);
+        encounterMedicines.add(cli);
+
+        updateOrGeneratePrescription();
+
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
