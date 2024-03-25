@@ -248,7 +248,8 @@ public class UserPreference implements Serializable {
     private Integer numberOfCCBillCopies;
     private Integer numberOfChannellingBillCopies;
     
-    private boolean inwardAdmissionStatementInSinhala;
+    @Lob
+    private String inwardAddmissionStatemenet;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1316,12 +1317,14 @@ public class UserPreference implements Serializable {
         this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
     }
 
-    public boolean isInwardAdmissionStatementInSinhala() {
-        return inwardAdmissionStatementInSinhala;
+    public String getInwardAddmissionStatemenet() {
+        return inwardAddmissionStatemenet;
     }
 
-    public void setInwardAdmissionStatementInSinhala(boolean inwardAdmissionStatementInSinhala) {
-        this.inwardAdmissionStatementInSinhala = inwardAdmissionStatementInSinhala;
+    public void setInwardAddmissionStatemenet(String inwardAddmissionStatemenet) {
+        this.inwardAddmissionStatemenet = inwardAddmissionStatemenet;
     }
+
+    
 
 }

@@ -243,15 +243,9 @@
                 </div>
 
                 <div class="mt-4" style="font-weight: bold">
-                    <p>
-                        I agree to Abide by the terms and conditions of admission prevailing 
-                        at this hospital and hold myself responsible for payment of all bills of 
-                        this patient before discharge from this hospital.
-
-                    </p>
-                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAdmissionStatementInSinhala}" >
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenet ne null}"  >
                         <p>
-                            මෙම රෝහලට ඇතුළත් වීමේ නියමයන් සහ කොන්දේසිවලට අනුකූලව මෙම රෝහලෙන් පිටව යාමට පෙර මෙම රෝගියාගේ සියලුම බිල්පත් ගෙවීමේ වගකීම මා වෙත පැවරීමට මම එකඟ වෙමි.
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenet}"/>
                         </p>
                     </h:panelGroup>
                 </div>
