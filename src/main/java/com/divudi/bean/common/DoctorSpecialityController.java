@@ -93,10 +93,8 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> completeSpeciality(String qry) {
-        //   ////System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
         lst = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        //   ////System.out.println("lst = " + lst);
         return lst;
     }
 
@@ -301,7 +299,7 @@ public class DoctorSpecialityController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorSpecialityController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + DoctorSpeciality.class.getName());
             }
         }
     }

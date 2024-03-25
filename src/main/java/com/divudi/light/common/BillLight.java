@@ -11,6 +11,7 @@ public class BillLight {
     private Long id;
     private String billNo;
     private Date billDate;
+    private Date billTime;
     private String institutionName;
     private String departmentName;
     private String userName;
@@ -21,8 +22,26 @@ public class BillLight {
     private Double netValue;
     private Long patientId;
 
+    private String referringDoctorName;
+
+
     public BillLight() {
     }
+
+    public BillLight(Long id, String billNo, Date billDate, Date billTime, String patientName, Double netValue) {
+        this.id = id;
+        this.billNo = billNo;
+        this.billDate = billDate;
+        this.billTime = billTime;
+        this.patientName = patientName;
+        this.netValue = netValue;
+    }
+
+    
+
+    
+    
+    
 
     public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue) {
         this.id = id;
@@ -37,7 +56,7 @@ public class BillLight {
         this.discount = discount;
         this.netValue = netValue;
     }
-    
+
     public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue, Long patientId) {
         this.id = id;
         this.billNo = billNo;
@@ -72,6 +91,8 @@ public class BillLight {
     public Date getBillDate() {
         return billDate;
     }
+    
+    
 
     public void setBillDate(Date billDate) {
         this.billDate = billDate;
@@ -147,6 +168,24 @@ public class BillLight {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    
+
+    public String getReferringDoctorName() {
+        return referringDoctorName;
+    }
+
+    public void setReferringDoctorName(String referringDoctorName) {
+        this.referringDoctorName = referringDoctorName;
+    }
+
+    public Date getBillTime() {
+        return billTime;
+    }
+
+    public void setBillTime(Date billTime) {
+        this.billTime = billTime;
     }
 
 }

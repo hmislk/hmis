@@ -624,11 +624,9 @@ public class DepartmentController implements Serializable {
             DepartmentController controller = (DepartmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "departmentController");
             if (controller == null) {
-                System.out.println("controller is null");
                 return null;
             }
             if (controller.getEjbFacade() == null) {
-                System.out.println("controller is null");
                 return null;
             }
             return controller.getEjbFacade().find(getKey(value));

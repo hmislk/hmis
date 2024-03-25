@@ -47,10 +47,8 @@ public class TriggerSubscription implements Serializable {
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
-
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
-
     private String retireComments;
     //Editer Properties
     @ManyToOne

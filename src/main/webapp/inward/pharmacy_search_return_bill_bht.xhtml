@@ -19,20 +19,24 @@
                             <div class="col-md-2">
                                 <h:panelGrid columns="1" class="mt-1">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar 
+                                    <p:datePicker 
                                         styleClass="dateTimePicker" 
                                         id="fromDate" 
                                         value="#{searchController.fromDate}" 
-                                        navigator="false" 
+                                        showTime="true"                                           
+                                        showButtonBar="true"   
+                                        timeInput="true"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar 
+                                    <p:datePicker 
                                         id="toDate" 
                                         value="#{searchController.toDate}" 
-                                        navigator="false" 
+                                        showTime="true"                                            
+                                        showButtonBar="true"   
+                                        timeInput="true"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <p:commandButton 
                                         id="btnSearch" 
                                         ajax="false" 

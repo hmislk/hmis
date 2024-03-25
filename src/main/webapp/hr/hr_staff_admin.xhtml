@@ -15,7 +15,7 @@
 
                 <h:panelGroup >
                     <h:form  >
-                        <p:growl />
+                        <p:growl id="msg"/>
                         <p:focus id="selectFocus" context="lstSelect" />
                         <p:focus id="detailFocus" context="gpDetail" />
 
@@ -37,7 +37,7 @@
                                         <p:commandButton 
                                             id="btnDelete"
                                             process="btnDelete"
-                                            update="lstSelect gpDetail"
+                                            update="lstSelect gpDetail msg"
                                             class="ui-button-danger w-25 mx-1"
                                             icon="fas fa-trash"
                                             ajax="false" 
@@ -322,7 +322,7 @@
                                                         <p:outputLabel value="#{staffController.current.id}"  />
                                                         <p:separator/>
                                                         <p:separator/>
-                                                        <p:outputLabel  value="Creater" ></p:outputLabel>
+                                                        <p:outputLabel  value="Creator" ></p:outputLabel>
                                                         <p:outputLabel value="#{staffController.current.creater.webUserPerson.name}"  />
                                                         <p:outputLabel  value="Created At" ></p:outputLabel>
                                                         <p:outputLabel value="#{staffController.current.createdAt}" >
@@ -339,8 +339,8 @@
                                             <p:commandButton class="w-25 ui-button-warning"
                                                              id="btnSave"
                                                              value="Save" 
-                                                             process="btnSave gpDetail "
-                                                             update="lstSelect tabDetails"
+                                                             process="btnSave gpDetail"
+                                                             update="lstSelect gpDetail panelPrint msg"
                                                              action="#{staffController.saveSelected()}"  >
                                             </p:commandButton>
                                             <p:commandButton ajax="false" class="ui-button-info w-25 mx-1" icon="fas fa-print" value="Print" >

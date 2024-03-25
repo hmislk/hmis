@@ -12,6 +12,9 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemApplicationController;
+import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
@@ -50,7 +53,11 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.ItemLight;
+import com.divudi.data.lab.InvestigationTubeSticker;
+import com.divudi.entity.UserPreference;
 import com.divudi.java.CommonFunctions;
+import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,6 +68,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -76,6 +85,12 @@ public class BillBhtController implements Serializable {
     SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -98,6 +113,8 @@ public class BillBhtController implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
 
+    @Inject
+    Lims lims;
     @Inject
     InwardBeanController inwardBean;
     @Inject
@@ -130,33 +147,73 @@ public class BillBhtController implements Serializable {
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
+    private String stickerPrinterString;
+    private List<InvestigationTubeSticker> stickers;
 
-//    public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
-//        List<Bill> patientSurgeries = billController.fillPatientSurgeryBills(patientEncounter);
-//        if (patientSurgeries == null) {
-//            JsfUtil.addErrorMessage("No Surgeries added yet");
-//            return null;
-//        }
-//        if (patientSurgeries.isEmpty()) {
-//            JsfUtil.addErrorMessage("No Surgeries added yet");
-//            return null;
-//        }
-//
-//        resetBillData();
-//        if (patientSurgeries.size() == 1) {
-//            bills = null;
-//            setBatchBill(patientSurgeries.get(0));
-//        } else if (patientSurgeries.size() > 1) {
-//            setBatchBill(null);
-//            bills = patientSurgeries;
-//        }
-//
-//        return "/theater/inward_bill_surgery_service";
-//    }
+    private List<ItemLight> inwardItems;
+    private ItemLight itemLight;
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
-        return "/theater/inward_bill_surgery_service";
+        return "/theater/inward_bill_surgery_service?faces-redirect=true";
+    }
+
+    public String navigateToPrintLabelsForInvestigations() {
+        String json = generateStockerPrinterString();
+        stickers = convertJsonToList(json);
+        return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
+    }
+
+    public List<InvestigationTubeSticker> convertJsonToList(String json) {
+        List<InvestigationTubeSticker> stickers = new ArrayList<>();
+
+        JSONObject jsonObject = new JSONObject(json);
+        JSONArray barcodes = jsonObject.getJSONArray("Barcodes");
+
+        for (int i = 0; i < barcodes.length(); i++) {
+            JSONObject barcode = barcodes.getJSONObject(i);
+            InvestigationTubeSticker sticker = new InvestigationTubeSticker();
+
+            sticker.setInsid(barcode.getString("insid"));
+            sticker.setTube(barcode.optString("tube", "")); // Using optString for optional fields
+            sticker.setTests(barcode.getString("tests"));
+            sticker.setPatientName(barcode.getString("name"));
+            sticker.setPatientAge(barcode.getString("age"));
+            sticker.setPatientSex(barcode.getString("sex"));
+            sticker.setSampleId(barcode.getString("id"));
+            sticker.setBillDateString(barcode.getString("billDate"));
+
+            // Add more fields as necessary
+            stickers.add(sticker);
+        }
+
+        return stickers;
+    }
+
+    public String generateStockerPrinterString() {
+        //TODO: Prevent Duplicates
+        JSONArray combinedBarcodes = new JSONArray();
+        if (bills == null) {
+            return "";
+        }
+        String username = sessionController.getUserName();
+        String password = sessionController.getPassword();
+        int count = 0;
+        for (Bill b : bills) {
+            String billId = b.getIdStr();
+            String result = lims.generateSamplesFromBill(billId, username, password);
+            JSONObject resultJson = new JSONObject(result);
+            if (resultJson.has("Barcodes")) {
+                JSONArray barcodes = resultJson.getJSONArray("Barcodes");
+                for (int i = 0; i < barcodes.length(); i++) {
+                    combinedBarcodes.put(barcodes.getJSONObject(i));
+                }
+            }
+            count++;
+        }
+        JSONObject finalJson = new JSONObject();
+        finalJson.put("Barcodes", combinedBarcodes);
+        return finalJson.toString();
     }
 
     public void resetBillData() {
@@ -377,6 +434,24 @@ public class BillBhtController implements Serializable {
         getBillBean().updateBillByBillFee(bill);
 
         return list;
+    }
+
+    public List<ItemLight> fillInwardItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getInwardItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
     }
 
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
@@ -946,6 +1021,20 @@ public class BillBhtController implements Serializable {
         this.cashPaid = cashPaid;
     }
 
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
+    }
+
     public double getCashBalance() {
         return cashBalance;
     }
@@ -1153,6 +1242,33 @@ public class BillBhtController implements Serializable {
 
     public void setReferredBy(Doctor referredBy) {
         this.referredBy = referredBy;
+    }
+
+    public String getStickerPrinterString() {
+        return stickerPrinterString;
+    }
+
+    public void setStickerPrinterString(String stickerPrinterString) {
+        this.stickerPrinterString = stickerPrinterString;
+    }
+
+    public List<InvestigationTubeSticker> getStickers() {
+        return stickers;
+    }
+
+    public void setStickers(List<InvestigationTubeSticker> stickers) {
+        this.stickers = stickers;
+    }
+
+    public List<ItemLight> getInwardItems() {
+        if (inwardItems == null) {
+            inwardItems = fillInwardItems();
+        }
+        return inwardItems;
+    }
+
+    public void setInwardItems(List<ItemLight> inwardItems) {
+        this.inwardItems = inwardItems;
     }
 
 }

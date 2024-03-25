@@ -118,7 +118,7 @@ public class PatientEncounterController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     private PatientReportFacade prFacade;
-     
+
     /**
      * Controllers
      */
@@ -198,7 +198,7 @@ public class PatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> encounterFindingValues;
     private List<ClinicalFindingValue> encounterPlanOfActions;
     private List<ClinicalFindingValue> encounterInvestigationResults;
-    
+
     private PatientInvestigation currentPtIx;
     private ClinicalFindingValue currentEIResult;
     private PatientReport currentPatientReport;
@@ -716,14 +716,14 @@ public class PatientEncounterController implements Serializable {
         JsfUtil.addSuccessMessage("Investigation added");
 
     }
-    
-    public void createNewResultReport(ClinicalFindingValue pf , Investigation ix){
-        currentPtIx = createPatientInvestigation(pf ,ix);
- 
+
+    public void createNewResultReport(ClinicalFindingValue pf, Investigation ix) {
+        currentPtIx = createPatientInvestigation(pf, ix);
+
         patientReportController.setCurrentPtIx(currentPtIx);
         patientReportController.createNewReport(currentPtIx);
     }
-    
+
     public void addEncounterInvestigationResults() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select a visit");
@@ -737,7 +737,6 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
-        System.out.println("encounterInvestigationResult.getItemValue() = " + encounterInvestigationResult.getItemValue());
         if (encounterInvestigationResult.getId() == null) {
             clinicalFindingValueFacade.create(encounterInvestigationResult);
         } else {
@@ -754,10 +753,10 @@ public class PatientEncounterController implements Serializable {
         JsfUtil.addSuccessMessage("Investigation Result added");
 
     }
-    
-    public PatientInvestigation createPatientInvestigation (ClinicalFindingValue pf , Investigation ix){
+
+    public PatientInvestigation createPatientInvestigation(ClinicalFindingValue pf, Investigation ix) {
         PatientInvestigation pi = new PatientInvestigation();
-        if(pf.getClinicalFindingValueType() != ClinicalFindingValueType.VisitInvestigationResult ){
+        if (pf.getClinicalFindingValueType() != ClinicalFindingValueType.VisitInvestigationResult) {
             return pi;
         }
         pi.setCreatedAt(Calendar.getInstance().getTime());
@@ -775,10 +774,10 @@ public class PatientEncounterController implements Serializable {
         pi.setPrinted(Boolean.FALSE);
         pi.setReceived(Boolean.TRUE);
         pi.setRetired(false);
-          if (pi.getId() == null) {
+        if (pi.getId() == null) {
             getPiFacade().create(pi);
         }
-        
+
         return pi;
     }
 
@@ -1247,19 +1246,19 @@ public class PatientEncounterController implements Serializable {
         String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
-        String nic = e.getPatient().getPerson().getNic()!= null ? e.getPatient().getPerson().getNic() : "";
-        String phn = e.getPatient().getPhn()!= null ? e.getPatient().getPhn() : "";
+        String nic = e.getPatient().getPerson().getNic() != null ? e.getPatient().getPerson().getNic() : "";
+        String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
         String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
-        String rr = e.getRespiratoryRate()+" bpm";
+        String rr = e.getRespiratoryRate() + " bpm";
         String comments = e.getComments();
-        String pulseRate = e.getPr()+" bpm";
-        String pfr = e.getPfr()+"";
-        String saturation = e.getSaturation()+"";
+        String pulseRate = e.getPr() + " bpm";
+        String pfr = e.getPfr() + "";
+        String saturation = e.getSaturation() + "";
         if (comments == null) {
             comments = "";
         }
@@ -1318,7 +1317,7 @@ public class PatientEncounterController implements Serializable {
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
             ixAsString += ix.getItemValue().getName() + "<br/>";
         }
-        
+
         String paAsString = "Pa" + "<br/>";
         for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
             paAsString += pa.getItemValue().getName() + "<br/>";
@@ -1377,8 +1376,8 @@ public class PatientEncounterController implements Serializable {
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
                 .replace("{bp}", bp)
-                .replace("{pr}",pulseRate)
-                .replace("{pfr}",pfr)
+                .replace("{pr}", pulseRate)
+                .replace("{pfr}", pfr)
                 .replace("{sat}", saturation)
                 .replace("{patient_name}", name)
                 .replace("{patient_age}", age)
@@ -2686,7 +2685,7 @@ public class PatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigation);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
-    
+
     private List<ClinicalFindingValue> fillEncounterInvestigationResults(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigationResult);
@@ -2699,7 +2698,7 @@ public class PatientEncounterController implements Serializable {
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
-    private List<ClinicalFindingValue> fillEncounterDiagnoses(PatientEncounter encounter) {
+    public List<ClinicalFindingValue> fillEncounterDiagnoses(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDiagnosis);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
@@ -3049,7 +3048,6 @@ public class PatientEncounterController implements Serializable {
         this.currentPatientReport = currentPatientReport;
     }
 
-   
     public CommonReportItemController getCommonReportItemController() {
         return commonReportItemController;
     }
@@ -3075,7 +3073,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getCurrentEIResult() {
-        if(currentEIResult == null){
+        if (currentEIResult == null) {
             currentEIResult = getEncounterInvestigationResult();
         }
         return currentEIResult;
@@ -3084,8 +3082,51 @@ public class PatientEncounterController implements Serializable {
     public void setCurrentEIResult(ClinicalFindingValue currentEIResult) {
         this.currentEIResult = currentEIResult;
     }
+
+    public List<ClinicalFindingValue> fillPastPatientDiagnosisHistory(PatientEncounter encounter) {
+        List<ClinicalFindingValue> vs;
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts",ClinicalFindingValueType.VisitDiagnosis);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+        
+        sql += " order by e.orderNo";
+        vs = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (vs == null) {
+            vs = new ArrayList<>();
+        }
+        
+        return vs;
+    }
     
-    
+    public List<ClinicalFindingValue> fillPastPatientMedicineHistory(PatientEncounter encounter) {
+        List<ClinicalFindingValue> vs;
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts",ClinicalFindingValueType.VisitMedicine);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+        
+        sql += " order by e.orderNo";
+
+        vs = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (vs == null) {
+            vs = new ArrayList<>();
+        }
+        
+        return vs;
+    }
 
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {

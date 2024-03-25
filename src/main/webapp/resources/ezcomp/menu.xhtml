@@ -16,7 +16,7 @@
                     font-size: 18px !important;
                 }
             </style>
-            
+
             <p:tooltip for="home" value="Home" ></p:tooltip>
             <p:tooltip for="smOpd" value="OPD" ></p:tooltip>
             <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
@@ -31,9 +31,9 @@
             <p:tooltip for="smEmr" value="EMR" ></p:tooltip>
             <p:tooltip for="smReports" value="Reports" ></p:tooltip>
             <p:tooltip for="smSettings" value="Settings" ></p:tooltip>
-            
-            
-            
+
+
+
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
                 <p:menuitem 
                     id="home"
@@ -217,6 +217,12 @@
                             action="#{workingTimeController.navigateToListWorkTimes()}" 
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            value="Pay" 
+                            action="#{workingTimeController.navigateToPay()}" 
+                            icon="fa fa-search"
+                            rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>
                     <p:menuitem 
@@ -230,6 +236,11 @@
                     <p:menuitem ajax="false" 
                                 action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
                                 value="Analytics" icon="fa fa-list-alt"></p:menuitem>
+                    <p:menuitem ajax="false"
+                                styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
+                                rendered="#{webUserController.hasPrivilege('Opd') and sessionController.applicationPreference.opdBillingAftershiftStart eq true}"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                                value="Financial Transaction Manager" icon="fa fa-list-alt"></p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
@@ -366,23 +377,7 @@
                         <p:menuitem ajax="false" action="/inward/inward_bill_service?faces-redirect=true" value="In-patient Billing" actionListener="#{billBhtController.resetBillData}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                     </p:submenu>
-                    <p:submenu label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('LabCollectingCentreBilling') and false}">
-                        <p:menuitem ajax="false" action="/collecting_centre/bill?faces-redirect=true"  
-                                    actionListener="#{billController.prepareNewBill}" 
-                                    value="CC Billing" 
-                                    rendered="#{webUserController.hasPrivilege('LabCCBilling')}" >
-                        </p:menuitem>
 
-                        <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
-                                    actionListener="#{searchController.makeListNull}"
-                                    value="CC Bill Search" 
-                                    rendered="#{webUserController.hasPrivilege('LabCCBillingSearch')}" >
-                        </p:menuitem>
-                        <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna' and false}">
-                            <p:menuitem ajax="false" action="/lab/bill_collecting_centre?faces-redirect=true" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                            <p:menuitem ajax="false" action="/lab/collecting_bill_search_all?faces-redirect=true" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                        </p:submenu>
-                    </p:submenu>
 
                     <p:menuitem ajax="false" action="/lab/sample?faces-redirect=true" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
@@ -654,7 +649,7 @@
                         <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>
                     </p:submenu>
-                    
+
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Item Search" icon="fas fa-search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Generate Reports" icon="fas fa-chart-line" rendered="#{webUserController.hasPrivilege('PharmacyGenarateReports')}" ></p:menuitem>
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summary Views" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
@@ -829,12 +824,12 @@
                         action="#{channelBookingController.navigateToChannelBookingFromMenu()}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
-                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.makeNull}" rendered="false" ></p:menuitem>
+                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.resetToStartFromSpeciality}" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/channel_booking_past?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="false" ></p:menuitem>
                     <p:submenu label="Doctor Leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" >
-                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.makeNull}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.makeNull}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem  
                         ajax="false"  
@@ -1172,10 +1167,21 @@
                     </p:menuitem>
                 </p:submenu>
 
-
-
                 <f:facet name="options">
-                    <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
+                    <div class="d-flex align-items-center">
+                        <div class="mx-4">
+                            <p:poll interval="60" listener="#{webUserController.notificationCountForUser}" update="notCount" />
+                            <p:commandButton value="poll" action="#{webUserController.notificationCountForUser}" update="notCount"/> 
+                            <h:panelGroup id="notCount">
+                                <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
+                                    <!--<p:commandButton id="btnNot" ajax="false" icon="pi pi-bell "/>-->
+                                </p:badge>
+                            </h:panelGroup>
+                        </div>
+
+                        <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
+                    </div>
+
                     <p:tooltip for="btnLogout" value="df"  >
                         <h:panelGrid columns="3" >
                             <h:outputText value="Institution" ></h:outputText>

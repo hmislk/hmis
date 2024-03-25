@@ -46,6 +46,10 @@ public class PersonController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
+    
+    public Person findPerson(Long id){
+        return getFacade().find(id);
+    }
 
     public List<Person> completePerson(String qry) {
         List<Person> a = null;

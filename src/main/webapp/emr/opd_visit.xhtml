@@ -38,7 +38,7 @@
                             </p:commandButton>
                             <p:commandButton class="p-0 m-1 ui-button-warning" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
                             <p:commandButton class="p-0 m-1 ui-button-secondary" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
-                            
+
                             <p:commandButton 
                                 id="btnCommentPrint"
                                 ajax="false"
@@ -252,15 +252,15 @@
                                                         </p:inputText>
                                                         <!--                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>-->
                                                     </div>
-                                                     <div class="col-md-5" >
+                                                    <div class="col-md-5" >
                                                         <p:outputLabel value="Resp. Rate&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText  
                                                             id="txtRr"
                                                             style="width: 5em;"
                                                             value="#{patientEncounterController.current.respiratoryRate}" >
-                                                            
+
                                                         </p:inputText>
-<!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
                                                     </div>
                                                 </div>
                                             </p:panel>
@@ -814,18 +814,18 @@
 
 
 
-                                                    <h:panelGroup id="txtPrescriptionDoc">
-                                                        <p:textEditor
-                                                            styleClass="textEditer"
-                                                            class="my-2"
-                                                            toolbarVisible="false"
-                                                            rendered="#{patientEncounterController.encounterPrescreption ne null}"
-                                                            secure='false'
-                                                            widgetVar="textEditorWidget"
-                                                            value="#{patientEncounterController.encounterPrescreption.lobValue}"
-                                                            >
-                                                        </p:textEditor>
-                                                    </h:panelGroup>
+                                                <h:panelGroup id="txtPrescriptionDoc">
+                                                    <p:textEditor
+                                                        styleClass="textEditer"
+                                                        class="my-2"
+                                                        toolbarVisible="false"
+                                                        rendered="#{patientEncounterController.encounterPrescreption ne null}"
+                                                        secure='false'
+                                                        widgetVar="textEditorWidget"
+                                                        value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                        >
+                                                    </p:textEditor>
+                                                </h:panelGroup>
                                             </p:panel>
                                         </div>
 
@@ -1061,8 +1061,11 @@
                                         <div class="card-header" >
                                             <h:outputText value="Past Visits" style="font-size: 16px; font-weight: bold;"/>
                                         </div>
-                                        <div class="card-body" >
-                                            <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
+                                        <div>
+                                            <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" 
+                                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                         rowsPerPageTemplate="5,10,15" 
+                                                         currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
                                                 <p:column sortBy="#{visit.encounterDate}" filterMatchMode="date" >
                                                     <f:facet name="header">
                                                         <h:outputText value="Date / Time" />
@@ -1071,26 +1074,72 @@
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                     </h:outputText>
                                                 </p:column>
-                                                <p:column sortBy="#{visit.bp}" filterBy="#{visit.bp}" filterMatchMode="contains">
+                                                 <p:column>
                                                     <f:facet name="header">
-                                                        <h:outputText value="BP" />
+                                                        <h:outputText value="Visit Details" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.bp}"  escape="false" >
-                                                    </h:outputText>
+                                                    <h:panelGroup rendered="#{visit.height ne null}">
+                                                         <h:outputText value="Height - #{visit.height}" escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                         <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.weight ne null}">
+                                                        <h:outputText value="Weight - #{visit.weight}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.bmi ne null}">
+                                                        <h:outputText value="BMI - #{visit.bmiFormatted}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.bp ne ''}">
+                                                        <h:outputText value="Blood Pressure - #{visit.bp}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="30px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.pr ne null}">
+                                                        <h:outputText value="Pulse Rate - #{visit.pr}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.respiratoryRate ne null}">
+                                                        <h:outputText value="Respiratory Rate - #{visit.respiratoryRate}"   escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.saturation ne null}">
+                                                        <h:outputText value="Saturation - #{visit.saturation}" escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.pfr ne null}">
+                                                        <h:outputText value="PFR - #{visit.pfr}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    
                                                 </p:column>
-                                                <p:column sortBy="#{visit.bmiFormatted}" filterBy="#{visit.bmiFormatted}" filterMatchMode="contains">
+
+
+
+                                                <p:column>
                                                     <f:facet name="header">
-                                                        <h:outputText value="BMI" />
+                                                        <h:outputText value="Diagnosis" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.bmiFormatted}"  escape="false" >
-                                                    </h:outputText>
+                                                    <ui:repeat value="#{patientEncounterController.fillPastPatientDiagnosisHistory(visit)}" var="diagnosis">
+                                                        <h:outputText value="#{diagnosis.stringValue} - #{diagnosis.lobValue}"/><br/>
+                                                    </ui:repeat>
                                                 </p:column>
-                                                <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
+
+                                                <p:column>
                                                     <f:facet name="header">
-                                                        <h:outputText value="Comments" />
+                                                        <h:outputText value="Medicines" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.comments}" />
+
+                                                    <ul>
+                                                        <ui:repeat value="#{patientEncounterController.fillPastPatientMedicineHistory(visit)}" var="medicine">
+                                                            <li>
+                                                                <h:outputText value="#{medicine.prescription.item.name}" />
+                                                            </li>
+                                                        </ui:repeat>
+                                                    </ul>
                                                 </p:column>
+
+
+                                               
                                             </p:dataTable>
                                         </div>
                                     </div>

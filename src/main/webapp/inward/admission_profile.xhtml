@@ -43,11 +43,9 @@
                                     action="#{admissionController.navigateToEditAdmission}" 
                                     icon="fa fa-edit"
                                     class="w-100 ">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{bhtEditController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton 
+                                    disabled="#{admissionController.current.discharged eq true}"
                                     value="Room Change" 
                                     action="#{admissionController.navigateToRoomChange}" 
                                     icon="fa fa-exchange-alt"
@@ -59,6 +57,7 @@
 
                                 <p:commandButton 
                                     value="Guardian Room Change" 
+                                    disabled="#{admissionController.current.discharged eq true}"
                                     action="#{admissionController.navigateToGuardianRoomChange}" 
                                     actionListener="#{roomChangeController.recreate}"
                                     icon="fa fa-users"
@@ -67,6 +66,7 @@
                                         value="#{admissionController.current}" 
                                         target="#{roomChangeController.current}" />
                                 </p:commandButton>
+                                
                                 <p:commandButton 
                                     rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" 
                                     action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
@@ -91,7 +91,8 @@
                                     value="Final Bill" 
                                     action="#{inwardSearch.navigateToFinalBillForAdmission}"
                                     icon="fa fa-file"
-                                    class="w-100">
+                                    class="w-100"
+                                    ajax="false">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 
                                         target="#{inwardSearch.admission}" ></f:setPropertyActionListener>
@@ -169,11 +170,10 @@
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
                             <div class="d-grid gap-3"> 
-                                <p:dataTable value="#{bhtSummeryController.surgeryBills}" var="s" >
-                                    <p:column >
-                                        <h:outputText value="#{s.procedure.item.name}" ></h:outputText>
-                                    </p:column>
-                                </p:dataTable>
+                                <ui:repeat value="#{bhtSummeryController.surgeryBills}" var="s">
+                                    <h:outputText value="#{s.procedure.item.name}" ></h:outputText><br/>
+                                </ui:repeat>
+                                
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"

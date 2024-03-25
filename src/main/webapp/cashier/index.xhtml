@@ -10,8 +10,7 @@
             <ui:define name="content">
                 <h:form>
                     <div class="row" >
-                        <div class="col-2" >
-
+                        <div class="col-2">
                             <p:panel header="Financial Transaction Manager" rendered="true">
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
@@ -35,13 +34,15 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
+                                    <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
+                                        <p:commandButton 
+                                            value=" Fund Transfers for me to Receive"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
+                                        </p:commandButton>
+                                    </p:badge>
 
-                                    <p:commandButton 
-                                        value="To List Fund Transfers for me to Receive"
-                                        icon=""
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
-                                    </p:commandButton>
 
                                     <p:commandButton 
                                         value="Fund Withdrawal"
@@ -62,7 +63,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCashierSummary()}" >
                                     </p:commandButton>
-                                    
+
                                 </div>
                             </p:panel>
 

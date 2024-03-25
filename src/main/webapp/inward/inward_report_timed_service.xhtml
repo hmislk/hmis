@@ -20,7 +20,7 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="From" ></h:outputLabel>
                                 <p:calendar class="mx-4" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                                <h:outputLabel value="From" ></h:outputLabel>
+                                <h:outputLabel value="To" ></h:outputLabel>
                                 <p:calendar class="mx-4" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                                 <h:outputLabel value="Timed Item" ></h:outputLabel>
                                 <p:autoComplete class="mx-4" id="it" forceSelection="false" 
@@ -109,7 +109,7 @@
                             </p:column>
                             <p:column headerText="Time(Minutes)" styleClass="averageNumericColumn">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Time"/>
+                                    <p:outputLabel value="Time(Min.)"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ti.tmpConsumedTime}" >
                                     <f:convertNumber pattern="##0.0"/>
@@ -139,7 +139,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Creater">
+                            <p:column headerText="Creator">
                                 <f:facet name="header">
                                     <p:outputLabel value="Creator"/>
                                 </f:facet>
@@ -160,7 +160,7 @@
                                             <p:outputLabel value="Total"></p:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column footerText="#{inwardTimedItemController.totalMins}" style="text-align: right;" >
+                                    <p:column footerText="#{inwardTimedItemController.totalMins}" style="text-align: right;" colspan="2">
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{inwardTimedItemController.totalMins}"></p:outputLabel>
                                         </f:facet>

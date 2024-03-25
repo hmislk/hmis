@@ -1371,7 +1371,6 @@ public class PharmacyController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyBhtPre);
         bts.add(BillType.PharmacyPre);
-        bts.add(BillType.PharmacyTransferReceive);
         return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
     }
 
@@ -1379,7 +1378,7 @@ public class PharmacyController implements Serializable {
         StringBuilder jpqlBuilder = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
-        jpqlBuilder.append("select sum(i.pharmaceuticalBillItem.qty) from BillItem i where i.retired = false");
+        jpqlBuilder.append("select sum(abs(i.pharmaceuticalBillItem.qty)) from BillItem i where i.retired = false");
 
         if (dep != null) {
             jpqlBuilder.append(" and i.bill.department = :dep");

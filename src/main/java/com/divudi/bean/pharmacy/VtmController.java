@@ -416,7 +416,7 @@ public class VtmController implements Serializable {
     /**
      *
      */
-    @FacesConverter("vtm")
+    @FacesConverter(forClass = Vtm.class)
     public static class VtmControllerConverter implements Converter {
 
         @Override
@@ -451,7 +451,7 @@ public class VtmController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + VtmController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Vtm.class.getName());
             }
         }
     }

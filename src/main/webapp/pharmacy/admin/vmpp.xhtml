@@ -12,127 +12,110 @@
             <p:growl id="msg"/>
             <p:focus id="selectFocus" for="lstSelect" />
             <p:focus id="detailFocus" for="gpDetail" />
-            <p:panel header="Manage Products (VMPs)"  >
-                 <div class="row" >
+            <p:panel header="Manage VMPPs"  >
+                <div class="row" >
                     <div class="col-5" >
-                    <p:panel>
-                        <h:panelGrid id="gpSelectButtons" columns="3"  >
-                            <p:commandButton 
-                                id="btnAdd" 
-                                value="Add"
-                                class="ui-button-success"
-                                icon="fa fa-plus"
-                                ajax="false"
-                                action="#{vmpController.prepareAdd()}" 
+                        <p:panel>
+                            <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                <p:commandButton 
+                                    id="btnAdd" 
+                                    value="Add"
+                                    class="ui-button-success"
+                                    icon="fa fa-plus"
+                                    process="btnAdd"
+                                    update="gpDetail"
+                                    action="#{vmppController.prepareAdd()}" 
+                                    >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnDelete"
+                                    class="ui-button-danger mx-2"
+                                    icon="fas fa-trash"
+                                    ajax="false" 
+                                    process="btnDelete"
+                                    update="gpDetail lstSelect"
+                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" 
+                                    action="#{vmppController.delete()}"  
+                                    value="Delete"  >
+                                </p:commandButton>
+                            </h:panelGrid>
+
+                            <p:selectOneListbox
+                                class="w-100" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                id="lstSelect" 
+                                value="#{vmppController.current}"
                                 >
-                                <p:ajax update="btnAdd  btnDelete gpDetail " process="btnAdd" >
-                                </p:ajax>
-                            </p:commandButton>
-                            <p:commandButton 
-                                id="btnDelete"
-                                class="ui-button-danger mx-2"
-                                icon="fas fa-trash"
-                                ajax="false" 
-                                onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" 
-                                action="#{vmpController.delete()}"  
-                                value="Delete"  >
-                            </p:commandButton>
-                        </h:panelGrid>
-                        
-                        <p:selectOneListbox
-                            filter="true"
-                            class="w-100 mt-2" 
-                            id="lstSelect" 
-                            value="#{vmpController.current}">
-                            <f:selectItems value="#{vmpController.selectedItems}" itemLabel="#{v.name}" var="v" itemValue="#{v}"/>
-                            <p:ajax update="gpDetail" process="lstSelect" ></p:ajax>
-                        </p:selectOneListbox>
+                                <f:selectItems value="#{vmppController.items}" var="vmpp" itemLabel="#{vmpp.name}" itemValue="#{vmpp}" ></f:selectItems>
+                                <p:ajax process="lstSelect" update="gpDetail" ></p:ajax>
+                            </p:selectOneListbox>
+
+
                         </p:panel>
-                        </div>
+                    </div>
                     <div class="col-md-7" >
                         <p:panel id="gpDetail" header="VMPPs Details" >
-                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
-                            
-                            <h:outputLabel value="Name" ></h:outputLabel>
-                            <p:inputText class="w-100"
-                                    required="true"
-                                    requiredMessage="Name Required" 
-                                    autocomplete="off" value="#{vmpController.current.name}" ></p:inputText>
+                            <h:panelGrid columns="2" styleClass="alignTop" class="w-100" id="gridDetails" >
 
-                            <h:outputLabel value="Generic Name" style="white-space: nowrap;" ></h:outputLabel>
-                            <p:autoComplete class="w-100"
-                                    required="true"
-                                    requiredMessage="Generic Unit Required"
-                                    inputStyleClass="w-100"
-                                    converter="vtm" value="#{vmpController.addingVtmInVmp.vtm}" 
-                                            forceSelection="true"
-                                            completeMethod="#{vtmController.completeVtm}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            </p:autoComplete>
-                            
-<!--                             <h:outputLabel value="Category" ></h:outputLabel>-->
+                                <h:outputLabel value="Name" ></h:outputLabel>
+                                <p:inputText class="w-100"
+                                             required="true"
+                                             requiredMessage="Name Required" 
+                                             autocomplete="off" value="#{vmppController.current.name}" ></p:inputText>
 
-<!--                            <p:selectOneMenu 
-                                filter="true"
-                                required="true"
-                                class="w-100"
-                                requiredMessage="Category Required"
-                                value="#{vmpController.current.category}">
-                                <f:selectItem itemLabel="Select Category" ></f:selectItem>
-                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
-                            </p:selectOneMenu>-->
-                           
-                            <h:outputLabel value="Strength" >
-                            </h:outputLabel>
+                                <h:outputLabel value="VMP" style="white-space: nowrap;" ></h:outputLabel>
+                                <p:autoComplete class="w-100"
+                                                required="true"
+                                                requiredMessage="Generic Unit Required"
+                                                inputStyleClass="w-100"
+                                                value="#{vmppController.current.vmp}" 
+                                                forceSelection="true"
+                                                completeMethod="#{vmpController.completeVmp}" 
+                                                var="vt" itemLabel="#{vt.name}" 
+                                                itemValue="#{vt}" >
+                                </p:autoComplete>
 
-                            <p:inputText class="w-100" autocomplete="off" value="#{vmpController.addingVtmInVmp.strength}" ></p:inputText>
-                            
-                            <h:outputLabel value="Strength Unit" >
-                            </h:outputLabel>
-                            <p:selectOneMenu
-                                class="w-100"
+                                <h:outputLabel value="Strength" >
+                                </h:outputLabel>
+                                <p:inputText class="w-100" 
+                                             autocomplete="off" value="#{vmppController.current.dblValue}" >
+                                    <f:convertNumber pattern="#.#" ></f:convertNumber>
+                                </p:inputText>
+
+                                <h:outputLabel value="Strength Unit" >
+                                </h:outputLabel>
+                                <p:selectOneMenu
+                                    class="w-100"
                                     required="true"
+                                    filter="true"
+                                    filterMatchMode="contains"
                                     requiredMessage="Strength Unit Required"
-                                    value="#{vmpController.addingVtmInVmp.strengthUnit}">
-                                <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
-                                <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                            </p:selectOneMenu>
-                            
-                            <h:outputLabel value=""></h:outputLabel>
-                            <p:commandButton class="ui-button-success mt-2" icon="fas fa-plus" value="Add" id="btnAddv" process="btnAddv" update="viv"  action="#{vmpController.addVtmInVmp()}" >
-                            </p:commandButton>
+                                    value="#{vmppController.current.strengthUnit}">
+                                    <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
+                                    <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
 
-                        </h:panelGrid>
 
-                        <p:dataTable id="viv" value="#{vmpController.vivs}" var="v" >
 
-                            <p:column headerText="VTM">
-                                #{v.vtm.name}
-                            </p:column>
-                            <p:column headerText="Strength">
-                                #{v.strength} #{v.strengthUnit.name}
-                            </p:column>
-                            <p:column headerText="Remove">
+                            </h:panelGrid>
 
-                                <p:commandButton class="ui-button-danger" icon="fas fa-trash" value="Remove" ajax="false" action="#{vmpController.remove}">
-                                    <f:setPropertyActionListener value="#{v}" target="#{vmpController.removingVtmInVmp}"/>
-                                </p:commandButton>
-                            </p:column>
-                        </p:dataTable>
 
-                        <p:commandButton
-                            id="btnSave"
-                            value="Save"
-                            process="btnSave gpDetail" 
+
+                            <p:commandButton
+                                id="btnSave"
+                                value="Save"
+                                process="btnSave gridDetails" 
                                 update="lstSelect msg" 
-                                class=" m-1 ui-button-warning w-25"
+                                class="m-1 ui-button-warning w-25"
                                 icon="fas fa-save"
-                                action="#{vmpController.saveSelected()}"></p:commandButton>
+                                action="#{vmppController.saveSelected()}"></p:commandButton>
 
-                    </p:panel>
+                        </p:panel>
                     </div>
-                     </div>
-                    
+                </div>
+
 
             </p:panel>
         </h:form>

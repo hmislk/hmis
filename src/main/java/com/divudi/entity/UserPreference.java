@@ -13,6 +13,8 @@ import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.RestAuthenticationType;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -22,6 +24,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 /**
  *
@@ -223,6 +226,9 @@ public class UserPreference implements Serializable {
     private OpdBillingStrategy opdBillingStrategy;
 
     @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy inwardItemListingStrategy;
+
+    @Enumerated(value = EnumType.STRING)
     private OpdTokenNumberGenerationStrategy opdTokenNumberGenerationStrategy;
     private boolean printOpdTokenNumber = true;
 
@@ -232,11 +238,20 @@ public class UserPreference implements Serializable {
     @Lob
     private String inpatientFinalBillPrintHeader;
     private String changeTextCasesPatientName;
-    
+
     @Lob
     private String smsTemplateForChannelBooking;
-
     private boolean opdSettleWithoutPatientArea;
+    private boolean opdBillingAftershiftStart;
+
+    private Integer numberOfOPDBillCopies;
+    private Integer numberOfCCBillCopies;
+    private Integer numberOfChannellingBillCopies;
+    
+    @Lob
+    private String inwardAddmissionStatemenetEnglish;
+    @Lob
+    private String inwardAddmissionStatemenetSinhala;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1204,7 +1219,7 @@ public class UserPreference implements Serializable {
             lengthOfOTPIndexes = "4";
         }
         this.lengthOfOTPIndexes = lengthOfOTPIndexes;
-      
+
     }
 
     public boolean isPartialPaymentOfPharmacyBillsAllowed() {
@@ -1231,9 +1246,95 @@ public class UserPreference implements Serializable {
         this.opdSettleWithoutPatientArea = opdSettleWithoutPatientArea;
     }
 
-    
-    
-    
+    public boolean isOpdBillingAftershiftStart() {
+        return opdBillingAftershiftStart;
+    }
 
+    public void setOpdBillingAftershiftStart(boolean opdBillingAftershiftStart) {
+        this.opdBillingAftershiftStart = opdBillingAftershiftStart;
+    }
+
+    public ItemListingStrategy getInwardItemListingStrategy() {
+        if (inwardItemListingStrategy == null) {
+            inwardItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return inwardItemListingStrategy;
+    }
+
+    public void setInwardItemListingStrategy(ItemListingStrategy inwardItemListingStrategy) {
+        this.inwardItemListingStrategy = inwardItemListingStrategy;
+    }
+
+    public Integer getNumberOfOPDBillCopies() {
+        if (numberOfOPDBillCopies == null || numberOfOPDBillCopies == 0) {
+            numberOfOPDBillCopies = 1;
+        }
+        return numberOfOPDBillCopies;
+    }
+
+    @Transient
+    public List<Integer> getOPDBillCopiesList() {
+        int copies = getNumberOfOPDBillCopies(); // Ensures the default is applied if null or 0
+        List<Integer> copiesList = new ArrayList<>(copies);
+        for (int i = 1; i <= copies; i++) {
+            copiesList.add(i);
+        }
+        return copiesList;
+    }
+    
+    @Transient
+    public List<Integer> getChannellingBillCopiesList() {
+        int copies = getNumberOfChannellingBillCopies(); // Ensures the default is applied if null or 0
+        List<Integer> copiesList = new ArrayList<>(copies);
+        for (int i = 1; i <= copies; i++) {
+            copiesList.add(i);
+        }
+        return copiesList;
+    }
+
+    public void setNumberOfOPDBillCopies(Integer numberOfOPDBillCopies) {
+
+        this.numberOfOPDBillCopies = numberOfOPDBillCopies;
+    }
+
+    public Integer getNumberOfCCBillCopies() {
+        if (numberOfCCBillCopies == null || numberOfCCBillCopies == 0) {
+            numberOfCCBillCopies = 1;
+        }
+        return numberOfCCBillCopies;
+    }
+
+    public void setNumberOfCCBillCopies(Integer numberOfCCBillCopies) {
+        this.numberOfCCBillCopies = numberOfCCBillCopies;
+    }
+
+    public Integer getNumberOfChannellingBillCopies() {
+        if (numberOfChannellingBillCopies == null || numberOfChannellingBillCopies == 0) {
+            numberOfChannellingBillCopies = 1;
+        }
+        return numberOfChannellingBillCopies;
+    }
+
+    public void setNumberOfChannellingBillCopies(Integer numberOfChannellingBillCopies) {
+        this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
+    }
+
+    public String getInwardAddmissionStatemenetEnglish() {
+        return inwardAddmissionStatemenetEnglish;
+    }
+
+    public void setInwardAddmissionStatemenetEnglish(String inwardAddmissionStatemenetEnglish) {
+        this.inwardAddmissionStatemenetEnglish = inwardAddmissionStatemenetEnglish;
+    }
+
+    public String getInwardAddmissionStatemenetSinhala() {
+        return inwardAddmissionStatemenetSinhala;
+    }
+
+    public void setInwardAddmissionStatemenetSinhala(String inwardAddmissionStatemenetSinhala) {
+        this.inwardAddmissionStatemenetSinhala = inwardAddmissionStatemenetSinhala;
+    }
+
+   
 
 }

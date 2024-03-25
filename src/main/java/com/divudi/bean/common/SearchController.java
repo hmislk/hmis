@@ -227,9 +227,7 @@ public class SearchController implements Serializable {
     }
 
     public String settleBillByBarcode() {
-        System.out.println("settleBillByBarcode");
         currentBill = searchBillFromBillId(currentBillId);
-        System.out.println("currentBill = " + currentBill);
         String action;
         if (currentBill == null) {
             Token t = tokenController.findToken(currentBillId);

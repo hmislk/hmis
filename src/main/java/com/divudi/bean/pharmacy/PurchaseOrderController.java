@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
@@ -125,7 +126,7 @@ public class PurchaseOrderController implements Serializable {
 
     public String navigateToPurchaseOrderApproval() {
         printPreview = false;
-        return "/pharmacy/pharmacy_purhcase_order_approving";
+        return "/pharmacy/pharmacy_purhcase_order_approving?faces-redirect=true";
     }
 
     public String approve() {
@@ -156,7 +157,7 @@ public class PurchaseOrderController implements Serializable {
 
     public String viewRequestedList() {
         clearList();
-        return "/pharmacy_purhcase_order_list_to_approve";
+        return "/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
     }
 
     @Inject
@@ -201,6 +202,10 @@ public class PurchaseOrderController implements Serializable {
         getAprovedBill().setCreater(getSessionController().getLoggedUser());
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
+        getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+        
+        
+        
         try {
             if (getAprovedBill().getId() == null) {
                 getBillFacade().create(getAprovedBill());
@@ -208,7 +213,6 @@ public class PurchaseOrderController implements Serializable {
                 getBillFacade().edit(getAprovedBill());
             }
         } catch (Exception e) {
-            System.err.println("e = " + e);
         }
 
     }
@@ -229,7 +233,6 @@ public class PurchaseOrderController implements Serializable {
                     getBillItemFacade().edit(i);
                 }
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
 
             phItem.setBillItem(i);
@@ -241,7 +244,6 @@ public class PurchaseOrderController implements Serializable {
                     getPharmaceuticalBillItemFacade().edit(phItem);
                 }
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
 
             i.setPharmaceuticalBillItem(phItem);

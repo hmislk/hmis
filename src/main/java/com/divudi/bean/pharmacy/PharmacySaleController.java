@@ -205,11 +205,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyBillForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -382,11 +382,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-        System.out.println("tmp1 = " + tmp);
         if (tmp == null) {
             return;
         }
-        System.out.println("tmp2 = " + tmp);
         onEdit(tmp);
     }
 

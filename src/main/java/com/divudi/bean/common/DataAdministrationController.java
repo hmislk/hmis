@@ -305,30 +305,23 @@ public class DataAdministrationController {
 
         for (Class<?> entityClass : findEntityClassNames()) {
             String entityName = entityClass.getSimpleName();
-            System.out.println("entityName = " + entityName);
             EntityFieldError entityFieldError = new EntityFieldError(entityName);
             String jpql = "SELECT e FROM " + entityName + " e";
             try {
                 itemFacade.executeQueryFirstResult(entityClass, jpql);
-                System.out.println("No Error");
             } catch (Exception e) {
                 Throwable cause = e.getCause();
-                System.out.println("cause = " + cause);
                 while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
                     cause = cause.getCause();
                 }
-                System.out.println("cause = " + cause);
                 if (cause != null) {
                     String message = cause.getMessage();
-                    System.out.println("message = " + message);
                     Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
                     Matcher matcher = pattern.matcher(message);
                     while (matcher.find()) {
                         String missingColumn = matcher.group(1);
-                        System.out.println("missingColumn = " + missingColumn);
                         entityFieldError.addMissingField(missingColumn);
                     }
-                    System.out.println("entityFieldError.missingFields = " + entityFieldError.missingFields);
                     if (!entityFieldError.missingFields.isEmpty()) {
                         entityFieldErrors.add(entityFieldError);
                     }
@@ -338,13 +331,11 @@ public class DataAdministrationController {
 
         // Convert the list of EntityFieldError objects to a string
         StringBuilder errorsBuilder = new StringBuilder();
-        System.out.println("entityFieldErrors = " + entityFieldErrors);
         for (EntityFieldError error : entityFieldErrors) {
             errorsBuilder.append(error.toString()).append("\n");
         }
 
         errors = errorsBuilder.toString();
-        System.out.println("errors = " + errors);
     }
 
     public List<Class<?>> findEntityClassNames() {

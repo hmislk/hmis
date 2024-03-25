@@ -29,16 +29,34 @@
                                     forceSelection="true" 
                                     value="#{workingTimeController.current.staffShift.staff}" 
                                     id="scStaff"
-                                    completeMethod="#{staffController.completeConsultant}" var="mys" 
+                                    completeMethod="#{doctorController.completeDoctor}" var="mys" 
                                     itemLabel="#{mys.person.nameWithTitle}" 
-                                    itemValue="#{mys}"/>
+                                    itemValue="#{mys}">
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{mys.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
 
 
 
-                                    <p:outputLabel value="Start Time" ></p:outputLabel>
-                                    <p:calendar pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                value="#{workingTimeController.current.startRecord.recordTimeStamp}" ></p:calendar>
-                                    <p:commandButton value="Mark In" ajax="false" action="#{workingTimeController.markIn()}" ></p:commandButton>
+                                <p:outputLabel value="Start Time" ></p:outputLabel>
+
+                                <p:datePicker value="#{workingTimeController.current.startRecord.recordTimeStamp}" 
+                                              
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                              styleClass="form-control w-100"
+                                              showTime="true"
+                                              showButtonBar="true"
+                                              timeInput="true"
+                                              class="w-100" 
+                                              inputStyleClass="w-100" >                               
+                                </p:datePicker>     
+
+
+                                <p:commandButton value="Mark In" ajax="false" action="#{workingTimeController.markIn()}" ></p:commandButton>
                             </p:panelGrid>
 
                         </p:panel>

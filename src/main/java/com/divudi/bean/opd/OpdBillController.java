@@ -1,6 +1,6 @@
-
 package com.divudi.bean.opd;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.hr.WorkingTimeController;
@@ -170,6 +170,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private AuditEventController auditEventController;
     @Inject
     WorkingTimeController workingTimeController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Class Variables
      */
@@ -261,6 +263,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     List<BillSession> billSessions;
 
     private boolean duplicatePrint;
+
+    
 
     /**
      *
@@ -1270,8 +1274,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String changeTextCases(String nm, String tc) {
-        System.out.println("nm = " + nm);
-        System.out.println("tc = " + tc);
         if (tc == null) {
             return nm;
         }
@@ -1306,8 +1308,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getPatient().getId() == null) {
             if (getPatient().getPerson().getName() != null) {
                 String updatedPatientName;
-                updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getLoggedPreference().getChangeTextCasesPatientName());
-                System.out.println("updatedPatientName = " + updatedPatientName);
+                updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
                 getPatient().getPerson().setName(updatedPatientName);
             }
             getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
@@ -1349,7 +1350,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
-        s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
+        if (getPatient().getPatientPhoneNumber() != null) {
+            s.setReceipientNumber(getPatient().getPatientPhoneNumber().toString());
+        } else {
+            s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
+        }
         String messageBody = smsMessage;
         s.setSendingMessage(messageBody);
         s.setSmsType(MessageType.OpdBillSettle);
@@ -1963,9 +1968,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return true;
             }
         }
-        
-         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
-            if (getPatient().getPerson().getArea()== null) {
+
+        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
+            if (getPatient().getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please Select Pataient Area");
                 return true;
             }
@@ -2008,6 +2013,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
+       
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -2205,8 +2211,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             getCurrentBillItem().setQty(1.0);
         }
         for (BillEntry bi : lstBillEntries) {
-            System.out.println("bi = " + bi.getBillItem().getItem());
-            System.out.println("getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
             if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
                 JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
                 return;
@@ -2268,10 +2272,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-            if (bf.getFee().getSpeciality() == null) {
-                bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                continue;
-            }
+//            if (bf.getFee().getSpeciality() == null) {
+//                bf.setStaff(getSelectedCurrentlyWorkingStaff());
+//                continue;
+//            }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
                 if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
                     if (bf.getFee().getStaff() == null) {
@@ -2597,14 +2601,30 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToNewOpdBill() {
-        clearBillItemValues();
-        clearBillValues();
-        paymentMethodData = null;
-        paymentScheme = null;
-        paymentMethod = PaymentMethod.Cash;
-        collectingCentreBillController.setCollectingCentre(null);
-
-        return "/opd/opd_bill";
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                clearBillItemValues();
+                clearBillValues();
+                paymentMethodData = null;
+                paymentScheme = null;
+                paymentMethod = PaymentMethod.Cash;
+                collectingCentreBillController.setCollectingCentre(null);
+                return "/opd/opd_bill";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            clearBillItemValues();
+            clearBillValues();
+            paymentMethodData = null;
+            paymentScheme = null;
+            paymentMethod = PaymentMethod.Cash;
+            collectingCentreBillController.setCollectingCentre(null);
+            return "/opd/opd_bill";
+        }
     }
 
     public String navigateToNewOpdBill(Patient pt) {
@@ -3589,5 +3609,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setDuplicatePrint(boolean duplicatePrint) {
         this.duplicatePrint = duplicatePrint;
     }
+
+    
 
 }

@@ -78,6 +78,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.inward.InwardService;
 import com.divudi.java.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -613,7 +614,7 @@ public class DataUploadController implements Serializable {
             String departmentName = null;
             String inwardName = null;
 
-            String itemType = "Service";
+            String itemType = "Investigation";
             Double hospitalFee = 0.0;
 
             Cell insCell = row.getCell(5);
@@ -808,6 +809,34 @@ public class DataUploadController implements Serializable {
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
+            }else if (itemType.equals("InwardService")) {
+
+                if (masterItem == null) {
+                    masterItem = new Investigation();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setIsMasterItem(true);
+                    masterItem.setCategory(category);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    masterItemsToSave.add(masterItem);
+                }
+                InwardService iwdService = new InwardService();
+                iwdService.setName(name);
+                iwdService.setPrintName(printingName);
+                iwdService.setFullName(fullName);
+                iwdService.setCode(code);
+                iwdService.setCategory(category);
+                iwdService.setInstitution(institution);
+                iwdService.setDepartment(department);
+                iwdService.setInwardChargeType(iwct);
+                iwdService.setMasterItemReference(masterItem);
+                iwdService.setCreater(sessionController.getLoggedUser());
+                iwdService.setCreatedAt(new Date());
+                item = iwdService;
             }
 
             if (item == null) {
@@ -980,7 +1009,6 @@ public class DataUploadController implements Serializable {
     }
 
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
-        System.out.println("readCollectingCentreItemsAndFeesFromExcel");
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -998,7 +1026,6 @@ public class DataUploadController implements Serializable {
         Department runningDept = null;
         Category runningCategory = null;
 
-        System.out.println("1");
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
@@ -1079,9 +1106,7 @@ public class DataUploadController implements Serializable {
             name = CommonFunctions.sanitizeStringForDatabase(name);
             System.out.println("2 name = " + name);
 
-            System.out.println("department = " + department);
             item = itemController.findItemByName(name, code, department);
-            System.out.println("item = " + item);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;

@@ -15,13 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form class="w-100" >
-            <div claas="col-md-12">
-                <p:commandButton class="my-1 w-25 ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
-                <p:printer target="gpBillPreview" ></p:printer>
-            </p:commandButton>
-            </div>
-            
-
+  
             <h:outputStylesheet>
                 /* Styles for screen display */
                 .page {
@@ -178,6 +172,22 @@
 
                                         </h:outputLabel>
                                     </div>
+                                    <div>
+                                        <h:outputLabel value="Civil Status: ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.person.civilStatus.name}" >
+
+                                        </h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Employment: ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.person.occupation.name}" >
+
+                                        </h:outputLabel>
+                                    </div>
 
                                 </Div>
                             </div>
@@ -213,6 +223,22 @@
                                         </h:outputLabel>
 
                                         <h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.name}" >
+
+                                        </h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Blood Group : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.person.bloodGroup.name}" >
+
+                                        </h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Religion : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.person.religion.name}" >
 
                                         </h:outputLabel>
                                     </div>

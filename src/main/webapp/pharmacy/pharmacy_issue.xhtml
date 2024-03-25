@@ -214,21 +214,18 @@
                                         <p:watermark value="Comment" for="comment"/>
                                     </h:panelGrid>
 
-                                    <h:panelGrid columns="2" class="my-4 d-flex justify-content-end">
+                                    
                                         <p:commandButton  
                                             accesskey="s" 
                                             value="Issue" 
                                             ajax="false"
+                                            icon="fas fa-check"
                                             action="#{pharmacyIssueController.settleBill()}" 
-                                            class="ui-button-warning"
+                                            class="w-25 ui-button-warning"
                                             actionListener="#{pharmacyIssueController.calculateAllRates}">
-                                            <f:facet name="title" >
-                                                <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
-                                                <h:outputLabel value="ettle"  ></h:outputLabel>
-                                            </f:facet>
+                                           
                                         </p:commandButton>
 
-                                    </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
                                     <f:facet name="header">
@@ -381,11 +378,11 @@
                         <h:panelGroup   id="gpBillPreview" > 
 
                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}" >
-                                <phi:saleBill_five_five bill="#{pharmacyIssueController.printBill}"/>
+                                <phi:pharmacy_disposal_bill_five_five bill="#{pharmacyIssueController.printBill}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}" >
-                                <phi:posBill bill="#{pharmacyIssueController.printBill}"/>
+                                <phi:pharmacy_disposal_bill_pos bill="#{pharmacyIssueController.printBill}"/>
                             </h:panelGroup>
                             
                         </h:panelGroup> 

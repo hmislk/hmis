@@ -39,6 +39,10 @@
                                                              value="Pharmacy Sale Summery"
                                                              action="#{commonReport.navigateToPharmacySaleSummery()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy Sale Summery Date"
+                                                             action="#{commonReport.navigateToPharmacySaleSummeryByDate()}" 
+                                                             actionListener="#{commonReport.recreteModal}"/>
 
                                         </div>
                                     </p:tab>  
@@ -61,8 +65,15 @@
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                         </div>
                                     </p:tab>  
-                                    <p:tab title="Sale Detail">
+                                    <p:tab title="Sale Reports">
                                         <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Retail Sale Bill List" 
+                                                             action="#{pharmacySaleReport.navigateToReportPharmacyRetailSaleBillList()}"
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+
+
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Sale Detail - By Bill " 
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}"
@@ -100,6 +111,8 @@
                                     </p:tab>  
                                     <p:tab title="Purchase">
                                         <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Order Summary" action="#{commonReport.navigateToPharmacyPurchaseOrderReportDetail()}" actionListener="#{commonReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Purchase Bills by Department" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseBillByDepartment()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
@@ -169,6 +182,8 @@
                                     </p:tab>  
                                     <p:tab title="Transfer Report">
                                         <div class="d-grid gap-2">
+                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Transfer Report Summary" action="#{commonReport.navigateToPharmacyTransferReportSummary()}" actionListener="#{commonReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Transfer Issue Summary Report By Date" action="#{pharmacySaleReport.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"

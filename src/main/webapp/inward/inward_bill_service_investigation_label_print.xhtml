@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-tags" />
+                            <h:outputText class="mx-2" value="Lable Print For Inward Add Services" />
+                        </div>
+                        <div>
+                            <p:commandButton value="New Bill"
+                                             icon="fa fa-plus"
+                                             class="ui-button-success m-1"  ajax="false"
+                                             action="#{billBhtController.resetBillData()}" >
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning mx-1"
+                                action="#{patientController.navigateToSearchPatients()}"
+                                >
+                            </p:commandButton>
+
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary "
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                >
+                                <f:setPropertyActionListener
+                                    value="#{billBhtController.patientEncounter}"
+                                    target="#{admissionController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>                           
+                        </div>
+                    </div>
+                </f:facet>
+
+
+                <h:panelGrid columns="1" id="stickerPanel">
+                    <ui:repeat value="#{billBhtController.stickers}" var="sticker">
+                        <ez:stickerLableForTest sticker="#{sticker}" />
+                        <h:panelGroup style="width:5in; height:2.5in; border: 1px solid black; padding:10px; margin-bottom:10px; position: relative;" rendered="false">
+                            <h:outputText value="Name: " style="font-weight:bold;"/>
+                            <h:outputText value="#{sticker.p}"/><br/>
+
+                            <h:outputText value="Age: " style="font-weight:bold;"/>
+                            <h:outputText value="#{sticker.patientAge}"/><br/>
+
+                            <h:outputText value="Tests: " style="font-weight:bold;"/>
+                            <h:outputText value="#{sticker.tests}"/><br/>
+
+                            <h:outputText value="Sample ID: " style="font-weight:bold;"/>
+                            <h:outputText value="#{sticker.sampleId}"/><br/>
+
+                            <h:outputText value="Bill Date: " style="font-weight:bold;"/>
+                            <h:outputText value="#{sticker.billDateString}"/><br/>
+
+                            <h:outputText value="INS ID: " style="font-weight:bold;"/>
+                            <h:outputText value="#{sticker.insid}"/><br/>
+
+                            <!-- Optional field, check if not empty or null before displaying -->
+                            <h:panelGroup rendered="#{not empty sticker.tube}">
+                                <h:outputText value="Tube: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.tube}"/><br/>
+                            </h:panelGroup>
+
+                            <!-- Additional layout adjustments can be done here -->
+                        </h:panelGroup>
+                    </ui:repeat>
+                </h:panelGrid>
+
+
+
+                <p:commandButton value="Print Stickers" type="button" class="ui-button-info my-1" icon="fas fa-print">
+                    <p:printer target="stickerPanel" />
+                </p:commandButton>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

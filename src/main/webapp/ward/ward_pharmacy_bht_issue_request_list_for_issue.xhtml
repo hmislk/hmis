@@ -18,24 +18,26 @@
                     <div class="col-md-2">
 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar 
+                        <p:datePicker
                             styleClass="dateTimePicker" 
                             id="fromDate" 
                             value="#{searchController.fromDate}" 
-                            navigator="false" 
+                            showTime="true"                                            
+                            showButtonBar="true"                                            
+                            timeInput="true" 
                             class="w-100"
                             inputStyleClass="form-control"
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                        </p:calendar>
+                        </p:datePicker>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar 
+                        <p:datePicker
                             id="toDate" 
                             class="w-100"
                             inputStyleClass="form-control"
                             value="#{searchController.toDate}" 
-                            navigator="false" 
+                            showTime="true"                                            showButtonBar="true"                                            timeInput="true" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                        </p:calendar>
+                        </p:datePicker>
                         <p:commandButton 
                             id="btnSearch1" 
                             ajax="false" 

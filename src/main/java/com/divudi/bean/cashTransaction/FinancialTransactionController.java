@@ -81,6 +81,7 @@ public class FinancialTransactionController implements Serializable {
     private double totalOpdBillCanceled;
     private double totalPharmecyBillCanceled;
     private double totalCCBillCanceled;
+    private int fundTransferBillsToReceiveCount;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -91,13 +92,14 @@ public class FinancialTransactionController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
-        return "/cashier/index?faces-redirect=false;";
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/index?faces-redirect=true;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
-        return "/cashier/initial_fund_bill?faces-redirect=false;";
+        return "/cashier/initial_fund_bill?faces-redirect=true;";
     }
 
     public String navigateToFundTransferBill() {
@@ -154,23 +156,18 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
-        System.out.println("this = " + "prepareToAddNewFundTransferReceiveBill working start");
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferReceivedBill);
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setReferenceBill(selectedBill);
         if (selectedBill != null) {
-            System.out.println("selectedBill id = " + selectedBill.getId());
-            System.out.println("currentBill id = " + currentBill.getId());
         }
         currentBillPayments = new ArrayList<>();
-        System.out.println("selected bill payments = " + selectedBill.getPayments().size());
         if (selectedBill.getPayments() == null || selectedBill.getPayments().isEmpty()) {
             selectedBill.setPayments(findPaymentsForBill(selectedBill));
         }
 
         for (Payment p : selectedBill.getPayments()) {
-            System.out.println("p = " + p);
             Payment np = p.copyAttributes();
             currentBillPayments.add(np);
 
@@ -253,7 +250,6 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
-        System.out.println("currentPayments = " + currentPayment.getPaidValue());
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -401,12 +397,10 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             System.out.println("p = " + p);
-            System.out.println("p = " + p.getId());
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
-            System.out.println("p = " + p.getId());
         }
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
@@ -583,12 +577,13 @@ public class FinancialTransactionController implements Serializable {
         totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
         totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
         totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
-        double totalBillValues = totalBilledBillValue;
+        double totalBillValues = totalBilledBillValue+totalTransferRecive;
 
         aditions = totalBillValues + totalShiftStart;
         Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds;
         totalFunds = aditions - Deductions;
         shiftEndTotalValue = totalFunds;
+        
 
     }
 
@@ -710,6 +705,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
+        fundTransferBillsToReceiveCount=fundTransferBillsToReceive.size();
 
     }
 
@@ -816,7 +812,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=false;";
+        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=true;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
@@ -1080,5 +1076,15 @@ public class FinancialTransactionController implements Serializable {
     public void setTotalCCBillCanceled(double totalCCBillCanceled) {
         this.totalCCBillCanceled = totalCCBillCanceled;
     }
+
+    public int getFundTransferBillsToReceiveCount() {
+        return fundTransferBillsToReceiveCount;
+    }
+
+    public void setFundTransferBillsToReceiveCount(int fundTransferBillsToReceiveCount) {
+        this.fundTransferBillsToReceiveCount = fundTransferBillsToReceiveCount;
+    }
+    
+    
 
 }

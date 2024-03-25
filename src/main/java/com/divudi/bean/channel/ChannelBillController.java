@@ -205,11 +205,10 @@ public class ChannelBillController implements Serializable {
         }
 
         Bill b = savePaidBill();
-
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
-
         BillSession bs = savePaidBillSession(b, bi);
+        
         getBillSession().setPaidBillSession(bs);
         getBillSessionFacade().edit(bs);
         getBillSessionFacade().edit(getBillSession());
@@ -222,25 +221,9 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-//        System.err.println("*** Channel Credit Bill Settled ***");
-//        //System.out.println("bs = " + bs);
-//        //System.out.println("getBillSession() = " + getBillSession().getName());
-//        //System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
-//        //System.out.println("getBillSession().getBill().getPaidBill() = " + getBillSession().getBill().getPaidBill());
-//        //System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getName());
-//        //System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
-//        System.err.println("*** Channel Credit Bill Settled ***");
-//        editBillSession(b, bi);
-        JsfUtil.addSuccessMessage("Channel Booking Added");
-
+        JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
-//
-//    private void deductBallance() {
-//        double tmp = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
-//        getBillSession().getBill().getFromInstitution().setBallance(getBillSession().getBill().getFromInstitution().getBallance() - tmp);
-//        getInstitutionFacade().edit(getBillSession().getBill().getFromInstitution());
-//    }
     private Bill savePaidBill() {
         Bill temp = new BilledBill();
         temp.copy(getBillSession().getBill());
@@ -250,13 +233,10 @@ public class ChannelBillController implements Serializable {
         temp.setPaymentMethod(settlePaymentMethod);
         temp.setReferenceBill(getBillSession().getBill());
         temp.setBillType(BillType.ChannelPaid);
-        String insId = generateBillNumberInsId(temp);
-        temp.setInsId(insId);
         String deptId = generateBillNumberDeptId(temp);
+        temp.setInsId(deptId);
         temp.setDeptId(deptId);
-//        temp.setInsId(getBillSession().getBill().getInsId());
-        temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
-
+        temp.setBookingId(deptId);
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
         temp.setBillDate(new Date());
@@ -532,7 +512,6 @@ public class ChannelBillController implements Serializable {
     List<BillFee> listBillFees;
 
     public void createBillfees(SelectEvent event) {
-        System.out.println("event = " + event);
         BillSession bs = ((BillSession) event.getObject());
         String sql;
         HashMap hm = new HashMap();
@@ -588,7 +567,6 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckCancelling() {
-        System.out.println("errorCheckCancelling");
         if (getBillSession() == null) {
             return true;
         }
@@ -717,12 +695,10 @@ public class ChannelBillController implements Serializable {
             JsfUtil.addErrorMessage("Already Refunded");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill().isCancelled() = " + getBillSession().getPaidBillSession().getBill().isCancelled());
         if (getBillSession().getPaidBillSession().getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
             return;
         }
-        System.out.println("getComment() = " + getComment());
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
@@ -734,7 +710,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
-        System.out.println("cancel");
         if (errorCheckCancelling()) {
             return;
         }
@@ -1424,9 +1399,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         System.out.println("Printing bill completed");
         printingBill = getBillFacade().find(printingBill.getId());
-        System.out.println("printing bill retrieved");
         bookingController.fillBillSessions();
-        System.out.println("bill sessions filled ");
         bookingController.generateSessions();
         sendSmsAfterBooking();
         settleSucessFully = true;

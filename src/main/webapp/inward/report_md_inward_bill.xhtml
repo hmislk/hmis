@@ -9,8 +9,8 @@
 
     <ui:define name="subcontent">
         <h:form>
-            <p:panel header="Report By Bill" style="height: 100vh">
-                
+            <p:panel header="Report By Bill" style="height: 100vh" class="my-2">
+
                 <h:panelGrid columns="8" class="my-4">                    
                     <h:outputLabel value="From"/>
                     <p:calendar styleClass="dateTimePicker mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
@@ -103,7 +103,7 @@
                             </p:column>
                             <p:column>
                                 <f:facet name="footer">
-                                    <h:outputLabel style="text-align: right;" value="#{mdInwardReportController.professionalTotal+mdInwardReportController.hospitalTotal}">
+                                    <h:outputLabel style="text-align: right;" value="#{mdInwardReportController.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>

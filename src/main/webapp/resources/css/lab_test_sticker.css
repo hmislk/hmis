@@ -1,0 +1,36 @@
+@media print{
+
+    .fivebytwo{
+        padding: 5px!important;
+        width: 1.98in!important;
+        height: 0.98in!important;
+         
+        font-family: sans-serif!important; 
+        font-size: 7px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        text-transform: capitalize!important;
+        margin: 1px;
+        page-break-after: always;
+    }   
+}
+
+
+@media screen{
+    .fivebytwo{
+        padding: 5px!important;
+        width: 3.96in!important;
+        height: 1.96in!important;
+        border: 1px solid;
+         
+        font-family: sans-serif!important; 
+        /*margin: auto!important;*/ 
+        background-size: 100% auto!important; 
+        background-color: lightgray;
+        /*        border: 1px solid!important;*/
+        text-transform: capitalize!important;
+        margin: 1px!important;
+        
+    }
+}
