@@ -31,7 +31,14 @@
                                     id="scStaff"
                                     completeMethod="#{doctorController.completeDoctor}" var="mys" 
                                     itemLabel="#{mys.person.nameWithTitle}" 
-                                    itemValue="#{mys}"/>
+                                    itemValue="#{mys}">
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{mys.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
 
 
 

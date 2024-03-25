@@ -108,38 +108,6 @@
                             <h:panelGroup id="ptd">
                                 <common:patient_details_for_addmission editable="true" controller="#{admissionController}"/>
                             </h:panelGroup>
-                            <p:panel header="Payment Detail" style="margin-top: 10px;">
-
-                                <div class="row">
-                                    <div class="col-6">
-                                        <h:panelGrid columns="2" class="my-2" >
-                                            <p:outputLabel value="Nationality"/>
-                                            <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
-                                                                     styleClass="form-control w-100"
-                                                                     class="w-100" 
-                                                                     itemLabel="Mark as Foreigner"/>
-
-                                            <p:outputLabel value="Claimable Status"/>
-                                            <p:selectBooleanCheckbox value="#{admissionController.current.claimable}"
-                                                                     styleClass="form-control w-100"
-                                                                     class="w-100"
-                                                                     itemLabel="Claimable" />
-
-                                            <p:outputLabel value="BHT Type"/>
-                                            <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                                <f:selectItem itemLabel="Select" />                           
-                                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                                <p:ajax process="@this" update="crd" event="change" />
-                                            </p:selectOneMenu>
-                                        </h:panelGrid>
-                                    </div>
-                                </div>
-
-                                <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
-                                    <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
-                                </h:panelGroup>
-                            </p:panel>
-
                         </div>
 
                         <div class="col-7">
@@ -315,6 +283,37 @@
                                             </p:tabView>
                                         </p:panel>
                                     </div>
+                                     <p:panel header="Payment Detail" style="margin-top: 10px;">
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <h:panelGrid columns="2" class="my-2" >
+                                            <p:outputLabel value="Nationality"/>
+                                            <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
+                                                                     styleClass="form-control w-100"
+                                                                     class="w-100" 
+                                                                     itemLabel="Mark as Foreigner"/>
+
+                                            <p:outputLabel value="Claimable Status"/>
+                                            <p:selectBooleanCheckbox value="#{admissionController.current.claimable}"
+                                                                     styleClass="form-control w-100"
+                                                                     class="w-100"
+                                                                     itemLabel="Claimable" />
+
+                                            <p:outputLabel value="BHT Type"/>
+                                            <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
+                                                <f:selectItem itemLabel="Select" />                           
+                                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                                <p:ajax process="@this" update="crd" event="change" />
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
+                                    <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
+                                </h:panelGroup>
+                                     </p:panel>
                                 </div>
                             </div>
 
