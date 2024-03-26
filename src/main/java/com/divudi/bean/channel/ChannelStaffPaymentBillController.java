@@ -8,10 +8,13 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
-
+import com.divudi.ejb.SmsManagerEjb;
+import com.divudi.entity.Sms;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -24,6 +27,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -70,6 +74,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
     @EJB
     BillNumberGenerator billNumberBean;
     //////////////////
+    @EJB
+    private SmsFacade smsFacade;
+    @EJB
+    private SmsManagerEjb smsManager;
     @Inject
     SessionController sessionController;
     @Inject
@@ -597,21 +605,25 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
+            System.out.println("currentStaff = " + currentStaff);
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
 
         if (checkBillFeeValue()) {
+            System.out.println("checkBillFeeValue = " + checkBillFeeValue());
             JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
 
         performCalculations();
         if (totalPaying == 0) {
+            System.out.println("totalPaying = " + totalPaying);
             JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
+            System.out.println("paymentMethod = " + paymentMethod);
             JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
@@ -644,6 +656,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void settleBill() {
+        System.out.println("errorCheck() = " + errorCheck());
         if (errorCheck()) {
             return;
         }
@@ -652,9 +665,120 @@ public class ChannelStaffPaymentBillController implements Serializable {
         current = b;
         getBillFacade().create(b);
         saveBillCompo(b);
+        System.out.println("sessionController.getDepartmentPreference().isDocterPaymentSMS() = " + sessionController.getDepartmentPreference().isDocterPaymentSMS());
+        if(sessionController.getDepartmentPreference().isDocterPaymentSMS()){
+            sendSmsAfterDocPayment();
+        }
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
+    }
+    
+    public void sendSmsAfterDocPayment() {
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(current);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(current.getStaff().getPerson().getPhone());
+        e.setSendingMessage(DocPaymentSms(current));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.DoctorPayment);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+    
+    private String DocPaymentSms(Bill b) {
+        String s;
+        String date = CommonController.getDateFormat(b.getBillDate(),
+                "dd MMM");
+        //System.out.println("date = " + date);
+        String time = CommonController.getDateFormat(
+                b.getBillTime(),
+                "hh:mm a");
+        //System.out.println("time = " + time);
+        ServiceSession ss = null;
+        if (b != null && b.getSingleBillSession()!= null && b.getSingleBillSession().getServiceSession() != null
+                && b.getSingleBillSession().getServiceSession().getOriginatingSession() != null) {
+            ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+        }
+//        if (b != null) {
+//            System.out.println("b = " + b);
+//            if (b.getSingleBillSession() != null) {
+//                System.out.println("b.getSingleBillSession() = " + b.getSingleBillSession());
+//                if(b.getSingleBillSession().getServiceSession()!=null){
+//                    System.out.println("b.getSingleBillSession().getServiceSession() = " + b.getSingleBillSession().getServiceSession());
+//                    if(b.getSingleBillSession().getServiceSession().getOriginatingSession()!=null){
+//                        System.out.println("b.getSingleBillSession().getServiceSession().getOriginatingSession() = " + b.getSingleBillSession().getServiceSession().getOriginatingSession());
+//                    }
+//                }
+//            }
+//        }
+        if (ss != null && ss.getStartingTime() != null) {
+            time = CommonController.getDateFormat(
+                    ss.getStartingTime(),
+                    "hh:mm a");
+        } else {
+            //System.out.println("Null Error");
+        }
+        if (sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate()== null) {
+            String doc = b.getStaff().getPerson().getNameWithTitle();
+            s = "Dear "
+                    + doc
+                    + ""
+                    + "Your Payment of the "
+                    + b.getInsId()
+                    + " @  Medical Services"
+                    + " on "
+                    + date
+                    + ""
+                    + "Patient Count - "
+                    +b.getBillItems().size()
+                    + " and the total is "
+                    + b.getTotal()
+                    
+                    + ". Thank you";
+
+        } else {
+            s = genarateTemplateForSms(b);
+        }
+        return s;
+    }
+    
+    public String genarateTemplateForSms(Bill b) {
+        String s;
+//         ss = null;
+
+//        ServiceSession ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+        String time = CommonController.getDateFormat(
+                b.getBillTime(),
+                sessionController.getApplicationPreference().getShortTimeFormat());
+
+        String date = CommonController.getDateFormat(b.getBillDate(),
+                "dd MMM");
+
+        String doc = b.getStaff().getPerson().getNameWithTitle();
+        int no = b.getBillItems().size();
+        double total = b.getTotal();
+        
+        String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
+        s = input.replace("{doctor}", doc)
+                .replace("{patient_count}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", time)
+                .replace("{date}", date)
+                .replace("{No}", String.valueOf(no))
+                .replace("{ins_id}", b.getInsId())
+                .replace("{net_total}", String.valueOf(total));
+
+        return s;
     }
 
     public void settleBillAgent() {
@@ -946,6 +1070,22 @@ public class ChannelStaffPaymentBillController implements Serializable {
             calculateDueFees();
         }
         this.billFee = billFee;
+    }
+
+    public SmsManagerEjb getSmsManager() {
+        return smsManager;
+    }
+
+    public void setSmsManager(SmsManagerEjb smsManager) {
+        this.smsManager = smsManager;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
     }
 
     /**
