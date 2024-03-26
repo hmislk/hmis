@@ -181,16 +181,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
     }
-    
+
     public void fillCurrentPatientAllergies(Patient pt) {
-        if (pt==null) {
+        if (pt == null) {
             return;
         }
-        patientAllergies =new ArrayList<>();
-        Map params =new HashMap<>();
+        patientAllergies = new ArrayList<>();
+        Map params = new HashMap<>();
         String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
         params.put("pt", pt);
-        patientAllergies=clinicalFindingValueFacade.findByJpql(s,params); 
+        patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
     public void copyPatientAddressToGurdian() {
@@ -374,6 +374,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
+        if (current == null) {
+            current = new Admission();
+        }
         bhtEditController.setCurrent(current);
         bhtEditController.getCurrent().getPatient().setEditingMode(true);
         return bhtEditController.navigateToEditAdmissionDetails();
