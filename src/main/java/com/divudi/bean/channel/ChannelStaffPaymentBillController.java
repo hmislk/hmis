@@ -767,6 +767,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         String doc = b.getStaff().getPerson().getNameWithTitle();
         int no = b.getBillItems().size();
         double total = b.getTotal();
+        String sessionName = "Session Name";
         
         String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
         s = input.replace("{doctor}", doc)
@@ -776,7 +777,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 .replace("{date}", date)
                 .replace("{No}", String.valueOf(no))
                 .replace("{ins_id}", b.getInsId())
-                .replace("{net_total}", String.valueOf(total));
+                .replace("{net_total}", String.valueOf(-total))
+                .replace("{session_name}", sessionName);
 
         return s;
     }
