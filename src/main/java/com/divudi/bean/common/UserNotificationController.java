@@ -118,25 +118,24 @@ public class UserNotificationController implements Serializable {
         return items;
     }
 
-    public void navigateCurrentNotificationReuest(UserNotification cu) {
+    public String navigateCurrentNotificationReuest(UserNotification cu) {
         if (cu.getNotification().getBill()==null) {
-            return;
+            return "";
         }
         Bill bill=cu.getNotification().getBill();
+        System.out.println("bill = " + bill.getBillTypeAtomic());
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:
-                navigateToBHTIssuerequests(bill);
-                break;
+                System.out.println("cu = " + bill);
+                return "/ward/ward_pharmacy_bht_issue";
+                
+                default:
+                    return "";
            
         }
     }
     
-    public String navigateToBHTIssuerequests(Bill rb){
-        pharmacySaleBhtController.setBhtRequestBill(rb);
-        return "/ward/ward_pharmacy_bht_issue";
-    }
-
     public void createUserNotifications(Notification notification) {
         if (notification == null) {
             return;
