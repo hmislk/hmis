@@ -206,10 +206,13 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><h:outputLabel value="Relationship "/></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </td>                        
                         </tr>
                     </table>
 
@@ -248,7 +251,7 @@
                             <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish}"/>
                         </p>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala ne null}"  >
                         <p>
                             <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala}"/>

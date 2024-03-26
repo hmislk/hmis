@@ -1170,14 +1170,18 @@
                 <f:facet name="options">
                     <div class="d-flex align-items-center">
                         <div class="mx-4">
-                            <p:badge severity="danger" value="#{webUserController.userNotificationCount}" >
-                                <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell " action="#{webUserController.notificationCountForUser()}" />
-                            </p:badge>
+                            <p:poll interval="60" listener="#{webUserController.notificationCountForUser}" update="notCount" />
+                            <p:commandButton value="poll" action="#{webUserController.notificationCountForUser}" update="notCount"/> 
+                            <h:panelGroup id="notCount">
+                                <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
+                                    <!--<p:commandButton id="btnNot" ajax="false" icon="pi pi-bell "/>-->
+                                </p:badge>
+                            </h:panelGroup>
                         </div>
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     </div>
-                    
+
                     <p:tooltip for="btnLogout" value="df"  >
                         <h:panelGrid columns="3" >
                             <h:outputText value="Institution" ></h:outputText>

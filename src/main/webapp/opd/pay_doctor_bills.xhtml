@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling'))}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
+
+
+
+
+
+                    <h:form class="container-fluid" >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputText value="Pay Staff" >
+                                </h:outputText>
+                            </f:facet>
+
+
+
+
+                            <p:panelGrid columns="3" class="w-75" rendered="#{workingTimeController.staff eq null}">
+                                <f:facet name="header" >
+                                    <h:outputText value="Select Doctor" ></h:outputText>
+                                </f:facet>
+
+                                <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
+                                <p:autoComplete value="#{workingTimeController.staff}" 
+                                                completeMethod="#{doctorController.completeDoctor}"
+                                                var="s"
+                                                itemLabel="#{s.person.name}"
+                                                itemValue="#{s}"
+                                                >
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{s.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{s.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Select"
+                                    action="#{workingTimeController.selectStaffForOpdPayment}" ></p:commandButton>
+
+                            </p:panelGrid>
+
+
+
+                            <h:panelGroup rendered="#{workingTimeController.staff ne null}" >
+
+                                <p:panelGrid columns="2" >
+                                    <p:panelGrid columns="2" class="table table-primary">
+                                        <p:outputLabel value="Doctor" />
+                                        <h:outputText value="#{workingTimeController.staff.person.name}" />
+
+                                        <p:outputLabel value="From Date" />
+                                        <p:datePicker value="#{workingTimeController.fromDate}" />
+
+                                        <p:outputLabel value="To Date" />
+                                        <p:datePicker value="#{workingTimeController.toDate}" />
+
+
+                                    </p:panelGrid>
+                                    <p:panelGrid columns="2" >
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Process" 
+                                            action="#{workingTimeController.calculateStaffPayments()}" >
+                                        </p:commandButton>
+
+                                    </p:panelGrid>
+
+                                </p:panelGrid>
+
+                                <p:dataTable value="#{workingTimeController.staffPaymentsCompleted}"
+                                             var="b" >
+                                    <p:column headerText="Paid Date" >
+                                        <h:outputText value="#{b.professinoalPaymentBill.billDate}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Paid Value" >
+                                        <h:outputText value="#{b.professinoalPaymentBill.netTotal}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </h:panelGroup>
+
+
+
+
+                        </p:panel>
+
+                    </h:form>
+
+
+                </h:panelGroup>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
+
+
+
+
