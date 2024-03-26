@@ -206,11 +206,20 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </td>
+                            <td></td>
                             <td><h:outputLabel value="Relationship "/></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient}" />
+                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient.name}" />
                             </td>                        
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Employeement"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.patient.person.occupation.name}" >
+                                </h:outputLabel>
+                            </td>
                         </tr>
                     </table>
 
