@@ -19,11 +19,18 @@
                 <div class="">
                     <div class="col-12 text-center">
                         <h2><h:outputLabel value="#{cc.attrs.admission.institution.name}" /></h2>
-                        <h4 style="margin-top: -10px;"><h:outputLabel value="#{cc.attrs.admission.institution.address}" /></h4>
-                        <h4 style="margin-top: -10px;">#{cc.attrs.admission.institution.phone}</h4>
-                        <h4 style="margin-top: -10px;">#{cc.attrs.admission.institution.fax}</h4>
-                        <h4 style="margin-top: -12px;">#{cc.attrs.admission.institution.email}</h4>
-                        <h4 style="margin-top: -10px;">#{cc.attrs.admission.institution.web}</h4>
+                        <h5 style="margin-top: -10px;"><h:outputLabel value="#{cc.attrs.admission.institution.address}" /></h5>
+                        <div class="d-flex ">
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.phone}</h6>
+                            <p:spacer width="10px"/>
+                            <h6 style="margin-top: -12px;">#{cc.attrs.admission.institution.email}</h6>
+                        </div>
+                        <div class="d-flex">
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.fax}</h6>
+                            <p:spacer width="10px"/>
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.web}</h6>
+                        </div>
+
                     </div>
                 </div>
 
@@ -129,9 +136,9 @@
                                 </p:repeat>
                             </td>
                             <td></td>
-                            <td><h:outputLabel value="Work Place"></h:outputLabel></td>
+                            <td><h:outputLabel value="Date Of Birth"></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.workplace.name}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.dob}" ></h:outputLabel></td>
                         </tr>
                         <tr>
                             <td><h:outputLabel value="Address "></h:outputLabel></td>
@@ -159,6 +166,20 @@
                             <td><h:outputLabel value="Referring Doctor "></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td><h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.nameWithTitle}" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+
+                            <td><h:outputLabel value="Work Place"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.workplace.name}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Employeement"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.patient.person.occupation.name}" >
+                                </h:outputLabel>
+                            </td>
+
                         </tr>
                     </table>
 
@@ -206,12 +227,14 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </td>
+                            <td></td>
                             <td><h:outputLabel value="Relationship "/></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient}" />
+                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient.name}" />
                             </td>                        
                         </tr>
+
                     </table>
 
                 </div>
