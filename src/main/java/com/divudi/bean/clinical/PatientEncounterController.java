@@ -1084,17 +1084,18 @@ public class PatientEncounterController implements Serializable {
         }
         List<ClinicalFindingValueType> temp = new ArrayList<>();
         temp.add(ClinicalFindingValueType.PatientMedicine);
-        
+
         List<ClinicalFindingValue> tmpCli = fillCurrentPatientClinicalFindingValues(patient, temp);
         if(tmpCli == null || tmpCli.isEmpty()){
             JsfUtil.addErrorMessage("No medications found on Patient Details");
             return;
         }
 
-        for (ClinicalFindingValue cli : fillCurrentPatientClinicalFindingValues(patient, temp)) {
+        for (ClinicalFindingValue cli : tmpCli) {
             if(cli == null){
                 continue;
             }
+
             cli.setEncounter(current);
             cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
             if (cli.getPrescription().getId() == null) {
@@ -3162,7 +3163,6 @@ public class PatientEncounterController implements Serializable {
         if (pastPatientMedicineHistory == null) {
             pastPatientMedicineHistory = new ArrayList<>();
         }
-
         return pastPatientMedicineHistory;
     }
 
@@ -3197,6 +3197,30 @@ public class PatientEncounterController implements Serializable {
 
     public void setPastPatientMedicineHistory(List<ClinicalFindingValue> pastPatientMedicineHistory) {
         this.pastPatientMedicineHistory = pastPatientMedicineHistory;
+
+    }
+
+    public void fillMedicinesFromPastVisitHistory(ClinicalFindingValue cli) {
+        if (encounterMedicines == null) {
+            encounterMedicines = new ArrayList<>();
+        }
+        cli.setEncounter(current);
+        cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+        if (cli.getPrescription().getId() == null) {
+            prescriptionFacade.create(cli.getPrescription());
+        } else {
+            prescriptionFacade.edit(cli.getPrescription());
+        }
+        if (cli.getId() == null) {
+            clinicalFindingValueFacade.create(cli);
+        } else {
+            clinicalFindingValueFacade.edit(cli);
+        }
+        getEncounterFindingValues().add(cli);
+        encounterMedicines.add(cli);
+
+        updateOrGeneratePrescription();
+
     }
 
     @FacesConverter(forClass = PatientEncounter.class)

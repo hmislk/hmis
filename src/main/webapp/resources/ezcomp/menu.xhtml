@@ -1171,10 +1171,9 @@
                     <div class="d-flex align-items-center">
                         <div class="mx-4">
                             <p:poll interval="60" listener="#{webUserController.notificationCountForUser}" update="notCount" />
-                            <p:commandButton value="poll" action="#{webUserController.notificationCountForUser}" update="notCount"/> 
                             <h:panelGroup id="notCount">
                                 <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
-                                    <!--<p:commandButton id="btnNot" ajax="false" icon="pi pi-bell "/>-->
+                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToUserNotification()}"/>
                                 </p:badge>
                             </h:panelGroup>
                         </div>

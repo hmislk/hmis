@@ -478,7 +478,9 @@
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
+
                                                     <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
+
                                                 </f:facet>
                                                 <div class="container-fluid m-0 p-0 w-100">
                                                     <div class="d-flex flex-wrap w-100">
@@ -1130,13 +1132,21 @@
                                                     <ul>
                                                         <ui:repeat value="#{patientEncounterController.fillPastPatientMedicineHistory(visit)}" var="medicine">
                                                             <li>
-                                                                <h:outputText value="#{medicine.prescription.item.name}" />
+                                                                <div class="row">
+                                                                    <div class="col-10">
+                                                                        <h:outputText value="#{medicine.prescription.item.name}" />
+                                                                    </div>
+                                                                    <div class="col-2">
+                                                                        <p:commandButton icon="fas fa-file" action="#{patientEncounterController.fillMedicinesFromPastVisitHistory(medicine)}"  process="@this" class="mx-2 my-1 ui-button-warning" update="#{p:resolveFirstComponentWithId('medicines',view).clientId}" />
+                                                                    </div>
+                                                                </div>
+
                                                             </li>
                                                         </ui:repeat>
                                                     </ul>
                                                 </p:column>
 
-                                                <p:column width="8%">
+                                                <p:column width="12%">
                                                     <f:facet name="header">
                                                         <h:outputText value="Action" />
                                                     </f:facet>
@@ -1147,6 +1157,7 @@
                                                                      disabled="#{empty patientEncounterController.pastPatientMedicineHistory}"
                                                                      process="@this" class="ui-button-warning" update="#{p:resolveFirstComponentWithId('medicines',view).clientId}" />
                                                 </p:column>
+
 
 
 

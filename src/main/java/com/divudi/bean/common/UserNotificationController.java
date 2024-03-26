@@ -53,6 +53,10 @@ public class UserNotificationController implements Serializable {
     private UserNotificationFacade ejbFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
+    
+    public String navigateToUserNotification(){
+        return "/Notification/user_notifications";
+    }
 
     public void save(UserNotification userNotification) {
         if (userNotification == null) {
