@@ -130,7 +130,9 @@ public class WebUserController implements Serializable {
     private int manageDiscountIndex;
     private int manageUsersIndex;
     private List<Department> departmentsOfSelectedUsersInstitution;
-    boolean testRun = true;
+    
+    boolean testRun = false;
+
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;

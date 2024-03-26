@@ -248,10 +248,13 @@ public class UserPreference implements Serializable {
     private Integer numberOfCCBillCopies;
     private Integer numberOfChannellingBillCopies;
     
+    private boolean docterPaymentSMS;
+    private String docterPaymentSMSTemplate;
     @Lob
     private String inwardAddmissionStatemenetEnglish;
     @Lob
     private String inwardAddmissionStatemenetSinhala;
+
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1319,6 +1322,22 @@ public class UserPreference implements Serializable {
         this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
     }
 
+    public boolean isDocterPaymentSMS() {
+        return docterPaymentSMS;
+    }
+
+    public void setDocterPaymentSMS(boolean docterPaymentSMS) {
+        this.docterPaymentSMS = docterPaymentSMS;
+    }
+
+    public String getDocterPaymentSMSTemplate() {
+        return docterPaymentSMSTemplate;
+    }
+
+    public void setDocterPaymentSMSTemplate(String docterPaymentSMSTemplate) {
+        this.docterPaymentSMSTemplate = docterPaymentSMSTemplate;
+    }
+
     public String getInwardAddmissionStatemenetEnglish() {
         return inwardAddmissionStatemenetEnglish;
     }
@@ -1334,7 +1353,5 @@ public class UserPreference implements Serializable {
     public void setInwardAddmissionStatemenetSinhala(String inwardAddmissionStatemenetSinhala) {
         this.inwardAddmissionStatemenetSinhala = inwardAddmissionStatemenetSinhala;
     }
-
-   
 
 }
