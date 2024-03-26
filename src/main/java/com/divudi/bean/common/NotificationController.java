@@ -90,7 +90,9 @@ public class NotificationController implements Serializable {
     }
     
     private void createPharmacyTransferRequestNotification(Bill bill){
+        Date date=new Date();
         Notification nn = new Notification();
+        nn.setCreatedAt(date);
         nn.setBill(bill);
         nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
         getFacade().create(nn);
