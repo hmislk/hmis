@@ -41,6 +41,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
@@ -86,6 +87,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     InpatientClinicalDataController inpatientClinicalDataController;
     @Inject
     CommonFunctionsController commonFunctionsController;
+    @Inject
+    PharmacyRequestForBhtController pharmacyRequestForBhtController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -419,6 +422,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToPharmacyBhtRequest() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBhtRequestFromMenu() {
+        pharmacyRequestForBhtController.resetAll();
         return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
 
