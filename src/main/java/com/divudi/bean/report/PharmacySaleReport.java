@@ -39,6 +39,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.ItemsDistributors;
@@ -90,6 +91,7 @@ public class PharmacySaleReport implements Serializable {
     Vmp vmp;
     private Date fromDate;
     private Date toDate;
+    private WebUser user;
     List<String1Value6> saleValuesCash;
     List<String1Value6> saleValuesCheque;
     List<String1Value6> saleValuesSlip;
@@ -348,7 +350,7 @@ public class PharmacySaleReport implements Serializable {
         billedPaymentSummery = null;
         items = null;
         amps = null;
-
+        bills = null;
     }
 
     public Department getToDepartment() {
@@ -527,6 +529,10 @@ public class PharmacySaleReport implements Serializable {
     }
 
     private List<Object[]> fetchSaleValueByDepartment() {
+        if(department==null){
+            JsfUtil.addErrorMessage("Please select department");
+            return new ArrayList<>();
+        }
         String sql;
         Map m = new HashMap();
         m.put("d", getDepartment());
@@ -548,6 +554,11 @@ public class PharmacySaleReport implements Serializable {
         if (category != null) {
             sql += " and i.item.category=:cat";
             m.put("cat", category);
+        }
+        
+        if (user != null) {
+            sql += " and i.creater=:wu ";
+            m.put("wu", user);
         }
 
 //        sql += " group by FUNC('Date',i.createdAt),i.bill.billClassType"
@@ -2823,6 +2834,10 @@ public class PharmacySaleReport implements Serializable {
             sql += " and i.item.category=:cat";
             m.put("cat", category);
         }
+        if (user != null) {
+            sql += " and i.creater=:wu ";
+            m.put("wu", user);
+        }
 
         sql += " and i.bill.createdAt between :fd and :td ";
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -3010,6 +3025,10 @@ public class PharmacySaleReport implements Serializable {
         if (category != null) {
             sql += " and i.item.category=:cat ";
             m.put("cat", category);
+        }
+        if (user != null) {
+            sql += " and i.creater=:wu ";
+            m.put("wu", user);
         }
 
         sql += " and i.bill.createdAt between :fromDate and :toDate ";
@@ -6278,6 +6297,14 @@ public class PharmacySaleReport implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        this.user = user;
     }
 
     public class ItemWithDepBHTIssue {

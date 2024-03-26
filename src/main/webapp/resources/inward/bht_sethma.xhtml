@@ -158,7 +158,7 @@
                             <td></td>
                             <td><h:outputLabel value="Referring Doctor "></h:outputLabel></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
-                            <td><h:outputLabel value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.nameWithTitle}" ></h:outputLabel></td>
                         </tr>
                     </table>
 
@@ -209,9 +209,7 @@
                             <td><h:outputLabel value="Relationship "/></td>
                             <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient}" />
                             </td>                        
                         </tr>
                     </table>
