@@ -56,7 +56,7 @@ public class UserNotificationController implements Serializable {
     private UserNotificationFacade ejbFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
-    
+
     PharmacySaleBhtController pharmacySaleBhtController;
 
     public String navigateToUserNotification() {
@@ -100,6 +100,13 @@ public class UserNotificationController implements Serializable {
         getItems();
     }
 
+    public void removeUserNotification(UserNotification un) {
+        List<UserNotification> items=new ArrayList<>();
+        items=fillLoggedUserNotifications();
+        un.setRetired(true);
+        getFacade().edit(un);
+    }
+
     private UserNotificationFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -119,23 +126,23 @@ public class UserNotificationController implements Serializable {
     }
 
     public String navigateCurrentNotificationReuest(UserNotification cu) {
-        if (cu.getNotification().getBill()==null) {
+        if (cu.getNotification().getBill() == null) {
             return "";
         }
-        Bill bill=cu.getNotification().getBill();
+        Bill bill = cu.getNotification().getBill();
         System.out.println("bill = " + bill.getBillTypeAtomic());
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:
                 System.out.println("cu = " + bill);
                 return "/ward/ward_pharmacy_bht_issue";
-                
-                default:
-                    return "";
-           
+
+            default:
+                return "";
+
         }
     }
-    
+
     public void createUserNotifications(Notification notification) {
         if (notification == null) {
             return;

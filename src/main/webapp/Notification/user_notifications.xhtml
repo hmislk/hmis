@@ -15,7 +15,7 @@
                         </f:facet>
 
 
-                        <h:panelGroup id="ptAl" >
+                        <h:panelGroup id="userNoti" >
                             <p:repeat value="#{userNotificationController.fillLoggedUserNotifications()}" var="un">
                                 <div class="card my-1 w-100">
                                     <div class="d-flex justify-content-between align-items-center p-2">
@@ -41,6 +41,8 @@
                                                     id="btnRemove" 
                                                     class="ui-button-danger" 
                                                     process="btnRemove" 
+                                                    update="userNoti"
+                                                    action="#{userDepartmentController.removeUserNotification(un)}"
                                                     icon="fas fa-trash"
                                                     />
                                             </div>
