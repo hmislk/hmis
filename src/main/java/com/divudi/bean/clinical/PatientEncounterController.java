@@ -204,6 +204,8 @@ public class PatientEncounterController implements Serializable {
     private PatientReport currentPatientReport;
     private Investigation currentReportInvestigation;
 
+    private List<ClinicalFindingValue> pastPatientMedicineHistory;
+
     public List<ClinicalFindingValue> getEncounterPlanOfActions() {
         return encounterPlanOfActions;
     }
@@ -1082,8 +1084,17 @@ public class PatientEncounterController implements Serializable {
         }
         List<ClinicalFindingValueType> temp = new ArrayList<>();
         temp.add(ClinicalFindingValueType.PatientMedicine);
+        
+        List<ClinicalFindingValue> tmpCli = fillCurrentPatientClinicalFindingValues(patient, temp);
+        if(tmpCli == null || tmpCli.isEmpty()){
+            JsfUtil.addErrorMessage("No medications found on Patient Details");
+            return;
+        }
 
         for (ClinicalFindingValue cli : fillCurrentPatientClinicalFindingValues(patient, temp)) {
+            if(cli == null){
+                continue;
+            }
             cli.setEncounter(current);
             cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
             if (cli.getPrescription().getId() == null) {
@@ -3134,7 +3145,6 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<ClinicalFindingValue> fillPastPatientMedicineHistory(PatientEncounter encounter) {
-        List<ClinicalFindingValue> vs;
         Map<String, Object> m = new HashMap<>();
         m.put("p", encounter);
         m.put("ret", false);
@@ -3148,35 +3158,45 @@ public class PatientEncounterController implements Serializable {
 
         sql += " order by e.orderNo";
 
-        vs = clinicalFindingValueFacade.findByJpql(sql, m);
-        if (vs == null) {
-            vs = new ArrayList<>();
+        pastPatientMedicineHistory = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (pastPatientMedicineHistory == null) {
+            pastPatientMedicineHistory = new ArrayList<>();
         }
 
-        return vs;
+        return pastPatientMedicineHistory;
     }
 
-    public void fillMedicinesFromPastVisitHistory(ClinicalFindingValue cli) {
-        if (encounterMedicines == null) {
-            encounterMedicines = new ArrayList<>();
+    public void fillMedicinesFromPastVisitHistory() {
+        for (ClinicalFindingValue cli : pastPatientMedicineHistory) {
+            if (encounterMedicines == null) {
+                encounterMedicines = new ArrayList<>();
+            }
+            cli.setEncounter(current);
+            cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            if (cli.getPrescription().getId() == null) {
+                prescriptionFacade.create(cli.getPrescription());
+            } else {
+                prescriptionFacade.edit(cli.getPrescription());
+            }
+            if (cli.getId() == null) {
+                clinicalFindingValueFacade.create(cli);
+            } else {
+                clinicalFindingValueFacade.edit(cli);
+            }
+            getEncounterFindingValues().add(cli);
+            encounterMedicines.add(cli);
         }
-        cli.setEncounter(current);
-        cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-        if (cli.getPrescription().getId() == null) {
-            prescriptionFacade.create(cli.getPrescription());
-        } else {
-            prescriptionFacade.edit(cli.getPrescription());
-        }
-        if (cli.getId() == null) {
-            clinicalFindingValueFacade.create(cli);
-        } else {
-            clinicalFindingValueFacade.edit(cli);
-        }
-        getEncounterFindingValues().add(cli);
-        encounterMedicines.add(cli);
 
         updateOrGeneratePrescription();
 
+    }
+
+    public List<ClinicalFindingValue> getPastPatientMedicineHistory() {
+        return pastPatientMedicineHistory;
+    }
+
+    public void setPastPatientMedicineHistory(List<ClinicalFindingValue> pastPatientMedicineHistory) {
+        this.pastPatientMedicineHistory = pastPatientMedicineHistory;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
