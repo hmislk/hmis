@@ -24,11 +24,11 @@
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-
                                             value="#{billBhtController.patientEncounter}" 
                                             completeMethod="#{admissionController.completePatient}"
                                             var="apt2" itemLabel="#{apt2.bhtNo}"
-                                            itemValue="#{apt2}" size="30"  class="mx-2">
+                                            itemValue="#{apt2}" size="30"  class="mx-2"
+                                            >
                                 <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
                                 <p:column >
                                     <h:outputLabel value="#{apt2.bhtNo}"/> 

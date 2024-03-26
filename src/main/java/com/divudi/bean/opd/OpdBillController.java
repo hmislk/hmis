@@ -2272,10 +2272,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-            if (bf.getFee().getSpeciality() == null) {
-                bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                continue;
-            }
+//            if (bf.getFee().getSpeciality() == null) {
+//                bf.setStaff(getSelectedCurrentlyWorkingStaff());
+//                continue;
+//            }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
                 if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
                     if (bf.getFee().getStaff() == null) {

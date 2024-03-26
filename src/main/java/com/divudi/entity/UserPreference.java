@@ -247,6 +247,11 @@ public class UserPreference implements Serializable {
     private Integer numberOfOPDBillCopies;
     private Integer numberOfCCBillCopies;
     private Integer numberOfChannellingBillCopies;
+    
+    @Lob
+    private String inwardAddmissionStatemenetEnglish;
+    @Lob
+    private String inwardAddmissionStatemenetSinhala;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1313,5 +1318,23 @@ public class UserPreference implements Serializable {
     public void setNumberOfChannellingBillCopies(Integer numberOfChannellingBillCopies) {
         this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
     }
+
+    public String getInwardAddmissionStatemenetEnglish() {
+        return inwardAddmissionStatemenetEnglish;
+    }
+
+    public void setInwardAddmissionStatemenetEnglish(String inwardAddmissionStatemenetEnglish) {
+        this.inwardAddmissionStatemenetEnglish = inwardAddmissionStatemenetEnglish;
+    }
+
+    public String getInwardAddmissionStatemenetSinhala() {
+        return inwardAddmissionStatemenetSinhala;
+    }
+
+    public void setInwardAddmissionStatemenetSinhala(String inwardAddmissionStatemenetSinhala) {
+        this.inwardAddmissionStatemenetSinhala = inwardAddmissionStatemenetSinhala;
+    }
+
+   
 
 }

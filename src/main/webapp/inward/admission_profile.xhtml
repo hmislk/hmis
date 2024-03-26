@@ -43,9 +43,6 @@
                                     action="#{admissionController.navigateToEditAdmission}" 
                                     icon="fa fa-edit"
                                     class="w-100 ">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{bhtEditController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton 
                                     disabled="#{admissionController.current.discharged eq true}"
@@ -173,11 +170,10 @@
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
                             <div class="d-grid gap-3"> 
-                                <p:dataTable value="#{bhtSummeryController.surgeryBills}" var="s" >
-                                    <p:column >
-                                        <h:outputText value="#{s.procedure.item.name}" ></h:outputText>
-                                    </p:column>
-                                </p:dataTable>
+                                <ui:repeat value="#{bhtSummeryController.surgeryBills}" var="s">
+                                    <h:outputText value="#{s.procedure.item.name}" ></h:outputText><br/>
+                                </ui:repeat>
+                                
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"
