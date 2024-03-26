@@ -113,15 +113,18 @@
                                 <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.name}" ></h:outputText>
                                 </p:column>
+                                <p:column headerText="Item Department"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{im.item.department.name}" ></h:outputText>
+                                </p:column>
                                 <p:column 
-                                    headerText="Institution" 
+                                    headerText="Mapped Institution" 
                                     sortBy="#{im.institution.name}" 
                                     filterBy="#{im.institution.name}" 
                                     filterMatchMode="contains">
                                     <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
-                                    headerText="Department"  
+                                    headerText="Mapped Department"  
                                     sortBy="#{pasindu.department.name}" 
                                     filterBy="#{pasindu.department.name}" 
                                     filterMatchMode="contains">
