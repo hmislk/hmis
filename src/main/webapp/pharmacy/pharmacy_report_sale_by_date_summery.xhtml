@@ -42,6 +42,16 @@
                         </p:autoComplete>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-6">
+                        <h:outputLabel value="User"/>
+                        <p:spacer width="60px"/>
+                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" 
+                                         forceSelection="true"
+                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                         value="#{pharmacySaleReport.user}" ></p:autoComplete>
+                    </div>
+                </div>
 
 
                 <h:panelGrid columns="3">
