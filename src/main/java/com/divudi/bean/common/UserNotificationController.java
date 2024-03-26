@@ -9,9 +9,12 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import com.divudi.data.TriggerType;
+import com.divudi.entity.Bill;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Notification;
@@ -54,7 +57,9 @@ public class UserNotificationController implements Serializable {
     private UserNotification current;
     private List<UserNotification> items = null;
     
-    public String navigateToUserNotification(){
+    PharmacySaleBhtController pharmacySaleBhtController;
+
+    public String navigateToUserNotification() {
         return "/Notification/user_notifications";
     }
 
@@ -99,7 +104,7 @@ public class UserNotificationController implements Serializable {
         return ejbFacade;
     }
 
-    public void fillLoggedUserNotifications() {
+    public List<UserNotification> fillLoggedUserNotifications() {
         String jpql = "select un "
                 + " from UserNotification un "
                 + " where un.seen=:seen "
@@ -110,9 +115,26 @@ public class UserNotificationController implements Serializable {
         m.put("com", false);
         m.put("wu", sessionController.getLoggedUser());
         items = getFacade().findByJpql(jpql, m);
-        for (UserNotification un : items) {
-            String msg = un.getNotification().getMessage();
+        return items;
+    }
+
+    public void navigateCurrentNotificationReuest(UserNotification cu) {
+        if (cu.getNotification().getBill()==null) {
+            return;
         }
+        Bill bill=cu.getNotification().getBill();
+        BillTypeAtomic type = bill.getBillTypeAtomic();
+        switch (type) {
+            case PHARMACY_ORDER:
+                navigateToBHTIssuerequests(bill);
+                break;
+           
+        }
+    }
+    
+    public String navigateToBHTIssuerequests(Bill rb){
+        pharmacySaleBhtController.setBhtRequestBill(rb);
+        return "/ward/ward_pharmacy_bht_issue";
     }
 
     public void createUserNotifications(Notification notification) {
@@ -181,7 +203,7 @@ public class UserNotificationController implements Serializable {
             nun.setNotification(n);
             nun.setWebUser(u);
             System.out.println("user notification = " + nun.getNotification().getMessage());
-            createAllertMessage(n);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+            createAllertMessage(n);
             getFacade().create(nun);
         }
     }
