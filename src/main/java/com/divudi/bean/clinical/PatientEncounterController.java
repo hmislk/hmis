@@ -1091,7 +1091,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
 
-        for (ClinicalFindingValue cli : fillCurrentPatientClinicalFindingValues(patient, temp)) {
+        for (ClinicalFindingValue cli : tmpCli) {
             if(cli == null){
                 continue;
             }
