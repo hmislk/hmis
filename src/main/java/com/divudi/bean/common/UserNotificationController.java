@@ -19,6 +19,7 @@ import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Notification;
 import com.divudi.entity.WebUser;
+import com.divudi.facade.NotificationFacade;
 import com.divudi.facade.UserNotificationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,6 +55,8 @@ public class UserNotificationController implements Serializable {
     SmsController smsController;
     @EJB
     private UserNotificationFacade ejbFacade;
+    @EJB
+    NotificationFacade notificationFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
 
@@ -99,12 +102,25 @@ public class UserNotificationController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void userNotificationRequestComplete(){
+        if (current==null) {
+            JsfUtil.addErrorMessage("User Notification Error !");
+            return;
+        }
+        current.getNotification().setCompleted(true);
+        notificationFacade.edit(current.getNotification());
+        current.setSeen(true);
+        getFacade().edit(current);
+        
+    }
 
     public void removeUserNotification(UserNotification un) {
-        List<UserNotification> items=new ArrayList<>();
-        items=fillLoggedUserNotifications();
-        un.setRetired(true);
+        System.out.println("items = " + items.size());
+        un.setSeen(true);
         getFacade().edit(un);
+        fillLoggedUserNotifications();
+        
     }
 
     private UserNotificationFacade getEjbFacade() {

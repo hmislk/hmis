@@ -16,13 +16,14 @@
 
 
                         <h:panelGroup id="userNoti" >
-                            <p:repeat value="#{userNotificationController.fillLoggedUserNotifications()}" var="un">
+                            <p:repeat value="#{userNotificationController.items}" var="un">
                                 <div class="card my-1 w-100">
                                     <div class="d-flex justify-content-between align-items-center p-2">
                                         <div>
                                             <p:outputLabel class="mx-2" value="#{un.notification.message}"/>
-                                            <p:outputLabel value="#{un.notification.bill.billTypeAtomic}"/>
+                                            <p:outputLabel class="mx-2" value="#{un.notification.createdAt}"/>
                                         </div>
+                                        <h:outputLabel value="#{un.notification.bill}"/>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <p:commandButton 
@@ -34,15 +35,16 @@
                                                     icon="fas fa-eye"
                                                     >
                                                     <f:setPropertyActionListener value="#{un.notification.bill}" target="#{pharmacySaleBhtController.bhtRequestBill}" ></f:setPropertyActionListener>
+                                                    <f:setPropertyActionListener value="#{un}" target="#{userNotificationController.current}" ></f:setPropertyActionListener>
+                                                    <f:setPropertyActionListener value="#{un.notification.bill.patientEncounter}" target="#{pharmacySaleBhtController.patientEncounter}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                             </div>
                                             <div>
                                                 <p:commandButton 
                                                     id="btnRemove" 
                                                     class="ui-button-danger" 
-                                                    process="btnRemove" 
-                                                    update="userNoti"
-                                                    action="#{userDepartmentController.removeUserNotification(un)}"
+                                                    ajax="false"
+                                                    action="#{userNotificationController.removeUserNotification(un)}"
                                                     icon="fas fa-trash"
                                                     />
                                             </div>
