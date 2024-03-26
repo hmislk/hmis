@@ -94,6 +94,8 @@ public class WebUserController implements Serializable {
     UserIconController userIconController;
     @Inject
     TriggerSubscriptionController triggerSubscriptionController;
+    @Inject
+    UserNotificationController userNotificationController;
     /**
      * Class Variables
      */
@@ -130,21 +132,11 @@ public class WebUserController implements Serializable {
     private int manageDiscountIndex;
     private int manageUsersIndex;
     private List<Department> departmentsOfSelectedUsersInstitution;
+
     boolean testRun = false;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
-
-    public void notificationCountForUser() {
-        System.out.println("this = " + sessionController.getLoggedUser());
-        Map params = new HashMap<>();
-        String s = "select u from UserNotification u where u.retired=false and u.webUser= :cu";
-        params.put("cu", sessionController.getLoggedUser());
-        userNotifications = userNotificationFacade.findByJpql(s, params);
-        userNotificationCount = userNotifications.size();
-        System.out.println("userNotificationCount = " + userNotificationCount);
-        
-    }
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -1100,6 +1092,9 @@ public class WebUserController implements Serializable {
     }
 
     public int getUserNotificationCount() {
+        if (userNotificationController.fillLoggedUserNotifications() != null) {
+            userNotificationCount = userNotificationController.fillLoggedUserNotifications().size();
+        }
         return userNotificationCount;
     }
 

@@ -11,81 +11,41 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="All SMS List"/>                          
+                            <h:outputLabel value="Notifications"/>                          
                         </f:facet>
-                        <h:panelGrid columns="2" class="my-2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100"
-                                          id="fromDate" 
-                                          value="#{smsController.fromDate}" 
-                                          showTime="true"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                            </p:datePicker>
-                            <h:outputLabel value="To Date"/>
-                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{smsController.toDate}" 
-                                          showTime="true"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                            </p:datePicker>
-                        </h:panelGrid>
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton id="btnSearch"
-                                             class="ui-button-warning"
-                                             icon="fas fa-magnifying-glass"
-                                             ajax="false" 
-                                             value="Search" 
-                                             action="#{smsController.fillAllSms}"/>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
-                            </p:commandButton>
-                        </h:panelGrid>
-
-                        <p:dataTable rowIndexVar="i" id="tblBills" 
-                                     value="#{smsController.smses}"
-                                     reflow="true"
-                                     var="sms"  
-                                     style="min-width: 100%;"  
-                                     paginator="true"
-                                     paginatorPosition="bottom"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
-                            <p:column headerText="Sent At" sortBy="#{sms.createdAt}"  >
-                                <h:outputLabel value="#{sms.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  ></f:convertDateTime>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="SMS Type" sortBy="#{sms.smsType}" filterBy="#{sms.smsType}" filterMatchMode="contains" >
-                                <h:outputLabel value="#{sms.smsType}"/>
-                            </p:column>
-                            <p:column filterBy="#{sms.bill.patient.person.name}" 
-                                      filterMatchMode="contains"
-                                      headerText="Patient"  >
-                                <h:outputLabel value="#{sms.bill.patient.person.name}"/>
-                            </p:column>
-                            <p:column headerText="Message"  >
-                                <h:outputLabel value="#{sms.sendingMessage}"/>
-                            </p:column>
-                            <p:column headerText="Phone Number"
-                                      filterBy="#{sms.receipientNumber}" 
-                                      filterMatchMode="contains"
-                                      styleClass="alignTop" >
-                                <h:outputLabel value="#{sms.receipientNumber}"/>
-                            </p:column>
-                            <p:column headerText="Success"  sortBy="#{sms.sentSuccessfully}" >
-                                <p:tag class="ui-tag" value="#{sms.sentSuccessfully ? 'Success' : 'Failed'}"
-                                       severity="#{sms.sentSuccessfully ? 'success' : 'danger'}" 
-                                       style="align-items: center; width: 60px;text-align: center; font-size: 14px;"/>
-                            </p:column>
-                        </p:dataTable>
 
 
-
-
-
-
+                        <h:panelGroup id="ptAl" >
+                            <p:repeat value="#{userNotificationController.fillLoggedUserNotifications()}" var="un">
+                                <div class="card my-1 w-100">
+                                    <div class="d-flex justify-content-between align-items-center p-2">
+                                        <div>
+                                            <p:outputLabel value="#{un.notification.message}"/>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p:commandButton 
+                                                    id="btnGo" 
+                                                    class="ui-button-success mx-2" 
+                                                    process="btnGo" 
+                                                    value="Go To"
+                                                    icon="fas fa-eye"
+                                                    />
+                                            </div>
+                                            <div>
+                                                <p:commandButton 
+                                                    id="btnRemove" 
+                                                    class="ui-button-danger" 
+                                                    process="btnRemove" 
+                                                    icon="fas fa-trash"
+                                                    />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:repeat>
+                        </h:panelGroup>
                     </p:panel>
-
                 </h:form>
             </ui:define>
         </ui:composition>
