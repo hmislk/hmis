@@ -324,7 +324,7 @@
                     <p:submenu label="Pharmacy" rendered="#{webUserController.hasPrivilege('InwardPharmacyMenu')}">
                         <p:menuitem 
                             ajax="false" 
-                            action="#{admissionController.navigateToPharmacyBhtRequest}" 
+                            action="#{admissionController.navigateToPharmacyBhtRequestFromMenu}" 
                             value="Request Medicines from Pharmacy" 
                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}" 
                             actionListener="#{pharmacySaleBhtController.resetAll}">

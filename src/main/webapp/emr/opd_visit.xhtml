@@ -444,32 +444,32 @@
                                                                                                 <p:watermark value="Select Procedure." for="acSx"></p:watermark>
                                                                                                 <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
                                                 -->                                               
-                                                    <p:dataTable id="tblPa" 
-                                                                 rendered="#{patientEncounterController.encounterPlanOfActions ne null and patientEncounterController.encounterPlanOfActions.size() > 0}"
-                                                                 value="#{patientEncounterController.encounterPlanOfActions}"
-                                                                 emptyMessage="No Plan Of Action Added" rows="5"
-                                                                 paginatorAlwaysVisible="false"
-                                                                 paginator="true"
-                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                                 var="pa" >
-                                                        <p:column headerText="Plan Name" >
-                                                            <h:outputLabel value="#{pa.itemValue.name}"></h:outputLabel>
+                                                <p:dataTable id="tblPa" 
+                                                             rendered="#{patientEncounterController.encounterPlanOfActions ne null and patientEncounterController.encounterPlanOfActions.size() > 0}"
+                                                             value="#{patientEncounterController.encounterPlanOfActions}"
+                                                             emptyMessage="No Plan Of Action Added" rows="5"
+                                                             paginatorAlwaysVisible="false"
+                                                             paginator="true"
+                                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                             var="pa" >
+                                                    <p:column headerText="Plan Name" >
+                                                        <h:outputLabel value="#{pa.itemValue.name}"></h:outputLabel>
 
-                                                        </p:column>
-                                                        
-                                                        <p:column headerText="Action" >
-                                                            <p:commandButton  
-                                                                class="ui-button-danger"
-                                                                icon="fas fa-trash"
-                                                                id="btnRemovePa"
-                                                                ajax="true" 
-                                                                action="#{patientEncounterController.removeCfv}" 
-                                                                process="@this"
-                                                                update="tblPa :#{p:resolveFirstComponentWithId('msg',view).clientId}">
-                                                                <f:setPropertyActionListener value="#{pa}" target="#{patientEncounterController.removingCfv}" />
-                                                            </p:commandButton>
-                                                        </p:column>
-                                                    </p:dataTable>
+                                                    </p:column>
+
+                                                    <p:column headerText="Action" >
+                                                        <p:commandButton  
+                                                            class="ui-button-danger"
+                                                            icon="fas fa-trash"
+                                                            id="btnRemovePa"
+                                                            ajax="true" 
+                                                            action="#{patientEncounterController.removeCfv}" 
+                                                            process="@this"
+                                                            update="tblPa :#{p:resolveFirstComponentWithId('msg',view).clientId}">
+                                                            <f:setPropertyActionListener value="#{pa}" target="#{patientEncounterController.removingCfv}" />
+                                                        </p:commandButton>
+                                                    </p:column>
+                                                </p:dataTable>
                                             </p:panel>
                                         </div>
 
@@ -660,7 +660,7 @@
                                                                     id="clRemoveIxp"
                                                                     action="#{patientEncounterController.removeEncounterInvestigation()}"
                                                                     process="clRemoveIxp"
-                                                                    update=":#{p:resolveFirstComponentWithId('gpIxp',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                    update=":#{p:resolveFirstComponentWithId('tblIxp',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                     class="mx-2 ui-button-danger"
                                                                     icon="fas fa-trash">
                                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
@@ -1132,14 +1132,7 @@
                                                     <ul>
                                                         <ui:repeat value="#{patientEncounterController.fillPastPatientMedicineHistory(visit)}" var="medicine">
                                                             <li>
-                                                                <div class="row">
-                                                                    <div class="col-10">
-                                                                        <h:outputText value="#{medicine.prescription.item.name}" />
-                                                                    </div>
-                                                                    <div class="col-2">
-                                                                        <p:commandButton icon="fas fa-file" action="#{patientEncounterController.fillMedicinesFromPastVisitHistory(medicine)}"  process="@this" class="mx-2 my-1 ui-button-warning" update="#{p:resolveFirstComponentWithId('medicines',view).clientId}" />
-                                                                    </div>
-                                                                </div>
+                                                                <h:outputText value="#{medicine.prescription.item.name}" />
 
                                                             </li>
                                                         </ui:repeat>
