@@ -437,9 +437,10 @@
                         <p:panel  id="set">
                             <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
 
-                            <p:outputLabel value="Payment Method"/>
+                            <p:outputLabel rendered="false" value="Payment Method"/>
                             <p:selectOneMenu  
                                 class="mx-2"
+                                rendered="false"
                                 style="width: 10em;"
                                 id="cmbSettlePs" value="#{channelBillController.settlePaymentMethod}">  
                                 <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
@@ -468,11 +469,86 @@
                                 value="Settle Credit Booking"
                                 process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                 update="gpSettlePrint"
-                                action="#{channelBillController.settleCredit}" 
                                 disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                             or channelBillController.billSession.bill.cancelled==true
                                             or  channelBillController.billSession.bill.paidAmount ne 0}" 
-                                oncomplete="PF('dlgSettle').show();"/>
+                                oncomplete="PF('dlgPreSettle').show();"/>
+                            <p:dialog 
+                                id="dialogChannelPreSettle"
+                                closable="true"
+                                header="Choose Payment Method" 
+                                widgetVar="dlgPreSettle" 
+                                width="900"
+                                height="200"
+                                modal="true">
+                                <div class="row">
+                                    <p:spacer height="40px" />
+                                    <div class="col-4">
+                                        <p:commandButton 
+                                            id="setBtn1"  
+                                            class="ui-button-success mt-2 btn-lg" 
+                                            icon="fa-solid fa-money-bill"
+                                            value="Settle with Cash"
+                                            style="height: 90px; width: 250px; display: flex; justify-content: center; align-items: center;"
+                                            process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn1"
+                                            update="gpSettlePrint"
+                                            action="#{channelBillController.settleCreditWithCash}" 
+                                            disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                                        or channelBillController.billSession.bill.cancelled==true
+                                                        or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            oncomplete="PF('dlgSettle').show();">
+                                            <style>
+                                                .fa-money-bill {
+                                                    font-size: 25px !important;
+                                                }
+                                            </style>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:commandButton 
+                                            id="setBtn2"  
+                                            class="ui-button-warning mt-2 btn-lg" 
+                                            icon="fa-solid fa-credit-card"
+                                            value="Settle With Card"
+                                            style="height: 90px; width: 250px"
+                                            process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn2"
+                                            update="gpSettlePrint"
+                                            action="#{channelBillController.settleCreditWithCard}" 
+                                            disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                                        or channelBillController.billSession.bill.cancelled==true
+                                                        or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            oncomplete="PF('dlgSettle').show();">
+                                         <style>
+                                                .fa-credit-card {
+                                                    font-size: 25px !important;
+                                                }
+                                            </style>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:commandButton 
+                                            id="setBtn3"  
+                                            class="ui-button-danger mt-2 btn-lg"
+                                            icon="fa-solid fa-file-invoice-dollar"
+                                            value="Settle With Credit"
+                                            style="height: 90px; width: 250px"
+                                            process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn3"
+                                            update="gpSettlePrint"
+                                            action="#{channelBillController.settleCreditWithCredit}" 
+                                            disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                                        or channelBillController.billSession.bill.cancelled==true
+                                                        or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            oncomplete="PF('dlgSettle').show();">
+                                         <style>
+                                                .fa-file-invoice-dollar {
+                                                    font-size: 25px !important;
+                                                }
+                                            </style>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </p:dialog>
+
                             <h:panelGroup id="gpSettlePrint" >
 
                                 <p:dialog 
@@ -482,7 +558,8 @@
                                     widgetVar="dlgSettle" 
                                     width="900"
                                     height="700"
-                                    modal="true">
+                                    modal="true"
+                                    onShow="PF('dlgPreSettle').hide();">
 
                                     <div class="d-flex justify-content-between">
                                         <p:commandButton
