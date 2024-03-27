@@ -729,87 +729,28 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public List<Staff> getSelectedConsultants() {
         String sql;
         Map m = new HashMap();
-
-//        //System.out.println("consultants = " + consultants);
-        if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
-            m.put("sp", getSpeciality());
-            if (getSpeciality() != null) {
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-
-                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                            + " and pi.type=:typ "
-                            + " and pi.institution=:ins "
-                            + " and pi.staff.speciality=:sp "
-                            + " order by pi.staff.person.name ";
-
-                    m.put("ins", getSessionController().getInstitution());
-                    m.put("typ", PersonInstitutionType.Channelling);
-
-                } else {
-                    sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
-                }
-                consultants = getStaffFacade().findByJpql(sql, m);
-            }
+        if (getSpeciality() == null) {
+            sql = " select s "
+                    + " from Staff s "
+                    + " where s.retired=:ret "
+                    + " and s.speciality in :sps "
+                    + " order by s.person.name ";
+            m.put("ret", false);
+            m.put("sps", doctorSpecialityController.getSelectedItems());
+            consultants = getStaffFacade().findByJpql(sql, m);
         } else {
-            if (selectTextConsultant.length() > 4) {
-                doctorSpecialityController.setSelectText("");
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-
-                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                            + " and pi.type=:typ "
-                            + " and pi.institution=:ins "
-                            + " and (pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                            + " order by pi.staff.person.name ";
-
-                    m.put("ins", getSessionController().getInstitution());
-                    m.put("typ", PersonInstitutionType.Channelling);
-                    consultants = getStaffFacade().findByJpql(sql, m);
-
-                } else {
-                    sql = "select p from Staff p where p.retired=false "
-                            + " and (p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                            + " order by p.person.name";
-                    consultants = getStaffFacade().findByJpql(sql);
-                }
-
-            } else {
-                m.put("sp", getSpeciality());
-                if (getSpeciality() != null) {
-                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-
-                        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                                + " and pi.type=:typ "
-                                + " and pi.institution=:ins "
-                                + " and pi.staff.speciality=:sp "
-                                + " and (pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                                + " order by pi.staff.person.name ";
-
-                        m.put("ins", getSessionController().getInstitution());
-                        m.put("typ", PersonInstitutionType.Channelling);
-
-                    } else {
-                        sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and (p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                                + " order by p.person.name";
-                    }
-                    consultants = getStaffFacade().findByJpql(sql, m);
-                }
-            }
+            sql = "select s "
+                    + " from Staff s "
+                    + " where s.retired=:ret "
+                    + " and s.speciality=:sp "
+                    + "order by s.person.name";
+            m.put("ret", false);
+            m.put("sp", getSpeciality());
+            consultants = getStaffFacade().findByJpql(sql, m);
         }
         if (consultants == null) {
             consultants = new ArrayList<>();
         }
-        /*
-         if (consultants.size() > 0) {
-         System.out.println("consultants.size() = " + consultants.size());
-         setStaff(consultants.get(0));
-         setSpeciality(getStaff().getSpeciality());
-         generateSessions();
-         } else {
-
-         setStaff(null);
-         }
-         */
         return consultants;
     }
 
