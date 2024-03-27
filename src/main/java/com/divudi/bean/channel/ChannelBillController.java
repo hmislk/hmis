@@ -198,6 +198,21 @@ public class ChannelBillController implements Serializable {
         return bs;
 
     }
+    
+    public void settleCreditWithCash(){
+        settlePaymentMethod = PaymentMethod.Cash;
+        settleCredit();
+    }
+    
+    public void settleCreditWithCard(){
+        settlePaymentMethod = PaymentMethod.Card;
+        settleCredit();
+    }
+    
+    public void settleCreditWithCredit(){
+        settlePaymentMethod = PaymentMethod.Credit;
+        settleCredit();
+    }
 
     public void settleCredit() {
         if (errorCheckForSettle()) {
