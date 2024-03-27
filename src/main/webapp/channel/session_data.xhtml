@@ -89,6 +89,10 @@
                                                  ajax="false"
                                                  icon="pi pi-credit-card"
                                                  styleClass="ui-button-danger mb-2 w-100">
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.speciality}" value="#{bookingController.speciality}"/>
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.currentStaff}" value="#{bookingController.staff}"/>
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.sessionInstance}" value="#{bookingController.selectedSessionInstance}"/>
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.printPreview}" value="false"/>
                                 </p:commandButton>
                                 <p:commandButton value="Phone View"
                                                  action="#{bookingController.navigateToPhoneView}"
