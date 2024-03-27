@@ -23,6 +23,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -106,6 +107,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     PaymentMethod paymentMethod;
     Speciality speciality;
     private ServiceSession selectedServiceSession;
+    private SessionInstance sessionInstance;
     boolean considerDate = false;
     BillFee billFee;
 
@@ -316,6 +318,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 return;
             }
         }
+       
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -682,6 +685,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(current.getStaff().getPerson().getPhone());
+        System.out.println("DocPaymentSms = " + DocPaymentSms(current));
         e.setSendingMessage(DocPaymentSms(current));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -768,6 +772,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
         int no = b.getBillItems().size();
         double total = b.getTotal();
         String sessionName = "Session Name";
+        if(getSessionInstance().getOriginatingSession() != null){
+            sessionName = getSessionInstance().getOriginatingSession().getName();
+        }
         
         String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
         s = input.replace("{doctor}", doc)
@@ -1088,6 +1095,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
+    }
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
     }
 
     /**

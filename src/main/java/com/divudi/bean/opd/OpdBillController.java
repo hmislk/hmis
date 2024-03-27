@@ -334,6 +334,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<ItemLight> fillOpdItems() {
+        System.out.println("fillOpdItems");
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
