@@ -104,7 +104,26 @@
                                         <p:outputLabel value="Value" styleClass="font-weight-bold text-primary bg-light p-2"/>
 
                                         <p:outputLabel value="Bill Fee Value" />
-                                        <p:spacer /><!-- comment -->
+                                        <!--                                        <p:spacer /> comment -->
+
+                                        <p:dataTable value="#{workingTimeController.staffBillFeesForPayment}" var="bf" >
+                                            <p:column headerText="Bill No" >
+                                                <h:outputLabel value="#{bf.bill.deptId}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Bill Time" >
+                                                <h:outputLabel value="#{bf.bill.billTime}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Item" >
+                                                <h:outputLabel value="#{bf.billItem.item.name}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Value" >
+                                                <h:outputLabel value="#{bf.feeValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
                                         <p:outputLabel value="#{workingTimeController.staffBillFeesForPaymentCount}" />
                                         <p:outputLabel value="#{workingTimeController.billFeeValue}" />
 
