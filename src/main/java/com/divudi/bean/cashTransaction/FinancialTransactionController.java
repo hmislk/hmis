@@ -12,6 +12,7 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import static com.divudi.data.BillType.CollectingCentreBill;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -481,7 +482,8 @@ public class FinancialTransactionController implements Serializable {
             switch (p.getBill().getBillType()) {
                 case OpdBill:
                     if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
+                        totalBillRefunds += p.getBill().getTotal();
+                        System.out.println("totalBillRefunds = " + totalBillRefunds);
                     }
                     if (p.getBill().isCancelled()) {
                         totalOpdBillCanceled += p.getPaidValue();
@@ -564,6 +566,8 @@ public class FinancialTransactionController implements Serializable {
                     }
                     totalCCBillValues += p.getPaidValue();
                     break;
+                    
+               
                 default:
                     break;
             }
