@@ -113,7 +113,7 @@ public class UserNotificationController implements Serializable {
         notificationFacade.edit(current.getNotification());
         current.setSeen(true);
         getFacade().edit(current);
-        
+        fillLoggedUserNotifications();
     }
 
     public void removeUserNotification(UserNotification un) {
