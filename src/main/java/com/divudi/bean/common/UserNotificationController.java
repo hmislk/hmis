@@ -229,7 +229,6 @@ public class UserNotificationController implements Serializable {
             nun.setWebUser(u);
             nun.setCreatedAt(new Date());
             nun.setCreater(sessionController.getLoggedUser());
-            
             System.out.println("user notification = " + nun.getNotification().getMessage());
             createAllertMessage(n);
             getFacade().create(nun);
