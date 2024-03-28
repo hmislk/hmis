@@ -1486,6 +1486,17 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already paid to Service Provider. Can not refund again.");
             return "";
         }
+        
+        if (refundingBill.getBillItems()!=null) {
+            for(BillItem bi : refundingBill.getBillItems()){
+                for(BillFee bf: bi.getBillFees()){
+                    if (bf.getReferenceBillFee().getFeeValue()<bf.getFeeValue()) {
+                        JsfUtil.addErrorMessage("Pleace Enter Correct Value");
+                        return"";
+                    }
+                }
+            }
+        }
 
         boolean reundTotalCalculationsSuccess = calculateRefundTotalForOpdBill();
         if (!reundTotalCalculationsSuccess) {

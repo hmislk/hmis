@@ -12,6 +12,7 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import static com.divudi.data.BillType.CollectingCentreBill;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -481,16 +482,17 @@ public class FinancialTransactionController implements Serializable {
             switch (p.getBill().getBillType()) {
                 case OpdBill:
                     if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
+                        totalBillRefunds += p.getBill().getTotal();
                     }
                     if (p.getBill().isCancelled()) {
-                        totalOpdBillCanceled += p.getPaidValue();
+                        System.out.println("p = " + p.getBill().getTotal());
+                        totalOpdBillCanceled += p.getBill().getTotal();
                     }
                     if (p.getBill().getReferenceBill() != null) {
-                        totalBilledBillValue += p.getPaidValue();
+                        totalBilledBillValue += p.getBill().getTotal();
                     }
                     if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
-                        totalBilledBillValue += p.getPaidValue();
+                        totalBilledBillValue +=p.getBill().getTotal();
                     }
                     
                     totalOpdBillValues += p.getPaidValue();
@@ -564,6 +566,8 @@ public class FinancialTransactionController implements Serializable {
                     }
                     totalCCBillValues += p.getPaidValue();
                     break;
+                    
+               
                 default:
                     break;
             }
@@ -574,13 +578,13 @@ public class FinancialTransactionController implements Serializable {
         totalBillCanceld = totalOpdBillCanceled 
                 + totalCCBillCanceled 
                 + totalPharmecyBillCanceled;
-        totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
-        totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
-        totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
+        totalOpdBillValues = totalOpdBillValues;
+        totalPharmecyBillValues = totalPharmecyBillValues;
+        totalCCBillValues = totalCCBillValues;
         double totalBillValues = totalBilledBillValue+totalTransferRecive;
 
         aditions = totalBillValues + totalShiftStart;
-        Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds;
+        Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds+totalBillCanceld;
         totalFunds = aditions - Deductions;
         shiftEndTotalValue = totalFunds;
         

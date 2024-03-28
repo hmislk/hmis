@@ -17,13 +17,13 @@
 
                         <h:panelGroup id="userNoti" >
                             <p:repeat value="#{userNotificationController.items}" var="un">
-                                <div class="card my-1 w-100">
+                                <div class="card my-1 w-100 p-5">
                                     <div class="d-flex justify-content-between align-items-center p-2">
                                         <div>
                                             <p:outputLabel class="mx-2" value="#{un.notification.message}"/>
                                             <p:outputLabel class="mx-2" value="#{un.notification.createdAt}"/>
                                         </div>
-                                        <h:outputLabel value="#{un.notification.bill}"/>
+                                     
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <p:commandButton 
@@ -36,7 +36,6 @@
                                                     >
                                                     <f:setPropertyActionListener value="#{un.notification.bill}" target="#{pharmacySaleBhtController.bhtRequestBill}" ></f:setPropertyActionListener>
                                                     <f:setPropertyActionListener value="#{un}" target="#{userNotificationController.current}" ></f:setPropertyActionListener>
-                                                    <f:setPropertyActionListener value="#{un.notification.bill.patientEncounter}" target="#{pharmacySaleBhtController.patientEncounter}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                             </div>
                                             <div>
