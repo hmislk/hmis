@@ -179,7 +179,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         speciality = null;
         serviceSessions = null;
         serviceSessionList = null;
-        
+        sessionInstance = null;
         currentStaff = null;
         dueBillFees = new ArrayList<BillFee>();
         payingBillFees = new ArrayList<BillFee>();
@@ -409,6 +409,59 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     }
 
+    public void calculateSessionDueFees() {
+        Date startTime = new Date();
+        if (getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Select Specility");
+            return;
+        }
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        String sql = " SELECT b "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.singleBillSession.sessionInstance=:si";
+        sql += " order by b.bill.singleBillSession.serialNo ";
+        hm.put("si", getSessionInstance().getOriginatingSession());
+        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("class", BilledBill.class);
+        dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        HashMap m = new HashMap();
+        sql = " SELECT b "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false  "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.staff=:stf "
+                + " and b.bill.singleBillSession.sessionInstance=:si "
+                + " and b.bill.singleBillSession.absent=true "
+                + " and b.bill.singleBillSession.serviceSession.originatingSession.refundable=false ";
+        sql += " order b.bill.singleBillSession.serialNo ";
+        m.put("si", getSessionInstance());
+        m.put("bt", bts);
+        m.put("ftp", FeeType.Staff);
+        m.put("class", BilledBill.class);
+        List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        dueBillFees.addAll(nonRefundableBillFees);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
+    }
+
     public void calculateDueFeesAgency() {
         Date startTime = new Date();
 
@@ -558,7 +611,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
-
+        
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
         tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
 
@@ -571,6 +624,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setStaff(currentStaff);
         tmp.setToStaff(currentStaff);
         tmp.setTotal(0 - totalPaying);
+        
 
         return tmp;
     }
@@ -637,6 +691,32 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return false;
     }
+    
+    private boolean errorCheckForSessionPayments() {
+        if (sessionInstance == null) {
+            JsfUtil.addErrorMessage("Error. No Session Instance");
+            return true;
+        }
+        if (checkBillFeeValue()) {
+            System.out.println("checkBillFeeValue = " + checkBillFeeValue());
+            JsfUtil.addErrorMessage("There is a Credit Bill");
+            return true;
+        }
+
+        performCalculations();
+        if (totalPaying == 0) {
+            System.out.println("totalPaying = " + totalPaying);
+            JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
+            return true;
+        }
+        if (paymentMethod == null) {
+            System.out.println("paymentMethod = " + paymentMethod);
+            JsfUtil.addErrorMessage("Please select a payment method");
+            return true;
+        }
+
+        return false;
+    }
 
     private boolean errorCheckForAgency() {
 //        if (currentStaff == null) {
@@ -680,6 +760,24 @@ public class ChannelStaffPaymentBillController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
+    
+    public void settleSessionPaymentBill() {
+        if (errorCheckForSessionPayments()) {
+            return;
+        }
+        calculateTotalPay();
+        Bill b = createPaymentBill();
+        current = b;
+        getBillFacade().create(b);
+        saveBillCompo(b);
+        if (sessionController.getDepartmentPreference().isDocterPaymentSMS()) {
+            sendSmsAfterDocPayment();
+        }
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Successfully Paid");
+    }
+
+    
 
     public void sendSmsAfterDocPayment() {
         Sms e = new Sms();
@@ -818,10 +916,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         System.out.println("save bill true");
         for (BillFee bf : getPayingBillFees()) {
             saveBillItemForPaymentBill(b, bf);
-//            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
             bf.setPaidValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
-            //////// // System.out.println("marking as paid");
         }
     }
 
@@ -835,9 +931,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         i.setCreater(getSessionController().getLoggedUser());
         i.setDiscount(0.0);
         i.setGrossValue(bf.getFeeValue());
-//        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-//            i.setItem(bf.getBillItem().getItem());
-//        }
         i.setNetValue(bf.getFeeValue());
         i.setQty(1.0);
         i.setRate(bf.getFeeValue());
