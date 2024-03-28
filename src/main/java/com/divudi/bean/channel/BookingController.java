@@ -248,7 +248,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
-
         String sql;
         Map m = new HashMap();
         sql = "Select f from ItemFee f "
