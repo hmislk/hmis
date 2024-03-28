@@ -94,14 +94,16 @@ public class NotificationController implements Serializable {
         Notification nn = new Notification();
         nn.setCreatedAt(date);
         nn.setBill(bill);
-        nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
+        nn.setCreater(sessionController.getLoggedUser());
+        nn.setMessage("New Request for Medicines from ");
         getFacade().create(nn);
     }
     
      private void createPharmacyReuestForBht(Bill bill){
         Notification nn = new Notification();
         nn.setBill(bill);
-        nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
+        nn.setCreater(sessionController.getLoggedUser());
+        nn.setMessage("New Request for Medicines from ");
         getFacade().create(nn);
         userNotificationController.createUserNotifications(nn);
         
