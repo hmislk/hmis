@@ -108,6 +108,7 @@ public class NotificationController implements Serializable {
         userNotificationController.createUserNotifications(nn);
         
     }
+     
     
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {

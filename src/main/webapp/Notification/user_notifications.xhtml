@@ -18,7 +18,7 @@
                     <h:panelGroup id="userNoti" >
                         <p:repeat value="#{userNotificationController.items}" var="un">
                             <div class="card my-1 w-100 p-2 m-1" 
-                                 style="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER' ? 'background-color: #ffcccc;color: #333333' : ''};">
+                                 >
 
                                 <div class="d-flex justify-content-between align-items-center p-2">
                                     <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER'}">
@@ -54,7 +54,7 @@
 
                                         <p:dialog header="Modal Dialog" widgetVar="dlg2" modal="true" width="250" height="150" class="w-50 p-2">
                                             <h:outputText value="Comment" style="font-size: 20px"/><br/>
-                                            <p:inputTextarea class="w-100">
+                                            <p:inputTextarea class="w-100" value="#{un.retireComments}">
                                             </p:inputTextarea>
                                             <div class="d-flex align-items-center justify-content-end m-2">
                                                 <p:commandButton class="ui-button-danger" value="Ok" ajax="false" action="#{userNotificationController.removeUserNotification(un)}"/>
