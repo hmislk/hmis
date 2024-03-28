@@ -250,6 +250,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedItemFees = itemFeeFacade.findByJpql(sql, m);
     }
 
+    public String navigateToChannelBookingFromMenu() {
+        prepareForNewChannellingBill();
+        return "/channel/channel_booking?faces-redirect=true";
+    }
+
+    public void prepareForNewChannellingBill() {
+        listnerStaffListForRowSelect();
+    }
+
     public String navigateToViewSessionData() {
         return "/channel/session_data?faces-redirect=true";
     }
@@ -1355,7 +1364,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
-        return "/channel/channel_payment_staff_bill";
+        return "/channel/channel_payment_staff_bill?faces-redirect=true";
 
     }
 

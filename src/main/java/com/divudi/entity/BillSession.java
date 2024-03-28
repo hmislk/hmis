@@ -57,7 +57,7 @@ public class BillSession implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
-    @Deprecated
+    @Deprecated //Use SessionInstance instead
     ServiceSession serviceSession;
     @ManyToOne
     private SessionInstance sessionInstance;
@@ -155,13 +155,16 @@ public class BillSession implements Serializable {
         this.category = category;
     }
 
+    @Deprecated
     public ServiceSession getServiceSession() {
+        //Use SessionInstance instead
         return serviceSession;
     }
 
     
-    
+    @Deprecated
     public void setServiceSession(ServiceSession serviceSession) {
+        //Use SessionInstance instead
         this.serviceSession = serviceSession;
     }
 
