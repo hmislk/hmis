@@ -9,22 +9,32 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form >
+                    <nav class="navbar bg-primary">
+                        <div class="text-white d-flex align-items-center ">
+                            <h:outputText  styleClass="fa-solid fa-comments mx-4" />
+                            <h5>Pharmacy Requests Management</h5>
+                        </div>
+                    </nav>
                     <h:panelGroup id="userNoti" >
                         <p:repeat value="#{userNotificationController.items}" var="un">
-                            <div class="card my-1 w-100 p-2 m-1">
+                            <div class="card my-1 w-100 p-2 m-1" 
+                                 style="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER' ? 'background-color: #ffcccc;color: #333333' : ''};">
+
                                 <div class="d-flex justify-content-between align-items-center p-2">
                                     <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER'}">
                                         <h4>New Request for Medicines </h4>
                                     </h:panelGroup>
-                                    <div>
+                                    
                                         <p:outputLabel class="mx-2" value="#{un.notification.message}"/>
-                                        <p:outputLabel class="mx-2" value="#{un.notification.createdAt}"/>
-                                    </div>
+                                        <p:outputLabel class="mx-2" value="#{un.notification.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                   
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <p:commandButton 
                                                 id="btnGo" 
-                                                class="ui-button-success mx-2" 
+                                                class="ui-button-primary mx-2" 
                                                 action="#{userNotificationController.navigateCurrentNotificationReuest(un)}"
                                                 value="Go To"
                                                 ajax="false"
@@ -37,11 +47,19 @@
                                             <p:commandButton 
                                                 id="btnRemove" 
                                                 class="ui-button-danger" 
-                                                ajax="false"
-                                                action="#{userNotificationController.removeUserNotification(un)}"
+                                                onclick="PF('dlg2').show();"
                                                 icon="fas fa-trash"
                                                 />
                                         </div>
+
+                                        <p:dialog header="Modal Dialog" widgetVar="dlg2" modal="true" width="250" height="150" class="w-50 p-2">
+                                            <h:outputText value="Comment" style="font-size: 20px"/><br/>
+                                            <p:inputTextarea class="w-100">
+                                            </p:inputTextarea>
+                                            <div class="d-flex align-items-center justify-content-end m-2">
+                                                <p:commandButton class="ui-button-danger" value="Ok" ajax="false" action="#{userNotificationController.removeUserNotification(un)}"/>
+                                            </div>
+                                        </p:dialog>  
                                     </div>
                                 </div>
                             </div>
