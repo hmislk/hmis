@@ -255,6 +255,7 @@ public class UserPreference implements Serializable {
     @Lob
     private String inwardAddmissionStatemenetSinhala;
 
+    private String channelingBillHeaderTemplate;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1352,6 +1353,14 @@ public class UserPreference implements Serializable {
 
     public void setInwardAddmissionStatemenetSinhala(String inwardAddmissionStatemenetSinhala) {
         this.inwardAddmissionStatemenetSinhala = inwardAddmissionStatemenetSinhala;
+    }
+
+    public String getChannelingBillHeaderTemplate() {
+        return channelingBillHeaderTemplate;
+    }
+
+    public void setChannelingBillHeaderTemplate(String channelingBillHeaderTemplate) {
+        this.channelingBillHeaderTemplate = channelingBillHeaderTemplate;
     }
 
 }
