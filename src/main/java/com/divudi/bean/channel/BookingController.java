@@ -211,12 +211,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession billSession;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
-
+    
+    public String fillDataForChannelingBillHeader(String template, Bill bill) { 
+        String output;
+        
+        output = template
+                .replace("{from_department}", bill.getDepartment().getName())
+                .replace("{from_department_address}", bill.getDepartment().getAddress())
+                .replace("{telephone1}", bill.getDepartment().getTelephone1())
+                .replace("{telephone2}", bill.getDepartment().getTelephone2())
+                .replace("{email}", bill.getDepartment().getEmail())
+                .replace("{fax}", bill.getDepartment().getFax());
+        return output;
+    }
+    
     public String navigateToAddBooking() {
-        if (speciality == null) {
-            JsfUtil.addErrorMessage("Please select a Speciality");
-            return "";
-        }
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
             return "";
@@ -239,7 +248,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
-
         String sql;
         Map m = new HashMap();
         sql = "Select f from ItemFee f "
