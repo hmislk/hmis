@@ -117,7 +117,20 @@
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" />
                                         </div>
                                     </p:tab>
-
+                                     <p:tab title="Lists">
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" 
+                                                             ajax="false"
+                                                             value="Batch Bill List" 
+                                                             action="#{opdBillController.navigateToOpdBatchBillList()}" />
+                                            <p:commandButton class="w-100" 
+                                                             ajax="false"
+                                                             value="Bill Payments"
+                                                             action="#{opdBillController.navigateToOpdBillPayments()}" />
+                                        </div>
+                                    </h:form>
+                                </p:tab>
 
                                     <!--                                </p:panelGrid>-->
                                 </p:accordionPanel>
