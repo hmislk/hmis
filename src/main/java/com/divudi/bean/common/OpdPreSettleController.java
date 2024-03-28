@@ -781,7 +781,7 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
-
+        System.out.println("p.getBill().getCashPaid() = " + p.getBill().getCashPaid());
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
