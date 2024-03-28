@@ -226,10 +226,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
     
     public String navigateToAddBooking() {
-        if (speciality == null) {
-            JsfUtil.addErrorMessage("Please select a Speciality");
-            return "";
-        }
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
             return "";
@@ -252,7 +248,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
-
         String sql;
         Map m = new HashMap();
         sql = "Select f from ItemFee f "
@@ -261,6 +256,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
         selectedItemFees = itemFeeFacade.findByJpql(sql, m);
+    }
+
+    public String navigateToChannelBookingFromMenu() {
+        prepareForNewChannellingBill();
+        return "/channel/channel_booking?faces-redirect=true";
+    }
+
+    public void prepareForNewChannellingBill() {
+        listnerStaffListForRowSelect();
     }
 
     public String navigateToViewSessionData() {
@@ -1368,7 +1372,30 @@ public class BookingController implements Serializable, ControllerWithPatient {
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
-        return "/channel/channel_payment_staff_bill";
+        return "/channel/channel_payment_staff_bill?faces-redirect=true";
+
+    }
+    
+    public String paySelectedSession() {
+        if (getSelectedSessionInstance()== null) {
+            JsfUtil.addErrorMessage("Please Select Session Instance");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession()==null){
+            JsfUtil.addErrorMessage("Please Select Session");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession().getStaff()==null){
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality()==null){
+            JsfUtil.addErrorMessage("Please Select Speciality");
+            return "";
+        }
+        channelStaffPaymentBillController.setSessionInstance(selectedSessionInstance);
+        channelStaffPaymentBillController.calculateSessionDueFees();
+        return "/channel/channel_payment_session?faces-redirect=true";
 
     }
 
