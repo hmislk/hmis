@@ -9,7 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="admission" type="com.divudi.entity.inward.Admission" />
-
+        <cc:attribute name="controller"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -93,6 +93,39 @@
                         </table>
                     </div>
 
+                <div class="row ">
+                    <table style="margin-left: 5%">
+                        <tr>
+                            <td style="width: 17%"><p:outputLabel value="Name" /></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><p:outputLabel value="#{cc.attrs.admission.patient.person.nameWithTitle}" /></td>
+                            <td style="width: 3%"></td>
+                            <td style="width: 17%"><h:outputLabel value="Sex "></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.patient.person.sex}" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Blood Group "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.bloodGroup.name}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Civil Status "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.civilStatus.name}" ></h:outputLabel></td>
+                        </tr>
+                        <tr class="p-2">
+                            <td><h:outputLabel value="Allergies"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <p:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                               value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+
                     <div class="mt-1" style="font-weight: bold;">
                         <p:outputLabel   value="PATIENT DETAILS" />
                     </div>
@@ -130,6 +163,7 @@
                                                     <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
                                                                   value="#{al.itemValue.name}#{al.lobValue}"/>
                                                 </div>
+
                                             </div>
                                         </div>
                                     </p:repeat>
