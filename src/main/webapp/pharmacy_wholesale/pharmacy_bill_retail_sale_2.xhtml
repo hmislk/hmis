@@ -29,6 +29,7 @@
                         <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeRetailSale()}" />
                         <p:commandButton disabled="true" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController2.pharmacyWholeRetailSale()}" />
                         <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
+                         <i class="fas fa-truck rounded-circle shadow-lg" style="font-size: 70px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
                     </p:panel>
 
                     <p:panel rendered="#{!pharmacyWholeSaleController2.billPreview}"  style="background-color: goldenrod; color: brown;" >

@@ -22,6 +22,7 @@
                             <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" class="mx-2" disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            <i class="fas fa-shopping-cart rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
                         </p:panel>
 
                         <p:panel class="w-100">

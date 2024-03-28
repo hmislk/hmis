@@ -211,12 +211,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession billSession;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
-
+    
+    public String fillDataForChannelingBillHeader(String template, Bill bill) { 
+        String output;
+        
+        output = template
+                .replace("{from_department}", bill.getDepartment().getName())
+                .replace("{from_department_address}", bill.getDepartment().getAddress())
+                .replace("{telephone1}", bill.getDepartment().getTelephone1())
+                .replace("{telephone2}", bill.getDepartment().getTelephone2())
+                .replace("{email}", bill.getDepartment().getEmail())
+                .replace("{fax}", bill.getDepartment().getFax());
+        return output;
+    }
+    
     public String navigateToAddBooking() {
-        if (speciality == null) {
-            JsfUtil.addErrorMessage("Please select a Speciality");
-            return "";
-        }
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
             return "";
@@ -239,7 +248,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
-
         String sql;
         Map m = new HashMap();
         sql = "Select f from ItemFee f "
@@ -248,6 +256,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
         selectedItemFees = itemFeeFacade.findByJpql(sql, m);
+    }
+
+    public String navigateToChannelBookingFromMenu() {
+        prepareForNewChannellingBill();
+        return "/channel/channel_booking?faces-redirect=true";
+    }
+
+    public void prepareForNewChannellingBill() {
+        listnerStaffListForRowSelect();
     }
 
     public String navigateToViewSessionData() {
@@ -729,87 +746,28 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public List<Staff> getSelectedConsultants() {
         String sql;
         Map m = new HashMap();
-
-//        //System.out.println("consultants = " + consultants);
-        if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
-            m.put("sp", getSpeciality());
-            if (getSpeciality() != null) {
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-
-                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                            + " and pi.type=:typ "
-                            + " and pi.institution=:ins "
-                            + " and pi.staff.speciality=:sp "
-                            + " order by pi.staff.person.name ";
-
-                    m.put("ins", getSessionController().getInstitution());
-                    m.put("typ", PersonInstitutionType.Channelling);
-
-                } else {
-                    sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
-                }
-                consultants = getStaffFacade().findByJpql(sql, m);
-            }
+        if (getSpeciality() == null) {
+            sql = " select s "
+                    + " from Staff s "
+                    + " where s.retired=:ret "
+                    + " and s.speciality in :sps "
+                    + " order by s.person.name ";
+            m.put("ret", false);
+            m.put("sps", doctorSpecialityController.getSelectedItems());
+            consultants = getStaffFacade().findByJpql(sql, m);
         } else {
-            if (selectTextConsultant.length() > 4) {
-                doctorSpecialityController.setSelectText("");
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-
-                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                            + " and pi.type=:typ "
-                            + " and pi.institution=:ins "
-                            + " and (pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                            + " order by pi.staff.person.name ";
-
-                    m.put("ins", getSessionController().getInstitution());
-                    m.put("typ", PersonInstitutionType.Channelling);
-                    consultants = getStaffFacade().findByJpql(sql, m);
-
-                } else {
-                    sql = "select p from Staff p where p.retired=false "
-                            + " and (p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                            + " order by p.person.name";
-                    consultants = getStaffFacade().findByJpql(sql);
-                }
-
-            } else {
-                m.put("sp", getSpeciality());
-                if (getSpeciality() != null) {
-                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
-
-                        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                                + " and pi.type=:typ "
-                                + " and pi.institution=:ins "
-                                + " and pi.staff.speciality=:sp "
-                                + " and (pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                                + " order by pi.staff.person.name ";
-
-                        m.put("ins", getSessionController().getInstitution());
-                        m.put("typ", PersonInstitutionType.Channelling);
-
-                    } else {
-                        sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and (p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
-                                + " order by p.person.name";
-                    }
-                    consultants = getStaffFacade().findByJpql(sql, m);
-                }
-            }
+            sql = "select s "
+                    + " from Staff s "
+                    + " where s.retired=:ret "
+                    + " and s.speciality=:sp "
+                    + "order by s.person.name";
+            m.put("ret", false);
+            m.put("sp", getSpeciality());
+            consultants = getStaffFacade().findByJpql(sql, m);
         }
         if (consultants == null) {
             consultants = new ArrayList<>();
         }
-        /*
-         if (consultants.size() > 0) {
-         System.out.println("consultants.size() = " + consultants.size());
-         setStaff(consultants.get(0));
-         setSpeciality(getStaff().getSpeciality());
-         generateSessions();
-         } else {
-
-         setStaff(null);
-         }
-         */
         return consultants;
     }
 
@@ -1414,7 +1372,30 @@ public class BookingController implements Serializable, ControllerWithPatient {
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
-        return "/channel/channel_payment_staff_bill";
+        return "/channel/channel_payment_staff_bill?faces-redirect=true";
+
+    }
+    
+    public String paySelectedSession() {
+        if (getSelectedSessionInstance()== null) {
+            JsfUtil.addErrorMessage("Please Select Session Instance");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession()==null){
+            JsfUtil.addErrorMessage("Please Select Session");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession().getStaff()==null){
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality()==null){
+            JsfUtil.addErrorMessage("Please Select Speciality");
+            return "";
+        }
+        channelStaffPaymentBillController.setSessionInstance(selectedSessionInstance);
+        channelStaffPaymentBillController.calculateSessionDueFees();
+        return "/channel/channel_payment_session?faces-redirect=true";
 
     }
 

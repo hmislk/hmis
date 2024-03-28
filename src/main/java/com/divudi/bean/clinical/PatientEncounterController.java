@@ -54,7 +54,10 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.BillEntry;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.lab.PatientReport;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientReportFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -118,6 +121,8 @@ public class PatientEncounterController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     private PatientReportFacade prFacade;
+    @EJB
+    BillItemFacade billItemFacade;
 
     /**
      * Controllers
@@ -203,6 +208,8 @@ public class PatientEncounterController implements Serializable {
     private ClinicalFindingValue currentEIResult;
     private PatientReport currentPatientReport;
     private Investigation currentReportInvestigation;
+    private BillItem currentBillItem;
+    private Bill bill;
 
     private List<ClinicalFindingValue> pastPatientMedicineHistory;
 
@@ -726,6 +733,7 @@ public class PatientEncounterController implements Serializable {
         patientReportController.createNewReport(currentPtIx);
     }
 
+   
     public void addEncounterInvestigationResults() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select a visit");
@@ -749,10 +757,10 @@ public class PatientEncounterController implements Serializable {
 
         getEncounterFindingValues().add(encounterInvestigationResult);
         setEncounterInvestigationResults(fillEncounterInvestigationResults(current));
-
         encounterInvestigationResult = null;
-
-        JsfUtil.addSuccessMessage("Investigation Result added");
+        
+        
+        JsfUtil.addSuccessMessage("Investigation Report added");
 
     }
 
@@ -766,6 +774,7 @@ public class PatientEncounterController implements Serializable {
         pi.setApproved(Boolean.FALSE);
         pi.setCancelled(Boolean.FALSE);
         pi.setCollected(Boolean.TRUE);
+        pi.setReceived(Boolean.TRUE);
         pi.setDataEntered(Boolean.FALSE);
         pi.setInvestigation(ix);
         pi.setOutsourced(Boolean.FALSE);
@@ -776,11 +785,34 @@ public class PatientEncounterController implements Serializable {
         pi.setPrinted(Boolean.FALSE);
         pi.setReceived(Boolean.TRUE);
         pi.setRetired(false);
+        createBillItemForPatientInvestigation(pi);
         if (pi.getId() == null) {
             getPiFacade().create(pi);
         }
+        
 
         return pi;
+    }
+    
+    public void createBillItemForPatientInvestigation(PatientInvestigation pi){
+        BillItem bi = new BillItem();
+        bi.setQty(1.0);
+        bi.setItem(pi.getInvestigation());
+        if(bill==null){
+            bill = new Bill();
+        }
+        bi.setBill(bill);
+        bi.getBill().setPatient(pi.getPatient());
+        bi.getBill().setBalance(0.0);
+        if (bill.getId()==null){
+            billFacade.create(bill);
+        }
+        bi.setCreatedAt(new Date());
+        bi.setCreater(sessionController.getLoggedUser());
+        if (bi.getId() == null) {
+            billItemFacade.create(bi);
+        }
+        pi.setBillItem(bi);
     }
 
     public void addDx() {
@@ -1086,13 +1118,13 @@ public class PatientEncounterController implements Serializable {
         temp.add(ClinicalFindingValueType.PatientMedicine);
 
         List<ClinicalFindingValue> tmpCli = fillCurrentPatientClinicalFindingValues(patient, temp);
-        if(tmpCli == null || tmpCli.isEmpty()){
+        if (tmpCli == null || tmpCli.isEmpty()) {
             JsfUtil.addErrorMessage("No medications found on Patient Details");
             return;
         }
 
         for (ClinicalFindingValue cli : tmpCli) {
-            if(cli == null){
+            if (cli == null) {
                 continue;
             }
 
@@ -1289,8 +1321,8 @@ public class PatientEncounterController implements Serializable {
         String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String rr = e.getRespiratoryRate() + " bpm";
@@ -1322,7 +1354,7 @@ public class PatientEncounterController implements Serializable {
             }
         }
 
-        String medicinesOutdoorAsString = "Rx" + "<br/>";
+        String medicinesOutdoorAsString = "";
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null) {
                 if (!cf.getPrescription().isIndoor()) {
@@ -1332,12 +1364,22 @@ public class PatientEncounterController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit;
+                    if (!frequencyUnit.trim().equals("")) {
+                        medicinesOutdoorAsString += " - " + frequencyUnit;
+                    }
+                    if (!duration.trim().equals("")) {
+                        medicinesOutdoorAsString += " - " + duration;
+                    }
+                    if (!durationUnit.trim().equals("")) {
+                        medicinesOutdoorAsString += " - " + durationUnit;
+                    }
+                    medicinesOutdoorAsString += "<br/>";
                 }
             }
         }
 
-        String medicinesIndoorAsString = "Rx" + "<br/>";
+        String medicinesIndoorAsString = "";
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
                 if (cf.getPrescription().isIndoor()) {
@@ -1347,17 +1389,42 @@ public class PatientEncounterController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit;
+                    if (!frequencyUnit.trim().equals("")) {
+                        medicinesIndoorAsString += " - " + frequencyUnit;
+                    }
+                    if (!duration.trim().equals("")) {
+                        medicinesIndoorAsString += " - " + duration;
+                    }
+                    if (!durationUnit.trim().equals("")) {
+                        medicinesIndoorAsString += " - " + durationUnit;
+                    }
+                    medicinesIndoorAsString += "<br/>";
                 }
             }
         }
 
-        String ixAsString = "Ix" + "<br/>";
+        String ixAsString = "";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName() + "<br/>";
+            ixAsString += ix.getItemValue().getName();
+            if (!ix.getLobValue().trim().equals("")) {
+                ixAsString += " - " + ix.getLobValue();
+            }
+            ixAsString += "<br/>";
+        }
+        String ixSameLine = "";
+
+        List<ClinicalFindingValue> encounterInvestigations = getEncounterInvestigations();
+        int totalInvestigations = encounterInvestigations.size();
+        for (int i = 0; i < totalInvestigations; i++) {
+            ClinicalFindingValue ix = encounterInvestigations.get(i);
+            ixSameLine += ix.getItemValue().getName();
+            if (i < totalInvestigations - 1) {
+                ixSameLine += " / ";
+            }
         }
 
-        String paAsString = "Pa" + "<br/>";
+        String paAsString = "";
         for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
             paAsString += pa.getItemValue().getName() + "<br/>";
         }
@@ -1377,11 +1444,21 @@ public class PatientEncounterController implements Serializable {
                 String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
                 String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
                 String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
-                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                String frequencyUnit = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
                 String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
                 String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
 
-                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit;
+                if (!frequencyUnit.trim().equals("")) {
+                    routineMedicinesAsString += " - " + frequencyUnit;
+                }
+                if (!duration.trim().equals("")) {
+                    routineMedicinesAsString += " - " + duration;
+                }
+                if (!durationUnit.trim().equals("")) {
+                    routineMedicinesAsString += " - " + durationUnit;
+                }
+                routineMedicinesAsString += "<br/>";
             }
         }
 
@@ -1405,6 +1482,7 @@ public class PatientEncounterController implements Serializable {
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{ix-same-line}", ixSameLine)
                 .replace("{rr}", rr)
                 .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
@@ -3051,6 +3129,9 @@ public class PatientEncounterController implements Serializable {
                 encounterInvestigationResult.setPerson(current.getPatient().getPerson());
             }
         }
+        if (getCurrentBillItem().getItem() == null) {
+            getCurrentBillItem().setItem(encounterInvestigationResult.getItemValue());
+        }
         return encounterInvestigationResult;
     }
 
@@ -3221,6 +3302,33 @@ public class PatientEncounterController implements Serializable {
 
         updateOrGeneratePrescription();
 
+    }
+
+    public BillItem getCurrentBillItem() {
+        if (currentBillItem == null) {
+            currentBillItem = new BillItem();
+            currentBillItem.setQty(1.0);
+        }
+
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
+    }
+
+    public Bill getBill() {
+        if (bill == null) {
+            bill = new Bill();
+            Bill b = new Bill();
+
+            bill.setBilledBill(b);
+        }
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
