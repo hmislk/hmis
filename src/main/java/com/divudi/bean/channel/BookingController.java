@@ -226,10 +226,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
     
     public String navigateToAddBooking() {
-        if (speciality == null) {
-            JsfUtil.addErrorMessage("Please select a Speciality");
-            return "";
-        }
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
             return "";
