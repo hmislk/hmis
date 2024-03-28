@@ -1052,14 +1052,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
-//        dueBillFees = new ArrayList<BillFee>();
-//        payingBillFees = new ArrayList<BillFee>();
-//        totalPaying = 0.0;
-//        totalDue = 0.0;
-//        printPreview = false;
-//
-//        calculateDueFees();
-//        performCalculations();
     }
 
     public List<BillFee> getFilteredBillFee() {
