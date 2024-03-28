@@ -653,7 +653,6 @@
                                                                                action="/lab/patient_report"
                                                                                actionListener="#{patientEncounterController.createNewResultReport(ix,ix.itemValue)}" >
                                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.currentEIResult}"></f:setPropertyActionListener>
-                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                                 </p:commandLink>
                                                                 <p:commandButton

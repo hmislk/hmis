@@ -57,6 +57,7 @@ import com.divudi.ejb.PatientReportBean;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.lab.PatientReport;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientReportFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -120,6 +121,8 @@ public class PatientEncounterController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     private PatientReportFacade prFacade;
+    @EJB
+    BillItemFacade billItemFacade;
 
     /**
      * Controllers
@@ -754,15 +757,10 @@ public class PatientEncounterController implements Serializable {
 
         getEncounterFindingValues().add(encounterInvestigationResult);
         setEncounterInvestigationResults(fillEncounterInvestigationResults(current));
-
         encounterInvestigationResult = null;
-        if(getCurrentBillItem()!=null){
-            getCurrentBillItem().setBill(getBill());
-            getCurrentBillItem().getBill().setPatient(current.getPatient());
-            getCurrentBillItem().getBill().setBalance(0.0);
-        }
-
-        JsfUtil.addSuccessMessage("Investigation Result added");
+        
+        
+        JsfUtil.addSuccessMessage("Investigation Report added");
 
     }
 
@@ -776,6 +774,7 @@ public class PatientEncounterController implements Serializable {
         pi.setApproved(Boolean.FALSE);
         pi.setCancelled(Boolean.FALSE);
         pi.setCollected(Boolean.TRUE);
+        pi.setReceived(Boolean.TRUE);
         pi.setDataEntered(Boolean.FALSE);
         pi.setInvestigation(ix);
         pi.setOutsourced(Boolean.FALSE);
@@ -786,11 +785,34 @@ public class PatientEncounterController implements Serializable {
         pi.setPrinted(Boolean.FALSE);
         pi.setReceived(Boolean.TRUE);
         pi.setRetired(false);
+        createBillItemForPatientInvestigation(pi);
         if (pi.getId() == null) {
             getPiFacade().create(pi);
         }
+        
 
         return pi;
+    }
+    
+    public void createBillItemForPatientInvestigation(PatientInvestigation pi){
+        BillItem bi = new BillItem();
+        bi.setQty(1.0);
+        bi.setItem(pi.getInvestigation());
+        if(bill==null){
+            bill = new Bill();
+        }
+        bi.setBill(bill);
+        bi.getBill().setPatient(pi.getPatient());
+        bi.getBill().setBalance(0.0);
+        if (bill.getId()==null){
+            billFacade.create(bill);
+        }
+        bi.setCreatedAt(new Date());
+        bi.setCreater(sessionController.getLoggedUser());
+        if (bi.getId() == null) {
+            billItemFacade.create(bi);
+        }
+        pi.setBillItem(bi);
     }
 
     public void addDx() {
