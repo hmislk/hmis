@@ -77,23 +77,22 @@ public class PurchaseOrderRequestController implements Serializable {
     private PaymentMethodData paymentMethodData;
 
     public void removeSelected() {
-        //  //System.err.println("1");
         if (selectedBillItems == null) {
-            //   //System.err.println("2");
             return;
         }
-
         for (BillItem b : selectedBillItems) {
-            //System.err.println("SerialNO " + b.getSearialNo());
-            //System.err.println("Item " + b.getItem().getName());
-            BillItem tmp = getBillItems().remove(b.getSearialNo());
-            tmp.setRetired(true);
-            tmp.setRetirer(sessionController.getLoggedUser());
-            tmp.setRetiredAt(new Date());
-            //System.err.println("Removed Item " + tmp.getItem().getName());
-            calTotal();
+            b.setRetired(true);
+            b.setRetirer(sessionController.getLoggedUser());
+            b.setRetiredAt(new Date());
+            if (getCurrentBill().getId() != null) {
+                if(b.getId()!=null){
+                    billItemFacade.edit(b);
+                }
+            }
         }
 
+        getBillItems().removeAll(selectedBillItems);
+        calTotal();
         selectedBillItems = null;
     }
 
@@ -293,6 +292,7 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void finalizeBillComponent() {
+        getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
             b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
@@ -385,12 +385,6 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
-//
-//        if (checkItemPrice()) {
-//            JsfUtil.addErrorMessage("Please enter purchase price for all");
-//            return;
-//        }
-
         finalizeBill();
         finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");

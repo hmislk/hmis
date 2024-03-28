@@ -107,10 +107,10 @@
                             </p:column>  
 
                             <p:column headerText="Code" styleClass="shortNumericColumn"  >  
-                                #{bi.item.code} 
+                                #{bi.item.code}
                             </p:column>  
 
-                            <p:column headerText="Qty" styleClass="averageNumericColumn" >                         
+                            <p:column headerText="Qty" styleClass="averageNumericColumn" width="6em">                         
                                 <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty" onfocus="this.select()">
                                     <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>

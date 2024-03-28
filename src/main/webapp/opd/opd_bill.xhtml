@@ -81,9 +81,6 @@
                                                         Name
                                                     </f:facet>
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
-                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName or false}" >
-                                                        <h:outputText value=" (#{ix.fullName})" ></h:outputText>
-                                                    </h:panelGroup>
                                                 </p:column>
                                                 <p:column style="text-align: right;" headerText="Value">
                                                     <h:outputText value="#{ix.total}"></h:outputText>

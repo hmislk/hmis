@@ -354,7 +354,7 @@ public class ItemMappingController implements Serializable {
                 + "im.item.name, "
                 + "im.item.code, "
                 + "im.item.fullName, "
-                + "im.department.name, "
+                + "im.item.department.name, "
                 + "im.item.total) "
                 + "FROM ItemMapping im "
                 + "WHERE im.retired = false "

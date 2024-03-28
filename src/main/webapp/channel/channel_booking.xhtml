@@ -88,6 +88,7 @@
                                         process="@this" 
                                         update="acBookings scStaff acSessions"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
                                         value="#{doctorSpecialityController.selectedItems}"
                                         var="spe" 
@@ -114,6 +115,7 @@
                                     process="@this" 
                                     update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
                                     listener="#{bookingController.generateSessions}"/>
+
                                 <f:selectItems value="#{bookingController.consultants}"
                                                var="con" 
                                                itemValue="#{con}"
