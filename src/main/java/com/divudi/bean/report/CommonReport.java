@@ -1836,6 +1836,7 @@ public class CommonReport implements Serializable {
         return cancellededBillsPh2;
     }
 
+    
     private List<Bill> userBillsOwn(Bill billClass, BillType billType, WebUser webUser, Department department) {
         String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
                 + " and b.retired=false"
@@ -3572,7 +3573,7 @@ public class CommonReport implements Serializable {
         auditEvent.setEventTrigger("createCashierTableByUser()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        header = "Cashier Summery";
+        header = "Cashier Summary";
         recreteModal();
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
@@ -3936,7 +3937,7 @@ public class CommonReport implements Serializable {
 
         Date startTime = new Date();
 
-        header = "Cashier Summery";
+        header = "Cashier Summary";
 
         recreteModal();
 //        //Opd Billed Bills
@@ -5309,6 +5310,15 @@ public class CommonReport implements Serializable {
         grnCancelled = null;
         grnReturn = null;
         grnReturnCancel = null;
+        grnAndPurchaseBilled = null;
+        GrnPaymentBill = null;
+        grnAndPurchaseCancelled=null;
+        grnAndPurchaseReturn = null;
+        GrnPaymentCancell = null;
+        GrnPaymentCancellReturn=null;
+        GrnPaymentReturn = null;
+        grnAndPurchaseReturnCancel = null;
+        
     }
 
     public void fillInstitutionReferralBills() {
