@@ -630,6 +630,31 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return tmp;
     }
+    
+     private Bill createPaymentBillForSession() {
+        BilledBill tmp = new BilledBill();
+        tmp.setBillDate(Calendar.getInstance().getTime());
+        tmp.setBillTime(Calendar.getInstance().getTime());
+        tmp.setBillType(BillType.ChannelProPayment);
+        tmp.setCreatedAt(Calendar.getInstance().getTime());
+        tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setDepartment(getSessionController().getDepartment());
+
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+
+        tmp.setDiscount(0.0);
+        tmp.setDiscountPercent(0.0);
+
+        tmp.setInstitution(getSessionController().getInstitution());
+        tmp.setNetTotal(0 - totalPaying);
+        tmp.setPaymentMethod(paymentMethod);
+        tmp.setStaff(sessionInstance.getStaff());
+        tmp.setToStaff(sessionInstance.getStaff());
+        tmp.setTotal(0 - totalPaying);
+
+        return tmp;
+    }
 
     private Bill createPaymentBillAgent() {
         BilledBill tmp = new BilledBill();
@@ -750,7 +775,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             return;
         }
         calculateTotalPay();
-        Bill b = createPaymentBill();
+        Bill b = createPaymentBillForSession();
         current = b;
         getBillFacade().create(b);
         saveBillItemsAndFees(b);
@@ -779,7 +804,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
         current = b;
         if (sessionController.getDepartmentPreference().isDocterPaymentSMS()) {
-            sendSmsAfterDocPayment();
+            sendSmsAfterSessionPayment();
         }
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
@@ -812,6 +837,27 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setReceipientNumber(current.getStaff().getPerson().getPhone());
         System.out.println("DocPaymentSms = " + generateDoctorPaymentSms(current));
         e.setSendingMessage(generateDoctorPaymentSms(current));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.DoctorPayment);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+    
+    public void sendSmsAfterSessionPayment() {
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(current);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(sessionInstance.getStaff().getPerson().getMobile());
+        e.setSendingMessage(generateSessionPaymentSms(current, sessionInstance));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
         e.setPending(false);
@@ -871,6 +917,49 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return s;
     }
+    
+    private String generateSessionPaymentSms(Bill b, SessionInstance si) {
+        String s;
+        String template;
+        String date = CommonController.getDateFormat(si.getSessionDate(),
+                "dd MMM");
+        //System.out.println("date = " + date);
+        String time = "";
+        if(si.getSessionTime()!=null){
+            time = CommonController.getDateFormat(
+                si.getSessionTime(),
+                "hh:mm a");
+        }else if(si.getOriginatingSession().getStartingTime()!=null){
+            time = CommonController.getDateFormat(
+                si.getOriginatingSession().getStartingTime(),
+                "hh:mm a");
+        }
+        
+        if (sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate() == null) {
+            String doc = si.getStaff().getPerson().getNameWithTitle();
+            s = "Dear "
+                    + "{doctor}"
+                    + "{dept_id}"
+                    + "Your Payment of the "
+                    + ""
+                    + "{session_name}"
+                    + " on "
+                    + "{date} "
+                    + ""
+                    + "Patient Count - "
+                    + "{patient_count}"
+                    + " and the total is "
+                    + "{net_total}"
+                    + ". Thank you";
+            sessionController.getDepartmentPreference().setDocterPaymentSMSTemplate(doc);
+            template = doc;
+        } else {
+            template = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
+        }
+        s = genarateTemplateForSms(b, sessionInstance, template);
+
+        return s;
+    }
 
     public String genarateTemplateForSms(Bill b, String input) {
         String s;
@@ -920,6 +1009,44 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return s;
     }
+    
+    public String genarateTemplateForSms(Bill b, SessionInstance sii, String template) {
+        String s;
+        if (b == null) {
+            s = "error in bill";
+            return s;
+        }
+        
+        SessionInstance si = sii;
+        ServiceSession oss = si.getOriginatingSession();
+
+        String time = CommonController.getDateFormat(
+                oss.getStartingTime(),
+                sessionController.getApplicationPreference().getShortTimeFormat());
+
+        String date = CommonController.getDateFormat(si.getSessionDate(),
+                "dd MMM");
+
+        String doc = b.getStaff().getPerson().getNameWithTitle();
+        int no = b.getBillItems().size();
+        double total = b.getTotal();
+        String sessionName = oss.getName();
+
+//        String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
+        s = template.replace("{doctor}", doc)
+                .replace("{patient_count}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", time)
+                .replace("{date}", date)
+                .replace("{No}", String.valueOf(no))
+                .replace("{ins_id}", b.getInsId())
+                .replace("{dept_id}", b.getDeptId())
+                .replace("{net_total}", String.valueOf(-total))
+                .replace("{session_name}", sessionName);
+
+        return s;
+    }
+
 
     public void settleBillAgent() {
         if (errorCheckForAgency()) {
