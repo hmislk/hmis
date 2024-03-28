@@ -821,7 +821,7 @@
                     <p:menuitem 
                         ajax="false"  
                         value="Channel Booking"  
-                        action="#{channelBookingController.navigateToChannelBookingFromMenu()}" 
+                        action="#{bookingController.navigateToChannelBookingFromMenu()}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.resetToStartFromSpeciality}" rendered="false" ></p:menuitem>

@@ -60,6 +60,7 @@ public class UserNotificationController implements Serializable {
     private UserNotification current;
     private List<UserNotification> items = null;
 
+    @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
 
     public String navigateToUserNotification() {
@@ -112,7 +113,7 @@ public class UserNotificationController implements Serializable {
         notificationFacade.edit(current.getNotification());
         current.setSeen(true);
         getFacade().edit(current);
-        
+        fillLoggedUserNotifications();
     }
 
     public void removeUserNotification(UserNotification un) {
@@ -146,11 +147,14 @@ public class UserNotificationController implements Serializable {
             return "";
         }
         Bill bill = cu.getNotification().getBill();
-        System.out.println("bill = " + bill.getBillTypeAtomic());
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:
-                System.out.println("cu = " + bill);
+                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
+                return "/ward/ward_pharmacy_bht_issue";
+                
+            case PHARMACY_TRANSFER_REQUEST:
+                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
                 return "/ward/ward_pharmacy_bht_issue";
 
             default:
