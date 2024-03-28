@@ -368,7 +368,7 @@
                 <p:panel rendered="#{admissionController.printPreview}">
 
                     <h:panelGroup id="gpBillPreview">
-                        <bill:bht_sethma admission="#{admissionController.current}"/>
+                        <bill:bht_sethma admission="#{admissionController.current}" controller="#{admissionController}" />
                     </h:panelGroup>
                 </p:panel>
 
