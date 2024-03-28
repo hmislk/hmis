@@ -84,6 +84,12 @@
                                                  icon="pi pi-calendar"
                                                  styleClass="ui-button-warning mb-2 w-100">
                                 </p:commandButton>
+                                <p:commandButton value="Pay Session"
+                                                 action="#{bookingController.paySelectedSession()}"
+                                                 ajax="false"
+                                                 icon="pi pi-credit-card"
+                                                 styleClass="ui-button-danger mb-2 w-100">
+                                </p:commandButton>
                                 <p:commandButton value="Pay Selected Doctor"
                                                  action="#{bookingController.paySelectedDoctor}"
                                                  ajax="false"

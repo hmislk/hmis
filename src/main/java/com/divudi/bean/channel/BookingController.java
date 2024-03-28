@@ -1367,6 +1367,29 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return "/channel/channel_payment_staff_bill?faces-redirect=true";
 
     }
+    
+    public String paySelectedSession() {
+        if (getSelectedSessionInstance()== null) {
+            JsfUtil.addErrorMessage("Please Select Session Instance");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession()==null){
+            JsfUtil.addErrorMessage("Please Select Session");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession().getStaff()==null){
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return "";
+        }
+        if(selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality()==null){
+            JsfUtil.addErrorMessage("Please Select Speciality");
+            return "";
+        }
+        channelStaffPaymentBillController.setSessionInstance(selectedSessionInstance);
+        channelStaffPaymentBillController.calculateSessionDueFees();
+        return "/channel/channel_payment_session?faces-redirect=true";
+
+    }
 
     private Bill saveBilledBill() {
         System.out.println("saveBilledBill started at " + new Date());
