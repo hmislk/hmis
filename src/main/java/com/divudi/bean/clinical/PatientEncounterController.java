@@ -54,6 +54,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.BillEntry;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.PatientReportFacade;
 import java.io.Serializable;
@@ -203,6 +205,8 @@ public class PatientEncounterController implements Serializable {
     private ClinicalFindingValue currentEIResult;
     private PatientReport currentPatientReport;
     private Investigation currentReportInvestigation;
+    private BillItem currentBillItem;
+    private Bill bill;
 
     private List<ClinicalFindingValue> pastPatientMedicineHistory;
 
@@ -726,6 +730,7 @@ public class PatientEncounterController implements Serializable {
         patientReportController.createNewReport(currentPtIx);
     }
 
+   
     public void addEncounterInvestigationResults() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select a visit");
@@ -751,6 +756,11 @@ public class PatientEncounterController implements Serializable {
         setEncounterInvestigationResults(fillEncounterInvestigationResults(current));
 
         encounterInvestigationResult = null;
+        if(getCurrentBillItem()!=null){
+            getCurrentBillItem().setBill(getBill());
+            getCurrentBillItem().getBill().setPatient(current.getPatient());
+            getCurrentBillItem().getBill().setBalance(0.0);
+        }
 
         JsfUtil.addSuccessMessage("Investigation Result added");
 
@@ -1381,13 +1391,13 @@ public class PatientEncounterController implements Serializable {
             ixAsString += "<br/>";
         }
         String ixSameLine = "";
-        
+
         List<ClinicalFindingValue> encounterInvestigations = getEncounterInvestigations();
         int totalInvestigations = encounterInvestigations.size();
         for (int i = 0; i < totalInvestigations; i++) {
             ClinicalFindingValue ix = encounterInvestigations.get(i);
             ixSameLine += ix.getItemValue().getName();
-            if (i < totalInvestigations - 1) { 
+            if (i < totalInvestigations - 1) {
                 ixSameLine += " / ";
             }
         }
@@ -3097,6 +3107,9 @@ public class PatientEncounterController implements Serializable {
                 encounterInvestigationResult.setPerson(current.getPatient().getPerson());
             }
         }
+        if (getCurrentBillItem().getItem() == null) {
+            getCurrentBillItem().setItem(encounterInvestigationResult.getItemValue());
+        }
         return encounterInvestigationResult;
     }
 
@@ -3267,6 +3280,33 @@ public class PatientEncounterController implements Serializable {
 
         updateOrGeneratePrescription();
 
+    }
+
+    public BillItem getCurrentBillItem() {
+        if (currentBillItem == null) {
+            currentBillItem = new BillItem();
+            currentBillItem.setQty(1.0);
+        }
+
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
+    }
+
+    public Bill getBill() {
+        if (bill == null) {
+            bill = new Bill();
+            Bill b = new Bill();
+
+            bill.setBilledBill(b);
+        }
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
