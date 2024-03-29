@@ -54,7 +54,7 @@
                         <p:commandButton id="btnRefresh2" 
                                          icon="fas fa-money-bill"
                                          ajax="false" class="ui-button-warning mx-1" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                         action="#{commonReport.createCashierTableByUser()}" />  
+                                         action="#{commonReport.createCashierTableByUserOnlyCashier()}" />  
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-1" icon="fas fa-print">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
