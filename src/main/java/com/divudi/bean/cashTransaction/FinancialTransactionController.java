@@ -67,12 +67,14 @@ public class FinancialTransactionController implements Serializable {
     private double totalPharmecyBillValues;
     private double totalChannelBillValues;
     private double totalCcBillValues;
+    private double totalProfessionalPaymentBillValues;
 
     //Cancelled Totals
     private double totalOpdBillCanceledValue;
     private double totalPharmecyBillCanceledValue;
     private double totalChannelBillCancelledValue;
     private double totalCcBillCanceledValue;
+    private double totalProfessionalPaymentBillCancelledValues;
 
     //Refund Totals
     private double totalOpdBillRefundValue;
@@ -1158,6 +1160,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setTotalCcBillRefunds(double totalCcBillRefunds) {
         this.totalCcBillRefunds = totalCcBillRefunds;
+    }
+
+    public double getTotalProfessionalPaymentBillValues() {
+        return totalProfessionalPaymentBillValues;
+    }
+
+    public void setTotalProfessionalPaymentBillValues(double totalProfessionalPaymentBillValues) {
+        this.totalProfessionalPaymentBillValues = totalProfessionalPaymentBillValues;
+    }
+
+    public double getTotalProfessionalPaymentBillCancelledValues() {
+        return totalProfessionalPaymentBillCancelledValues;
+    }
+
+    public void setTotalProfessionalPaymentBillCancelledValues(double totalProfessionalPaymentBillCancelledValues) {
+        this.totalProfessionalPaymentBillCancelledValues = totalProfessionalPaymentBillCancelledValues;
     }
     
     
