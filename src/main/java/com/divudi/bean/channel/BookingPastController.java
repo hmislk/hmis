@@ -678,7 +678,7 @@ public class BookingPastController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
 //        makeBillSessionNull();
-//        calTotal();
+//        calChannelTotal();
         this.selectedServiceSession = selectedServiceSession;
     }
 
