@@ -395,6 +395,10 @@
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
+                                        
+                                        <h:outputLabel value="Show Bar Code in Channel Booking Bill"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showBarCodeInChannelBookingBill}"/>
+
                                         <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
 
