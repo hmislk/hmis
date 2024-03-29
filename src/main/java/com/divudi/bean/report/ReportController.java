@@ -319,18 +319,18 @@ public class ReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         System.out.println("this = 3");
-        if (fromDepartment != null) {
+        if (department != null) {
             jpql += " and bi.bill.department=:fdept ";
-            m.put("fdept", fromDepartment);
+            m.put("fdept", department);
         }
 
-        if (referingDoctor != null) {
-            jpql += " and bi.bill.referredBy =:refd";
-            m.put("refd", referingDoctor);
+        if (doctor != null) {
+            jpql += " and bi.bill.fromStaff =:fs";
+            m.put("fs", doctor);
         }
 
-        jpql += " group by bi.bill.referredBy.person.name, bi.item.name ";
-        jpql += " order by bi.bill.referredBy.person.name, bi.item.name";
+        jpql += " group by bi.item, bi.bill.fromStaff ";
+        jpql += " order by bi.bill.fromStaff.person.name";
 
         reportOpdServiceCount = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
         System.out.println("m = " + reportOpdServiceCount.size());
@@ -339,6 +339,8 @@ public class ReportController implements Serializable {
         System.out.println("doctorWiseReport = " + reportList.size());
     }
 
+    
+    
     public void processCollectingCentreReportsToPrint() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -400,6 +402,9 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
+    
+    
+    
     public void processCollectingCentreStatementReport() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -1751,6 +1756,14 @@ public class ReportController implements Serializable {
 
     public void setPerson(Person person) {
         this.person = person;
+    }
+
+    public List<ItemCount> getReportOpdServiceCount() {
+        return reportOpdServiceCount;
+    }
+
+    public void setReportOpdServiceCount(List<ItemCount> reportOpdServiceCount) {
+        this.reportOpdServiceCount = reportOpdServiceCount;
     }
 
 }

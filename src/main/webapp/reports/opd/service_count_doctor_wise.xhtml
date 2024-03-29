@@ -93,28 +93,23 @@
                         </p:commandButton>
 
                         <p:dataTable id="tbl" 
-                                     value="#{reportController.reportList}" 
-                                     var="catReport"
+                                     value="#{reportController.reportOpdServiceCount}" 
+                                     var="item"
                                      paginatorPosition="bottom"
                                      paginator="true"
                                      class="mt-3"
                                      rows="10"
 
                                      >
-                            <p:subTable var="item" value="#{catReport.items}">
-                                <f:facet name="header">
-                                    <h:outputText value="Total for #{catReport.category} : #{catReport.total}" />
-                                </f:facet>
-
-                                <p:column headerText="Test Name">
-                                    <h:outputText value="#{item.testName}" />
-                                </p:column>
-
-                                <p:column headerText="Test Count">
-                                    <h:outputText value="#{item.testCount}" />
-                                </p:column>
-
-                            </p:subTable>
+                            <p:column headerText="Doctor Name">
+                                <h:outputText value="#{item.doctor}" />
+                            </p:column>
+                            <p:column headerText="Test Name">
+                                <h:outputText value="#{item.testName}" />
+                            </p:column>
+                            <p:column headerText="Test Count">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
                         </p:dataTable>
                     </p:panel>
                 </h:form>
