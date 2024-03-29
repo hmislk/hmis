@@ -1508,20 +1508,20 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
-
+        System.out.println("refunding1 = " + refundingBill.getCashPaid());
         boolean billValueInversionIsSuccess = invertBillValuesAndCalculate(refundingBill);
         if (!billValueInversionIsSuccess) {
             JsfUtil.addErrorMessage("Error in Bill Value Inversion");
             return "";
         }
-
         saveRefundBill(refundingBill);
+        
         Payment p = getOpdPreSettleController().createPayment(refundingBill, paymentMethod);
 
         //TODO: Create Payments for Bill Items
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
             if (getBill().getToStaff() != null) {
-                staffBean.updateStaffCredit(getBill().getToStaff(), (refundingBill.getNetTotal() + refundingBill.getVat()));
+                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
             } else if (getBill().getCreditCompany() != null) {
                 //TODO : Update Credit COmpany Bill
@@ -3715,13 +3715,13 @@ public class BillSearch implements Serializable {
             refundVat += bi.getVat();
             refundVatPlusTotal += bi.getVatPlusNetValue();
         }
-        b.setTotal(billTotal);
-        b.setNetTotal(billTotal);
-        b.setTotal(refundTotal);
-        b.setDiscount(refundDiscount);
-        b.setNetTotal(refundAmount);
-        b.setVat(refundVat);
-        b.setVatPlusNetTotal(refundVatPlusTotal);
+        b.setTotal(0-Math.abs(billTotal));
+        b.setNetTotal(0-Math.abs(billTotal));
+        b.setTotal(0-Math.abs(refundTotal));
+        b.setDiscount(0-Math.abs(refundDiscount));
+        b.setNetTotal(0-Math.abs(refundAmount));
+        b.setVat(0-Math.abs(refundVat));
+        b.setVatPlusNetTotal(0-Math.abs(refundVatPlusTotal));
         return true;
 
     }
