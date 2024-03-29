@@ -18,11 +18,11 @@
                             <p:selectOneMenu 
                                 id="cmdFromInstitution"
                                 class="mx-2 w-100"
-                                value="#{reportController.fromInstitution}"
+                                value="#{reportController.institution}"
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                <f:selectItems value="#{institutionController.companies}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
@@ -32,11 +32,11 @@
                             <p:outputLabel value="Billing Department" ></p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromDepartment"
-                                value="#{reportController.fromDepartment}" 
+                                value="#{reportController.department}" 
                                 class="w-100 mt-1 mx-2"
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
@@ -45,7 +45,7 @@
                             <p:outputLabel value="Doctor" ></p:outputLabel>
                             <p:autoComplete forceSelection="true" 
                                             id="cmbDoc" 
-                                            value="#{reportController.referringDoctor}" 
+                                            value="#{reportController.doctor}" 
                                             completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                             itemLabel="#{ix.person.name}" 
                                             itemValue="#{ix}" 
@@ -60,14 +60,14 @@
                                 </p:column>
                             </p:autoComplete>
 
-                            <p:outputLabel value="Bill Date From" ></p:outputLabel>
+                            <p:outputLabel value="From" ></p:outputLabel>
                             <p:datePicker 
                                 class="mt-1 mx-2"
                                 value="#{reportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
 
-                            <p:outputLabel value="Bill Date To" ></p:outputLabel>
+                            <p:outputLabel value="To" ></p:outputLabel>
                             <p:datePicker 
                                 class="mt-1 mx-2"
                                 value="#{reportController.toDate}"
