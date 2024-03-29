@@ -74,7 +74,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" value="#{bill.insId}">
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.insId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -84,7 +84,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="To Department"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" value="#{bill.toDepartment.name}">
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.toDepartment.name}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -94,7 +94,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billing Centre"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" value="#{bill.institution.name}">
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.institution.name}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -104,7 +104,7 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="Bill Date"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint">
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
                                     <h:outputLabel value="#{bill.billDate}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
@@ -116,7 +116,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Time"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.billTime}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
@@ -128,7 +128,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Client"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.patient.person.nameWithTitle}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -138,7 +138,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Client Phone No"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.patient.person.phone}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -148,7 +148,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed By"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -158,7 +158,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Gross Value"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.total}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -170,7 +170,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Discount"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.discount}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -182,7 +182,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Net Value"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel value="#{bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -195,7 +195,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Cancelled User"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -205,7 +205,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Canceled Time"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
@@ -218,7 +218,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Cancelled Date"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
@@ -231,7 +231,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Refunded By"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -242,7 +242,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Refunded Time"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
@@ -255,7 +255,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Refunded Date"/>
                                 </f:facet>
-                                <h:commandLink action="bill_reprint" >
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>

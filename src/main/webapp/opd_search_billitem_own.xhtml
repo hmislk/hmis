@@ -70,17 +70,17 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" styleClass="alignTop" >
-                                        <h:commandLink action="bill_reprint" value="#{pi.bill.insId}">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.insId}">
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>   
                                     </p:column>
                                     <p:column headerText="Institution Name" styleClass="alignTop"  >
-                                        <h:commandLink action="bill_reprint" value="#{pi.bill.toInstitution.name}">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.toInstitution.name}">
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Credit Company" styleClass="alignTop" rendered="#{pi.bill.creditCompany ne null}" >
-                                        <h:commandLink action="bill_reprint" value="#{pi.bill.creditCompany.name}">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.creditCompany.name}">
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
@@ -143,19 +143,19 @@
                                         </h:panelGroup>
                                     </p:column>
                                     <p:column headerText="Payment Method">
-                                        <h:commandLink action="bill_reprint" >
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{pi.bill.paymentMethod}" ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Discount Scheme" >
-                                        <h:commandLink action="bill_reprint" >
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{pi.bill.paymentScheme.name}" ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Gross Value">
-                                        <h:commandLink action="bill_reprint" >
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{pi.bill.total}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -163,7 +163,7 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Discount">
-                                        <h:commandLink action="bill_reprint" >
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{pi.bill.discount}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -171,7 +171,7 @@
                                         </h:commandLink>
                                     </p:column>
                                     <p:column headerText="Net Value"  >
-                                        <h:commandLink action="bill_reprint" >
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{pi.bill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
