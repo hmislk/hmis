@@ -272,6 +272,10 @@ public class PharmacyController implements Serializable {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
     }
+    
+    public String navigateToPharmacyAnalytics() {
+        return "/pharmacy/pharmacy_analytics?faces-redirect=true";
+    }
 
     public String navigateToManagePharmaceuticals() {
         return "/pharmacy/admin/index?faces-redirect=true";

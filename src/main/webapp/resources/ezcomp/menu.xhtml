@@ -654,6 +654,7 @@
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Item Search" icon="fas fa-search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Generate Reports" icon="fas fa-chart-line" rendered="#{webUserController.hasPrivilege('PharmacyGenarateReports')}" ></p:menuitem>
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summary Views" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
+                    <p:menuitem  ajax="false" action="#{pharmacyController.navigateToPharmacyAnalytics()}"  value="Pharmacy Analytics" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
