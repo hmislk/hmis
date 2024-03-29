@@ -67,6 +67,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -1564,7 +1565,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             b.setBillTotal(b.getNetTotal());
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
                 if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
@@ -1665,6 +1666,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void saveBatchBill() {
         Bill newBatchBill = new BilledBill();
         newBatchBill.setBillType(BillType.OpdBathcBill);
+        newBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         newBatchBill.setPaymentScheme(paymentScheme);
         newBatchBill.setPaymentMethod(paymentMethod);
         newBatchBill.setInstitution(sessionController.getInstitution());
@@ -1754,6 +1756,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private Bill saveBill(Department bt, Bill newBill) {
         newBill.setBillType(BillType.OpdBill);
+        newBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 
 //        newBill.setCategory(cat);
         newBill.setDepartment(getSessionController().getDepartment());
@@ -1832,6 +1835,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private Bill saveBill(Department bt, Category cat, Bill newBill) {
         newBill.setBillType(BillType.OpdBill);
+        newBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 
 //        newBill.setCategory(cat);
         newBill.setDepartment(getSessionController().getDepartment());
@@ -2612,7 +2616,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
-                return "/opd/opd_bill";
+                return "/opd/opd_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -2624,18 +2628,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
-            return "/opd/opd_bill";
+            return "/opd/opd_bill?faces-redirect=true";
         }
     }
 
     public String navigateToNewOpdBill(Patient pt) {
         navigateToNewOpdBill();
         patient = pt;
-        return "/opd/opd_bill";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public String toOpdBilling() {
-        return "/opd/opd_bill";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public void prepareNewBillForMember() {
@@ -2798,27 +2802,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private double reminingCashPaid = 0.0;
 
     public void createBillFeePaymentsByPaymentsAndBillEntry(Payment p, List<BillEntry> billEntrys) {
-
         double dbl = 0;
         double pid = 0;
         reminingCashPaid = cashPaid;
-
         for (BillEntry be : billEntrys) {
-
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
-
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 calculateBillfeePayments(be.getLstBillFees(), p);
-
             }
-
         }
-
     }
 
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
