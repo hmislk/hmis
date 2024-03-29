@@ -249,6 +249,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fillFees();
         printPreview = false;
         patient = new Patient();
+        if(speciality== null){
+            speciality = staff.getSpeciality();
+        }
         return "/channel/add_booking?faces-redirect=true";
     }
 
@@ -1060,6 +1063,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             }
             generateSessionEvents(sessionInstances);
         }
+  
     }
 
     public void generateSessionEvents(List<SessionInstance> sss) {
