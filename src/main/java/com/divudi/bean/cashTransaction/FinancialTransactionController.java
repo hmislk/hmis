@@ -59,29 +59,46 @@ public class FinancialTransactionController implements Serializable {
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
     private List<Payment> paymentsFromShiftSratToNow;
-    List<Payment> recievedBIllPayments;
+    private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
 
+    //Billed Totals
     private double totalOpdBillValues;
     private double totalPharmecyBillValues;
+    private double totalChannelBillValues;
+    private double totalCcBillValues;
+
+    //Cancelled Totals
+    private double totalOpdBillCanceledValue;
+    private double totalPharmecyBillCanceledValue;
+    private double totalChannelBillCancelledValue;
+    private double totalCcBillCanceledValue;
+
+    //Refund Totals
+    private double totalOpdBillRefundValue;
+    private double totalPharmecyBillValue;
+    private double totalChannelBillRefunds;
+    private double totalCcBillRefunds;
+
+    //Totals
+    private double totalBillRefunds;
+    private double totalBillCanceld;
+    private double totalBilledBillValue;
+
     private double totalShiftStart;
     private double totalBalanceTransfer;
     private double totalTransferRecive;
+
     private double totalFunds;
     private double shiftEndTotalValue;
     private double shiftEndRefundBillValue;
     private double shiftEndCanceledBillValue;
     private double totalWithdrawals;
     private double totalDeposits;
-    private double totalBillRefunds;
-    private double totalBillCanceld;
-    private double totalBilledBillValue;
+
     private double Deductions;
     private double aditions;
-    private double totalCCBillValues;
-    private double totalOpdBillCanceled;
-    private double totalPharmecyBillCanceled;
-    private double totalCCBillCanceled;
+
     private int fundTransferBillsToReceiveCount;
 
     // </editor-fold>  
@@ -435,9 +452,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     // </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="Sample Code Block">
-// </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
+    // <editor-fold defaultstate="collapsed" desc="Sample Code Block">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -486,15 +503,15 @@ public class FinancialTransactionController implements Serializable {
                     }
                     if (p.getBill().isCancelled()) {
                         System.out.println("p = " + p.getBill().getTotal());
-                        totalOpdBillCanceled += p.getBill().getTotal();
+                        totalOpdBillCanceledValue += p.getBill().getTotal();
                     }
                     if (p.getBill().getReferenceBill() != null) {
                         totalBilledBillValue += p.getBill().getTotal();
                     }
                     if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
-                        totalBilledBillValue +=p.getBill().getTotal();
+                        totalBilledBillValue += p.getBill().getTotal();
                     }
-                    
+
                     totalOpdBillValues += p.getPaidValue();
                     break;
                 case PharmacySale:
@@ -502,7 +519,7 @@ public class FinancialTransactionController implements Serializable {
                         totalBillRefunds += p.getPaidValue();
                     }
                     if (p.getBill().isCancelled()) {
-                        totalPharmecyBillCanceled += p.getPaidValue();
+                        totalPharmecyBillCanceledValue += p.getPaidValue();
                     }
                     if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
                         totalBilledBillValue += p.getPaidValue();
@@ -559,15 +576,14 @@ public class FinancialTransactionController implements Serializable {
                         totalBillRefunds += p.getPaidValue();
                     }
                     if (p.getBill().isCancelled()) {
-                        totalCCBillCanceled += p.getPaidValue();
+                        totalCcBillCanceledValue += p.getPaidValue();
                     }
                     if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
                         totalBilledBillValue += p.getPaidValue();
                     }
-                    totalCCBillValues += p.getPaidValue();
+                    totalCcBillValues += p.getPaidValue();
                     break;
-                    
-               
+
                 default:
                     break;
             }
@@ -575,24 +591,23 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        totalBillCanceld = totalOpdBillCanceled 
-                + totalCCBillCanceled 
-                + totalPharmecyBillCanceled;
+        totalBillCanceld = totalOpdBillCanceledValue
+                + totalCcBillCanceledValue
+                + totalPharmecyBillCanceledValue;
         totalOpdBillValues = totalOpdBillValues;
         totalPharmecyBillValues = totalPharmecyBillValues;
-        totalCCBillValues = totalCCBillValues;
-        double totalBillValues = totalBilledBillValue+totalTransferRecive;
+        totalCcBillValues = totalCcBillValues;
+        double totalBillValues = totalBilledBillValue + totalTransferRecive;
 
         aditions = totalBillValues + totalShiftStart;
-        Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds+totalBillCanceld;
+        Deductions = totalBalanceTransfer + totalDeposits + totalBillRefunds + totalBillCanceld;
         totalFunds = aditions - Deductions;
         shiftEndTotalValue = totalFunds;
-        
 
     }
 
     public void resetTotalFundsValues() {
-        totalCCBillValues = 0.0;
+        totalCcBillValues = 0.0;
         totalOpdBillValues = 0.0;
         totalPharmecyBillValues = 0.0;
         totalShiftStart = 0.0;
@@ -604,9 +619,9 @@ public class FinancialTransactionController implements Serializable {
         totalWithdrawals = 0.0;
         totalBilledBillValue = 0.0;
         shiftEndTotalValue = 0.0;
-        totalOpdBillCanceled = 0.0;
-        totalCCBillCanceled = 0.0;
-        totalPharmecyBillCanceled = 0.0;
+        totalOpdBillCanceledValue = 0.0;
+        totalCcBillCanceledValue = 0.0;
+        totalPharmecyBillCanceledValue = 0.0;
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
@@ -709,7 +724,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
-        fundTransferBillsToReceiveCount=fundTransferBillsToReceive.size();
+        fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
 
     }
 
@@ -1049,36 +1064,36 @@ public class FinancialTransactionController implements Serializable {
         this.aditions = aditions;
     }
 
-    public double getTotalCCBillValues() {
-        return totalCCBillValues;
+    public double getTotalCcBillValues() {
+        return totalCcBillValues;
     }
 
-    public void setTotalCCBillValues(double totalCCBillValues) {
-        this.totalCCBillValues = totalCCBillValues;
+    public void setTotalCcBillValues(double totalCcBillValues) {
+        this.totalCcBillValues = totalCcBillValues;
     }
 
-    public double getTotalOpdBillCanceled() {
-        return totalOpdBillCanceled;
+    public double getTotalOpdBillCanceledValue() {
+        return totalOpdBillCanceledValue;
     }
 
-    public void setTotalOpdBillCanceled(double totalOpdBillCanceled) {
-        this.totalOpdBillCanceled = totalOpdBillCanceled;
+    public void setTotalOpdBillCanceledValue(double totalOpdBillCanceledValue) {
+        this.totalOpdBillCanceledValue = totalOpdBillCanceledValue;
     }
 
-    public double getTotalPharmecyBillCanceled() {
-        return totalPharmecyBillCanceled;
+    public double getTotalPharmecyBillCanceledValue() {
+        return totalPharmecyBillCanceledValue;
     }
 
-    public void setTotalPharmecyBillCanceled(double totalPharmecyBillCanceled) {
-        this.totalPharmecyBillCanceled = totalPharmecyBillCanceled;
+    public void setTotalPharmecyBillCanceledValue(double totalPharmecyBillCanceledValue) {
+        this.totalPharmecyBillCanceledValue = totalPharmecyBillCanceledValue;
     }
 
-    public double getTotalCCBillCanceled() {
-        return totalCCBillCanceled;
+    public double getTotalCcBillCanceledValue() {
+        return totalCcBillCanceledValue;
     }
 
-    public void setTotalCCBillCanceled(double totalCCBillCanceled) {
-        this.totalCCBillCanceled = totalCCBillCanceled;
+    public void setTotalCcBillCanceledValue(double totalCcBillCanceledValue) {
+        this.totalCcBillCanceledValue = totalCcBillCanceledValue;
     }
 
     public int getFundTransferBillsToReceiveCount() {
@@ -1087,6 +1102,62 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferBillsToReceiveCount(int fundTransferBillsToReceiveCount) {
         this.fundTransferBillsToReceiveCount = fundTransferBillsToReceiveCount;
+    }
+
+    public List<Payment> getRecievedBIllPayments() {
+        return recievedBIllPayments;
+    }
+
+    public void setRecievedBIllPayments(List<Payment> recievedBIllPayments) {
+        this.recievedBIllPayments = recievedBIllPayments;
+    }
+
+    public double getTotalChannelBillValues() {
+        return totalChannelBillValues;
+    }
+
+    public void setTotalChannelBillValues(double totalChannelBillValues) {
+        this.totalChannelBillValues = totalChannelBillValues;
+    }
+
+    public double getTotalChannelBillCancelledValue() {
+        return totalChannelBillCancelledValue;
+    }
+
+    public void setTotalChannelBillCancelledValue(double totalChannelBillCancelledValue) {
+        this.totalChannelBillCancelledValue = totalChannelBillCancelledValue;
+    }
+
+    public double getTotalOpdBillRefundValue() {
+        return totalOpdBillRefundValue;
+    }
+
+    public void setTotalOpdBillRefundValue(double totalOpdBillRefundValue) {
+        this.totalOpdBillRefundValue = totalOpdBillRefundValue;
+    }
+
+    public double getTotalPharmecyBillValue() {
+        return totalPharmecyBillValue;
+    }
+
+    public void setTotalPharmecyBillValue(double totalPharmecyBillValue) {
+        this.totalPharmecyBillValue = totalPharmecyBillValue;
+    }
+
+    public double getTotalChannelBillRefunds() {
+        return totalChannelBillRefunds;
+    }
+
+    public void setTotalChannelBillRefunds(double totalChannelBillRefunds) {
+        this.totalChannelBillRefunds = totalChannelBillRefunds;
+    }
+
+    public double getTotalCcBillRefunds() {
+        return totalCcBillRefunds;
+    }
+
+    public void setTotalCcBillRefunds(double totalCcBillRefunds) {
+        this.totalCcBillRefunds = totalCcBillRefunds;
     }
     
     
