@@ -352,7 +352,7 @@ public class PurchaseOrderRequestController implements Serializable {
                 + "AND i IN "
                 + "(SELECT s.itemBatch.item FROM Stock s WHERE s.department = :department "
                 + "GROUP BY s.itemBatch.item HAVING SUM(s.stock) < "
-                + "(SELECT r.reorderLevel FROM Reorder r WHERE r.item = s.itemBatch.item AND r.department = :department)) "
+                + "(SELECT r.rol FROM Reorder r WHERE r.item = s.itemBatch.item AND r.department = :department  ORDER BY r.id DESC LIMIT 1)) "
                 + "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
