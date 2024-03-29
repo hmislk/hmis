@@ -33,6 +33,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.ItemMapping;
 import com.divudi.entity.UserPreference;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemMappingFacade;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -78,6 +79,8 @@ public class ItemController implements Serializable {
     private ItemFeeFacade itemFeeFacade;
     @EJB
     ItemMappingFacade itemMappingFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
     /**
      * Managed Beans
      */
@@ -919,8 +922,19 @@ public class ItemController implements Serializable {
         getInvestigationsAndServices();
     }
 
+    public List<Department> fillInstitutionDepatrments() {
+        Map m = new HashMap();
+        m.put("ins", current.getInstitution());
+        String sql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and d.institution=:ins "
+                + " order by d.name";
+        departments = departmentFacade.findByJpql(sql, m);
+        System.out.println("dep = " + departments.size());
+        return departments;
+    }
+
     public List<Department> getDepartments() {
-        departments = departmentController.getInstitutionDepatrments(institution);
         return departments;
     }
 
@@ -1257,7 +1271,6 @@ public class ItemController implements Serializable {
 //        return suggestions;
 //
 //    }
-
     public List<Item> completeAmpItemAll(String query) {
         String sql;
         HashMap tmpMap = new HashMap();
