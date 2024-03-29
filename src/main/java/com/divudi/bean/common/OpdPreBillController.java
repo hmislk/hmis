@@ -1083,7 +1083,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getPatient());
-        return "/opd/opd_pre_bill";
+        return "/opd/opd_pre_bill?faces-redirect=true";
 
     }
 
