@@ -5,18 +5,11 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
     <h:body>
-
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
-
             <ui:define name="subcontent">
                 <h:form>
-
                     <p:panel header="Ordering Managemenet" >
-
-
-
                         <div class="row">
 
                             <div class="col-md-6">
@@ -97,16 +90,18 @@
                                         <p:outputLabel value="Reorder Level" >
                                         </p:outputLabel>
                                     </f:facet>
-                                    <p:outputLabel value="#{ro.rol}"> 
-                                    </p:outputLabel>
+                                    <p:inputText  id="txtRol" value="#{ro.rol}"> 
+                                        <p:ajax event="blur" process="txtRol" update="txtRol" listener="#{reorderController.updateReorder(ro)}" ></p:ajax>
+                                    </p:inputText>
                                 </p:column>
                                 <p:column style="text-align: left;" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Reorder Quantity" >
                                         </p:outputLabel>
                                     </f:facet>
-                                    <p:outputLabel value="#{ro.roq}"> 
-                                    </p:outputLabel>
+                                    <p:inputText id="txtRoq" value="#{ro.roq}"> 
+                                        <p:ajax event="blur" process="txtRoq" update="txtRoq" listener="#{reorderController.updateReorder(ro)}" ></p:ajax>
+                                    </p:inputText>
                                 </p:column>
                                 <p:column style="text-align: left;" >
                                     <p:commandButton id="rem" process="rem" update="@this" action="#{reorderController.removeReOrder(ro)}"  icon="fas fa-trash" class="ui-button-danger" />

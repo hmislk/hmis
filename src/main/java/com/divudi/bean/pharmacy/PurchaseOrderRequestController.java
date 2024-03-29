@@ -85,7 +85,7 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setRetirer(sessionController.getLoggedUser());
             b.setRetiredAt(new Date());
             if (getCurrentBill().getId() != null) {
-                if(b.getId()!=null){
+                if (b.getId() != null) {
                     billItemFacade.edit(b);
                 }
             }
@@ -242,10 +242,15 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
-    public void generateBillComponentsForAllSupplierItems() {
-        // int serialNo = 0;
-        setBillItems(new ArrayList<BillItem>());
-        for (Item i : getPharmacyBillBean().getItemsForDealor(getCurrentBill().getToInstitution())) {
+    public void generateBillComponentsForAllSupplierItems(List<Item> items) {
+        if (items == null) {
+            return;
+        }
+        if (items.isEmpty()) {
+            return;
+        }
+        setBillItems(new ArrayList<>());
+        for (Item i : items) {
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -332,7 +337,29 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Dealor");
             return;
         }
-        generateBillComponentsForAllSupplierItems();
+        List<Item> allItems = getPharmacyBillBean().getItemsForDealor(getCurrentBill().getToInstitution());
+        generateBillComponentsForAllSupplierItems(allItems);
+    }
+
+    public void addAllSupplierItemsBelowRol() {
+        if (getCurrentBill().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please Select Dealor");
+            return;
+        }
+
+        String jpql = "SELECT i FROM Item i WHERE i IN "
+                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false) "
+                + "AND i IN "
+                + "(SELECT s.itemBatch.item FROM Stock s WHERE s.department = :department "
+                + "GROUP BY s.itemBatch.item HAVING SUM(s.stock) < "
+                + "(SELECT r.reorderLevel FROM Reorder r WHERE r.item = s.itemBatch.item AND r.department = :department)) "
+                + "ORDER BY i.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("supplier", getCurrentBill().getToInstitution());
+        parameters.put("department", getSessionController().getDepartment());
+        List<Item> itemsBelowReorderLevel = getItemFacade().findByJpql(jpql, parameters);
+        generateBillComponentsForAllSupplierItems(itemsBelowReorderLevel);
     }
 
     public void request() {

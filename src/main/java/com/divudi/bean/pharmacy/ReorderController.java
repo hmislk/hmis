@@ -124,6 +124,13 @@ public class ReorderController implements Serializable {
         return "/pharmacy/reorder_management?faces-redirect=true";
     }
 
+    public void updateReorder(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        save(ro);
+    }
+
     public List<Reorder> fillReordersBySelectedDepartment() {
         reorders = null;
         Map m = new HashMap();
@@ -166,12 +173,12 @@ public class ReorderController implements Serializable {
             return true;
         }
     }
-    
-    public void removeReOrder(Reorder ro){
+
+    public void removeReOrder(Reorder ro) {
         if (ro != null) {
             reorderFacade.remove(ro);
         }
-   
+
     }
 
     public void createReOrdersByDepartment() {
@@ -186,7 +193,7 @@ public class ReorderController implements Serializable {
             }
         }
     }
-    
+
     public void createReOrdersByInstituion() {
         List<Amp> amps = getAmpController().findItems();
         for (Amp amp : amps) {
@@ -675,6 +682,17 @@ public class ReorderController implements Serializable {
         List<Department> deps = new ArrayList<>(ds.values());
 
         return deps;
+    }
+
+    private void save(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        if(ro.getId()==null) {
+            reorderFacade.create(ro);
+        }else{
+            reorderFacade.edit(ro);
+        }
     }
 
     enum AutoOrderMethod {
