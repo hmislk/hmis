@@ -211,7 +211,7 @@
                                                 </h:outputLabel>                                  
                                             </p:column>
                                             <p:column width="20%">
-                                                <p:commandButton ajax="false" value="View Payment Bill" action="bill_reprint" disabled="#{bill.referenceBill eq null}">
+                                                <p:commandButton ajax="false" value="View Payment Bill" action="/opd/bill_reprint?faces-redirect=true" disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>

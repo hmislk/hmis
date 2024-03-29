@@ -65,9 +65,84 @@ import javax.servlet.http.HttpServletResponse;
 @SessionScoped
 public class ReportController implements Serializable {
 
+    @EJB
+    BillItemFacade billItemFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
+
+    @Inject
+    private InstitutionController institutionController;
     @Inject
     DoctorController doctorController;
-    
+    @Inject
+    PersonController personController;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    ItemController itemController;
+
+    private int reportIndex;
+    private Institution institution;
+    private Department department;
+    private Institution fromInstitution;
+    private Institution toInstitution;
+    private Department fromDepartment;
+    private Department toDepartment;
+    private Date fromDate;
+    private Date toDate;
+    private Category category;
+    private Item item;
+    private Machine machine;
+    private String processBy;
+    private Institution collectingCentre;
+    private Route route;
+    private Date financialYear;
+    private String phn;
+    private Doctor referingDoctor;
+
+    private double investigationResult;
+
+    private String visitType;
+    private Patient patient;
+    private String diagnosis;
+
+    private Investigation investigation;
+    private Speciality currentSpeciality;
+    private Service service;
+
+    private String priorityType;
+    private String patientMrn;
+
+    private BillItemStatus status;
+    private Doctor doctor;
+    private String totalAverage;
+    private String visit;
+
+    private List<Bill> bills;
+    private List<BillItem> billItems;
+    private List<ItemCount> reportLabTestCounts;
+    private List<CategoryCount> reportList;
+    private List<Institution> collectionCenters;
+
+    private Date warrentyStartDate;
+    private Date warrentyEndDate;
+
+    private Date amcStartDate;
+    private Date amcEndDate;
+    private PaymentMethod paymentMethod;
+
+    private String invoiceNumber;
+
+    private List<ItemLight> investigationsAndServices;
+    private ItemLight itemLight;
+
+    private List<PrescriptionSummaryReportRow> prescriptionSummaryReportRows;
+    private List<BillLight> billLights;
+
+    private List<ItemCount> reportOpdServiceCount;
+
     CommonFunctions commonFunctions;
 
     public void processCollectionCenterBalance() {
@@ -93,9 +168,6 @@ public class ReportController implements Serializable {
 
     private Person person;
 
-    @Inject
-    PersonController personController;
-
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
         if (personId == null || personId == 0) {
             JsfUtil.addErrorMessage("Error 1");
@@ -103,21 +175,21 @@ public class ReportController implements Serializable {
         }
 
         person = personController.findPerson(personId);
-        
-        referringDoctor = doctorController.findDoctor(person);
-        
-        if (referringDoctor == null) {
+
+        doctor = doctorController.findDoctor(person);
+
+        if (doctor == null) {
             JsfUtil.addErrorMessage("Error 2");
             return "";
         }
-        
+
         processPresciptionList();
-        
+
         return navigateToPrescriptionList();
     }
 
     public void makeNull() {
-        referringDoctor = null;
+        doctor = null;
         prescriptionSummaryReportRows = null;
         fromDate = null;
         toDate = null;
@@ -171,9 +243,9 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.item.id = :item ";
 //            m.put("item", itemLight.getId());
 //        }
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
 //        if (status != null) {
@@ -182,80 +254,6 @@ public class ReportController implements Serializable {
 //        }
         bills = billFacade.findByJpql(jpql, m);
     }
-
-    @EJB
-    BillItemFacade billItemFacade;
-
-    @EJB
-    BillFacade billFacade;
-
-    @EJB
-    InstitutionFacade institutionFacade;
-
-    @Inject
-    private InstitutionController institutionController;
-
-    @Inject
-    ItemApplicationController itemApplicationController;
-    @Inject
-    ItemController itemController;
-
-    private int reportIndex;
-    private Institution institution;
-    private Department department;
-    private Institution fromInstitution;
-    private Institution toInstitution;
-    private Department fromDepartment;
-    private Department toDepartment;
-    private Date fromDate;
-    private Date toDate;
-    private Category category;
-    private Item item;
-    private Machine machine;
-    private String processBy;
-    private Institution collectingCentre;
-    private Route route;
-    private Date financialYear;
-    private String phn;
-
-    private double investigationResult;
-
-    private String visitType;
-    private Patient patient;
-    private String diagnosis;
-
-    private Investigation investigation;
-    private Speciality currentSpeciality;
-    private Service service;
-
-    private String priorityType;
-    private String patientMrn;
-
-    private BillItemStatus status;
-    private Doctor referringDoctor;
-    private String totalAverage;
-    private String visit;
-
-    private List<Bill> bills;
-    private List<BillItem> billItems;
-    private List<ItemCount> reportLabTestCounts;
-    private List<CategoryCount> reportList;
-    private List<Institution> collectionCenters;
-
-    private Date warrentyStartDate;
-    private Date warrentyEndDate;
-
-    private Date amcStartDate;
-    private Date amcEndDate;
-    private PaymentMethod paymentMethod;
-
-    private String invoiceNumber;
-
-    private List<ItemLight> investigationsAndServices;
-    private ItemLight itemLight;
-
-    private List<PrescriptionSummaryReportRow> prescriptionSummaryReportRows;
-    private List<BillLight> billLights;
 
     public ReportController() {
     }
@@ -310,6 +308,31 @@ public class ReportController implements Serializable {
         reportList = new ArrayList<>(categoryReports.values());
     }
 
+    public void processOpdServiceCountDoctorWise() {
+        String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
+                + " from BillItem bi "
+                + " where bi.bill.cancelled=:can "
+                + " and bi.bill.billDate between :fd and :td ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        if (department != null) {
+            jpql += " and bi.bill.department=:fdept ";
+            m.put("fdept", department);
+        }
+        if (doctor != null) {
+            jpql += " and bi.bill.fromStaff =:fs";
+            m.put("fs", doctor);
+        }
+        jpql += " group by bi.item, bi.bill.fromStaff ";
+        jpql += " order by bi.bill.fromStaff.person.name, bi.item.name";
+        reportOpdServiceCount = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
+    }
+
+    
+    
     public void processCollectingCentreReportsToPrint() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -358,9 +381,9 @@ public class ReportController implements Serializable {
             m.put("item", itemLight.getId());
         }
 
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bi.bill.referredBy = :refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
         if (status != null) {
@@ -371,6 +394,9 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
+    
+    
+    
     public void processCollectingCentreStatementReport() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -417,9 +443,9 @@ public class ReportController implements Serializable {
 //            m.put("item", itemLight.getId());
 //        }
 //
-//        if (referringDoctor != null) {
+//        if (doctor != null) {
 //            jpql += " and bi.bill.referredBy = :refDoc ";
-//            m.put("refDoc", referringDoctor);
+//            m.put("refDoc", doctor);
 //        }
 //
 //        if (status != null) {
@@ -481,7 +507,7 @@ public class ReportController implements Serializable {
         jpql += " order by bi.referredBy.person.name ";
         prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
     }
-    
+
     public void processPresciptionListEvenWhenNoPatientData() {
         String jpql = "select new "
                 + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
@@ -503,9 +529,9 @@ public class ReportController implements Serializable {
             m.put("fdept", department);
         }
 
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bi.referredBy=:refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
         jpql += " order by bi.id ";
@@ -531,9 +557,9 @@ public class ReportController implements Serializable {
             m.put("fdept", department);
         }
 
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bi.referredBy=:refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
         jpql += " order by bi.id ";
@@ -681,9 +707,9 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.item.id = :item ";
 //            m.put("item", itemLight.getId());
 //        }
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
 //        if (status != null) {
@@ -740,9 +766,9 @@ public class ReportController implements Serializable {
 //            jpql += " and bi.item.id = :item ";
 //            m.put("item", itemLight.getId());
 //        }
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
 //        if (status != null) {
@@ -760,7 +786,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -776,7 +802,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -792,7 +818,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1594,12 +1620,12 @@ public class ReportController implements Serializable {
         this.status = status;
     }
 
-    public Doctor getReferringDoctor() {
-        return referringDoctor;
+    public Doctor getDoctor() {
+        return doctor;
     }
 
-    public void setReferringDoctor(Doctor referringDoctor) {
-        this.referringDoctor = referringDoctor;
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
     }
 
     public void processCollectingCentreTestWiseCountReport() {
@@ -1666,9 +1692,9 @@ public class ReportController implements Serializable {
             m.put("item", itemLight.getId());
         }
 
-        if (referringDoctor != null) {
+        if (doctor != null) {
             jpql += " and bi.bill.referredBy = :refDoc ";
-            m.put("refDoc", referringDoctor);
+            m.put("refDoc", doctor);
         }
 
         if (status != null) {
@@ -1722,6 +1748,14 @@ public class ReportController implements Serializable {
 
     public void setPerson(Person person) {
         this.person = person;
+    }
+
+    public List<ItemCount> getReportOpdServiceCount() {
+        return reportOpdServiceCount;
+    }
+
+    public void setReportOpdServiceCount(List<ItemCount> reportOpdServiceCount) {
+        this.reportOpdServiceCount = reportOpdServiceCount;
     }
 
 }
