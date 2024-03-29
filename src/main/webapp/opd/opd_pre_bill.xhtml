@@ -17,7 +17,7 @@
 
                 <p:panel rendered="#{!opdPreBillController.printPreview}" >
                     <f:facet name="header" >
-                        <h:outputText styleClass="fa-solid fa-align-justify" />
+                        <h:outputText styleClass="fa fa-fw fa-cash-register" />
                         <p:outputLabel value="Billing for Cashier" class="mx-4" ></p:outputLabel>
                     </f:facet>
 
@@ -329,27 +329,27 @@
                                                     class="ui-button-success mx-2 w-100"
                                                     >
                                                 </p:commandButton>
+                                                <p:commandButton  
+                                                    value="New Bill"
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-eraser"              
+                                                    action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
+                                                    actionListener="#{opdPreBillController.prepareNewBill}"
+                                                    class="ui-button-danger mx-2 w-100"
+                                                    >
+                                                </p:commandButton>
+
                                                 <p:commandButton 
                                                     style="float: right;"
                                                     value="Lookup" 
                                                     ajax="false"
                                                     icon="fa fa-search"
-                                                    class="ui-button-warning mx-1 w-100" 
+                                                    class="ui-button-warning mx-2 w-100" 
                                                     action="#{patientController.navigateToSearchPatients()}" 
                                                     >
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    style="float: right;"
-                                                    value="Profile" 
-                                                    ajax="false"
-                                                    icon="fa fa-user"
-                                                    class="ui-button-warning w-100" 
-                                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                                    >
-                                                    <f:setPropertyActionListener 
-                                                        value="#{opdPreBillController.patient}" 
-                                                        target="#{patientController.current}" ></f:setPropertyActionListener>
-                                                </p:commandButton>
+                                                
                                             </h:panelGrid>
 
                                         </div>
@@ -406,10 +406,11 @@
                                 </p:panel>
 
                                 <p:panel class="m-1">
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-md" /> <!-- FontAwesome Icon for Doctor -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                     </f:facet>
+
                                     <div class="d-flex justify-content-end my-1">
                                         <p:commandButton icon="fas fa-refresh" ajax="false" action="#{opdPreBillController.reloadCurrentlyWorkingStaff()}" >
                                         </p:commandButton>
@@ -435,24 +436,24 @@
                                         columns="2" 
                                         class="w-100">
                                         <p:outputLabel value="Institution" ></p:outputLabel>
-                                        <h:outputText value="#{sessionController.institution.name}"/>
-                                        <!--                                        
-                                                                                <p:autoComplete id="refIns" 
-                                                                                                forceSelection="true" 
-                                                                                                value="#{opdBillController.referredByInstitution}"
-                                                                                                completeMethod="#{institutionController.completeIns}"
-                                                                                                var="ri" 
-                                                                                                itemLabel="#{ri.name}" 
-                                                                                                itemValue="#{ri}"
-                                                                                                size="10"
-                                                                                                minQueryLength="4"
-                                                                                                inputStyleClass="form-control"
-                                                                                                placeholder="Type at least 4 letters to search"
-                                                                                                class="w-100">
-                                                                                    <f:ajax  event="itemSelect" execute="creditCom"  />
-                                                                                    <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
-                                                                                    <p:column headerText="Code">#{ri.institutionCode}</p:column>
-                                                                                </p:autoComplete>-->
+                                        <!--<h:outputText value="#{sessionController.institution.name}"/>-->
+
+                                        <p:autoComplete id="refIns" 
+                                                        forceSelection="true" 
+                                                        value="#{opdBillController.referredByInstitution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ri" 
+                                                        itemLabel="#{ri.name}" 
+                                                        itemValue="#{ri}"
+                                                        size="10"
+                                                        minQueryLength="4"
+                                                        inputStyleClass="form-control"
+                                                        placeholder="Type at least 4 letters to search"
+                                                        class="w-100">
+                                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                                            <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
+                                            <p:column headerText="Code">#{ri.institutionCode}</p:column>
+                                        </p:autoComplete>
 
                                         <h:panelGroup class="w-100">
                                             <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>
