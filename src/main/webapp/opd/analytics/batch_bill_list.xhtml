@@ -160,7 +160,7 @@
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Department Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
-                                        <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.deptId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>

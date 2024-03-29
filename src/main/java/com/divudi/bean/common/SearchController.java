@@ -6437,7 +6437,7 @@ public class SearchController implements Serializable {
 
     public String viewOPD(Bill b) {
         if (b.getBillType() == BillType.OpdBill) {
-            return "/bill_reprint";
+            return "/opd/bill_reprint?faces-redirect=true;";
         } else {
             JsfUtil.addErrorMessage("Please Search Again and View Bill");
             bills = new ArrayList<>();
@@ -6454,7 +6454,7 @@ public class SearchController implements Serializable {
             return null;
         }
         bill = tb;
-        return "/bill_reprint";
+        return "/opd/bill_reprint?faces-redirect=true";
     }
 
     public void createTableCashIn() {
