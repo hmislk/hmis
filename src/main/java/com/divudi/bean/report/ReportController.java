@@ -309,7 +309,7 @@ public class ReportController implements Serializable {
     }
 
     public void processOpdServiceCountDoctorWise() {
-        String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi.item)) "
+        String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td ";
@@ -318,25 +318,17 @@ public class ReportController implements Serializable {
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("this = 3");
         if (department != null) {
             jpql += " and bi.bill.department=:fdept ";
             m.put("fdept", department);
         }
-
         if (doctor != null) {
             jpql += " and bi.bill.fromStaff =:fs";
             m.put("fs", doctor);
         }
-
         jpql += " group by bi.item, bi.bill.fromStaff ";
-        jpql += " order by bi.bill.fromStaff.person.name";
-
+        jpql += " order by bi.bill.fromStaff.person.name, bi.item.name";
         reportOpdServiceCount = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
-        System.out.println("m = " + reportOpdServiceCount.size());
-        System.out.println("this = 4");
-
-        System.out.println("doctorWiseReport = " + reportList.size());
     }
 
     
