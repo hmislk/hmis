@@ -154,7 +154,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> directPurchase;
     private List<Bill> bills;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
-    private int managePharamcyReportIndex;
+    private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
 
@@ -272,7 +272,7 @@ public class PharmacyController implements Serializable {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
     }
-    
+
     public String navigateToPharmacyAnalytics() {
         return "/pharmacy/pharmacy_analytics?faces-redirect=true";
     }
@@ -598,7 +598,7 @@ public class PharmacyController implements Serializable {
         pos = null;
         directPurchase = null;
         ampps = null;
-        
+
     }
 
     public void deleteSelectedPharmaceuticalLight() {
