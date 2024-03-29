@@ -218,6 +218,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
     
+    public boolean chackNull(String template){
+        boolean chack;
+        chack = template.isEmpty();
+        return chack; 
+    }
+    
     public String fillDataForChannelingBillHeader(String template, Bill bill) { 
         String output;
         
