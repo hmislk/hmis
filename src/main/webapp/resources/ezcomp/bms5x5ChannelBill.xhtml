@@ -359,6 +359,7 @@
 
             </table>
 
+            <h:panelGroup rendered="#{sessionController.departmentPreference.showBarCodeInChannelBookingBill}" >
             <div class="d-flex justify-content-center">
                 <p:graphicImage 
                     cache="false" 
@@ -367,6 +368,7 @@
                     <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
                 </p:graphicImage>
             </div>
+            </h:panelGroup>
 
             <div style="margin-left: 6%">
                 <div style="font-size: 8pt">
