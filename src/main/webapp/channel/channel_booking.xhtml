@@ -41,6 +41,7 @@
                                 value="To Add Booking" 
                                 icon="fas fa-plus"
                                 class="ui-button-success"
+
                                 action="#{bookingController.navigateToAddBooking()}"
                                 />
 
@@ -119,7 +120,8 @@
                                 <f:selectItems value="#{bookingController.consultants}"
                                                var="con" 
                                                itemValue="#{con}"
-                                               itemLabel="#{con.name}"></f:selectItems>
+                                               itemLabel="#{con.name}">
+                                </f:selectItems>
                             </p:selectOneListbox>
                         </div>
                     </div>
