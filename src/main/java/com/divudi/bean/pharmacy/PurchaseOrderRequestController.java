@@ -343,23 +343,27 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void addAllSupplierItemsBelowRol() {
         if (getCurrentBill().getToInstitution() == null) {
-            JsfUtil.addErrorMessage("Please Select Dealor");
+            JsfUtil.addErrorMessage("Please Select Dealer");
             return;
         }
 
         String jpql = "SELECT i FROM Item i WHERE i IN "
                 + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false) "
                 + "AND i IN "
-                + "(SELECT s.itemBatch.item FROM Stock s WHERE s.department = :department "
-                + "GROUP BY s.itemBatch.item HAVING SUM(s.stock) < "
-                + "(SELECT r.rol FROM Reorder r WHERE r.item = s.itemBatch.item AND r.department = :department  ORDER BY r.id DESC LIMIT 1)) "
+                + "(SELECT s.itemBatch.item FROM Stock s JOIN Reorder r ON r.item = s.itemBatch.item AND r.department = s.department "
+                + "WHERE s.department = :department AND s.stock < r.rol GROUP BY s.itemBatch.item) "
                 + "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("supplier", getCurrentBill().getToInstitution());
         parameters.put("department", getSessionController().getDepartment());
         List<Item> itemsBelowReorderLevel = getItemFacade().findByJpql(jpql, parameters);
-        generateBillComponentsForAllSupplierItems(itemsBelowReorderLevel);
+
+        if (itemsBelowReorderLevel == null || itemsBelowReorderLevel.isEmpty()) {
+            JsfUtil.addErrorMessage("No items found below reorder level for the selected supplier and department.");
+        } else {
+            generateBillComponentsForAllSupplierItems(itemsBelowReorderLevel);
+        }
     }
 
     public void request() {
