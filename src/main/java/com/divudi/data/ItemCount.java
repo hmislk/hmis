@@ -1,5 +1,6 @@
 package com.divudi.data;
 
+
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
@@ -10,6 +11,9 @@ public class ItemCount {
     private Integer serialNo;
     private String testName;
     private Long testCount;
+    private String doctor;
+    private String service;
+    Long serviceCount;
 
     public ItemCount() {
     }
@@ -19,6 +23,13 @@ public class ItemCount {
         this.testName = testName;
         this.testCount = testCount;
     }
+
+    public ItemCount(String doctor, String service) {
+        this.doctor = doctor;
+        this.service = service;
+        this.testCount=0L;
+    }
+    
 
     public String getCategory() {
         return category;
@@ -52,5 +63,21 @@ public class ItemCount {
         this.testCount = testCount;
     }
 
+    public String getDoctor() {
+        return doctor;
+    }
 
+    public void setDoctor(String doctor) {
+        this.doctor = doctor;
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    
 }
