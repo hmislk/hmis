@@ -252,6 +252,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if(speciality== null){
             speciality = staff.getSpeciality();
         }
+        paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
         return "/channel/add_booking?faces-redirect=true";
     }
 
