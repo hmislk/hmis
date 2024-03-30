@@ -1712,35 +1712,35 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 break;
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
 
             case Card:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
 
             case Cheque:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
 
             case Slip:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
         }
 //        String insId = generateBillNumberInsId(bill);
