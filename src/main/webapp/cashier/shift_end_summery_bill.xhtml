@@ -76,6 +76,16 @@
                                 </div>
                             </div>
                             <div class="col-6 d-flex justify-content-end">
+
+
+                                <p:dataTable value="#{financialTransactionController.paymentMethodValues.paymentMethodsWithValues}" var="pmv" >
+                                    <p:column >
+                                        <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{pmv.value}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                                 <h:panelGroup id="btotals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq true}">
                                     <h:panelGrid columns="3" class="my-2">
                                         <h:outputText value="OPD BILLS"/>
@@ -221,6 +231,9 @@
                                 </div>
                             </div>
 
+
+
+
                         </h:panelGroup>
 
                         <h:panelGroup rendered="false">
@@ -281,6 +294,8 @@
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
+
+
                         </h:panelGroup>
 
 
