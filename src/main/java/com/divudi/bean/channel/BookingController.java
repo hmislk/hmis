@@ -296,7 +296,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = channelBean.listTodaysSessionInstances(null, true, null);
     }
 
-    public void listTodaysPensingSesionInstances() {
+    public void listTodaysPendingSesionInstances() {
         sessionInstances = channelBean.listTodaysSessionInstances(null, null, true);
     }
 
