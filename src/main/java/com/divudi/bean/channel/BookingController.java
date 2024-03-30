@@ -278,6 +278,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
         prepareForNewChannellingBill();
         return "/channel/channel_booking?faces-redirect=true";
     }
+    
+    public String navigateToChannelQueueFromMenu() {
+        sessionInstances = channelBean.listTodaysSesionInstances();
+        return "/channel/channel_queue?faces-redirect=true";
+    }
 
     public void prepareForNewChannellingBill() {
         listnerStaffListForRowSelect();
