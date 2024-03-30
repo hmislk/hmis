@@ -105,273 +105,277 @@
                                     </h:column>
                                 </h:dataTable>
 
-                                <!-- Outer loop for Service Types -->
                                 <ui:repeat value="#{financialTransactionController.atomicBillTypeTotals.serviceTypeTotals}" var="serviceTypeTotal">
                                     <h3>#{serviceTypeTotal.serviceType} - Total: #{serviceTypeTotal.totalByServiceType}</h3>
                                     <table class="table">
-                                        <tr>
-                                            <th>Bill Category</th>
-                                            <th>Payment Method</th>
-                                            <th>Total</th>
-                                        </tr>
-                                        <!-- Nested loop for Bill Categories -->
-                                        <ui:repeat value="#{serviceTypeTotal.billCategoryTotals}" var="billCategoryTotal">
+                                        <thead>
                                             <tr>
-                                                <td rowspan="#{billCategoryTotal.paymentMethodTotals.size()}">#{billCategoryTotal.billCategory}</td>
+                                                <th>Bill Category</th>
+                                                <th>Payment Method</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{serviceTypeTotal.billCategoryTotals}" var="billCategoryTotal">
                                                 <ui:repeat value="#{billCategoryTotal.paymentMethodTotals}" var="paymentMethodTotal" varStatus="status">
-                                                    <td>#{paymentMethodTotal.paymentMethod}</td>
-                                                    <td>#{paymentMethodTotal.totalByPaymentMethod}</td>
-                                                    <!-- Close row for the first payment method and open a new row for subsequent ones -->
-                                                    <ui:fragment rendered="#{status.index > 0}">
-                                                    </tr><tr>
-                                            </ui:fragment>
-                                        </ui:repeat>
-                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <!-- Display bill category only on the first row of each category -->
+                                                            <ui:fragment rendered="#{status.index == 0}">
+                                                                #{billCategoryTotal.billCategory}
+                                                            </ui:fragment>
+                                                        </td>
+                                                        <td>#{paymentMethodTotal.paymentMethod}</td>
+                                                        <td>#{paymentMethodTotal.totalByPaymentMethod}</td>
+                                                    </tr>
+                                                </ui:repeat>
+                                                <!-- Summary row for bill category, if needed -->
+                                                <tr>
+                                                    <td colspan="3"><strong>Total for #{billCategoryTotal.billCategory}: #{billCategoryTotal.totalByBillCategory}</strong></td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
                                 </ui:repeat>
-                                <tr>
-                                    <td colspan="2"><strong>Total for #{billCategoryTotal.billCategory}:</strong></td>
-                                    <td><strong>#{billCategoryTotal.totalByBillCategory}</strong></td>
-                                </tr>
-                            </table>
-                        </ui:repeat>
 
 
-                        <p:dataTable value="#{financialTransactionController.paymentMethodValues.paymentMethodsWithValues}" var="pmv" >
-                            <p:column >
-                                <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
-                            </p:column>
-                            <p:column >
-                                <h:outputText value="#{pmv.value}" ></h:outputText>
-                            </p:column>
-                        </p:dataTable>
-                        <h:panelGroup id="btotals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq true}">
-                            <h:panelGrid columns="3" class="my-2">
-                                <h:outputText value="OPD BILLS"/>
-                                <div style="background-color: #cce5ff;width: 20px;height: 20px" class="mx-4">
+
+                                <p:dataTable value="#{financialTransactionController.paymentMethodValues.paymentMethodsWithValues}" var="pmv" >
+                                    <p:column >
+                                        <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{pmv.value}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                                <h:panelGroup id="btotals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq true}">
+                                    <h:panelGrid columns="3" class="my-2">
+                                        <h:outputText value="OPD BILLS"/>
+                                        <div style="background-color: #cce5ff;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText style="text-align: right" value="#{financialTransactionController.totalOpdBillValues}"/>
+
+                                        <h:outputText value="PHARMECY BILLS"/>
+                                        <div style="background-color: #e6ccff;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText class="text-right" value="#{financialTransactionController.totalPharmecyBillValues}"/>
+
+                                        <h:outputText value="SHIFT START"/>
+                                        <div style="background-color: #ffd9e6;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText class="text-right" value="#{financialTransactionController.totalShiftStart}"/>
+
+                                        <h:outputText value="SHIFT BALANCE TRANSFER"/>
+                                        <div style="background-color: #ccffcc;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText class="text-right" value="- #{financialTransactionController.totalBalanceTransfer}"/>
+
+                                        <h:outputText value="FUND TRANSFER RECIVED"/>
+                                        <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText class="text-right" value="#{financialTransactionController.totalTransferRecive}"/>
+
+                                        <h:outputText value="TOTAL FUNDS" style="font-weight: bold"/>
+                                        <div style="width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <p:outputLabel 
+                                            style="font-weight: bold"
+                                            class="text-right"
+                                            value="#{financialTransactionController.totalFunds}" >
+                                        </p:outputLabel>
+                                    </h:panelGrid>
+                                </h:panelGroup>
+
+                            </div>
+                        </div>
+
+                        <p:panel header="Add Funds" class="my-1 mb-4" >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Add Funds"/>
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        style="float: right;"
+                                        value="Add"
+                                        icon="fa fa-plus"
+                                        class="ui-button-success"
+                                        process="btnAdd cmdPayment paymentDetails"
+                                        update="tblPayments totals btotals cmdPayment paymentDetails"
+                                        action="#{financialTransactionController.addPaymentToShiftEndFundBill()}" >
+                                    </p:commandButton>
                                 </div>
-                                <h:outputText style="text-align: right" value="#{financialTransactionController.totalOpdBillValues}"/>
-
-                                <h:outputText value="PHARMECY BILLS"/>
-                                <div style="background-color: #e6ccff;width: 20px;height: 20px" class="mx-4">
+                            </f:facet>
+                            <div class="row d-flex align-items-center">
+                                <div class="col-md-3">
+                                    <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        class="mx-2"
+                                        style="width: 16em"
+                                        id="cmdPayment" 
+                                        value="#{financialTransactionController.currentPayment.paymentMethod}" >
+                                        <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                                        <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
+                                    </p:selectOneMenu>
                                 </div>
-                                <h:outputText class="text-right" value="#{financialTransactionController.totalPharmecyBillValues}"/>
+                                <div class="col-md-3" >
+                                    <p:outputLabel value="" ></p:outputLabel>
+                                    <h:panelGroup id="paymentDetails" >
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cheque" 
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
+                                            <div class="d-flex mt-1">
+                                                <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:inputText>
+                                                <p:watermark value="Value" for="txtVal" />
+                                                <p:inputText autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:inputText>
 
-                                <h:outputText value="SHIFT START"/>
-                                <div style="background-color: #ffd9e6;width: 20px;height: 20px" class="mx-4">
-                                </div>
-                                <h:outputText class="text-right" value="#{financialTransactionController.totalShiftStart}"/>
+                                                <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                                    <f:selectItem itemLabel="Select Bank"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:selectOneMenu>
 
-                                <h:outputText value="SHIFT BALANCE TRANSFER"/>
-                                <div style="background-color: #ccffcc;width: 20px;height: 20px" class="mx-4">
-                                </div>
-                                <h:outputText class="text-right" value="- #{financialTransactionController.totalBalanceTransfer}"/>
+                                                <p:calendar value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:calendar>
 
-                                <h:outputText value="FUND TRANSFER RECIVED"/>
-                                <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
-                                </div>
-                                <h:outputText class="text-right" value="#{financialTransactionController.totalTransferRecive}"/>
 
-                                <h:outputText value="TOTAL FUNDS" style="font-weight: bold"/>
-                                <div style="width: 20px;height: 20px" class="mx-4">
+                                                <p:watermark value="Cheque No" for="chequNo"/>
+                                                <p:watermark value="Cheque Date" for="ChequeDate"/>
+
+                                            </div>
+
+
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cash"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-2"
+                                                id="txtValue" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </div>
-                                <p:outputLabel 
-                                    style="font-weight: bold"
-                                    class="text-right"
-                                    value="#{financialTransactionController.totalFunds}" >
-                                </p:outputLabel>
-                            </h:panelGrid>
+
+
+                                <div class="col-md-2">
+
+                                </div>
+                                <div class="col-md-1"/>
+                            </div>
+
+                        </p:panel>
+
+                        <h:panelGroup id="totals" rendered="false" style="font-weight: bold;font-size: 14pt" class="mt-4">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText value="Funds List" ></h:outputText>
+                                </div>
+                                <div class="d-flex">
+                                    <h:outputText value=" Total Funds : " ></h:outputText>
+                                    <p:outputLabel 
+
+                                        class="mx-2"
+                                        value="#{financialTransactionController.totalFunds}" >
+                                    </p:outputLabel>
+                                </div>
+                            </div>
+
+
+
+
                         </h:panelGroup>
 
-                    </div>
-                </div>
+                        <h:panelGroup rendered="false">
+                            <p:dataTable 
+                                id="tblPayments" 
+                                value="#{financialTransactionController.currentBillPayments}" 
+                                var="bp" 
+                                paginator="true"
+                                paginatorPosition="bottom"
 
-                <p:panel header="Add Funds" class="my-1 mb-4" >
-                    <f:facet name="header">
-                        <div class="d-flex justify-content-between">
-                            <h:outputText value="Add Funds"/>
-                            <p:commandButton
-                                id="btnAdd"
-                                style="float: right;"
-                                value="Add"
-                                icon="fa fa-plus"
-                                class="ui-button-success"
-                                process="btnAdd cmdPayment paymentDetails"
-                                update="tblPayments totals btotals cmdPayment paymentDetails"
-                                action="#{financialTransactionController.addPaymentToShiftEndFundBill()}" >
-                            </p:commandButton>
-                        </div>
-                    </f:facet>
-                    <div class="row d-flex align-items-center">
-                        <div class="col-md-3">
-                            <p:outputLabel value="Payment Method" ></p:outputLabel>
-                            <p:selectOneMenu 
-                                class="mx-2"
-                                style="width: 16em"
-                                id="cmdPayment" 
-                                value="#{financialTransactionController.currentPayment.paymentMethod}" >
-                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
-                                <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
-                            </p:selectOneMenu>
-                        </div>
-                        <div class="col-md-3" >
-                            <p:outputLabel value="" ></p:outputLabel>
-                            <h:panelGroup id="paymentDetails" >
-                                <h:panelGroup
-                                    class="row my-1"
-                                    layout="block" 
-                                    id="cheque" 
-                                    rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
-                                    <div class="d-flex mt-1">
-                                        <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:inputText>
-                                        <p:watermark value="Value" for="txtVal" />
-                                        <p:inputText autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:inputText>
-
-                                        <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
-                                            <f:selectItem itemLabel="Select Bank"/>
-                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:selectOneMenu>
-
-                                        <p:calendar value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:calendar>
-
-
-                                        <p:watermark value="Cheque No" for="chequNo"/>
-                                        <p:watermark value="Cheque Date" for="ChequeDate"/>
-
-                                    </div>
-
-
-
-                                </h:panelGroup>
-
-                                <h:panelGroup
-                                    class="row my-1"
-                                    layout="block" 
-                                    id="cash"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
-                                    <p:outputLabel value="Value" ></p:outputLabel>
-                                    <p:inputText 
-                                        class="mx-2"
-                                        id="txtValue" 
-                                        value="#{financialTransactionController.currentPayment.paidValue}" >
-                                    </p:inputText>
-                                </h:panelGroup>
-                            </h:panelGroup>
-                        </div>
-
-
-                        <div class="col-md-2">
-
-                        </div>
-                        <div class="col-md-1"/>
-                    </div>
-
-                </p:panel>
-
-                <h:panelGroup id="totals" rendered="false" style="font-weight: bold;font-size: 14pt" class="mt-4">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h:outputText value="Funds List" ></h:outputText>
-                        </div>
-                        <div class="d-flex">
-                            <h:outputText value=" Total Funds : " ></h:outputText>
-                            <p:outputLabel 
-
-                                class="mx-2"
-                                value="#{financialTransactionController.totalFunds}" >
-                            </p:outputLabel>
-                        </div>
-                    </div>
-
-
-
-
-                </h:panelGroup>
-
-                <h:panelGroup rendered="false">
-                    <p:dataTable 
-                        id="tblPayments" 
-                        value="#{financialTransactionController.currentBillPayments}" 
-                        var="bp" 
-                        paginator="true"
-                        paginatorPosition="bottom"
-
-                        >
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: #ffcccc;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: #ccffcc;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'OpdBill' ? 'background-color: #cce5ff;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: #ffd9e6;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: #ffffcc;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'ShiftEndFundBill' ? 'background-color: #cce0ff;color: #333333' : ''};
-                                  #{bp.bill.billType eq 'PharmacySale' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                  font-size: 15pt;font-weight:bold ">
-                            <h:outputText value="#{bp.paidValue}" />
-                        </p:column>
-
-                        <p:column headerText="Details" >
-                            Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
-                            <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
-                            <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
-                            Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                            <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
-                                Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                                Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
-                                Bank Name : <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                            </h:panelGroup><br/>
-                        </p:column>
-                        <p:column headerText="Action" >
-                            <p:commandButton 
-                                class="ui-button-success"
-                                icon=" fa-solid fa-eye"
-                                value="View Bill" 
-                                action="#{billSearch.navigateToViewOpdBill}"
                                 >
-                                <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
-                            </p:commandButton>
-                            <p:commandButton 
-                                class="ui-button-danger mx-1"
-                                icon=" fa-solid fa-trash"
-                                id="btnRemove"
-                                value="Remove" 
-                                action="#{financialTransactionController.removePayment}" 
-                                process="btnRemove tblPayments"
-                                update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}
-                                :#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('btotals',view).clientId}"
-                                >
-                                <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </p:column>
-                    </p:dataTable>
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: #ffcccc;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: #ccffcc;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'OpdBill' ? 'background-color: #cce5ff;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: #ffd9e6;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: #ffffcc;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: #e6ccff;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'ShiftEndFundBill' ? 'background-color: #cce0ff;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'PharmacySale' ? 'background-color: #e6ccff;color: #333333' : ''};
+                                          font-size: 15pt;font-weight:bold ">
+                                    <h:outputText value="#{bp.paidValue}" />
+                                </p:column>
+
+                                <p:column headerText="Details" >
+                                    Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
+                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
+                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
+                                    Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
+                                        Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
+                                        Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
+                                        Bank Name : <h:outputText value="#{bp.bank.name}" ></h:outputText>
+                                    </h:panelGroup><br/>
+                                </p:column>
+                                <p:column headerText="Action" >
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon=" fa-solid fa-eye"
+                                        value="View Bill" 
+                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="ui-button-danger mx-1"
+                                        icon=" fa-solid fa-trash"
+                                        id="btnRemove"
+                                        value="Remove" 
+                                        action="#{financialTransactionController.removePayment}" 
+                                        process="btnRemove tblPayments"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}
+                                        :#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('btotals',view).clientId}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
 
 
-                </h:panelGroup>
+                        </h:panelGroup>
 
 
 
-                <p:panelGrid 
-                    columns="2" 
-                    rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"
-                    >
-                    <p:outputLabel value="No Shift Start Fund Bill Available to Close" ></p:outputLabel>
+                        <p:panelGrid 
+                            columns="2" 
+                            rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"
+                            >
+                            <p:outputLabel value="No Shift Start Fund Bill Available to Close" ></p:outputLabel>
 
 
-                </p:panelGrid>
-            </p:panel>
+                        </p:panelGrid>
+                    </p:panel>
 
 
 
-        </ui:define>
-    </ui:composition>
-</h:form>
-</h:body>
+                </ui:define>
+            </ui:composition>
+        </h:form>
+    </h:body>
 </html>
