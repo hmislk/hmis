@@ -12,6 +12,7 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.AtomicBillTypeTotals;
 import static com.divudi.data.BillType.CollectingCentreBill;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
@@ -65,6 +66,7 @@ public class FinancialTransactionController implements Serializable {
     private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
     private PaymentMethodValues paymentMethodValues;
+    private AtomicBillTypeTotals atomicBillTypeTotals;
 
     //Billed Totals
     private double totalOpdBillValue;
@@ -501,7 +503,9 @@ public class FinancialTransactionController implements Serializable {
         currentBillPayments = paymentFacade.findByJpql(jpql, m);
 //        resetTotalFundsValues();
         paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
+        atomicBillTypeTotals = new AtomicBillTypeTotals();
         for (Payment p : currentBillPayments) {
+            atomicBillTypeTotals.addRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             calculateBillValuesFromBillTypes(p);
         }
         calculateTotalFundsFromShiftStartToNow();
@@ -1156,5 +1160,15 @@ public class FinancialTransactionController implements Serializable {
     public PaymentMethodValues getPaymentMethodValues() {
         return paymentMethodValues;
     }
+
+    public AtomicBillTypeTotals getAtomicBillTypeTotals() {
+        return atomicBillTypeTotals;
+    }
+
+    public void setAtomicBillTypeTotals(AtomicBillTypeTotals atomicBillTypeTotals) {
+        this.atomicBillTypeTotals = atomicBillTypeTotals;
+    }
+    
+    
 
 }

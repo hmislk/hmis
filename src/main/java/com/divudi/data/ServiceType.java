@@ -7,6 +7,7 @@ public enum ServiceType {
     OPD("Outpatient Department"),
     PHARMACY("Pharmacy"),
     CHANNELLING("Channelling"),
+    COLLECTING_CENTRE("Colelcting Centre"),
     OTHER("Other");
 
     private final String label;

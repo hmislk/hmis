@@ -58,6 +58,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -242,8 +243,6 @@ public class BillController implements Serializable {
         return billFacade.findByJpql(j, m);
     }
 
-    
-    
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -1571,21 +1570,52 @@ public class BillController implements Serializable {
         m.put("ret", false);
         return billFeeFacade.findByJpql(jpql, m);
     }
-    
+
     public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
         System.out.println("findBillFees");
+        List<BillFee> tmpFees;
         String jpql;
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btcs.add(BillTypeAtomic.CC_BILL);
         Map m = new HashMap();
         jpql = "select bf "
                 + " from BillFee bf"
                 + " where bf.retired=:ret"
                 + " and bf.bill.billTime between :fromDate and :toDate "
-                + " and bf.staff=:staff";
+                + " and bf.staff=:staff "
+                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and bf.bill.billTypeAtomic in :btcs "
+                + " and bf.fee.feeType=:ft ";
+        m.put("btcs", btcs);
         m.put("staff", staff);
         m.put("ret", false);
+        m.put("ft", FeeType.Staff);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-        return billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : tmpFees) {
+            m = new HashMap();
+            jpql = "SELECT bi FROM BillItem bi where "
+                    + " bi.retired=false"
+                    + " and bi.bill.cancelled=false "
+                    + " and type(bi.bill)=:class "
+                    + " and bi.referanceBillItem=:rbi";
+            m.put("class", RefundBill.class);
+            m.put("rbi", bf.getBillItem());
+            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        tmpFees.removeAll(removeingBillFees);
+
+        return tmpFees;
     }
 
     public List<BillFee> billFeesOfBillItem(BillItem billItem) {
@@ -2044,7 +2074,6 @@ public class BillController implements Serializable {
 
     }
 
-    
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         String jpql;
         HashMap hm;
@@ -2075,7 +2104,6 @@ public class BillController implements Serializable {
 
     }
 
-    
     public List<Bill> listBills(
             List<BillType> billTypes,
             Institution ins,

@@ -54,7 +54,9 @@ public enum BillTypeAtomic {
     // CHANNELLING
     CHANNEL_BOOKING_WITH_PAYMENT("Channel Booking and Payment", BillCategory.BILL, ServiceType.CHANNELLING),
     CHANNEL_BOOKING_WITHOUT_PAYMENT("Channel Booking without Payment", BillCategory.BILL, ServiceType.CHANNELLING),
+    CHANNEL_PAYMENT_FOR_BOOKING_BILL("Channel Payment for Booking", BillCategory.BILL, ServiceType.CHANNELLING),
     CHANNEL_CANCELLATION_WITH_PAYMENT("Channel Cancellation with Payment", BillCategory.CANCELLATION, ServiceType.CHANNELLING),
+    CHANNEL_CANCELLATION_WITHOUT_PAYMENT("Channel Cancellation without Payment", BillCategory.CANCELLATION, ServiceType.CHANNELLING),
     CHANNEL_REFUND("Channel Refund", BillCategory.REFUND, ServiceType.CHANNELLING),
     // OPD
     OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD),
@@ -67,6 +69,12 @@ public enum BillTypeAtomic {
     OPD_BILL_CANCELLATION("Opd Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD),
     OPD_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD),
     OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.BILL, ServiceType.OPD),
+    // Colleting Centre
+    CC_BATCH_BILL("Collecting Centre Batch Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE),
+    CC_BATCH_BILL_CANCELLATION("Collecting Centre  Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE),
+    CC_BILL("Collecting Centre  Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE),
+    CC_BILL_CANCELLATION("Collecting Centre  Bill Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE),
+    CC_BILL_REFUND("Collecting Centre  Bill Refund", BillCategory.REFUND, ServiceType.COLLECTING_CENTRE),
     // Fund Transactions
     FUND_SHIFT_START_BILL("Shift Start Fund Bill", BillCategory.BILL, ServiceType.OTHER),
     FUND_SHIFT_END_BILL("Shift End Fund Bill", BillCategory.BILL, ServiceType.OTHER),
