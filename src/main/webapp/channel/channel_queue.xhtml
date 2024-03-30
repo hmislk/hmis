@@ -13,66 +13,9 @@
 
     <ui:define name="content">
         <h:form id="form">
-            <style >
-                .fullHeightListbox,
-                .fullHeightListbox .ui-selectlistbox-listcontainer,
-                .fullHeightListbox * {
-                    box-sizing: border-box;
-                    margin: 0;
-                    padding: 0;
-                }
+            
 
-                .fullHeightListbox .ui-selectlistbox-listcontainer {
-                    height: 80vh !important;
-                }
-            </style>
-
-            <p:panel>
-                <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h:outputText class="mx-4" value="Channel Booking"/>
-                        </div>
-
-                        <div class="d-flex justify-content-center align-items-center">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="To Add Booking" 
-                                icon="fas fa-plus"
-                                class="ui-button-success"
-
-                                action="#{bookingController.navigateToAddBooking()}"
-                                />
-
-                            <!-- View Session Data Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="View Session Data"
-                                icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
-                                />
-
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Consulant Room"
-                                icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
-                                />
-
-                            <!-- Manage Booking Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Manage Booking" 
-                                class="ui-button-Warning"
-                                action="#{bookingController.navigateToManageBooking()}"
-                                icon="fa-solid fa-bars-progress" />
-
-                        </div>
-                    </div>
-                </f:facet>
+          
                 <div class="row">
 
 
@@ -87,45 +30,80 @@
                             layout="grid" 
                             styleClass="ui-datagrid-responsive">
                             <f:facet name="header">
-                                Session Details
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                                        <h:outputText class="mx-4" value="Todays Session"/>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="List Completed" 
+                                            icon="fas fa-plus"
+                                            class="ui-button-success"
+                                            action="#{bookingController.navigateToAddBooking()}"
+                                            />
+
+                                        <!-- View Session Data Button -->
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="List Ongoing"
+                                            icon="fas fa-eye"
+                                            class="mx-1 ui-button-primary"
+                                            action="#{bookingController.navigateToViewSessionData()}"
+                                            />
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="List Pending"
+                                            icon="fas fa-eye"
+                                            class="mx-1 ui-button-primary"
+                                            action="#{bookingController.navigateToViewSessionData()}"
+                                            />
+                                    </div>
+                                </div>
+
                             </f:facet>
 
-                            <p:panel header="#{s.name}">
-                                <h:panelGrid columns="2" style="width:100%">
-                                    <h:outputLabel value="Consultant:" />
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}">
-                                    </h:outputText>
-
-                                    <h:outputLabel value="Speciality:" />
-                                    <h:outputText value="#{s.staff.speciality.name}">
-                                    </h:outputText>
-
-                                    <h:outputLabel value="Date:" />
-                                    <h:outputText value="#{s.sessionDate}">
-                                        <f:convertDateTime pattern="dd MMM"/>
-                                    </h:outputText>
-
-                                    <h:outputLabel value="Start:" />
-                                    <h:outputText value="#{s.originatingSession.startingTime}">
-                                        <f:convertDateTime pattern="hh:mm a"/>
-                                    </h:outputText>
-
-                                    <h:outputLabel value="Max:" />
-                                    <h:panelGroup >
-                                        <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                            <f:convertNumber pattern="00"/>
+                            <p:commandLink ajax="false" action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}" >
+                                <p:panel header="#{s.name}">
+                                    <h:panelGrid columns="2" style="width:100%">
+                                        <h:outputLabel value="Consultant:" />
+                                        <h:outputText value="#{s.staff.person.nameWithTitle}">
                                         </h:outputText>
-                                        <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
+
+                                        <h:outputLabel value="Speciality:" />
+                                        <h:outputText value="#{s.staff.speciality.name}">
                                         </h:outputText>
-                                    </h:panelGroup>
 
+                                        <h:outputLabel value="Date:" />
+                                        <h:outputText value="#{s.sessionDate}">
+                                            <f:convertDateTime pattern="dd MMM"/>
+                                        </h:outputText>
 
-                                    <h:outputLabel value="Fee:" />
-                                    <h:outputText value="#{s.originatingSession.total}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </h:panelGrid>
-                            </p:panel>
+                                        <h:outputLabel value="Start:" />
+                                        <h:outputText value="#{s.originatingSession.startingTime}">
+                                            <f:convertDateTime pattern="hh:mm a"/>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Max:" />
+                                        <h:panelGroup >
+                                            <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                                <f:convertNumber pattern="00"/>
+                                            </h:outputText>
+                                            <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:outputLabel value="Fee:" />
+                                        <h:outputText value="#{s.originatingSession.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}" ></f:setPropertyActionListener>
+                            </p:commandLink>
+
                         </p:dataGrid>
 
                     </div>
@@ -178,8 +156,7 @@
                 </div>
 
 
-            </p:panel>
-
+          
 
         </h:form>
     </ui:define>

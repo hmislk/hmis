@@ -217,16 +217,16 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession billSession;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
-    
-    public boolean chackNull(String template){
+
+    public boolean chackNull(String template) {
         boolean chack;
         chack = template.isEmpty();
-        return chack; 
+        return chack;
     }
-    
-    public String fillDataForChannelingBillHeader(String template, Bill bill) { 
+
+    public String fillDataForChannelingBillHeader(String template, Bill bill) {
         String output;
-        
+
         output = template
                 .replace("{from_department}", bill.getDepartment().getName())
                 .replace("{from_department_address}", bill.getDepartment().getAddress())
@@ -236,7 +236,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 .replace("{fax}", bill.getDepartment().getFax());
         return output;
     }
-    
+
     public String navigateToAddBooking() {
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
@@ -249,7 +249,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fillFees();
         printPreview = false;
         patient = new Patient();
-        if(speciality== null){
+        if (speciality == null) {
             speciality = staff.getSpeciality();
         }
         paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
@@ -278,7 +278,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         prepareForNewChannellingBill();
         return "/channel/channel_booking?faces-redirect=true";
     }
-    
+
     public String navigateToChannelQueueFromMenu() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
@@ -334,6 +334,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateBackToBookings() {
         return "/channel/channel_booking?faces-redirect=true";
+    }
+
+    public String navigateToManageSessionQueueAtConsultantRoom() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Not Selected");
+            return null;
+        }
+        fillBillSessions();
+        return "/channel/channel_queue_session?faces-redirect=true";
     }
 
     public String navigateToNurseView() {
@@ -1069,7 +1078,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             }
             generateSessionEvents(sessionInstances);
         }
-  
+
     }
 
     public void generateSessionEvents(List<SessionInstance> sss) {
@@ -1390,21 +1399,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return "/channel/channel_payment_staff_bill?faces-redirect=true";
 
     }
-    
+
     public String paySelectedSession() {
-        if (getSelectedSessionInstance()== null) {
+        if (getSelectedSessionInstance() == null) {
             JsfUtil.addErrorMessage("Please Select Session Instance");
             return "";
         }
-        if(selectedSessionInstance.getOriginatingSession()==null){
+        if (selectedSessionInstance.getOriginatingSession() == null) {
             JsfUtil.addErrorMessage("Please Select Session");
             return "";
         }
-        if(selectedSessionInstance.getOriginatingSession().getStaff()==null){
+        if (selectedSessionInstance.getOriginatingSession().getStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return "";
         }
-        if(selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality()==null){
+        if (selectedSessionInstance.getOriginatingSession().getStaff().getSpeciality() == null) {
             JsfUtil.addErrorMessage("Please Select Speciality");
             return "";
         }
@@ -1453,8 +1462,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         getBillSessionFacade().edit(savingBillSession);
         return savingBill;
     }
-    
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1538,7 +1546,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         return ps;
     }
-
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession, String refNo) {
         AgentHistory agentHistory = new AgentHistory();

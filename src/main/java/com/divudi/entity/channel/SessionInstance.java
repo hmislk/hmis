@@ -11,8 +11,6 @@ import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -61,7 +59,20 @@ public class SessionInstance implements Serializable {
     @ManyToOne
     Department forDepartment;
 
-    private boolean currentlyActive;
+    @Transient
+    private boolean currentlyOngoing;
+
+    private boolean started;
+    @ManyToOne
+    private WebUser startedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date startedAt;
+
+    private boolean completed;
+    @ManyToOne
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
 
     String name;
     String sname;
@@ -98,7 +109,6 @@ public class SessionInstance implements Serializable {
     String descreption;
     @Lob
     String comments;
-   
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveFrom;
@@ -106,9 +116,6 @@ public class SessionInstance implements Serializable {
     private Date effectiveTo;
     private boolean scanFee;
     double profitMargin;
-
-    
-
 
     String creditNumbers;
     String cashNumbers;
@@ -500,7 +507,6 @@ public class SessionInstance implements Serializable {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
 
-    
     public String getCreditNumbers() {
         return creditNumbers;
     }
@@ -898,8 +904,6 @@ public class SessionInstance implements Serializable {
         this.comments = comments;
     }
 
-   
-
     public Date getEffectiveTo() {
         return effectiveTo;
     }
@@ -915,8 +919,6 @@ public class SessionInstance implements Serializable {
     public void setScanFee(boolean scanFee) {
         this.scanFee = scanFee;
     }
-
- 
 
     public String getReserveNumbers() {
         return reserveNumbers;
@@ -977,8 +979,6 @@ public class SessionInstance implements Serializable {
     public void setTotalForForeigner(Double totalForForeigner) {
         this.totalForForeigner = totalForForeigner;
     }
-
-   
 
     @Override
     public int hashCode() {
@@ -1052,8 +1052,6 @@ public class SessionInstance implements Serializable {
         this.showAppointmentTime = showAppointmentTime;
     }
 
-   
-
     public Boolean getPrintFeesForBills() {
         return printFeesForBills;
     }
@@ -1090,12 +1088,60 @@ public class SessionInstance implements Serializable {
         return channelOnCallFee;
     }
 
-    public boolean isCurrentlyActive() {
-        return currentlyActive;
+    public boolean isCurrentlyOngoing() {
+        return currentlyOngoing;
     }
 
-    public void setCurrentlyActive(boolean currentlyActive) {
-        this.currentlyActive = currentlyActive;
+    public void setCurrentlyOngoing(boolean currentlyOngoing) {
+        this.currentlyOngoing = currentlyOngoing;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public WebUser getStartedBy() {
+        return startedBy;
+    }
+
+    public void setStartedBy(WebUser startedBy) {
+        this.startedBy = startedBy;
+    }
+
+    public Date getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Date startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
     }
 
 }
