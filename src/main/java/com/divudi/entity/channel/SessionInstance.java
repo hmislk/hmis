@@ -195,6 +195,17 @@ public class SessionInstance implements Serializable {
     @Transient
     boolean serviceSessionCreateForOriginatingSession = false;
 
+    @Transient
+    private Long bookedPatientCount;
+    @Transient
+    private Long paidPatientCount;
+    @Transient
+    private Long completedPatientCount;
+    @Transient
+    private Long remainingPatientCount;
+
+    
+    
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
     }
@@ -1089,11 +1100,7 @@ public class SessionInstance implements Serializable {
     }
 
     public boolean isCurrentlyOngoing() {
-        return currentlyOngoing;
-    }
-
-    public void setCurrentlyOngoing(boolean currentlyOngoing) {
-        this.currentlyOngoing = currentlyOngoing;
+        return started && !completed;
     }
 
     public boolean isStarted() {
@@ -1142,6 +1149,38 @@ public class SessionInstance implements Serializable {
 
     public void setCompletedAt(Date completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public Long getBookedPatientCount() {
+        return bookedPatientCount;
+    }
+
+    public void setBookedPatientCount(Long bookedPatientCount) {
+        this.bookedPatientCount = bookedPatientCount;
+    }
+
+    public Long getPaidPatientCount() {
+        return paidPatientCount;
+    }
+
+    public void setPaidPatientCount(Long paidPatientCount) {
+        this.paidPatientCount = paidPatientCount;
+    }
+
+    public Long getCompletedPatientCount() {
+        return completedPatientCount;
+    }
+
+    public void setCompletedPatientCount(Long completedPatientCount) {
+        this.completedPatientCount = completedPatientCount;
+    }
+
+    public Long getRemainingPatientCount() {
+        return remainingPatientCount;
+    }
+
+    public void setRemainingPatientCount(Long remainingPatientCount) {
+        this.remainingPatientCount = remainingPatientCount;
     }
 
 }
