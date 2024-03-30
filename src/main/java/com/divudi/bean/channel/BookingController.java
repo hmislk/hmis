@@ -250,7 +250,22 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Started");
         if (sessionController.getApplicationPreference().isSendSmsOnChannelDoctorArrival()) {
-            sendSmsOnSessionStart();
+            sendSmsOnChannelDoctorArrival();
+        }
+    }
+    
+    public void markSessionInstanceAsCompleted() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        selectedSessionInstance.setCompleted(true);
+        selectedSessionInstance.setCompletedAt(new Date());
+        selectedSessionInstance.setCompletedBy(sessionController.getLoggedUser());
+        sessionInstanceController.save(selectedSessionInstance);
+        JsfUtil.addSuccessMessage("Session Completed");
+        if (sessionController.getApplicationPreference().isSendSmsOnChannelBookingNoShow()) {
+            sendSmsOnChannelMissingChannelBookings();
         }
     }
 
@@ -625,7 +640,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("SMS Sent");
     }
 
-    public void sendSmsOnSessionStart() {
+    public void sendSmsOnChannelDoctorArrival() {
         if (billSessions == null || billSessions.isEmpty()) {
             return;
         }
@@ -634,13 +649,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 System.err.println("No Billl for Bill Session");
                 continue;
             }
+            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                continue;
+            }
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
-            e.setCreatedAt(new Date());
             e.setBill(bs.getBill());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getPhone());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
             e.setSendingMessage(createChanellBookingDoctorArrivalSms(bs.getBill()));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -652,17 +668,57 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(e);
         }
-        JsfUtil.addSuccessMessage("SMS Sent");
+        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+    }
+    
+    
+    public void sendSmsOnChannelMissingChannelBookings() {
+        if (billSessions == null || billSessions.isEmpty()) {
+            return;
+        }
+        for (BillSession bs : billSessions) {
+            if (bs.getBill() == null) {
+                System.err.println("No Billl for Bill Session");
+                continue;
+            }
+            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                continue;
+            }
+            if(bs.isCompleted()){
+                continue;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(bs.getBill());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(createChanellBookingDoctorArrivalSms(bs.getBill()));
+            sdf;
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelDoctorArrival);
+            getSmsFacade().create(e);
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
+            getSmsFacade().edit(e);
+        }
+        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
 
     private String createChanellBookingDoctorArrivalSms(Bill b) {
         return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelDoctorArrival());
     }
+    
+    private String createMissingChanellBookingSms(Bill b) {
+        return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingNoShow());
+    }
 
     private String createChanellBookingSms(Bill b) {
         return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking());
     }
-   
+
     public String createSmsForChannelBooking(Bill b, String template) {
         if (b == null) {
             System.err.println("No Bill");

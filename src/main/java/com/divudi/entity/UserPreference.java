@@ -240,7 +240,7 @@ public class UserPreference implements Serializable {
     private boolean sendSmsOnChannelBookingCancellation;
     private boolean sendSmsOnChannelDoctorArrival;
     private boolean sendSmsOnChannelBookingCompletion;
-    private boolean sendSmsOnMissingChannelBooking;
+    private boolean sendSmsOnChannelBookingNoShow;
     private boolean sendSmsOnChannelBookingDocterPayment;
 
     @Lob
@@ -252,7 +252,7 @@ public class UserPreference implements Serializable {
     @Lob
     private String smsTemplateForChannelBookingCompletion;
     @Lob
-    private String smsTemplateForMissingTheChannelBooking;
+    private String smsTemplateForChannelBookingNoShow;
     @Lob
     private String smsTemplateForChannelBookingDoctorPayment;
 
@@ -1424,12 +1424,12 @@ public class UserPreference implements Serializable {
         this.sendSmsOnChannelBookingCompletion = sendSmsOnChannelBookingCompletion;
     }
 
-    public boolean isSendSmsOnMissingChannelBooking() {
-        return sendSmsOnMissingChannelBooking;
+    public boolean isSendSmsOnChannelBookingNoShow() {
+        return sendSmsOnChannelBookingNoShow;
     }
 
-    public void setSendSmsOnMissingChannelBooking(boolean sendSmsOnMissingChannelBooking) {
-        this.sendSmsOnMissingChannelBooking = sendSmsOnMissingChannelBooking;
+    public void setSendSmsOnChannelBookingNoShow(boolean sendSmsOnChannelBookingNoShow) {
+        this.sendSmsOnChannelBookingNoShow = sendSmsOnChannelBookingNoShow;
     }
 
     public String getSmsTemplateForChannelBookingCancellation() {
@@ -1443,15 +1443,15 @@ public class UserPreference implements Serializable {
         this.smsTemplateForChannelBookingCancellation = smsTemplateForChannelBookingCancellation;
     }
 
-    public String getSmsTemplateForMissingTheChannelBooking() {
-        if(smsTemplateForMissingTheChannelBooking==null || smsTemplateForMissingTheChannelBooking.isEmpty()){
-            smsTemplateForMissingTheChannelBooking  = "Dear {patient_name},\n\nWe noticed you missed your appointment with Dr. {doctor} on {appointment_date} at {appointment_time}, and the doctor has left. To reschedule, please contact us.";
+    public String getSmsTemplateForChannelBookingNoShow() {
+        if(smsTemplateForChannelBookingNoShow==null || smsTemplateForChannelBookingNoShow.isEmpty()){
+            smsTemplateForChannelBookingNoShow  = "Dear {patient_name},\n\nWe noticed you missed your appointment with Dr. {doctor} on {appointment_date} at {appointment_time}, and the doctor has left. To reschedule, please contact us.";
         }
-        return smsTemplateForMissingTheChannelBooking;
+        return smsTemplateForChannelBookingNoShow;
     }
 
-    public void setSmsTemplateForMissingTheChannelBooking(String smsTemplateForMissingTheChannelBooking) {
-        this.smsTemplateForMissingTheChannelBooking = smsTemplateForMissingTheChannelBooking;
+    public void setSmsTemplateForChannelBookingNoShow(String smsTemplateForChannelBookingNoShow) {
+        this.smsTemplateForChannelBookingNoShow = smsTemplateForChannelBookingNoShow;
     }
 
 }

@@ -39,6 +39,15 @@ public class BillSession implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
+    //Completed Properties
+    private boolean completed;
+    @ManyToOne
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
+    
+    
+    
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -61,6 +70,7 @@ public class BillSession implements Serializable {
     ServiceSession serviceSession;
     @ManyToOne
     private SessionInstance sessionInstance;
+    @Deprecated
     @ManyToOne
     private ServiceSessionInstance serviceSessionInstance;
     @ManyToOne
@@ -456,10 +466,12 @@ public class BillSession implements Serializable {
         this.paidBillSession = paidBillSession;
     }
 
+    @Deprecated
     public ServiceSessionInstance getServiceSessionInstance() {
         return serviceSessionInstance;
     }
 
+    @Deprecated
     public void setServiceSessionInstance(ServiceSessionInstance serviceSessionInstance) {
         this.serviceSessionInstance = serviceSessionInstance;
     }
@@ -471,5 +483,31 @@ public class BillSession implements Serializable {
     public void setSessionInstance(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+    
+    
 
 }

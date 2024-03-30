@@ -375,7 +375,7 @@
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingCompletion}" />
 
                                         <h:outputLabel value="Send SMS on Missing Doctor Appointment" ></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnMissingChannelBooking}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingNoShow}" />
 
                                         <h:outputLabel value="Send SMS on Doctor Payment"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingDocterPayment}"/>
@@ -395,7 +395,7 @@
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingCompletion}" class="w-100">  </p:inputTextarea>
 
                                         <h:outputLabel value="SMS Template For Missing Channel Booking"></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForMissingTheChannelBooking}" class="w-100">  </p:inputTextarea>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingNoShow}" class="w-100">  </p:inputTextarea>
                                         
                                         <h:outputLabel value="SMS Template For Channel Doctor Payment"></h:outputLabel>
                                         <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingDoctorPayment}" class="w-100">  </p:inputTextarea>
