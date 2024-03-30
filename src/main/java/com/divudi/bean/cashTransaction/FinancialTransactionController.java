@@ -129,17 +129,17 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFundTransferBill() {
         resetClassVariables();
         prepareToAddNewFundTransferBill();
-        return "/cashier/fund_transfer_bill";
+        return "/cashier/fund_transfer_bill?faces-redirect=true";
     }
 
     public String navigateToFundDepositBill() {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
-        return "/cashier/deposit_funds";
+        return "/cashier/deposit_funds?faces-redirect=true";
     }
 
     public String navigateToCashierSummary() {
-        return "/cashier/cashier_summary";
+        return "/cashier/cashier_summary?faces-redirect=true";
     }
 
     public String navigateToReceiveNewFundTransferBill() {
@@ -153,12 +153,12 @@ public class FinancialTransactionController implements Serializable {
         }
         resetClassVariablesWithoutSelectedBill();
         prepareToAddNewFundTransferReceiveBill();
-        return "/cashier/fund_transfer_receive_bill";
+        return "/cashier/fund_transfer_receive_bill?faces-redirect=true";
     }
 
     public String navigateToReceiveFundTransferBillsForMe() {
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/fund_transfer_bills_for_me_to_receive";
+        return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
 
     private void prepareToAddNewInitialFundBill() {
@@ -399,7 +399,7 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/initial_fund_bill_print";
+        return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
 
     public String settleFundTransferBill() {
@@ -433,7 +433,7 @@ public class FinancialTransactionController implements Serializable {
         }
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
-        return "/cashier/fund_transfer_bill_print";
+        return "/cashier/fund_transfer_bill_print?faces-redirect=true";
     }
 
     public String settleWithdrawalFundBill() {
@@ -459,7 +459,7 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/initial_withdrawal_processing_bill_print";
+        return "/cashier/initial_withdrawal_processing_bill_print?faces-redirect=true";
     }
 
     // </editor-fold>  
@@ -479,7 +479,7 @@ public class FinancialTransactionController implements Serializable {
         } else {
             currentBill = null;
         }
-        return "/cashier/shift_end_summery_bill";
+        return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
 
     public void fillPaymentsFromShiftStartToNow() {
@@ -661,7 +661,7 @@ public class FinancialTransactionController implements Serializable {
 
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
-        return "/cashier/shift_end_summery_bill_print";
+        return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
 // </editor-fold>  
@@ -740,7 +740,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
-        return "/cashier/fund_transfer_receive_bill_print";
+        return "/cashier/fund_transfer_receive_bill_print?faces-redirect=true";
     }
 
 // </editor-fold>      
@@ -800,7 +800,7 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/deposit_funds_print";
+        return "/cashier/deposit_funds_print?faces-redirect=true";
     }
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">

@@ -16,6 +16,26 @@ public class PaymentMethodValues {
         }
     }
 
+    public List<PaymentMethodWithValue> getNonZeroValues() {
+        List<PaymentMethodWithValue> nonZeroValues = new ArrayList<>();
+        for (PaymentMethodWithValue pmwv : paymentMethodsWithValues) {
+            if (pmwv.getValue() != null && pmwv.getValue() != 0.0) {
+                nonZeroValues.add(pmwv);
+            }
+        }
+        return nonZeroValues;
+    }
+
+    public double getTotalValue() {
+        double total = 0.0;
+        for (PaymentMethodWithValue pmwv : paymentMethodsWithValues) {
+            if (pmwv.getValue() != null) {
+                total += pmwv.getValue();
+            }
+        }
+        return total;
+    }
+
     public List<PaymentMethodWithValue> getPaymentMethodsWithValues() {
         return paymentMethodsWithValues;
     }
@@ -33,7 +53,6 @@ public class PaymentMethodValues {
         updateValue(bill.getPaymentMethod(), bill.getNetTotal());
     }
 
-  
     public void addAbsoluteValue(Payment payment) {
         updateValue(payment.getPaymentMethod(), Math.abs(payment.getPaidValue()));
     }
