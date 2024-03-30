@@ -307,6 +307,22 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
+    
+    public void filterOpdServiceCountBySelectedService(Long selectedItemId){
+        if (selectedItemId != null) {
+            item=itemController.findItem(selectedItemId);
+            doctor=null;
+        }
+        processOpdServiceCountDoctorWise();
+    }
+    
+    public void filterOpdServiceCountBySelectedDoctor(Long selectedDoctorId){
+        if (selectedDoctorId != null) {
+            doctor=doctorController.findDoctor(selectedDoctorId);
+            item=null;
+        }
+        processOpdServiceCountDoctorWise();
+    }
 
     public void processOpdServiceCountDoctorWise() {
         String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
@@ -326,6 +342,11 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.fromStaff =:fs";
             m.put("fs", doctor);
         }
+        if(item != null){
+            jpql += " and bi.item =:it";
+            m.put("it", item);
+        }
+        
         jpql += " group by bi.item, bi.bill.fromStaff ";
         jpql += " order by bi.bill.fromStaff.person.name, bi.item.name";
         reportOpdServiceCount = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
