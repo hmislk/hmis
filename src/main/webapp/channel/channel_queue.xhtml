@@ -77,9 +77,9 @@
 
 
                     <div class="col-12" >
-                        
-                        <h1>#{bookingController.sessionInstances}</h1>
-                        
+
+
+
                         <p:dataGrid
                             var="s" 
                             value="#{bookingController.sessionInstances}" 
@@ -92,6 +92,14 @@
 
                             <p:panel header="#{s.name}">
                                 <h:panelGrid columns="2" style="width:100%">
+                                    <h:outputLabel value="Consultant:" />
+                                    <h:outputText value="#{s.staff.person.nameWithTitle}">
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Speciality:" />
+                                    <h:outputText value="#{s.staff.speciality.name}">
+                                    </h:outputText>
+
                                     <h:outputLabel value="Date:" />
                                     <h:outputText value="#{s.sessionDate}">
                                         <f:convertDateTime pattern="dd MMM"/>
@@ -103,13 +111,18 @@
                                     </h:outputText>
 
                                     <h:outputLabel value="Max:" />
-                                    <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                        <f:convertNumber pattern="00"/>
-                                    </h:outputText>
+                                    <h:panelGroup >
+                                        <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                            <f:convertNumber pattern="00"/>
+                                        </h:outputText>
+                                        <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
+                                        </h:outputText>
+                                    </h:panelGroup>
+
 
                                     <h:outputLabel value="Fee:" />
                                     <h:outputText value="#{s.originatingSession.total}">
-                                        <f:convertNumber pattern="#,##0"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </h:panelGrid>
                             </p:panel>
