@@ -676,15 +676,40 @@ public class ChannelBean {
     }
 
     public List<SessionInstance> listTodaysSesionInstances() {
+        return listTodaysSessionInstances(null, null, null);
+    }
+
+    
+
+    public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
-        String jpql = "select i "
-                + " from SessionInstance i "
-                + " where i.retired=:ret "
-                + " and i.sessionDate=:sd";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("sd", new Date());
-        sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
+
+        // Initializing the parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("sd", new Date());
+
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (ongoing != null && ongoing) {
+            conditions.add("(i.started = true and i.completed = false)");
+        }
+        if (completed != null && completed) {
+            conditions.add("i.completed = true");
+        }
+        if (pending != null && pending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+
+        // Sorting logic remains unchanged
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
@@ -692,7 +717,6 @@ public class ChannelBean {
                 if (dateCompare != 0) {
                     return dateCompare;
                 } else {
-                    // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
                     return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
                 }
             }

@@ -42,7 +42,7 @@
                                             value="List Completed" 
                                             icon="fas fa-plus"
                                             class="ui-button-success"
-                                            action="#{bookingController.navigateToAddBooking()}"
+                                            action="#{bookingController.listTodaysCompletedSesionInstances()}"
                                             />
 
                                         <!-- View Session Data Button -->
@@ -51,7 +51,7 @@
                                             value="List Ongoing"
                                             icon="fas fa-eye"
                                             class="mx-1 ui-button-primary"
-                                            action="#{bookingController.navigateToViewSessionData()}"
+                                            action="#{bookingController.listTodaysOngoingSesionInstances()}"
                                             />
 
                                         <p:commandButton 
@@ -59,7 +59,15 @@
                                             value="List Pending"
                                             icon="fas fa-eye"
                                             class="mx-1 ui-button-primary"
-                                            action="#{bookingController.navigateToViewSessionData()}"
+                                            action="#{bookingController.listTodaysPensingSesionInstances()}"
+                                            />
+                                        
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="List All"
+                                            icon="fas fa-eye"
+                                            class="mx-1 ui-button-primary"
+                                            action="#{bookingController.listTodaysAllSesionInstances()}"
                                             />
                                     </div>
                                 </div>
