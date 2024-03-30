@@ -860,6 +860,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     }
 
+    @Deprecated
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
@@ -877,6 +878,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         return suggestions;
     }
 
+    @Deprecated
     public List<Staff> completeReferringDoctor(String query) {
         List<Staff> suggestions;
         String sql;

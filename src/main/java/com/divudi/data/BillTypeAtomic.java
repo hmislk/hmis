@@ -69,6 +69,12 @@ public enum BillTypeAtomic {
     OPD_BILL_CANCELLATION("Opd Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD),
     OPD_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD),
     OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.BILL, ServiceType.OPD),
+    // Colleting Centre
+    CC_BATCH_BILL("Collecting Centre Batch Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE),
+    CC_BATCH_BILL_CANCELLATION("Collecting Centre  Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE),
+    CC_BILL("Collecting Centre  Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE),
+    CC_BILL_CANCELLATION("Collecting Centre  Bill Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE),
+    CC_BILL_REFUND("Collecting Centre  Bill Refund", BillCategory.REFUND, ServiceType.COLLECTING_CENTRE),
     // Fund Transactions
     FUND_SHIFT_START_BILL("Shift Start Fund Bill", BillCategory.BILL, ServiceType.OTHER),
     FUND_SHIFT_END_BILL("Shift End Fund Bill", BillCategory.BILL, ServiceType.OTHER),
