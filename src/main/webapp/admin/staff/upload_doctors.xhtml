@@ -14,7 +14,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    Upload Consultants
+                    Upload Doctors
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
@@ -23,12 +23,8 @@
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
                                          class="ui-button-warning m-1"
-                                         action="#{dataUploadController.uploadConsultants}"
+                                         action="#{dataUploadController.uploadDoctors}"
                                          ajax="false"/>
-
-
-
-
 
                         <h:panelGroup id="tbls" >
 
@@ -44,22 +40,22 @@
                                     <tr>
                                         <td>A</td>
                                         <td>Code</td>
-                                        <td>Consultant's unique code. Optional.</td>
+                                        <td>Doctors's unique code. Optional.</td>
                                     </tr>
                                     <tr>
                                         <td>B</td>
                                         <td>Title</td>
-                                        <td>Title of the Consultant (e.g., Dr., Mr., Ms.). Required.</td>
+                                        <td>Title of the Doctor (e.g., Dr., Mr., Ms.). Required.</td>
                                     </tr>
                                     <tr>
                                         <td>C</td>
                                         <td>Name</td>
-                                        <td>Consultant's name. Required.</td>
+                                        <td>Doctor's name. Required.</td>
                                     </tr>
                                     <tr>
                                         <td>D</td>
                                         <td>Registration Number</td>
-                                        <td>Consultant's registration number. Optional.</td>
+                                        <td>Doctor's registration number. Optional.</td>
                                     </tr>
                                     <tr>
                                         <td>E</td>
@@ -69,17 +65,17 @@
                                     <tr>
                                         <td>F</td>
                                         <td>Sex</td>
-                                        <td>Sex of the Consultant. Required (use M or F).</td>
+                                        <td>Sex of the Doctor. Required (use M or F).</td>
                                     </tr>
                                     <tr>
                                         <td>G</td>
                                         <td>Mobile Number</td>
-                                        <td>Consultant's mobile number. Optional.</td>
+                                        <td>Doctor's mobile number. Optional.</td>
                                     </tr>
                                     <tr>
                                         <td>H</td>
                                         <td>Speciality</td>
-                                        <td>Consultant's speciality. Required.</td>
+                                        <td>Doctor's speciality. Required.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -99,7 +95,7 @@
         <h:form>
 
 
-            <p:commandButton value="Save" action="#{dataUploadController.saveConsultants()}" ajax="false" >
+            <p:commandButton value="Save" action="#{dataUploadController.saveDoctors()}" ajax="false" >
             </p:commandButton>
 
             <p:dataTable
@@ -110,7 +106,7 @@
                 value="#{dataUploadController.consultantsToSave}"
                 var="item" >
                 <f:facet name="header">
-                    <p:outputLabel value="Consultants Saved"></p:outputLabel>
+                    <p:outputLabel value="Doctors Saved"></p:outputLabel>
                 </f:facet>
 
                 <!-- Code Column -->
