@@ -239,7 +239,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return output;
     }
 
-    public void markAsStarted() {
+    public void markSessionInstanceAsStarted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
             return;
@@ -250,7 +250,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Started");
         if (sessionController.getApplicationPreference().isSendSmsOnChannelDoctorArrival()) {
-            sendSmsAfterBooking();
+            sendSmsOnSessionStart();
         }
     }
 
@@ -626,6 +626,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void sendSmsOnSessionStart() {
+        if (billSessions == null || billSessions.isEmpty()) {
+            return;
+        }
         for (BillSession bs : billSessions) {
             if (bs.getBill() == null) {
                 System.err.println("No Billl for Bill Session");
@@ -642,7 +645,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
-            e.setSmsType(MessageType.ChannelBooking);
+            e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
             SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
             e.setSentSuccessfully(sent.isSentSuccefully());
@@ -653,107 +656,49 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private String createChanellBookingDoctorArrivalSms(Bill b) {
-        String s;
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
-                "dd MMM");
-        String time = CommonController.getDateFormat(
-                b.getSingleBillSession().getSessionTime(),
-                "hh:mm a");
-        ServiceSession ss = null;
-        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getSessionInstance() != null
-                && b.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) {
-            ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
-        }
-        if (ss != null && ss.getStartingTime() != null) {
-            time = CommonController.getDateFormat(
-                    ss.getStartingTime(),
-                    "hh:mm a");
-        } else {
-            //System.out.println("Null Error");
-        }
-        if (sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking() == null) {
-            String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();
-            s = "Your Appointment with "
-                    + ""
-                    + doc
-                    + " @  Medical Services - "
-                    + "No "
-                    + b.getSingleBillSession().getSerialNo()
-                    + " at "
-                    + time
-                    + " on "
-                    + date
-                    + ". 0912293700";
-
-        } else {
-            s = genarateTemplateForChannelBooking(b);
-        }
-        return s;
+        return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelDoctorArrival());
     }
 
     private String createChanellBookingSms(Bill b) {
-        String s;
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
-                "dd MMM");
-        String time = CommonController.getDateFormat(
-                b.getSingleBillSession().getSessionTime(),
-                "hh:mm a");
-        ServiceSession ss = null;
-        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getSessionInstance()!= null
-                && b.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) {
-            ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
-        }
-        if (ss != null && ss.getStartingTime() != null) {
-            time = CommonController.getDateFormat(
-                    ss.getStartingTime(),
-                    "hh:mm a");
-        } else {
-            //System.out.println("Null Error");
-        }
-        if (sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking() == null) {
-            String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();
-            s = "Your Appointment with "
-                    + ""
-                    + doc
-                    + " @  Medical Services - "
-                    + "No "
-                    + b.getSingleBillSession().getSerialNo()
-                    + " at "
-                    + time
-                    + " on "
-                    + date
-                    + ". 0912293700";
-
-        } else {
-            s = genarateTemplateForChannelBooking(b);
-        }
-        return s;
+        return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking());
     }
-
-    public String genarateTemplateForChannelBooking(Bill b) {
+   
+    public String createSmsForChannelBooking(Bill b, String template) {
+        if (b == null) {
+            System.err.println("No Bill");
+            return "";
+        }
+        if (b.getSingleBillSession() == null) {
+            System.err.println("No Bill Session");
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance() == null) {
+            System.err.println("No Session Instances");
+            return "";
+        }
+        if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
+            System.err.println("No Bill Session");
+            return "";
+        }
+        SessionInstance si = b.getSingleBillSession().getSessionInstance();
+        BillSession bs = b.getSingleBillSession();
+        ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
-        ServiceSession ss = null;
 
-        ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
-        String time = CommonController.getDateFormat(
-                b.getSingleBillSession().getSessionInstance().getStartingTime(),
-                sessionController.getApplicationPreference().getShortTimeFormat());
-
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
-                "dd MMM");
-
-        String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();
+        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
         int no = b.getSingleBillSession().getSerialNo();
-        String input = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
-        s = input.replace("{patient_name}", patientName)
+
+        s = template.replace("{patient_name}", patientName)
                 .replace("{doctor}", doc)
-                .replace("{appointment_time}", time)
-                .replace("{appointment_date}", date)
+                .replace("{appointment_time}", sessionTime)
+                .replace("{appointment_date}", sessionDate)
                 .replace("{serial_no}", String.valueOf(no))
                 .replace("{doc}", doc)
-                .replace("{time}", time)
-                .replace("{date}", date)
+                .replace("{time}", sessionTime)
+                .replace("{date}", sessionDate)
                 .replace("{No}", String.valueOf(no));
 
         return s;

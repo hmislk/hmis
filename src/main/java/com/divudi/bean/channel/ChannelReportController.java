@@ -3474,46 +3474,9 @@ public class ChannelReportController implements Serializable {
         return m;
     }
 
-    public String createArrivalSmsBody(BillSession bs) {
-        if (bs == null) {
-            return null;
-        }
+   
 
-        if (bs.getServiceSession() == null) {
-            return null;
-        }
-        return createArrivalSmsBody(bs.getServiceSession());
-    }
-
-    public void sendArrivalSms() {
-        sendingSmsText = createArrivalSmsBody(serviceSession);
-        if (serviceSession == null) {
-            JsfUtil.addErrorMessage("No Service Session");
-            return;
-        }
-        if (sendingSmsText == null) {
-            JsfUtil.addErrorMessage("Error");
-            return;
-        }
-        int count = 0;
-        for (BillSession bs : getBillSessionsNurse()) {
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setBill(bs.getBill());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getPhone());
-            e.setSendingMessage((sendingSmsText));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSmsType(MessageType.ChannelDoctorAraival);
-            smsFacade.create(e);
-            smsManagerEjb.sendSms(e);
-            count++;
-        }
-        sendingSmsText = null;
-    }
+  
 
     public void sendCancellationSms() {
 
