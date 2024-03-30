@@ -148,15 +148,11 @@
                                                     <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalDeposits}" ></p:outputLabel></div>
                                                 </div>
                                                 <div class="row">
-                                                    <div class="col-md-2"><p:outputLabel value="Refunded Bill (In Shift)" ></p:outputLabel></div>
+                                                    <div class="col-md-2"><p:outputLabel value="Total Collection" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalBillRefunds}" ></p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.paymentMethodValues.totalValue}" ></p:outputLabel></div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-md-2"><p:outputLabel value="Canceled Bill (In Shift)" ></p:outputLabel></div>
-                                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalBillCanceld}"></p:outputLabel></div>
-                                                </div>
+                                               
                                                 <div class="row" >
                                                     <div class="col-md-3"><p:outputLabel value="Total Of End Shift Bill" style="font-weight: 700" ></p:outputLabel></div>
                                                     <div class="col-md-6"><p:outputLabel value=":" class="mx-2" ></p:outputLabel></div>
@@ -194,8 +190,8 @@
                                                 payments="#{financialTransactionController.currentBillPayments}" 
                                                 bill="#{financialTransactionController.currentBill}"
                                                 startbill="#{financialTransactionController.nonClosedShiftStartFundBill}"
-                                                Additions="#{financialTransactionController.aditions}"
-                                                Deductions="#{financialTransactionController.deductions}"/>  
+                                                additions="#{financialTransactionController.additions}"
+                                                deductions="#{financialTransactionController.deductions}"/>  
                                         </div>
                                     </h:panelGrid>
                                 </p:panel>
