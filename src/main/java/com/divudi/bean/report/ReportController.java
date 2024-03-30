@@ -311,6 +311,7 @@ public class ReportController implements Serializable {
     public void filterOpdServiceCountBySelectedService(Long selectedItemId){
         if (selectedItemId != null) {
             item=itemController.findItem(selectedItemId);
+            doctor=null;
         }
         processOpdServiceCountDoctorWise();
     }
@@ -318,6 +319,7 @@ public class ReportController implements Serializable {
     public void filterOpdServiceCountBySelectedDoctor(Long selectedDoctorId){
         if (selectedDoctorId != null) {
             doctor=doctorController.findDoctor(selectedDoctorId);
+            item=null;
         }
         processOpdServiceCountDoctorWise();
     }
