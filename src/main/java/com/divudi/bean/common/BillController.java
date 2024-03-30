@@ -1575,14 +1575,21 @@ public class BillController implements Serializable {
     public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
         System.out.println("findBillFees");
         String jpql;
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         Map m = new HashMap();
         jpql = "select bf "
                 + " from BillFee bf"
                 + " where bf.retired=:ret"
                 + " and bf.bill.billTime between :fromDate and :toDate "
-                + " and bf.staff=:staff";
+                + " and bf.staff=:staff "
+                + " and bf.bill.billTypeAtomic in :btcs "
+                + " and bf.fee.feeType=:ft ";
+        m.put("btcs", btcs);
         m.put("staff", staff);
         m.put("ret", false);
+        m.put("ft", FeeType.Staff);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
         return billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
