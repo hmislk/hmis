@@ -110,7 +110,7 @@ public class GrnController implements Serializable {
     private double difference;
 
     public double calDifference() {
-        difference = insTotal + grnBill.getTotal();
+        difference = insTotal + grnBill.getNetTotal();
         return difference;
     }
 
@@ -120,7 +120,6 @@ public class GrnController implements Serializable {
         pos = null;
         printPreview = false;
         billItems = null;
-        difference = 0;
         createGrn();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
@@ -730,7 +729,8 @@ public class GrnController implements Serializable {
 
     public void ChangeDiscountLitener() {
         getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
-
+        setInsTotal(0);
+        setDifference(getGrnBill().getNetTotal());
     }
 
     public void netDiscount() {
