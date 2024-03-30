@@ -18,14 +18,14 @@
             <div style="width: 210mm;">
                 <div class="">
                     <div class="col-12 text-center">
-                        <h2><h:outputLabel value="#{cc.attrs.admission.institution.name}" /></h2>
+                        <h3><h:outputLabel value="#{cc.attrs.admission.institution.name}" /></h3>
                         <h5 style="margin-top: -10px;"><h:outputLabel value="#{cc.attrs.admission.institution.address}" /></h5>
-                        <div class="d-flex ">
+                        <div class="d-flex justify-content-center">
                             <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.phone}</h6>
                             <p:spacer width="10px"/>
-                            <h6 style="margin-top: -12px;">#{cc.attrs.admission.institution.email}</h6>
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.email}</h6>
                         </div>
-                        <div class="d-flex">
+                        <div class="d-flex text-center">
                             <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.fax}</h6>
                             <p:spacer width="10px"/>
                             <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.web}</h6>
@@ -40,7 +40,7 @@
 
 
 
-                <div class="mt-4" style="font-weight: bold;">
+                <div class="mt-3" style="font-weight: bold;">
                     <p:outputLabel   value="ADMISSION DETAILS" />
                 </div>
 
@@ -94,7 +94,7 @@
                     </table>
                 </div>
 
-                <div class="mt-4" style="font-weight: bold;">
+                <div class="mt-3" style="font-weight: bold;">
                     <p:outputLabel   value="PATIENT DETAILS" />
                 </div>
 
@@ -185,7 +185,7 @@
 
                 </div>
 
-                <div class="mt-4" style="font-weight: bold;">
+                <div class="mt-3" style="font-weight: bold;">
                     <p:outputLabel   value="GUARDIAN DETAILS" />
                 </div>
 
@@ -239,7 +239,7 @@
 
                 </div>
 
-                <div class="mt-4" style="font-weight: bold;">
+                <div class="mt-3" style="font-weight: bold;">
                     <p:outputLabel   value="CREDIT COMPANY DETAILS" />
                 </div>
 
@@ -266,7 +266,7 @@
                     </table>
                 </div>
 
-                <div class="mt-4" style="font-weight: bold">
+                <div class="mt-3" style="font-weight: bold; font-size: 15px">
                     <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish ne null}"  >
                         <p>
                             <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish}"/>
