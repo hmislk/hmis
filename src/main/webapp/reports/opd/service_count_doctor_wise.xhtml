@@ -33,7 +33,7 @@
                             <p:selectOneMenu 
                                 id="cmdFromDepartment"
                                 value="#{reportController.department}" 
-                                class="w-100 mt-1 mx-2"
+                                class="w-100 mx-2"
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
@@ -50,7 +50,7 @@
                                             itemLabel="#{ix.person.name}" 
                                             itemValue="#{ix}" 
                                             inputStyleClass="form-control"
-                                            class="w-100" 
+                                            class="w-100 mx-2" 
                                             size="10">
                                 <p:column headerText="Name" >
                                     <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
@@ -59,17 +59,41 @@
                                     <h:outputText value="#{ix.code}" ></h:outputText>
                                 </p:column>
                             </p:autoComplete>
+                            
+                            <p:outputLabel value="Item" ></p:outputLabel>
+                            <p:autoComplete forceSelection="true" 
+                                            id="cmbItem" 
+                                            value="#{reportController.item}" 
+                                            completeMethod="#{itemController.completeOpdItemsByNamesAndCode}" var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            inputStyleClass="form-control"
+                                            class="w-100 mx-2" 
+                                            size="10">
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{ix.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputText value="#{ix.code}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:outputLabel value="From" ></p:outputLabel>
                             <p:datePicker 
-                                class="mt-1 mx-2"
+                                class="mt-1 mx-2 w-100"
+                                inputStyleClass="w-100"
+                                showTime="true"
+                                showButtonBar="true"
                                 value="#{reportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
 
                             <p:outputLabel value="To" ></p:outputLabel>
                             <p:datePicker 
-                                class="mt-1 mx-2"
+                                showTime="true"
+                                showButtonBar="true"
+                                class="mt-1 mx-2 w-100"
+                                inputStyleClass="w-100"
                                 value="#{reportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
@@ -102,10 +126,12 @@
 
                                      >
                             <p:column headerText="Doctor Name">
-                                <h:outputText value="#{item.doctor}" />
+                                <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedDoctor(item.doctorId)}"
+                                               value="#{item.doctor}"/>
                             </p:column>
                             <p:column headerText="Test Name">
-                                <h:outputText value="#{item.service}" />
+                                <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedService(item.serviceId)}"
+                                               value="#{item.service}"/>
                             </p:column>
                             <p:column headerText="Test Count">
                                 <h:outputText value="#{item.serviceCount}" />
