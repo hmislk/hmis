@@ -218,6 +218,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
     
+    public boolean chackNull(String template){
+        boolean chack;
+        chack = template.isEmpty();
+        return chack; 
+    }
+    
     public String fillDataForChannelingBillHeader(String template, Bill bill) { 
         String output;
         
@@ -243,6 +249,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fillFees();
         printPreview = false;
         patient = new Patient();
+        if(speciality== null){
+            speciality = staff.getSpeciality();
+        }
+        paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
         return "/channel/add_booking?faces-redirect=true";
     }
 
@@ -1054,6 +1064,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             }
             generateSessionEvents(sessionInstances);
         }
+  
     }
 
     public void generateSessionEvents(List<SessionInstance> sss) {
@@ -1701,35 +1712,35 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 break;
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
 
             case Card:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
 
             case Cheque:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
 
             case Slip:
                 bill.setBillType(BillType.ChannelCash);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                 break;
         }
 //        String insId = generateBillNumberInsId(bill);

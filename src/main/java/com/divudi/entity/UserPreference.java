@@ -256,6 +256,8 @@ public class UserPreference implements Serializable {
     private String inwardAddmissionStatemenetSinhala;
 
     private String channelingBillHeaderTemplate;
+    
+    private boolean showBarCodeInChannelBookingBill;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1361,6 +1363,14 @@ public class UserPreference implements Serializable {
 
     public void setChannelingBillHeaderTemplate(String channelingBillHeaderTemplate) {
         this.channelingBillHeaderTemplate = channelingBillHeaderTemplate;
+    }
+
+    public boolean isShowBarCodeInChannelBookingBill() {
+        return showBarCodeInChannelBookingBill;
+    }
+
+    public void setShowBarCodeInChannelBookingBill(boolean showBarCodeInChannelBookingBill) {
+        this.showBarCodeInChannelBookingBill = showBarCodeInChannelBookingBill;
     }
 
 }
