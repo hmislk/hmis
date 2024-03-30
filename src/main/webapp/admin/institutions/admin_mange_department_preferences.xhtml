@@ -363,14 +363,49 @@
                                     <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBooking}"/>
 
                                         <h:outputLabel value="Send SMS on Cancellation"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnCancelling}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingCancellation}"/>
 
-                                        <h:outputLabel value="Send SMS on Arrival"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnArrival}"/>
+                                        <h:outputLabel value="Send SMS on Doctor Arrival"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelDoctorArrival}"/>
 
+                                        <h:outputLabel value="Send SMS on Channel Booking Completion" ></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingCompletion}" />
+
+                                        <h:outputLabel value="Send SMS on Missing Doctor Appointment" ></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnMissingChannelBooking}" />
+
+                                        <h:outputLabel value="Send SMS on Doctor Payment"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingDocterPayment}"/>
+
+
+
+                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
+
+                                        <h:outputLabel value="SMS Template For Channel Booking Cancellation"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingCancellation}" class="w-100">  </p:inputTextarea>
+                                        
+                                        <h:outputLabel value="SMS Template For Channel Doctor Arrival"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelDoctorArrival}" class="w-100">  </p:inputTextarea>
+
+                                        <h:outputLabel value="SMS Template For Channel Booking Completion"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingCompletion}" class="w-100">  </p:inputTextarea>
+
+                                        <h:outputLabel value="SMS Template For Missing Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForMissingTheChannelBooking}" class="w-100">  </p:inputTextarea>
+                                        
+                                        <h:outputLabel value="SMS Template For Channel Doctor Payment"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingDoctorPayment}" class="w-100">  </p:inputTextarea>
+
+                                        
+                                        <p:separator></p:separator>
+                                        <p:separator></p:separator>
+                                        
+                                        <h:outputLabel value="Show Bar Code in Channel Booking Bill"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showBarCodeInChannelBookingBill}"/>
 
                                         <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
@@ -389,29 +424,21 @@
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
                                         <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
-                                        <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
+
+
+
                                         <h:outputLabel value="Default Payment Method"></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
-                                        
-                                        <h:outputLabel value="Show Bar Code in Channel Booking Bill"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showBarCodeInChannelBookingBill}"/>
 
-                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
+
 
                                         <h:outputLabel
                                             class="form-label w-100"
                                             value="Number of Channelling Bill Copies"></h:outputLabel>
                                         <p:inputText value="#{sessionController.currentPreference.numberOfChannellingBillCopies}"/>
 
-                                        <h:outputLabel value="Docter Payment SMS"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.docterPaymentSMS}"/>
-
-                                        <h:outputLabel value="SMS Template For Channel Docter Payment"></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.docterPaymentSMSTemplate}" class="w-100">  </p:inputTextarea>
 
                                     </h:panelGrid>
 

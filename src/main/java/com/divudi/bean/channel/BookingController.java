@@ -166,6 +166,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     BillBeanController billBeanController;
     @Inject
     BillController billController;
+    @Inject
+    SessionInstanceController sessionInstanceController;
 
     /**
      * Properties
@@ -237,6 +239,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return output;
     }
 
+    public void markAsStarted() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        selectedSessionInstance.setStarted(true);
+        selectedSessionInstance.setStartedAt(new Date());
+        selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
+        sessionInstanceController.save(selectedSessionInstance);
+        JsfUtil.addSuccessMessage("Session Started");
+        if (sessionController.getApplicationPreference().isSendSmsOnChannelDoctorArrival()) {
+            sendSmsAfterBooking();
+        }
+    }
+
     public String navigateToAddBooking() {
         if (staff == null) {
             JsfUtil.addErrorMessage("Please select a Docter");
@@ -287,7 +304,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void listTodaysAllSesionInstances() {
         sessionInstances = channelBean.listTodaysSessionInstances(null, null, null);
     }
-    
+
     public void listTodaysOngoingSesionInstances() {
         sessionInstances = channelBean.listTodaysSessionInstances(true, null, null);
     }
@@ -595,7 +612,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
-        e.setSendingMessage(chanellBookingSms(printingBill));
+        e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
         e.setPending(false);
@@ -608,32 +625,45 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("SMS Sent");
     }
 
-    private String chanellBookingSms(Bill b) {
+    public void sendSmsOnSessionStart() {
+        for (BillSession bs : billSessions) {
+            if (bs.getBill() == null) {
+                System.err.println("No Billl for Bill Session");
+                continue;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setCreatedAt(new Date());
+            e.setBill(bs.getBill());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getPhone());
+            e.setSendingMessage(createChanellBookingDoctorArrivalSms(bs.getBill()));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelBooking);
+            getSmsFacade().create(e);
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
+            getSmsFacade().edit(e);
+        }
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+
+    private String createChanellBookingDoctorArrivalSms(Bill b) {
         String s;
         String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
-        //System.out.println("date = " + date);
         String time = CommonController.getDateFormat(
                 b.getSingleBillSession().getSessionTime(),
                 "hh:mm a");
-        //System.out.println("time = " + time);
         ServiceSession ss = null;
-        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getServiceSession() != null
-                && b.getSingleBillSession().getServiceSession().getOriginatingSession() != null) {
-            ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getSessionInstance() != null
+                && b.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) {
+            ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         }
-//        if (b != null) {
-//            System.out.println("b = " + b);
-//            if (b.getSingleBillSession() != null) {
-//                System.out.println("b.getSingleBillSession() = " + b.getSingleBillSession());
-//                if(b.getSingleBillSession().getServiceSession()!=null){
-//                    System.out.println("b.getSingleBillSession().getServiceSession() = " + b.getSingleBillSession().getServiceSession());
-//                    if(b.getSingleBillSession().getServiceSession().getOriginatingSession()!=null){
-//                        System.out.println("b.getSingleBillSession().getServiceSession().getOriginatingSession() = " + b.getSingleBillSession().getServiceSession().getOriginatingSession());
-//                    }
-//                }
-//            }
-//        }
         if (ss != null && ss.getStartingTime() != null) {
             time = CommonController.getDateFormat(
                     ss.getStartingTime(),
@@ -656,18 +686,57 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     + ". 0912293700";
 
         } else {
-            s = genarateTemplateForSms(b);
+            s = genarateTemplateForChannelBooking(b);
         }
         return s;
     }
 
-    public String genarateTemplateForSms(Bill b) {
+    private String createChanellBookingSms(Bill b) {
+        String s;
+        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
+                "dd MMM");
+        String time = CommonController.getDateFormat(
+                b.getSingleBillSession().getSessionTime(),
+                "hh:mm a");
+        ServiceSession ss = null;
+        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getSessionInstance()!= null
+                && b.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) {
+            ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
+        }
+        if (ss != null && ss.getStartingTime() != null) {
+            time = CommonController.getDateFormat(
+                    ss.getStartingTime(),
+                    "hh:mm a");
+        } else {
+            //System.out.println("Null Error");
+        }
+        if (sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking() == null) {
+            String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();
+            s = "Your Appointment with "
+                    + ""
+                    + doc
+                    + " @  Medical Services - "
+                    + "No "
+                    + b.getSingleBillSession().getSerialNo()
+                    + " at "
+                    + time
+                    + " on "
+                    + date
+                    + ". 0912293700";
+
+        } else {
+            s = genarateTemplateForChannelBooking(b);
+        }
+        return s;
+    }
+
+    public String genarateTemplateForChannelBooking(Bill b) {
         String s;
         ServiceSession ss = null;
 
-        ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+        ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String time = CommonController.getDateFormat(
-                b.getSingleBillSession().getServiceSession().getStartingTime(),
+                b.getSingleBillSession().getSessionInstance().getStartingTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
 
         String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
