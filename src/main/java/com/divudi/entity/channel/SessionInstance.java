@@ -1182,5 +1182,7 @@ public class SessionInstance implements Serializable {
     public void setRemainingPatientCount(Long remainingPatientCount) {
         this.remainingPatientCount = remainingPatientCount;
     }
+    
+    
 
 }

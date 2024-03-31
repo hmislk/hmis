@@ -64,6 +64,9 @@
                                 </f:facet>
 
                                 <p:column selectionMode="multiple" width="15"></p:column>
+                                <p:column headerText="Id"  sortBy="#{item.id}" filterBy="#{item.id}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.id}" ></h:outputText>
+                                </p:column>
                                 <p:column headerText="Name"  sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{item.name}" ></h:outputText>
                                 </p:column>

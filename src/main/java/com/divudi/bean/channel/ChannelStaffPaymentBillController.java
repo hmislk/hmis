@@ -779,8 +779,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         current = b;
         getBillFacade().create(b);
         saveBillItemsAndFees(b);
-        System.out.println("sessionController.getDepartmentPreference().isDocterPaymentSMS() = " + sessionController.getDepartmentPreference().isDocterPaymentSMS());
-        if (sessionController.getDepartmentPreference().isDocterPaymentSMS()) {
+        System.out.println("sessionController.getDepartmentPreference().isDocterPaymentSMS() = " + sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment());
+        if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment()) {
             sendSmsAfterDocPayment();
         }
         printPreview = true;
@@ -803,7 +803,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             b.setSingleBillItem(bis.get(0));
         }
         current = b;
-        if (sessionController.getDepartmentPreference().isDocterPaymentSMS()) {
+        if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment()) {
             sendSmsAfterSessionPayment();
         }
         printPreview = true;
@@ -892,7 +892,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             //System.out.println("Null Error");
         }
-        if (sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate() == null) {
+        if (sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment() == null) {
             String doc = b.getStaff().getPerson().getNameWithTitle();
             s = "Dear "
                     + "{doctor}"
@@ -908,10 +908,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
                     + " and the total is "
                     + "{net_total}"
                     + ". Thank you";
-            sessionController.getDepartmentPreference().setDocterPaymentSMSTemplate(doc);
+            sessionController.getDepartmentPreference().setSmsTemplateForChannelBookingDoctorPayment(doc);
             template = doc;
         } else {
-            template = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
+            template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment();
         }
         s = genarateTemplateForSms(b, template);
 
@@ -934,30 +934,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 si.getOriginatingSession().getStartingTime(),
                 "hh:mm a");
         }
-        
-        if (sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate() == null) {
-            String doc = si.getStaff().getPerson().getNameWithTitle();
-            s = "Dear "
-                    + "{doctor}"
-                    + "{dept_id}"
-                    + "Your Payment of the "
-                    + ""
-                    + "{session_name}"
-                    + " on "
-                    + "{date} "
-                    + ""
-                    + "Patient Count - "
-                    + "{patient_count}"
-                    + " and the total is "
-                    + "{net_total}"
-                    + ". Thank you";
-            sessionController.getDepartmentPreference().setDocterPaymentSMSTemplate(doc);
-            template = doc;
-        } else {
-            template = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
-        }
+        template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment();
         s = genarateTemplateForSms(b, sessionInstance, template);
-
         return s;
     }
 
