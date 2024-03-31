@@ -253,7 +253,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             sendSmsOnChannelDoctorArrival();
         }
     }
-    
+
     public void markSessionInstanceAsCompleted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
@@ -315,7 +315,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
-    
+
     public String navigateToChannelQueueFromConsultantRoom() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
@@ -675,8 +675,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
-    
-    
+
     public void sendSmsOnChannelMissingChannelBookings() {
         if (billSessions == null || billSessions.isEmpty()) {
             return;
@@ -689,7 +688,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
                 continue;
             }
-            if(bs.isCompleted()){
+            if (bs.isCompleted()) {
                 continue;
             }
             Sms e = new Sms();
@@ -714,7 +713,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private String createChanellBookingDoctorArrivalSms(Bill b) {
         return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelDoctorArrival());
     }
-    
+
     private String createChanellBookingNoShowSms(Bill b) {
         return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingNoShow());
     }
@@ -1338,7 +1337,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void fillBillSessions() {
         selectedBillSession = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit
+        };
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
                 + " From BillSession bs "
@@ -1347,13 +1352,43 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
-        HashMap hh = new HashMap();
+        HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
-//        hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
+        // Initialize counts
+        long bookedPatientCount = 0;
+        long paidPatientCount = 0;
+        long completedPatientCount = 0;
+
+        // Loop through billSessions to calculate counts
+        for (BillSession bs : billSessions) {
+            if (bs != null) {
+                // Booked count increments for every BillSession instance
+                bookedPatientCount++;
+
+                // Check if the bill session is completed
+                if (bs.isCompleted()) {
+                    completedPatientCount++;
+                }
+
+                // Check if the bill session is paid
+                if (bs.getPaidBillSession() != null) {
+                    paidPatientCount++;
+                }
+            }
+        }
+
+        // Set calculated counts to selectedSessionInstance
+        selectedSessionInstance.setBookedPatientCount(bookedPatientCount);
+        selectedSessionInstance.setPaidPatientCount(paidPatientCount);
+        selectedSessionInstance.setCompletedPatientCount(completedPatientCount);
+
+        // Assuming remainingPatientCount is calculated as booked - completed
+        selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
+        sessionInstanceController.save(selectedSessionInstance);
     }
 
     private boolean errorCheckForAddingNewBooking() {
