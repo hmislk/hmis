@@ -69,6 +69,7 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -137,6 +138,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     SmsManagerEjb smsManager;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
     /**
      * Controllers
      */
@@ -252,6 +255,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelDoctorArrival()) {
             sendSmsOnChannelDoctorArrival();
         }
+        for (BillSession bs : billSessions) {
+            if (!bs.isCompleted()) {
+                bs.setNextInLine(true);
+                billSessionFacade.edit(bs);
+                selectedSessionInstance.setNextInLineBillSession(bs);
+                sessionInstanceFacade.edit(selectedSessionInstance);
+                return;
+            }
+        }
     }
 
     public void markSessionInstanceAsCompleted() {
@@ -314,6 +326,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public String navigateToChannelQueueFromMenu() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
+    }
+    
+    public String navigateToChannelDisplayFromMenu() {
+        sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
+        return "/channel/channel_display?faces-redirect=true";
     }
 
     public String navigateToChannelQueueFromConsultantRoom() {
@@ -396,6 +413,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         fillBillSessions();
         return "/channel/channel_queue_session?faces-redirect=true";
+    }
+    
+    public String navigateToDisplatSessionQueueAtConsultantRoom() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Not Selected");
+            return null;
+        }
+        fillBillSessions();
+        return "/channel/channel_queue_display?faces-redirect=true";
     }
 
     public String navigateToNurseView() {
@@ -1333,6 +1359,226 @@ public class BookingController implements Serializable, ControllerWithPatient {
         arrivalRecord.setApprovedAt(new Date());
         arrivalRecord.setApprover(sessionController.getLoggedUser());
         fpFacade.edit(arrivalRecord);
+    }
+
+    public void markCurrentCompleteAndCallNext() {
+        BillSession lastCompletedSession = null;
+        BillSession currentSession = null;
+        BillSession nextSession = null;
+
+        // Iterate through the billSessions list
+        for (int i = 0; i < billSessions.size(); i++) {
+            BillSession bs = billSessions.get(i);
+            if (Boolean.TRUE.equals(bs.getCurrentlyConsulted())) {
+                // Mark the currently consulted session as completed
+                bs.setCompleted(true);
+                bs.setCurrentlyConsulted(false);
+                lastCompletedSession = bs; // This becomes the last completed session
+                billSessionFacade.edit(bs);
+
+                // Check for the next session in the list
+                if (i + 1 < billSessions.size()) {
+                    nextSession = billSessions.get(i + 1);
+                    nextSession.setCurrentlyConsulted(true);
+                    nextSession.setNextInLine(false);
+                    currentSession = nextSession; // This is now the currently consulting session
+                    billSessionFacade.edit(nextSession);
+                }
+                break;
+            }
+        }
+
+        // Set the next in line session if there is one
+        if (nextSession != null && billSessions.size() > billSessions.indexOf(nextSession) + 1) {
+            BillSession newNextInLine = billSessions.get(billSessions.indexOf(nextSession) + 1);
+            newNextInLine.setNextInLine(true);
+            billSessionFacade.edit(newNextInLine); // Update the next in line session
+            selectedSessionInstance.setNextInLineBillSession(newNextInLine);
+        } else {
+            selectedSessionInstance.setNextInLineBillSession(null);
+        }
+
+        // Update the SessionInstance with the new lastCompleted, currentlyConsulting, and nextInLine sessions
+        selectedSessionInstance.setLastCompletedBillSession(lastCompletedSession);
+        selectedSessionInstance.setCurrentlyConsultingBillSession(currentSession);
+        // Note: The next in line has already been set above if available
+
+        // Persist changes to the SessionInstance
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void callNextSessionToCurrent() {
+        BillSession lastCompletedSession = null;
+        BillSession currentSession = null;
+        BillSession nextSession = null;
+        boolean currentFound = false;
+
+        // Check if there is currently a session being consulted
+        for (BillSession bs : billSessions) {
+            if (Boolean.TRUE.equals(bs.getCurrentlyConsulted())) {
+                currentFound = true;
+                break;
+            }
+        }
+
+        // If no current session is being consulted
+        if (!currentFound) {
+            for (int i = 0; i < billSessions.size(); i++) {
+                BillSession bs = billSessions.get(i);
+                if (Boolean.TRUE.equals(bs.getNextInLine())) {
+                    // This session becomes the currently consulted session
+                    bs.setCurrentlyConsulted(true);
+                    bs.setNextInLine(false);
+                    currentSession = bs; // Set as the currently consulting session
+                    billSessionFacade.edit(bs);
+
+                    // Find and update the next in line session
+                    if (i + 1 < billSessions.size()) {
+                        nextSession = billSessions.get(i + 1);
+                        nextSession.setNextInLine(true);
+                        billSessionFacade.edit(nextSession);
+                        selectedSessionInstance.setNextInLineBillSession(nextSession);
+                    } else {
+                        selectedSessionInstance.setNextInLineBillSession(null);
+                        JsfUtil.addErrorMessage("You have to srat the session to call for Patients");
+                        return;
+                    }
+
+                    // Update the last completed session if needed
+                    if (i - 1 >= 0 && billSessions.get(i - 1).isCompleted()) {
+                        lastCompletedSession = billSessions.get(i - 1);
+                        selectedSessionInstance.setLastCompletedBillSession(lastCompletedSession);
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        // Update the SessionInstance with the new currentlyConsulting session and possibly the nextInLine session
+        selectedSessionInstance.setCurrentlyConsultingBillSession(currentSession);
+        // Persist changes to the SessionInstance
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void reverseCurrentCompleteAndCallPrevious() {
+        BillSession currentSession = null;
+        BillSession previousSession = null;
+
+        // Find the index of the currently consulting session
+        int currentIndex = -1;
+        for (int i = 0; i < billSessions.size(); i++) {
+            if (Boolean.TRUE.equals(billSessions.get(i).getCurrentlyConsulted())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        // If a currently consulting session is found
+        if (currentIndex != -1) {
+            // Reverse the completion of the current session
+            currentSession = billSessions.get(currentIndex);
+            currentSession.setCompleted(false);
+            billSessionFacade.edit(currentSession);
+
+            // There is a session before the current one
+            if (currentIndex - 1 >= 0) {
+                previousSession = billSessions.get(currentIndex - 1);
+
+                // Reverse the last completed session to the previous session
+                previousSession.setCurrentlyConsulted(true);
+                if (!previousSession.isCompleted()) {
+                    selectedSessionInstance.setLastCompletedBillSession(null);
+                } else {
+                    // If the previous session was completed, update the lastCompletedBillSession accordingly
+                    selectedSessionInstance.setLastCompletedBillSession(previousSession);
+                }
+                billSessionFacade.edit(previousSession);
+
+                // Update currently consulting session to previous session
+                selectedSessionInstance.setCurrentlyConsultingBillSession(previousSession);
+
+                // Set the nextInLineBillSession to the currentSession
+                currentSession.setNextInLine(true);
+                billSessionFacade.edit(currentSession);
+                selectedSessionInstance.setNextInLineBillSession(currentSession);
+            } else {
+                // If there's no previous session, handle accordingly, perhaps clearing the currentlyConsulted status
+                selectedSessionInstance.setCurrentlyConsultingBillSession(null);
+                selectedSessionInstance.setNextInLineBillSession(null);
+            }
+        }
+
+        // If a previous session is found and set as the current session
+        if (previousSession != null) {
+            // Update the currentlyConsulted status for the session that was just reversed
+            currentSession.setCurrentlyConsulted(false);
+            billSessionFacade.edit(currentSession);
+        }
+
+        // Update changes to SessionInstance
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void resetAndSetSelectedAsCurrentlyConsulted() {
+        if (selectedBillSession == null) {
+            // Handle the case where no session is selected
+            return;
+        }
+
+        BillSession nextInLineSession = null;
+        BillSession lastCompletedSession = null;
+
+        // Reset the status for all sessions and identify nextInLine and lastCompleted sessions
+        for (int i = 0; i < billSessions.size(); i++) {
+            BillSession bs = billSessions.get(i);
+            bs.setNextInLine(false);
+            bs.setCurrentlyConsulted(false);
+
+            // Do not reset the completed status; determine nextInLine and lastCompleted sessions instead
+            // If selectedBillSession is found, look for the next session that is not completed to be the nextInLine
+            if (selectedBillSession.equals(bs) && i + 1 < billSessions.size()) {
+                for (int j = i + 1; j < billSessions.size(); j++) {
+                    if (!billSessions.get(j).isCompleted()) {
+                        nextInLineSession = billSessions.get(j);
+                        break;
+                    }
+                }
+            }
+            // Find the last completed session before the selectedBillSession
+            if (selectedBillSession.equals(bs) && i - 1 >= 0) {
+                for (int k = i - 1; k >= 0; k--) {
+                    if (Boolean.TRUE.equals(billSessions.get(k).isCompleted())) {
+                        lastCompletedSession = billSessions.get(k);
+                        break;
+                    }
+                }
+            }
+
+            billSessionFacade.edit(bs);
+        }
+
+        // Set the selectedBillSession as currentlyConsulted
+        selectedBillSession.setCurrentlyConsulted(true);
+        billSessionFacade.edit(selectedBillSession);
+
+        // Update the SessionInstance with nextInLine and lastCompleted sessions
+        selectedSessionInstance.setCurrentlyConsultingBillSession(selectedBillSession);
+        selectedSessionInstance.setLastCompletedBillSession(lastCompletedSession);
+        selectedSessionInstance.setNextInLineBillSession(nextInLineSession);
+
+        // If there's a nextInLine session, mark it accordingly
+        if (nextInLineSession != null) {
+            nextInLineSession.setNextInLine(true);
+            billSessionFacade.edit(nextInLineSession);
+        }
+        // Similarly, update lastCompletedSession if necessary
+        if (lastCompletedSession != null) {
+            lastCompletedSession.setCompleted(true); // Ensure it's marked as completed
+            billSessionFacade.edit(lastCompletedSession);
+        }
+
+        sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
     public void fillBillSessions() {
