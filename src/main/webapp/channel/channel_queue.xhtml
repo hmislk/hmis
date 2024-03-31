@@ -103,6 +103,14 @@
                                                      rendered="#{s.started and not s.completed}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
+
+                                    <!-- Button for Ongoing Sessions -->
+                                    <p:commandButton value="Display" icon="fa fa-play-circle" iconPos="right"
+                                                     styleClass="ui-button-info" ajax="false"
+                                                     action="#{bookingController.navigateToDisplatSessionQueueAtConsultantRoom()}"
+                                                     rendered="#{s.started and not s.completed}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
                                 </h:panelGroup>
                             </f:facet>
 
