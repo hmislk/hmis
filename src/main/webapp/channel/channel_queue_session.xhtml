@@ -18,12 +18,12 @@
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h:outputText styleClass="fa fa-stethoscope" style="margin-right: 16px;"/>
+                            <h:outputText styleClass="fa fa-stethoscope " style="margin-right: 16px;"/>
                             <h:outputText value="#{bookingController.selectedSessionInstance.staff.person.nameWithTitle}" style="margin-right: 16px;"/>
                             <!-- Session Status Indicators -->
+                            <h:outputText styleClass="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'fa fa-check-circle text-success ' : 'fa fa-hourglass-start text-warning') : 'fa fa-times-circle text-danger'}" style="margin-left: 10px;margin-right: 10px" />
                             <h:outputText value="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'Completed' : 'Ongoing') : 'Not Started'}" 
-                                          styleClass="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'fa fa-check-circle text-success' : 'fa fa-hourglass-start text-warning') : 'fa fa-times-circle text-danger'}" 
-                                          style="margin-right: 16px;"/>
+                                          style="margin-right: 16px;font-size: 15pt"/>
                         </div>
 
                         <div class="d-flex justify-content-center align-items-center">
