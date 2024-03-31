@@ -65,63 +65,108 @@
                                                      icon="fa fa-list" 
                                                      styleClass="ui-button-primary mx-1" 
                                                      action="#{bookingController.listTodaysAllSesionInstances()}" />
-                                    
+
                                 </div>
 
                             </div>
 
                         </f:facet>
 
-                        <p:commandLink ajax="false" action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}" >
-                            <p:panel header="#{s.name}">
-                                <h:panelGrid columns="2" style="width:100%">
-                                    <h:outputLabel value="Consultant:" />
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}">
-                                    </h:outputText>
 
-                                    <h:outputLabel value="Speciality:" />
-                                    <h:outputText value="#{s.staff.speciality.name}">
-                                    </h:outputText>
 
-                                    <h:outputLabel value="Date:" />
-                                    <h:outputText value="#{s.sessionDate}">
-                                        <f:convertDateTime pattern="dd MMM"/>
-                                    </h:outputText>
 
-                                    <h:outputLabel value="Start:" />
-                                    <h:outputText value="#{s.originatingSession.startingTime}">
-                                        <f:convertDateTime pattern="hh:mm a"/>
-                                    </h:outputText>
+                        <p:panel header="#{s.name}">
+                            <f:facet name="header">
+                                <h:panelGroup layout="block" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                                    <h:outputText value="#{s.name}" style="font-weight: bold;"/>
 
-                                    <h:outputLabel value="Max:" />
-                                    <h:panelGroup >
-                                        <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                            <f:convertNumber pattern="00"/>
-                                        </h:outputText>
-                                        <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:outputLabel value="Fee:" />
-                                    <h:outputText value="#{s.originatingSession.total}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                    <!-- Button for Completed Sessions -->
+                                    <p:commandButton value="Manage" icon="fa fa-check-circle" iconPos="right"
+                                                     styleClass="ui-button-success" ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{s.completed}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
+
+                                    <!-- Button for Pending Sessions -->
+                                    <p:commandButton value="Manage" icon="fa fa-hourglass-half" iconPos="right"
+                                                     styleClass="ui-button-warning" ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{not s.completed and not s.started}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
+
+                                    <!-- Button for Ongoing Sessions -->
+                                    <p:commandButton value="Manage" icon="fa fa-play-circle" iconPos="right"
+                                                     styleClass="ui-button-info" ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{s.started and not s.completed}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </f:facet>
+
+
+                            <h:panelGrid columns="2" styleClass="no-border" style="width:100%; border: none;" >
+                                <!-- Consultant Name -->
+                                <h:outputLabel value="Consultant:" />
+                                <h:panelGroup>
+                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
+                                    <h:outputText value=", &nbsp;" style="font-size: 1.5em;"/>
+                                    <h:outputText value="#{s.staff.speciality.name}" style="font-size: 1em;"/>
+                                </h:panelGroup>
+
+                                <h:outputLabel value="Date &amp; Time:" />
+                                <h:panelGroup>
+                                    <h:outputText value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                                     </h:outputText>
-                                    
-                                     <h:outputLabel value="Booked:" />
-                                     <h:outputText value="#{s.bookedPatientCount}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                    <h:outputText value=", &nbsp;" style="font-size: 1.5em;"/>
+                                    <h:outputText value="#{s.sessionDate}"  style="font-size: 1em;">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputText>
-                                    
-                                    
-                                </h:panelGrid>
-                            </p:panel>
-                            <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}" ></f:setPropertyActionListener>
-                        </p:commandLink>
+                                </h:panelGroup>
+
+
+
+
+                                <h:outputLabel value="Max:" />
+                                <h:panelGroup >
+                                    <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                        <f:convertNumber pattern="00"/>
+                                    </h:outputText>
+                                    <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:outputLabel value="Fee:" />
+                                <h:outputText value="#{s.originatingSession.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+
+                                <!-- Paid (out of Booked) -->
+                                <h:outputText value="Paid: #{s.paidPatientCount} (out of #{s.bookedPatientCount})"
+                                              rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+
+                                <!-- Completed (out of Paid) -->
+                                <h:outputText value="Completed: #{s.completedPatientCount} (out of #{s.paidPatientCount})"
+                                              rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+
+
+
+
+                            </h:panelGrid>
+                        </p:panel>
+
 
                     </p:dataGrid>
 
                 </div>
 
-             
+
             </div>
 
 
