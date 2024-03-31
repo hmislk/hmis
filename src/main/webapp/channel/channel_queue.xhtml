@@ -142,23 +142,52 @@
                                 <h:outputText value="#{s.originatingSession.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                            </h:panelGrid>
 
+
+                            <h:panelGrid columns="2" styleClass="w-100">
                                 <!-- Paid (out of Booked) -->
-                                <h:outputText value="Paid: #{s.paidPatientCount} (out of #{s.bookedPatientCount})"
-                                              rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
-                                    <f:convertNumber pattern="#,##0"/>
-                                </h:outputText>
+                                <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
+                                    <svg width="200" height="100" viewBox="0 0 200 100">
+                                        <!-- Left (Paid) Section -->
+                                        <polygon points="1,1 199,1 100,99 1,99" fill="#28a745"/>
+
+                                        <!-- Right (Booked) Section -->
+                                        <polygon points="199,1 199,99 100,99" fill="#ffc107"/>
+
+                                        <!-- Paid Number and Text -->
+                                        <text x="30%" y="35" fill="white" font-size="22" font-weight="bold" text-anchor="middle">#{s.paidPatientCount}</text>
+                                        <text x="30%" y="65" fill="white" font-size="12" text-anchor="middle">Paid</text>
+
+                                        <!-- Booked Number and Text -->
+                                        <text x="70%" y="35" fill="black" font-size="22" font-weight="bold" text-anchor="middle">#{s.bookedPatientCount}</text>
+                                        <text x="70%" y="65" fill="black" font-size="12" text-anchor="middle">Booked</text>
+                                    </svg>
+                                </h:panelGroup>
+
+
+
 
                                 <!-- Completed (out of Paid) -->
-                                <h:outputText value="Completed: #{s.completedPatientCount} (out of #{s.paidPatientCount})"
-                                              rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
-                                    <f:convertNumber pattern="#,##0"/>
-                                </h:outputText>
-
-
-
-
+                                <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
+                                    <span style="font-size: larger;">
+                                        <span class="text-success">
+                                            &#x25CF; <!-- Unicode character for large circle -->
+                                            <h:outputText value="#{s.completedPatientCount}" style="vertical-align: super;">
+                                                <f:convertNumber pattern="#,##0"/>
+                                            </h:outputText>
+                                        </span>
+                                        /
+                                        <span class="text-primary" style="font-size: smaller;"> <!-- Smaller font for "out of" count -->
+                                            <h:outputText value="#{s.paidPatientCount}">
+                                                <f:convertNumber pattern="#,##0"/>
+                                            </h:outputText>
+                                        </span>
+                                    </span>
+                                </h:panelGroup>
                             </h:panelGrid>
+
+
                         </p:panel>
 
 
