@@ -3,6 +3,7 @@ package com.divudi.entity.channel;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
@@ -37,6 +38,13 @@ import javax.persistence.Transient;
  */
 @Entity
 public class SessionInstance implements Serializable {
+    
+    @ManyToOne
+    private BillSession nextInLineBillSession;
+    @ManyToOne
+    private BillSession currentlyConsultingBillSession;
+    @ManyToOne
+    private BillSession lastCompletedBillSession;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -1176,5 +1184,31 @@ public class SessionInstance implements Serializable {
     public void setRemainingPatientCount(Long remainingPatientCount) {
         this.remainingPatientCount = remainingPatientCount;
     }
+
+    public BillSession getNextInLineBillSession() {
+        return nextInLineBillSession;
+    }
+
+    public void setNextInLineBillSession(BillSession nextInLineBillSession) {
+        this.nextInLineBillSession = nextInLineBillSession;
+    }
+
+    public BillSession getCurrentlyConsultingBillSession() {
+        return currentlyConsultingBillSession;
+    }
+
+    public void setCurrentlyConsultingBillSession(BillSession currentlyConsultingBillSession) {
+        this.currentlyConsultingBillSession = currentlyConsultingBillSession;
+    }
+
+    public BillSession getLastCompletedBillSession() {
+        return lastCompletedBillSession;
+    }
+
+    public void setLastCompletedBillSession(BillSession lastCompletedBillSession) {
+        this.lastCompletedBillSession = lastCompletedBillSession;
+    }
+    
+    
 
 }
