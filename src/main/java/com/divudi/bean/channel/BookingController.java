@@ -327,6 +327,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
+    
+    public String navigateToChannelDisplayFromMenu() {
+        sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
+        return "/channel/channel_display?faces-redirect=true";
+    }
 
     public String navigateToChannelQueueFromConsultantRoom() {
         sessionInstances = channelBean.listTodaysSesionInstances();
