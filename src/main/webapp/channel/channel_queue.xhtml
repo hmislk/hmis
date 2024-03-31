@@ -41,10 +41,7 @@
 
 
                 <div class="col-12" >
-                    <p:poll interval="10" 
-                            listener="#{bookingController.sessionInstances}"
-                            update="tblSessions" />
-
+                    
                     <ui:repeat var="s" 
                                id="tblSessions"
                                value="#{bookingController.sessionInstances}" >
@@ -150,7 +147,7 @@
                                                     <text x="70%" y="90" fill="black" font-size="12" text-anchor="middle">Booked</text>
                                                 </svg>
                                             </h:panelGroup>
-                                            <h:panelGroup>
+                                            <h:panelGroup class="mx-2">
                                                 <p:commandButton value="Manage" icon="fa fa-check-circle" iconPos="right"
                                                                  styleClass="ui-button-success" ajax="false"
                                                                  action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
