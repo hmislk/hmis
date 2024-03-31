@@ -152,7 +152,7 @@
                                             </h:panelGroup>
                                             <h:panelGroup>
                                                 <p:commandButton value="Manage" icon="fa fa-check-circle" iconPos="right"
-                                                                 styleClass="ui-button-success" ajax="false"
+                                                                 styleClass=" rounded-button ui-button-success w-25" ajax="false"
                                                                  action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                                  rendered="#{s.completed}">
                                                     <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
@@ -160,15 +160,15 @@
 
                                                 <!-- Button for Pending Sessions -->
                                                 <p:commandButton value="Manage" icon="fa fa-hourglass-half" iconPos="right"
-                                                                 styleClass="ui-button-warning" ajax="false"
+                                                                 styleClass="rounded-button ui-button-warning" ajax="false"
                                                                  action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                                  rendered="#{not s.completed and not s.started}">
                                                     <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                                 </p:commandButton>
 
                                                 <!-- Button for Ongoing Sessions -->
-                                                <p:commandButton value="Manage" icon="fa fa-play-circle" iconPos="right"
-                                                                 styleClass="ui-button-info" ajax="false"
+                                                <p:commandButton  value="Manage" icon="fa fa-play-circle" iconPos="right"
+                                                                 styleClass="rounded-button ui-button-info " ajax="false"
                                                                  action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                                  rendered="#{s.started and not s.completed}">
                                                     <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
