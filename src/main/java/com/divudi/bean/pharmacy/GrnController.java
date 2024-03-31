@@ -131,15 +131,23 @@ public class GrnController implements Serializable {
         pos = null;
         printPreview = false;
         billItems = null;
-        createGrnAll();
+        createGrnWholesale();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
+    }
+    
+    public String navigateToReceiveWholesale() {
+        grnBill = null;
+        dealor = null;
+        pos = null;
+        printPreview = false;
+        billItems = null;
+        createGrnAll();
+        return "/pharmacy/pharmacy_grn_wh?faces-redirect=true";
     }
 
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
-
         calGrossTotal();
-
     }
 
     public void duplicateItem(BillItem bi) {
@@ -149,9 +157,7 @@ public class GrnController implements Serializable {
             updateBillItem.setItem(bi.getItem());
             getBillItems().add(updateBillItem);
         }
-
         calGrossTotal();
-
     }
 
     public void removeSelected() {
@@ -633,6 +639,15 @@ public class GrnController implements Serializable {
         generateBillComponentAll();
         calGrossTotal();
     }
+    
+    public void createGrnWholesale() {
+        getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
+        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
+        getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
+        generateBillComponentAll();
+        calGrossTotal();
+    }
 
     private double getRetailPrice(BillItem billItem) {
         String sql = "select (p.retailRate) from PharmaceuticalBillItem p where p.billItem=:b";
@@ -815,6 +830,7 @@ public class GrnController implements Serializable {
         if (grnBill == null) {
             grnBill = new BilledBill();
             grnBill.setBillType(BillType.PharmacyGrnBill);
+            grnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
         }
         return grnBill;
     }

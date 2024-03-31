@@ -142,7 +142,7 @@
                                             ajax="false" 
                                             class="w-100 ui-button-info"
                                             value="Recieve Wholesale" 
-                                            action="pharmacy_grn_wh" 
+                                            action="#{grnController.navigateToResiveWholesale()}" 
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
