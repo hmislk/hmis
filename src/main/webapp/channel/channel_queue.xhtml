@@ -24,17 +24,14 @@
                             listener="#{bookingController.sessionInstances}"
                             update="tblSessions" />
 
+                    <ui:repeat var="s" 
+                               id="tblSessions"
+                               value="#{bookingController.sessionInstances}" >
 
-                    <p:dataGrid
-                        var="s" 
-                        id="tblSessions"
-                        value="#{bookingController.sessionInstances}" 
-                        columns="3" 
-                        layout="grid" 
-                        emptyMessage="No Sessions for Today"
-                        styleClass="ui-datagrid-responsive">
+
+
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center ">
                                 <div>
                                     <h:outputText styleClass="fa-solid fa-stethoscope"/>
                                     <h:outputText class="mx-4" value="Todays Session"/>
@@ -76,7 +73,7 @@
                         </f:facet>
 
 
-                        <p:panel header="#{s.name}">
+                        <p:panel header="#{s.name}" style="height: 200px">
                             <f:facet name="header">
                                 <h:panelGroup layout="block" class="w-100 d-flex justify-content-between">
                                     <h:panelGroup>
@@ -114,44 +111,49 @@
                                     </p:commandButton>
 
                                     <!-- Button for Ongoing Sessions -->
-                                    <p:commandButton value="Display" icon="fa fa-play-circle" iconPos="right"
-                                                     styleClass="ui-button-info" ajax="false"
-                                                     action="#{bookingController.navigateToDisplatSessionQueueAtConsultantRoom()}"
-                                                     rendered="#{s.started and not s.completed}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
-                                    </p:commandButton>
+                                    <!--                                    <p:commandButton value="Display" icon="fa fa-play-circle" iconPos="right"
+                                                                                         styleClass="ui-button-info" ajax="false"
+                                                                                         action="#{bookingController.navigateToDisplatSessionQueueAtConsultantRoom()}"
+                                                                                         rendered="#{s.started and not s.completed}">
+                                                                            <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                                                        </p:commandButton>-->
                                 </h:panelGroup>
                             </f:facet>
 
 
 
-                            <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
-                            <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
-
-                            <h:panelGrid columns="2" styleClass="no-border" style="width:100%; border: none;" >
-
-                                <h:outputLabel value="Time" />
-                                <h:outputText value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                                </h:outputText>
-
-                                <h:outputLabel value="Max" />
-                                <h:panelGroup >
-                                    <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                        <f:convertNumber pattern="00"/>
-                                    </h:outputText>
-                                    <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:outputLabel value="Fee" />
-                                <h:outputText value="#{s.originatingSession.total}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </h:panelGrid>
 
 
-                            <h:panelGroup>
-                                <div class="d-flex justify-content-between align-items-center">
+                            <div class="row w-100">
+                                <div class="col-5">
+                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
+                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
+                                </div>
+                                <div class="col-2">
+                                    <div class="w-25">
+                                        <h:panelGrid columns="2" class="w-100">
+
+                                            <h:outputLabel value="Time" />
+                                            <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Max" />
+                                            <h:panelGroup class="mx-2">
+                                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                                    <f:convertNumber pattern="00"/>
+                                                </h:outputText>
+                                                <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                            <h:outputLabel value="Fee" />
+                                            <h:outputText class="mx-2" value="#{s.originatingSession.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="col-2">
                                     <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
                                         <span style="font-size: 24pt;">
                                             <span class="text-success">
@@ -168,7 +170,8 @@
                                             </span>
                                         </span>
                                     </h:panelGroup>
-
+                                </div>
+                                <div class="col-3">
                                     <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
                                         <svg width="200" height="100" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
                                             <defs>
@@ -187,9 +190,9 @@
                                         </svg>
                                     </h:panelGroup>
                                 </div>
-                            </h:panelGroup>
+                            </div>
                         </p:panel>
-                    </p:dataGrid>
+                    </ui:repeat>
                 </div>
             </div>
         </h:form>
