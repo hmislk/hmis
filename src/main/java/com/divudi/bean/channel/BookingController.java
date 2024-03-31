@@ -365,6 +365,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public String navigateToConsultantRoom() {
         return "/channel/consultant_room?faces-redirect=true";
     }
+    
+    public void loadSessionInstance(){
+        sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
+    }
 
     public String navigateToManageBooking() {
         if (selectedBillSession == null) {
