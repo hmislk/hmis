@@ -818,7 +818,7 @@ public class DataUploadController implements Serializable {
             comments = name;
             name = CommonFunctions.sanitizeStringForDatabase(name);
 
-            item = itemController.findItemByName(name, department);
+            item = itemController.findItemByName(name, code, department);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;
