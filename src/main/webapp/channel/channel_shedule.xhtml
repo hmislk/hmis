@@ -53,11 +53,13 @@
 
                                         <h:outputLabel  value="Sessions" ></h:outputLabel>
                                         <h:panelGroup id="gpSelectText" >
-                                            <p:selectOneListbox  id="lstSelect" converter="sscon"  value="#{channelScheduleController.current}" style="height: 250px;" class="mx-2 w-100" >
-                                                <f:selectItems  value="#{channelScheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                                <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{channelScheduleController.fillFees()}" >
-                                                </f:ajax>
-                                            </p:selectOneListbox>
+                                            <div style="overflow-y: auto;">
+                                                <p:selectOneListbox scrollHeight="500"  id="lstSelect" converter="sscon"  value="#{channelScheduleController.current}" style="height: 250px;" class="mx-2 w-100" >
+                                                    <f:selectItems  value="#{channelScheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                                    <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{channelScheduleController.fillFees()}" >
+                                                    </f:ajax>
+                                                </p:selectOneListbox>
+                                            </div>
                                         </h:panelGroup>
 
                                     </h:panelGrid>
