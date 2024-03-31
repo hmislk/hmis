@@ -109,7 +109,7 @@ public class GrnController implements Serializable {
     private double difference;
 
     public double calDifference() {
-        difference = insTotal + grnBill.getTotal();
+        difference = Math.abs(insTotal) - Math.abs(grnBill.getTotal());
         return difference;
     }
 
@@ -215,11 +215,11 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        if (insTotal == 0 && difference != 0) {
+        if (insTotal < 1.0 ) {
             JsfUtil.addErrorMessage("Fill the invoice Total");
             return;
         }
-        if (difference != 0) {
+        if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
         }
