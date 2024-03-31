@@ -306,7 +306,7 @@ public class PatientPortalController {
         bookingController.setStaff(selectedConsultant);
         bookingController.setSelectedSessionInstance(selectedSessionInstance);
         bookingController.setSelectedServiceSession(selectedChannelSession);
-        bookingController.add();
+        bookingController.addNormalChannelBooking();
         bookingController.sendSmsAfterBooking();
         bookingCompleted = true;
         
