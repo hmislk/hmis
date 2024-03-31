@@ -20,11 +20,14 @@
 
 
                 <div class="col-12" >
-
+                    <p:poll interval="10" 
+                            listener="#{bookingController.sessionInstances}"
+                            update="tblSessions" />
 
 
                     <p:dataGrid
                         var="s" 
+                        id="tblSessions"
                         value="#{bookingController.sessionInstances}" 
                         columns="3" 
                         layout="grid" 
@@ -122,12 +125,11 @@
 
 
 
+                            <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
+                            <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
+
                             <h:panelGrid columns="2" styleClass="no-border" style="width:100%; border: none;" >
-                                <h:outputLabel value="Consultant" />
-                                <h:panelGroup>
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
-                                     <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
-                                </h:panelGroup>
+
                                 <h:outputLabel value="Time" />
                                 <h:outputText value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
@@ -169,42 +171,27 @@
 
                                     <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
                                         <svg width="200" height="100" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-
                                             <defs>
                                                 <clipPath id="roundedCorners">
                                                     <rect x="0" y="0" width="200" height="100" rx="15" ry="15"/>
                                                 </clipPath>
                                             </defs>
-
                                             <g clip-path="url(#roundedCorners)">
                                                 <path d="M 0,0 L 200,0 0,100 Z" fill="#28a745"/>
                                                 <path d="M 200,0 L 0,100 200,100 Z" fill="#ffc107"/>
                                             </g>
-
                                             <text x="30%" y="30" fill="white" font-size="22" font-weight="bold" text-anchor="middle">#{s.paidPatientCount}</text>
                                             <text x="30%" y="50" fill="white" font-size="12" text-anchor="middle">Paid</text>
-
                                             <text x="70%" y="70" fill="black" font-size="22" font-weight="bold" text-anchor="middle">#{s.bookedPatientCount}</text>
                                             <text x="70%" y="90" fill="black" font-size="12" text-anchor="middle">Booked</text>
                                         </svg>
                                     </h:panelGroup>
-
                                 </div>
                             </h:panelGroup>
-
                         </p:panel>
-
-
                     </p:dataGrid>
-
                 </div>
-
-
             </div>
-
-
-
-
         </h:form>
     </ui:define>
 </ui:composition>

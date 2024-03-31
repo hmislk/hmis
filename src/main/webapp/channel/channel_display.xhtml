@@ -11,93 +11,81 @@
                 xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
+
+
+
     <ui:define name="content">
-        <h:form id="form">
-            <div class="row">
 
+        <style>
+            .circle {
+                width: 100px; /* Set the width of the circle */
+                height: 100px; /* Set the height of the circle */
+                background-color: #1f7a1f; /* Set the background color of the circle */
+                color: white; /* Set the text color */
+                border-radius: 50%; /* Make the element a circle by setting border-radius to 50% */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 1.2em; /* Font size */
+                font-weight: bold; /* Font weight */
+                text-align: center; /* Text alignment */
+            }
 
-                <div class="col-12" >
+        </style>
 
+        <body >
+            <h:form id="form">
+                <div class="row">
+                    <div class="col-12" >
 
-                    <p:imageSwitch effect="wipe" widgetVar="switcher"
-                                   id="manuelSwitcher"
-                                   slideshowAuto="true">
-                        
-                        <p:panel >
-                            <h1>#{sessionController.institution.name}</h1>
-                        </p:panel>
-                        
-                        <ui:repeat var="s" 
-                                   value="#{bookingController.sessionInstances}"  id="manuelSwitcherImages">
+                        <nav class="navbar navbar-dark bg-dark">
+                            <h2 class="text-white p-1">#{sessionController.institution.name}</h2>
+                        </nav>
 
+                        <h:panelGroup >
+                            <p:imageSwitch effect="wipe" widgetVar="switcher"
+                                           id="manuelSwitcher"
+                                           slideshowAuto="true">
 
-                            <p:panel header="#{s.name}">
+                            </p:imageSwitch>
+                            <p:poll interval="10" 
+                                    listener="#{bookingController.sessionInstances}"
+                                    update="tblSessions" />
+                            <p:dataGrid
+                                id="tblSessions"
+                                var="s" 
+                                value="#{bookingController.sessionInstances}" 
+                                columns="4" 
+                                layout="grid" 
+                                emptyMessage="No Sessions for Today"
+                                styleClass="ui-datagrid-responsive">
 
-
-
-                                <h:panelGrid columns="2" styleClass="no-border" style="width:100%; border: none;" >
-                                    <!-- Consultant Name -->
-                                    <h:outputLabel value="Consultant:" />
-                                    <h:panelGroup>
-                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
-                                        <h:outputText value=", &nbsp;" style="font-size: 1.5em;"/>
-                                        <h:outputText value="#{s.staff.speciality.name}" style="font-size: 1em;"/>
-                                    </h:panelGroup>
-
-                                    <h:outputLabel value="Date &amp; Time:" />
-                                    <h:panelGroup>
-                                        <h:outputText value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                                        </h:outputText>
-                                        <h:outputText value=", &nbsp;" style="font-size: 1.5em;"/>
-                                        <h:outputText value="#{s.sessionDate}"  style="font-size: 1em;">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-
-
-
-
-                                    <h:outputLabel value="Next In Line:" />
-                                    <h:panelGroup >
-                                        <h:outputText value="#{s.nextInLineBillSession.serialNo}">
-                                            <f:convertNumber pattern="00"/>
-                                        </h:outputText>
-                                    </h:panelGroup>
-
-
-                                    <h:outputLabel value="Currently Ongoing:" />
-                                    <h:outputText value="#{s.currentlyConsultingBillSession.serialNo}">
-                                        <f:convertNumber pattern="00"/>
-                                    </h:outputText>
-
-                                    <h:outputLabel value="Last Completed:" />
-                                    <h:outputText value="#{s.lastCompletedBillSession.serialNo}">
-                                        <f:convertNumber pattern="00"/>
-                                    </h:outputText>
-
-
-                                </h:panelGrid>
-
-
-
-                            </p:panel>
-
-
-                        </ui:repeat>
-                    </p:imageSwitch>
-
-
-
-
+                                <h:panelGroup rendered="#{s.completed eq false}" >
+                                    <div class="card w-100" style="border: 2px solid black">
+                                        <div class="card-body">
+                                            <div>
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/><br></br>
+                                                <h:outputText value="#{s.staff.speciality.name}" style="font-size: 1em;font-weight: bold;text-align: right"/>
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="text-center">
+                                                    <div style="box-sizing: border-box;width: 150px;height: 120px;border-radius: 10px;border: 2px solid #721c24">
+                                                        <h:outputText value="Room" style="font-size: 1.5em;font-weight: bold;text-align: right;color:  #990000"/><br/>
+                                                        <h:outputText value="#{s.roomNo}" style="font-size: 3em;font-weight: bold;text-align: right;color:  #990000"/>
+                                                    </div>
+                                                </div>
+                                                <div class="circle">
+                                                    <h:outputText value="#{s.completedPatientCount+1}" style="font-size: 3em;font-weight: bold;text-align: right"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </p:dataGrid>
+                        </h:panelGroup>
+                    </div>
                 </div>
-
-
-            </div>
-
-
-
-
-        </h:form>
+            </h:form>
+        </body>
     </ui:define>
 </ui:composition>
