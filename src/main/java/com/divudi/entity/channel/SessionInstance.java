@@ -195,17 +195,11 @@ public class SessionInstance implements Serializable {
     @Transient
     boolean serviceSessionCreateForOriginatingSession = false;
 
-    @Transient
     private Long bookedPatientCount;
-    @Transient
     private Long paidPatientCount;
-    @Transient
     private Long completedPatientCount;
-    @Transient
     private Long remainingPatientCount;
 
-    
-    
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
     }
@@ -1182,7 +1176,5 @@ public class SessionInstance implements Serializable {
     public void setRemainingPatientCount(Long remainingPatientCount) {
         this.remainingPatientCount = remainingPatientCount;
     }
-    
-    
 
 }
