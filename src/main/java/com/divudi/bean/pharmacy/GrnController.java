@@ -110,7 +110,7 @@ public class GrnController implements Serializable {
     private double difference;
 
     public double calDifference() {
-        difference = insTotal + grnBill.getNetTotal();
+        difference = Math.abs(insTotal) - Math.abs(grnBill.getTotal());
         return difference;
     }
 
@@ -120,6 +120,7 @@ public class GrnController implements Serializable {
         pos = null;
         printPreview = false;
         billItems = null;
+        difference = 0;
         createGrn();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
@@ -144,6 +145,7 @@ public class GrnController implements Serializable {
     public void duplicateItem(BillItem bi) {
         BillItem updateBillItem = new BillItem();
         if (bi != null) {
+            System.out.println("updateBillItem = " + bi.getItem().getName());
             updateBillItem.setItem(bi.getItem());
             getBillItems().add(updateBillItem);
         }
@@ -214,11 +216,11 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        if (insTotal == 0 && difference != 0) {
+        if (insTotal < 1.0) {
             JsfUtil.addErrorMessage("Fill the invoice Total");
             return;
         }
-        if (difference != 0) {
+        if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
         }
@@ -299,12 +301,12 @@ public class GrnController implements Serializable {
         updateBalanceForGrn(getGrnBill());
 
         getBillFacade().edit(getGrnBill());
+
+        //  getPharmacyBillBean().editBill(, , getSessionController());
         printPreview = true;
 
     }
-    
-    
-    
+
     public void settleWholesale() {
         if (insTotal == 0 && difference != 0) {
             JsfUtil.addErrorMessage("Fill the invoice Total");
@@ -391,11 +393,10 @@ public class GrnController implements Serializable {
         updateBalanceForGrn(getGrnBill());
 
         getBillFacade().edit(getGrnBill());
+        //  getPharmacyBillBean().editBill(, , getSessionController());
         printPreview = true;
 
     }
-    
-    
 
     private void updateBalanceForGrn(Bill grn) {
         if (grn == null) {
@@ -479,12 +480,11 @@ public class GrnController implements Serializable {
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
         if (getGrnBill().getId() == null) {
             getBillFacade().create(getGrnBill());
-        }else{
+        } else {
             getBillFacade().edit(getGrnBill());
         }
     }
-    
-    
+
     public void saveWholesaleBill() {
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
@@ -497,16 +497,10 @@ public class GrnController implements Serializable {
         getGrnBill().setInstitution(getSessionController().getInstitution());
         //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
-        getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL);
         if (getGrnBill().getId() == null) {
             getBillFacade().create(getGrnBill());
-        }else{
-            getBillFacade().edit(getGrnBill());
         }
     }
-    
-    
-    
 
 //    public void generateBillComponent() {
 //
@@ -729,8 +723,7 @@ public class GrnController implements Serializable {
 
     public void ChangeDiscountLitener() {
         getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
-        setInsTotal(0);
-        setDifference(getGrnBill().getNetTotal());
+
     }
 
     public void netDiscount() {
