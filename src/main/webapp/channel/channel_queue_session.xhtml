@@ -13,66 +13,59 @@
 
     <ui:define name="content">
         <h:form id="form">
-            <style >
-                .fullHeightListbox,
-                .fullHeightListbox .ui-selectlistbox-listcontainer,
-                .fullHeightListbox * {
-                    box-sizing: border-box;
-                    margin: 0;
-                    padding: 0;
-                }
-
-                .fullHeightListbox .ui-selectlistbox-listcontainer {
-                    height: 80vh !important;
-                }
-            </style>
-
+            
             <p:panel>
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h:outputText class="mx-4" value="Channel Booking"/>
+                            <h:outputText styleClass="fa fa-stethoscope" style="margin-right: 16px;"/>
+                            <h:outputText value="#{bookingController.selectedSessionInstance.staff.person.nameWithTitle}" style="margin-right: 16px;"/>
+                            <!-- Session Status Indicators -->
+                            <h:outputText value="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'Completed' : 'Ongoing') : 'Not Started'}" 
+                                          styleClass="#{bookingController.selectedSessionInstance.started ? (bookingController.selectedSessionInstance.completed ? 'fa fa-check-circle text-success' : 'fa fa-hourglass-start text-warning') : 'fa fa-times-circle text-danger'}" 
+                                          style="margin-right: 16px;"/>
                         </div>
 
                         <div class="d-flex justify-content-center align-items-center">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="To Add Booking" 
-                                icon="fas fa-plus"
-                                class="ui-button-success"
+                            <!-- Start Session Button -->
+                            <p:commandButton ajax="false" 
+                                             value="Start Session" 
+                                             icon="fa fa-play" 
+                                             styleClass="ui-button-success mx-1" 
+                                             action="#{bookingController.markSessionInstanceAsStarted()}"
+                                             oncomplete="PF('startSessionWarn').show()" 
+                                             disabled="#{bookingController.selectedSessionInstance.started}" />
 
-                                action="#{bookingController.navigateToAddBooking()}"
-                                />
+                            <!-- Complete Session Button -->
+                            <p:commandButton ajax="false" 
+                                             value="Complete Session"
+                                             icon="fa fa-stop" 
+                                             styleClass="ui-button-danger mx-1" 
+                                             action="#{bookingController.markSessionInstanceAsCompleted()}"
+                                             oncomplete="PF('completeSessionWarn').show()" 
+                                             disabled="#{!bookingController.selectedSessionInstance.started || bookingController.selectedSessionInstance.completed}" />
 
-                            <!-- View Session Data Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="View Session Data"
-                                icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
-                                />
-
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Consulant Room"
-                                icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
-                                />
-
-                            <!-- Manage Booking Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Manage Booking" 
-                                class="ui-button-Warning"
-                                action="#{bookingController.navigateToManageBooking()}"
-                                icon="fa-solid fa-bars-progress" />
-
+                            <!-- Todays Sessions Button -->
+                            <p:commandButton ajax="false" 
+                                             value="Today's Sessions"
+                                             icon="fa fa-calendar-alt" 
+                                             styleClass="ui-button-info mx-1" 
+                                             action="#{bookingController.navigateToChannelQueueFromConsultantRoom()}" />
                         </div>
                     </div>
                 </f:facet>
+
+                <p:dialog widgetVar="startSessionWarn" modal="true" header="Session Started" draggable="false" resizable="false">
+                    <h:panelGrid columns="1" style="width:100%">
+                        <h:outputText value="The session has been successfully started." />
+                    </h:panelGrid>
+                </p:dialog>
+
+                <p:dialog widgetVar="completeSessionWarn" modal="true" header="Session Completed" draggable="false" resizable="false">
+                    <h:panelGrid columns="1" style="width:100%">
+                        <h:outputText value="The session has been successfully completed." />
+                    </h:panelGrid>
+                </p:dialog>
 
                 <div class="col-4" >
                     <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
