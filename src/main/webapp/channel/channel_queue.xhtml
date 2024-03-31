@@ -113,13 +113,12 @@
                             </f:facet>
 
 
-
+                            
+                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
+                                <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
+                            
                             <h:panelGrid columns="2" styleClass="no-border" style="width:100%; border: none;" >
-                                <h:outputLabel value="Consultant" />
-                                <h:panelGroup>
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/>
-                                     <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
-                                </h:panelGroup>
+
                                 <h:outputLabel value="Time" />
                                 <h:outputText value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
