@@ -20,11 +20,14 @@
 
 
                 <div class="col-12" >
-
+                    <p:poll interval="10" 
+                            listener="#{bookingController.sessionInstances}"
+                            update="tblSessions" />
 
 
                     <p:dataGrid
                         var="s" 
+                        id="tblSessions"
                         value="#{bookingController.sessionInstances}" 
                         columns="3" 
                         layout="grid" 
