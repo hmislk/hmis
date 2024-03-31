@@ -249,7 +249,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Started");
-        if (sessionController.getApplicationPreference().isSendSmsOnChannelDoctorArrival()) {
+        if (sessionController.getDepartmentPreference().isSendSmsOnChannelDoctorArrival()) {
             sendSmsOnChannelDoctorArrival();
         }
     }
@@ -264,7 +264,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setCompletedBy(sessionController.getLoggedUser());
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Completed");
-        if (sessionController.getApplicationPreference().isSendSmsOnChannelBookingNoShow()) {
+        if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingNoShow()) {
             sendSmsOnChannelMissingChannelBookings();
         }
     }
@@ -312,6 +312,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToChannelQueueFromMenu() {
+        sessionInstances = channelBean.listTodaysSesionInstances();
+        return "/channel/channel_queue?faces-redirect=true";
+    }
+    
+    public String navigateToChannelQueueFromConsultantRoom() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
@@ -692,8 +697,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setCreater(sessionController.getLoggedUser());
             e.setBill(bs.getBill());
             e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
-            e.setSendingMessage(createChanellBookingDoctorArrivalSms(bs.getBill()));
-            sdf;
+            e.setSendingMessage(createChanellBookingNoShowSms(bs.getBill()));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
@@ -704,14 +708,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(e);
         }
-        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
+        JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
 
     private String createChanellBookingDoctorArrivalSms(Bill b) {
         return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelDoctorArrival());
     }
     
-    private String createMissingChanellBookingSms(Bill b) {
+    private String createChanellBookingNoShowSms(Bill b) {
         return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingNoShow());
     }
 

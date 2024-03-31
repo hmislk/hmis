@@ -1253,7 +1253,7 @@ public class UserPreference implements Serializable {
 
     public String getSmsTemplateForChannelBooking() {
         if (smsTemplateForChannelBooking == null || smsTemplateForChannelBooking.isEmpty()) {
-            smsTemplateForChannelBooking = "Dear {patient_name},\n\nYour appointment with Dr. {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+            smsTemplateForChannelBooking = "Dear {patient_name},\n\nYour appointment with  {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
         }
         return smsTemplateForChannelBooking;
     }
@@ -1407,7 +1407,7 @@ public class UserPreference implements Serializable {
 
     public String getSmsTemplateForChannelBookingCompletion() {
         if(smsTemplateForChannelBookingCompletion==null||smsTemplateForChannelBookingCompletion.isEmpty()){
-            smsTemplateForChannelBookingCompletion  = "Dear {patient_name},\n\nYour appointment with Dr. {doctor} on {appointment_date} at {appointment_time} has been successfully completed. We hope everything went well. For follow-up or queries, contact us. Thank you.";
+            smsTemplateForChannelBookingCompletion  = "Dear {patient_name},\n\nYour appointment with {doctor} on {appointment_date} at {appointment_time} has been successfully completed. We hope everything went well. For follow-up or queries, contact us. Thank you.";
         }
         return smsTemplateForChannelBookingCompletion;
     }
@@ -1434,7 +1434,7 @@ public class UserPreference implements Serializable {
 
     public String getSmsTemplateForChannelBookingCancellation() {
         if (smsTemplateForChannelBookingCancellation == null || smsTemplateForChannelBookingCancellation.isEmpty()) {
-            smsTemplateForChannelBookingCancellation = "Dear {patient_name},\n\nYour appointment with Dr. {doctor} on {appointment_date} at {appointment_time} has been cancelled as per your request. If you need to reschedule, please contact us. Thank you.";
+            smsTemplateForChannelBookingCancellation = "Dear {patient_name},\n\nYour appointment with {doctor} on {appointment_date} at {appointment_time} has been cancelled as per your request. If you need to reschedule, please contact us. Thank you.";
         }
         return smsTemplateForChannelBookingCancellation;
     }
@@ -1445,7 +1445,7 @@ public class UserPreference implements Serializable {
 
     public String getSmsTemplateForChannelBookingNoShow() {
         if(smsTemplateForChannelBookingNoShow==null || smsTemplateForChannelBookingNoShow.isEmpty()){
-            smsTemplateForChannelBookingNoShow  = "Dear {patient_name},\n\nWe noticed you missed your appointment with Dr. {doctor} on {appointment_date} at {appointment_time}, and the doctor has left. To reschedule, please contact us.";
+            smsTemplateForChannelBookingNoShow  = "Dear {patient_name},\n\nWe noticed you missed Your appointment with {doctor} on {appointment_date} at {appointment_time}, and the doctor has left. To reschedule, please contact us.";
         }
         return smsTemplateForChannelBookingNoShow;
     }
