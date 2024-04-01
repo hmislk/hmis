@@ -109,7 +109,7 @@
                     </div>
                 </div>
 
-                <p:panel 
+                <h:panelGroup
                     rendered="#{sessionController.department ne null}" 
                     class="m-0 p-0 no-padding-margin-border"
                     style=" padding: 0 !important;
@@ -119,7 +119,7 @@
                     <ui:insert name="content" class="m-0 p-0 borderless" >
 
                     </ui:insert>
-                </p:panel>
+                </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">
                 <ez:select_department class="w-100"/>
