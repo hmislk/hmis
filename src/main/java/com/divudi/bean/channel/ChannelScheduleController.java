@@ -134,6 +134,7 @@ public class ChannelScheduleController implements Serializable {
                 + " order by f.id";
         m.put("ses", current);
         itemFees = itemFeeFacade.findByJpql(sql, m);
+        additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
     }
 
     public ItemFee createStaffFee() {
@@ -278,7 +279,16 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Session Not Yet Saved");
             return;
         }
+        if (getAdditionalItemsAddedForCurrentSession() == null || getAdditionalItemsAddedForCurrentSession().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items List");
+            return;
+        }
+        additionalItemToRemove.setRetired(true);
+        additionalItemToRemove.setRetiredAt(new Date());
+        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
+        itemForItemController.saveSelected();
         getAdditionalItemsAddedForCurrentSession().remove(additionalItemToRemove);
+        additionalItemToRemove = null;
         JsfUtil.addSuccessMessage("Removed");
     }
 
@@ -308,7 +318,7 @@ public class ChannelScheduleController implements Serializable {
         if (aii != null) {
             JsfUtil.addErrorMessage("Item is already added");
             return;
-        }else{
+        } else {
             aii = itemForItemController.addItemForItem(current, additionalItemToAdd);
         }
         System.out.println("2 aii = " + aii);
@@ -318,6 +328,7 @@ public class ChannelScheduleController implements Serializable {
         }
         System.out.println("3 aii = " + aii);
         getAdditionalItemsAddedForCurrentSession().add(aii);
+        additionalItemToAdd = null;
         System.out.println("getAdditionalItemsAddedForCurrentSession = " + getAdditionalItemsAddedForCurrentSession());
         JsfUtil.addSuccessMessage("Added");
     }
