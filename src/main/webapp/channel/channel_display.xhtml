@@ -33,8 +33,8 @@
             }
 
             .circle {
-                width: 80px; /* Set the width of the circle */
-                height: 80px; /* Set the height of the circle */
+                width: 40px; /* Set the width of the circle */
+                height: 40px; /* Set the height of the circle */
                 background-color: yellow; /* Set the background color of the circle */
                 color: black; /* Set the text color */
                 border-radius: 50%; /* Make the element a circle by setting border-radius to 50% */
@@ -110,59 +110,63 @@
                             id="tblSessions"
                             var="s" 
                             value="#{bookingController.sessionInstances}" 
-                            columns="5" 
+                            columns="3" 
                             layout="grid" 
                             emptyMessage="No Sessions for Today"
                             styleClass="ui-datagrid-responsive">
 
                             <h:panelGroup  style="font-size: 12pt" >
-                                <div class="card text-white bg-success mb-3 shadow" style="min-width: 18rem;min-height: 12rem;">
-                                    <div class="card-header" style="background: #0d503c;">
-                                        <div>
-                                            <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;"/><br></br>
-                                            <h:outputText value="(#{s.staff.speciality.name})" style="font-size: 1em;
-                                                          font-weight: bold;
-                                                          text-align: right"/>
-                                        </div>
-                                    </div>
+                                <div class="card text-white bg-dark shadow" style="min-width: 10rem;min-height: 6.5rem;">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h:panelGroup rendered="#{s.roomNo ne 0}">
                                                 <div class="text-center">
-                                                <div style="box-sizing: border-box;
-                                                     width: 70px;
-                                                     height: 70px;
-                                                     border-radius: 10px;
-                                                     border: 2px solid yellow">
                                                     <h:outputText value="Room" style="font-weight: bold;
                                                                   text-align: right;
-                                                                  color:  yellow"/><br/>
-                                                    <h2><h:outputText value="#{s.roomNo}" style="font-weight: bold;
-                                                                      text-align: right;
-                                                                      color:  yellow"/></h2>
+                                                                  color:  yellow"/>
+                                                    <div style="box-sizing: border-box;
+                                                         width: 50px;
+                                                         height: 40px;
+                                                         border-radius: 10px;
+                                                         border: 2px solid yellow">
+
+                                                        <h3><h:outputText value="#{s.roomNo}" style="font-weight: bold;
+                                                                          text-align: right;
+                                                                          color:  yellow"/></h3>
+                                                    </div>
                                                 </div>
-                                            </div>
                                             </h:panelGroup>
+                                            <div>
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;"/><br></br>
+                                                <div class="text-center">
+                                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-size: 1em;
+                                                                  font-weight: bold;
+                                                                  text-align: right"/>
+                                                </div>
+
+                                            </div>
+
                                             <h:panelGroup>
                                                 <div>
-                                                    <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
-                                                        <div class="d-flex align-items-center justify-content-center">
-                                                            <h5>Pending...</h5>
+                                                    <div>
+                                                        <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
+                                                            <div class="d-flex align-items-center justify-content-center">
+                                                                <h5>Pending...</h5>
+                                                            </div>
+                                                            <!--                                                            <span class="spinner mt-4 d-flex justify-content-end"></span>-->
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}">
+                                                        <div class="circle">
+                                                            <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" style="font-size: 1.5em;
+                                                                          font-weight: bold;
+                                                                          text-align: right"/>
                                                         </div>
-                                                        <span class="spinner mt-4 d-flex justify-content-end"></span>
                                                     </h:panelGroup>
                                                 </div>
-
-                                                <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}">
-                                                    <div class="circle">
-                                                        <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" style="font-size: 3em;
-                                                                      font-weight: bold;
-                                                                      text-align: right"/>
-                                                    </div>
-                                                </h:panelGroup>
-
                                             </h:panelGroup>
                                         </div>
+
                                     </div>
                                 </div>
                             </h:panelGroup>
