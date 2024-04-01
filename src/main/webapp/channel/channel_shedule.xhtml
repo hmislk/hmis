@@ -10,7 +10,9 @@
 
         <ui:composition template="/channel/channel_scheduling/index.xhtml" >
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="form">
+                    <p:growl id="msg" ></p:growl>
+                    
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
@@ -359,6 +361,8 @@
                                                             widgetVar="acAdditionalItem" 
                                                             id="acAdditionalItem" 
                                                             forceSelection="true" 
+                                                            inputStyleClass="w-100"
+                                                            class="w-100"
                                                             value="#{channelScheduleController.additionalItemToAdd}"
                                                             completeMethod="#{itemController.completeInwardItems}" 
                                                             var="ix" 
@@ -389,7 +393,7 @@
                                                             id="btnAddAdditionalItem"
                                                             value="Add Item to Session" 
                                                             process="btnAddAdditionalItem acAdditionalItem"
-                                                            update="acAdditionalItem tblAdditionalItems"
+                                                            update=":form:msg acAdditionalItem tblAdditionalItems"
                                                             action="#{channelScheduleController.addAdditionalItems()}" >
                                                         </p:commandButton>
 

@@ -295,17 +295,20 @@ public class ChannelScheduleController implements Serializable {
         }
         System.out.println("additionalItemToAdd = " + additionalItemToAdd);
         if (additionalItemToAdd == null) {
-            JsfUtil.addErrorMessage("No Item Selected to remove");
+            JsfUtil.addErrorMessage("No Item Selected to add");
             return;
         }
         System.out.println("additionalItemsAddedForCurrentSession = " + additionalItemsAddedForCurrentSession);
-        if (additionalItemsAddedForCurrentSession == null || additionalItemsAddedForCurrentSession.isEmpty()) {
-            JsfUtil.addErrorMessage("No Items are available to remove");
+        if (getAdditionalItemsAddedForCurrentSession() == null) {
+            JsfUtil.addErrorMessage("No Items List");
             return;
         }
         ItemForItem aii = itemForItemController.findItemForItem(current, additionalItemToAdd);
         System.out.println("1 aii = " + aii);
-        if (aii == null) {
+        if (aii != null) {
+            JsfUtil.addErrorMessage("Item is already added");
+            return;
+        }else{
             aii = itemForItemController.addItemForItem(current, additionalItemToAdd);
         }
         System.out.println("2 aii = " + aii);
@@ -313,6 +316,7 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Error in adding");
             return;
         }
+        System.out.println("3 aii = " + aii);
         getAdditionalItemsAddedForCurrentSession().add(aii);
         System.out.println("getAdditionalItemsAddedForCurrentSession = " + getAdditionalItemsAddedForCurrentSession());
         JsfUtil.addSuccessMessage("Added");
