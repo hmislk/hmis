@@ -54,7 +54,7 @@
                 width: 36px;
                 height: 36px;
                 border-radius: 50%;
-                border-left-color: #09f;
+                border-left-color: #ffffb3;
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -116,7 +116,7 @@
                             styleClass="ui-datagrid-responsive">
 
                             <h:panelGroup  style="font-size: 12pt" >
-                                <div class="card text-white bg-success mb-3 shadow" style="min-width: 18rem;">
+                                <div class="card text-white bg-success mb-3 shadow" style="min-width: 18rem;min-height: 12rem;">
                                     <div class="card-header" style="background: #0d503c;">
                                         <div>
                                             <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;"/><br></br>
@@ -127,7 +127,8 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="d-flex align-items-center justify-content-between">
-                                            <div class="text-center">
+                                            <h:panelGroup rendered="#{s.roomNo ne 0}">
+                                                <div class="text-center">
                                                 <div style="box-sizing: border-box;
                                                      width: 70px;
                                                      height: 70px;
@@ -141,16 +142,25 @@
                                                                       color:  yellow"/></h2>
                                                 </div>
                                             </div>
+                                            </h:panelGroup>
                                             <h:panelGroup>
-                                                <div class="circle">
-                                                    
-                                                    <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
-                                                        <span class="spinner"></span>
+                                                <div>
+                                                    <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            <h5>Pending...</h5>
+                                                        </div>
+                                                        <span class="spinner mt-4 d-flex justify-content-end"></span>
                                                     </h:panelGroup>
-                                                    <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" style="font-size: 3em;
-                                                                  font-weight: bold;
-                                                                  text-align: right"/>
                                                 </div>
+
+                                                <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}">
+                                                    <div class="circle">
+                                                        <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" style="font-size: 3em;
+                                                                      font-weight: bold;
+                                                                      text-align: right"/>
+                                                    </div>
+                                                </h:panelGroup>
+
                                             </h:panelGroup>
                                         </div>
                                     </div>
