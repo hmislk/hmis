@@ -175,13 +175,7 @@
                                                             timeOnly="true"
                                                             timeZone="Asia/Colombo">                            
                                                 </p:calendar>
-
-                                                <p:outputLabel value="Starting Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.startingNo}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
-
-                                                <p:outputLabel value="Reserved Number"/>
-                                                <p:inputText class="w-100" autocomplete="off"  disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
-
+                                               
                                                 <p:outputLabel value="Max Number"/>
                                                 <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.maxNo}"/>
 
@@ -315,6 +309,9 @@
                                         </p:tab>
                                         <p:tab title="Aditional Details">
                                             <h:panelGrid columns="2" class="w-100">
+                                                <p:outputLabel value="Reserved Numbers (Ex. 5,10,15,20)"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.reserveNumbers}"/>
+                                                
                                                 <p:outputLabel value="Displaying Count"/>
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.displayCount}"/>
                                                 <p:outputLabel value="Displaying Percent"/>
@@ -333,9 +330,7 @@
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.cashNumbers}"/>
                                                 <p:outputLabel value="Agent Numbers"/>
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.agencyNumbers}"/>
-                                                <p:outputLabel value="Reserved Numbers"/>
-                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.reserveNumbers}"/>
-                                                <p:outputLabel value="Reserver Name"/>
+                                                <p:outputLabel value="Reserved Name"/>
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.reserveName}"/>
 
 

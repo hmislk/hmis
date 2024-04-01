@@ -19,9 +19,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -42,6 +44,31 @@ public class CommonFunctions {
     private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
     private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+
+    public static List<Integer> convertStringToIntegerList(String text) {
+        List<Integer> numbers = new ArrayList<>();
+
+        // Check if the input string is null or empty
+        if (text == null || text.trim().isEmpty()) {
+            return numbers; // Return an empty list
+        }
+
+        // Split the input string by commas
+        String[] parts = text.split(",");
+
+        for (String part : parts) {
+            try {
+                // Attempt to convert each part to an integer and add it to the list
+                numbers.add(Integer.parseInt(part.trim()));
+            } catch (NumberFormatException e) {
+                // Handle parts of the string that cannot be converted to an integer
+                // For example, log the error or add a specific handling code here
+                // For now, we'll just ignore the invalid part and continue
+            }
+        }
+
+        return numbers;
+    }
 
     public static String generateRandomNumericHIN(int length) {
         Random random = new Random();
