@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Item;
 import com.divudi.entity.lab.ItemForItem;
@@ -16,12 +17,14 @@ import com.divudi.facade.ItemForItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped; import javax.faces.component.UIComponent;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
@@ -31,11 +34,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class ItemForItemController implements Serializable {
+public class ItemForItemController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -58,8 +61,6 @@ public  class ItemForItemController implements Serializable {
         this.patientIx = patientIx;
         setParentItem(patientIx.getInvestigation());
     }
-    
-    
 
     public Item getChildItem() {
         return childItem;
@@ -69,8 +70,6 @@ public  class ItemForItemController implements Serializable {
         this.childItem = childItem;
     }
 
-    
-    
     public Item getParentItem() {
         return parentItem;
     }
@@ -79,7 +78,6 @@ public  class ItemForItemController implements Serializable {
         this.parentItem = parentItem;
     }
 
-
     public void prepareAdd() {
         current = new ItemForItem();
     }
@@ -87,19 +85,17 @@ public  class ItemForItemController implements Serializable {
     private void recreateModel() {
         items = null;
     }
-    
-    public List<Item> getItemsForParentItem(Item i){
+
+    public List<Item> getItemsForParentItem(Item i) {
         String sql;
         Map m = new HashMap();
         m.put("it", i);
         sql = "select c.childItem from ItemForItem c where c.retired=false and c.parentItem=:it order by c.childItem.name ";
-        return getItemFacade().findByJpql(sql,m);
+        return getItemFacade().findByJpql(sql, m);
     }
-    
-    
 
-    public void addItem(){
-        if (parentItem==null || childItem ==null){
+    public void addItem() {
+        if (parentItem == null || childItem == null) {
             JsfUtil.addErrorMessage("Please select");
             return;
         }
@@ -111,10 +107,42 @@ public  class ItemForItemController implements Serializable {
         getFacade().create(temIi);
         setChildItem(null);
     }
-    
-    
-    public void removeItem(){
-        if (current==null){
+
+    public ItemForItem addItemForItem(Item parentItemToAdd, Item childItemToAdd) {
+        if (parentItemToAdd == null || childItemToAdd == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return null;
+        }
+        ItemForItem addingIi = new ItemForItem();
+        addingIi.setParentItem(parentItemToAdd);
+        addingIi.setChildItem(childItemToAdd);
+        addingIi.setCreatedAt(Calendar.getInstance().getTime());
+        addingIi.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(addingIi);
+        return addingIi;
+    }
+
+    public ItemForItem findItemForItem(Item parentItemToAdd, Item childItemToAdd) {
+        if (parentItemToAdd == null || childItemToAdd == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return null;
+        }
+        ItemForItem addingIi = null;
+        String jpql = "select ii "
+                + " from ItemForItem ii "
+                + " where ii.retired=:ret "
+                + " and ii.parentItem=:pi "
+                + " and ii.childItem=:ci ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("pi", parentItemToAdd);
+        params.put("ci", childItemToAdd);
+        addingIi = getFacade().findFirstByJpql(jpql, params);
+        return addingIi;
+    }
+
+    public void removeItem() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Please select one to remove");
             return;
         }
@@ -123,9 +151,25 @@ public  class ItemForItemController implements Serializable {
         current.setRetirer(getSessionController().getLoggedUser());
         getFacade().edit(current);
     }
-    
+
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        getItems();
+    }
+    
+    
+    
+    public void save(ItemForItem saving) {
+        if (saving != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -187,13 +231,30 @@ public  class ItemForItemController implements Serializable {
     }
 
     public List<ItemForItem> getItems() {
-        if (getParentItem()!=null && getParentItem().getId()!=null ) {
+        if (getParentItem() != null && getParentItem().getId() != null) {
             items = getFacade().findByJpql("select c from ItemForItem c where c.retired=false and c.parentItem.id = " + getParentItem().getId() + " ");
         }
         if (items == null) {
             items = new ArrayList<ItemForItem>();
         }
         return items;
+    }
+
+    public List<ItemForItem> findItemsForParent(Item parentItem) {
+        if (parentItem == null) {
+            JsfUtil.addErrorMessage("Please select a parent item.");
+            return Collections.emptyList(); // Returns an empty list if parentItem is null to avoid null pointer exceptions
+        }
+
+        // JPQL query to find all child items for a given parent item, assuming the ItemForItem entity is not retired
+        String jpql = "SELECT ii FROM ItemForItem ii WHERE ii.retired = :ret AND ii.parentItem = :pi";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false); // Assuming you want to filter out retired items
+        params.put("pi", parentItem);
+
+        List<ItemForItem> childItems = getFacade().findByJpql(jpql, params);
+        return childItems;
     }
 
     public ItemFacade getItemFacade() {
@@ -204,9 +265,6 @@ public  class ItemForItemController implements Serializable {
         this.itemFacade = itemFacade;
     }
 
-    
-    
-    
     /**
      *
      */

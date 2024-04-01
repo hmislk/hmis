@@ -327,7 +327,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
     }
-    
+
     public String navigateToChannelDisplayFromMenu() {
         sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
         return "/channel/channel_display?faces-redirect=true";
@@ -418,7 +418,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fillBillSessions();
         return "/channel/channel_queue_session?faces-redirect=true";
     }
-    
+
     public String navigateToDisplatSessionQueueAtConsultantRoom() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
@@ -628,7 +628,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return false;
     }
 
-    public void add() {
+    public void addNormalChannelBooking() {
+        addChannelBooking(false);
+    }
+
+    public void addReservedChannelBooking() {
+        addChannelBooking(true);
+    }
+
+    public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
         if (billSessionErrorPresent()) {
             JsfUtil.addErrorMessage("Session Selection Error. Please retry from beginning");
@@ -646,7 +654,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
         patientController.save(patient);
-        printingBill = saveBilledBill();
+        printingBill = saveBilledBill(reservedBooking);
         createPayment(printingBill, paymentMethod);
         sendSmsAfterBooking();
         settleSucessFully = true;
@@ -1798,10 +1806,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     }
 
-    private Bill saveBilledBill() {
+    private Bill saveBilledBill(boolean forReservedNumbers) {
         Bill savingBill = createBill();
         BillItem savingBillItem = createBillItem(savingBill);
-        BillSession savingBillSession = createBillSession(savingBill, savingBillItem);
+        BillSession savingBillSession;
+
+        savingBillSession = createBillSession(savingBill, savingBillItem, forReservedNumbers);
+
         List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
@@ -2250,7 +2261,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return bi;
     }
 
-    private BillSession createBillSession(Bill bill, BillItem billItem) {
+    private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);
@@ -2271,8 +2282,24 @@ public class BookingController implements Serializable, ControllerWithPatient {
         bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
         bs.setStaff(getSelectedSessionInstance().getStaff());
 
-        int count = serviceSessionBean.getSessionNumber(getSelectedSessionInstance().getOriginatingSession(), getSelectedSessionInstance().getSessionDate(), bs);
-        bs.setSerialNo(count);
+        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+        Integer count;
+
+        if (forReservedNumbers) {
+            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers);
+            if (count == null) {
+                count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+            }
+        } else {
+            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+        }
+
+        if (count != null) {
+            bs.setSerialNo(count);
+        } else {
+            bs.setSerialNo(1);
+        }
 
         getBillSessionFacade().create(bs);
 
