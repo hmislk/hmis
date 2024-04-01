@@ -113,6 +113,42 @@ public  class ItemForItemController implements Serializable {
     }
     
     
+    
+    public ItemForItem addItemForItem(Item parentItemToAdd, Item childItemToAdd){
+        if (parentItemToAdd==null || childItemToAdd ==null){
+            JsfUtil.addErrorMessage("Please select");
+            return null;
+        }
+        ItemForItem addingIi = new ItemForItem();
+        addingIi.setParentItem(parentItemToAdd);
+        addingIi.setChildItem(childItemToAdd);
+        addingIi.setCreatedAt(Calendar.getInstance().getTime());
+        addingIi.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(addingIi);
+        return addingIi;
+    }
+    
+    public ItemForItem findItemForItem(Item parentItemToAdd, Item childItemToAdd){
+        if (parentItemToAdd==null || childItemToAdd ==null){
+            JsfUtil.addErrorMessage("Please select");
+            return null;
+        }
+        ItemForItem addingIi = null;
+        String jpql = "select ii "
+                + " from ItemForItem ii "
+                + " where ii.retired=:ret "
+                + " and ii.parentItem=:pi "
+                + " and ii.childItem=:ci ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("pi", parentItemToAdd);
+        params.put("ci", childItemToAdd);
+        addingIi = getFacade().findFirstByJpql(jpql, params);
+        return addingIi;
+    }
+    
+    
+    
     public void removeItem(){
         if (current==null){
             JsfUtil.addErrorMessage("Please select one to remove");
