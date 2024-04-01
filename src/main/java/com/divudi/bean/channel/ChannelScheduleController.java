@@ -134,6 +134,7 @@ public class ChannelScheduleController implements Serializable {
                 + " order by f.id";
         m.put("ses", current);
         itemFees = itemFeeFacade.findByJpql(sql, m);
+        additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
     }
 
     public ItemFee createStaffFee() {
@@ -282,6 +283,10 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("No Items List");
             return;
         }
+        additionalItemToRemove.setRetired(true);
+        additionalItemToRemove.setRetiredAt(new Date());
+        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
+        itemForItemController.saveSelected();
         getAdditionalItemsAddedForCurrentSession().remove(additionalItemToRemove);
         additionalItemToRemove = null;
         JsfUtil.addSuccessMessage("Removed");
