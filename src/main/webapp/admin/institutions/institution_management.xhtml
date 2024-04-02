@@ -54,85 +54,98 @@
                         </div>
 
                         <div class="col-md-7">
-                            <p:panel class="w-100" id="gpDetail" header="Details of the Institution">
+                            <p:panel class="w-100 form-control m-1" id="gpDetail" header="Details of the Institution">
 
-                                <p:tabView  class="w-100">
-                                    <p:tab title="Basic Details" class="w-100" >
+                                <p:tabView  class="w-100 form-control m-1">
+                                    <p:tab title="Basic Details" class="w-100 form-control m-1" >
 
                                         <h:panelGrid id="gpDetailText" columns="2" class="w-100">
-                                            <h:outputText id="lblName" value="Name"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100"
+                                            <h:outputText id="lblName" value="Name"  class="m-1"></h:outputText>
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtName" value="#{institutionController.current.name}"></p:inputText>
                                             <h:outputText id="lblPName" value="Printing Name"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100"
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtPName" value="#{institutionController.current.chequePrintingName}"></p:inputText>
                                             <h:outputText id="lblCode" value="Code"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100"
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtCode" value="#{institutionController.current.code}"></p:inputText>
                                             <h:outputText id="lblSCode" value="Short Code" ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100"
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
                                                          id="txtSCode" value="#{institutionController.current.institutionCode}" >
                                             </p:inputText>
-                                            <h:outputText  value="Route" ></h:outputText>
-                                            <p:autoComplete 
-                                                completeMethod="#{routeController.completeRoute}" 
-                                                class="w-100" placeholder="Route"
-                                                inputStyleClass="w-100"
-                                                var="r" itemLabel="#{r.name}" itemValue="#{r}" forceSelection="true" value="#{institutionController.current.route}" ></p:autoComplete>
-                                            <h:outputText  value="Point of Issue No." ></h:outputText>
-                                            <p:inputText class="w-100" value="#{institutionController.current.pointOfIssueNo}" ></p:inputText>
                                             <h:outputText  value="Description" ></h:outputText>
-                                            <p:inputTextarea class="w-100" value="#{institutionController.current.descreption}"  ></p:inputTextarea>
+                                            <p:inputTextarea class="w-100 form-control m-1" value="#{institutionController.current.descreption}"  ></p:inputTextarea>
                                             <h:outputText id="lblDept" value="Type"></h:outputText>
-                                            <p:selectOneMenu class="w-100" id="cmbDept" value="#{institutionController.current.institutionType}">
+                                            <p:selectOneMenu
+                                                class="w-100 form-control m-1"
+                                                id="cmbDept"
+                                                value="#{institutionController.current.institutionType}"
+                                                filter="true"
+                                                filterMatchMode="contains">
                                                 <f:selectItem itemLabel="Select Institution Type"/>
-                                                <f:selectItems value="#{institutionController.institutionTypes}"/>                                       
+                                                <f:selectItems value="#{institutionController.institutionTypes}" var="it" itemValue="#{it}" itemLabel="#{it.label}"/>                                       
                                             </p:selectOneMenu>                                 
-                                            <h:outputText value="Credit Limit" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off"  value="#{institutionController.current.allowedCredit}"  ></p:inputText>
                                             <h:outputText value="Phone" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off"  value="#{institutionController.current.phone}"  ></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.phone}"  ></p:inputText>
                                             <h:outputText value="Fax" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off"  value="#{institutionController.current.fax}"  ></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.fax}"  ></p:inputText>
                                             <h:outputText value="Email" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off"  value="#{institutionController.current.email}"  ></p:inputText>
-                                            <h:outputText value="Owner Email" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off"  value="#{institutionController.current.ownerEmail}"  ></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.email}"  ></p:inputText>
                                             <h:outputText value="Address" ></h:outputText>
-                                            <p:inputTextarea class="w-100" value="#{institutionController.current.address}"  ></p:inputTextarea>
+                                            <p:inputTextarea class="w-100 form-control m-1" value="#{institutionController.current.address}"  ></p:inputTextarea>
                                             <h:outputText value="Web" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off"  value="#{institutionController.current.web}"  ></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.web}"  ></p:inputText>
+                                        </h:panelGrid>
+
+                                    </p:tab>
+
+                                    <p:tab title="Advanced">
+                                        <h:panelGrid columns="2" class="w-100 form-control m-1" >
+                                            
+                                            <h:outputText  value="Point of Issue No." ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" value="#{institutionController.current.pointOfIssueNo}" ></p:inputText>
+                                            
+                                            
                                             <h:outputText value="Bank" ></h:outputText>
                                             <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
                                                             var="dept" id="branch"
-                                                            class="w-100" placeholder="Branch"
+                                                            class="w-100 form-control m-1" placeholder="Branch"
                                                             inputStyleClass="w-100"
                                                             itemLabel="#{dept.name}"
                                                             itemValue="#{dept}"
                                                             forceSelection="true" 
                                                             value="#{institutionController.current.bankBranch}"/>
                                             <h:outputText  value="Account No." ></h:outputText>
-                                            <p:inputText  autocomplete="off" class="w-100" value="#{institutionController.current.accountNo}"  ></p:inputText>
-                                        </h:panelGrid>
+                                            <p:inputText  autocomplete="off" class="w-100 form-control m-1" value="#{institutionController.current.accountNo}"  ></p:inputText>
 
-                                    </p:tab>
+                                            <h:outputText value="Credit Limit" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.allowedCredit}"  ></p:inputText>
 
-                                    <p:tab title="Advanced">
-                                        <h:panelGrid columns="2" class="w-100" >
+                                            <h:outputText value="Owner Email" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.ownerEmail}"  ></p:inputText>
+
+                                            <h:outputText  value="Route" ></h:outputText>
+                                            <p:autoComplete 
+                                                completeMethod="#{routeController.completeRoute}" 
+                                                class="w-100 form-control m-1" placeholder="Route"
+                                                inputStyleClass="w-100"
+                                                var="r" itemLabel="#{r.name}" itemValue="#{r}" forceSelection="true" value="#{institutionController.current.route}" ></p:autoComplete>
+
+
                                             <h:outputText  value="Email Sending Account" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off" id="txtEmUn" value="#{institutionController.current.emailSendingUsername}"></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtEmUn" value="#{institutionController.current.emailSendingUsername}"></p:inputText>
 
                                             <h:outputText  value="Email Sending Password" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off" id="txtEmPs" value="#{institutionController.current.emailSendingPassword}"></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtEmPs" value="#{institutionController.current.emailSendingPassword}"></p:inputText>
 
                                             <h:outputText  value="SMS Sending Username" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off" id="txtSmsUn" value="#{institutionController.current.smsSendingUsername}"></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtSmsUn" value="#{institutionController.current.smsSendingUsername}"></p:inputText>
 
                                             <h:outputText  value="SMS Sending Password" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off" id="txtSmsPs" value="#{institutionController.current.smsSendingPassword}"></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtSmsPs" value="#{institutionController.current.smsSendingPassword}"></p:inputText>
 
                                             <h:outputText  value="SMS Alias" ></h:outputText>
-                                            <p:inputText class="w-100" autocomplete="off" id="txtSmsAlias" value="#{institutionController.current.smsSendingAlias}"></p:inputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtSmsAlias" value="#{institutionController.current.smsSendingAlias}"></p:inputText>
 
                                         </h:panelGrid>
 
