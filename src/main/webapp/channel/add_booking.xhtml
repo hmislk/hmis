@@ -65,7 +65,7 @@
                                         <p:outputLabel value="Item" ></p:outputLabel>
                                     </p:column>
                                     <p:column >
-                                        <p:selectOneMenu id="lstItems" value="#{bookingController.itemsAvailableToAddToBooking}" >
+                                        <p:selectOneMenu id="lstItems" value="#{bookingController.itemToAddToBooking}" >
                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                             <f:selectItems value="#{bookingController.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
                                             <p:ajax event="change" process="lstItems" update="lblSessionTotal gpFeeTotal" listener="#{bookingController.fillFees}" ></p:ajax>
