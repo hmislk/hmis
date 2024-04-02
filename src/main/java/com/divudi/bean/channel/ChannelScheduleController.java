@@ -91,6 +91,20 @@ public class ChannelScheduleController implements Serializable {
     List<FeeChange> feeChanges;
     List<FeeChange> feeChangesList;
     boolean feeChangeStaff;
+    private List<SessionInstance> sessionInstances;
+    private SessionInstance currentSessionInstance;
+    
+    public void fillSessionInstance() {
+            sessionInstances = new ArrayList<>();
+            String jpql = "select i "
+                    + " from SessionInstance i "
+                    + " where i.retired=:ret ";
+
+            Map m = new HashMap();
+            m.put("ret", false);
+            sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
+            
+    }
 
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
@@ -108,6 +122,10 @@ public class ChannelScheduleController implements Serializable {
 
     public String navigateToChannelSchedule() {
         return "/channel/channel_shedule?faces-redirect=true";
+    }
+    
+    public String navigateToChannelScheduleManagement() {
+        return "/channel/session_instance_management?faces-redirect=true";
     }
 
     public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
@@ -967,6 +985,22 @@ public class ChannelScheduleController implements Serializable {
 
     public void setAdditionalItemToRemove(ItemForItem additionalItemToRemove) {
         this.additionalItemToRemove = additionalItemToRemove;
+    }
+
+    public List<SessionInstance> getSessionInstances() {
+        return sessionInstances;
+    }
+
+    public void setSessionInstances(List<SessionInstance> sessionInstances) {
+        this.sessionInstances = sessionInstances;
+    }
+
+    public SessionInstance getCurrentSessionInstance() {
+        return currentSessionInstance;
+    }
+
+    public void setCurrentSessionInstance(SessionInstance currentSessionInstance) {
+        this.currentSessionInstance = currentSessionInstance;
     }
 
 }
