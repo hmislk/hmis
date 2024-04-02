@@ -59,7 +59,20 @@
                                         </p:column>
                                     </p:row>
                                 </f:facet>
+                                
                                 <p:row >
+                                    <p:column >
+                                        <p:outputLabel value="Item" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <p:selectOneMenu value="#{bookingController.itemsAvailableToAddToBooking}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{bookingController.itemsAvailableToAddToBooking}" var="iata" itemLabel="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row >
+                                    
                                     <p:column >
                                         <p:outputLabel value="Amount"/>
                                     </p:column>

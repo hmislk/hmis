@@ -9,6 +9,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -68,6 +69,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Payment;
+import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
@@ -171,6 +173,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     BillController billController;
     @Inject
     SessionInstanceController sessionInstanceController;
+    @Inject
+    ItemForItemController itemForItemController;
 
     /**
      * Properties
@@ -216,6 +220,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ScheduleModel eventModel;
     boolean patientDetailsEditable;
 
+    private Item itemToAddToBooking;
+    private List<Item> itemsAvailableToAddToBooking;
     private Institution institution;
     private String agentRefNo;
     private List<BillFee> listBillFees;
@@ -290,7 +296,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select a Session Instance");
             return "";
         }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("Please select a Session");
+            return "";
+        }
         fillFees();
+        fillItemAvailableToAdd();
         printPreview = false;
         patient = new Patient();
         if (speciality == null) {
@@ -365,8 +376,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public String navigateToConsultantRoom() {
         return "/channel/consultant_room?faces-redirect=true";
     }
-    
-    public void loadSessionInstance(){
+
+    public void loadSessionInstance() {
         sessionInstances = channelBean.listTodaysSessionInstances(true, false, false);
     }
 
@@ -2863,6 +2874,26 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setSelectedItemFees(List<ItemFee> selectedItemFees) {
         this.selectedItemFees = selectedItemFees;
+    }
+
+    public Item getItemToAddToBooking() {
+        return itemToAddToBooking;
+    }
+
+    public void setItemToAddToBooking(Item itemToAddToBooking) {
+        this.itemToAddToBooking = itemToAddToBooking;
+    }
+
+    public List<Item> getItemsAvailableToAddToBooking() {
+        return itemsAvailableToAddToBooking;
+    }
+
+    public void setItemsAvailableToAddToBooking(List<Item> itemsAvailableToAddToBooking) {
+        this.itemsAvailableToAddToBooking = itemsAvailableToAddToBooking;
+    }
+
+    private void fillItemAvailableToAdd() {
+        itemsAvailableToAddToBooking = itemForItemController.getItemsForParentItem(selectedSessionInstance.getOriginatingSession());
     }
 
 }
