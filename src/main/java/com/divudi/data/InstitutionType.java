@@ -20,6 +20,7 @@ public enum InstitutionType {
     Lab("Lab"),
     Manufacturer("Manufacturer"),
     NonProfit("Non-Profit"), // Added new
+    Other("Other"),
     Pharmacy("Pharmacy"), // Added new
     PrivatePractice("Private Practice"), // Added new
     StoreDealor("Store Dealer"), // Original enum spelling retained
