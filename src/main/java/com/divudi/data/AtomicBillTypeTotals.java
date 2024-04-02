@@ -254,7 +254,7 @@ public class AtomicBillTypeTotals {
             existingRecord.addPaidValue(paidValue);
         }
         // If using the structured approach internally, update structured totals as well
-        updateServiceTypeTotals();
+//        updateServiceTypeTotals();
     }
     // Additional utility methods can be added as necessary
 
