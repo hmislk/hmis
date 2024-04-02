@@ -726,8 +726,8 @@ public class PatientEncounterController implements Serializable {
 
     }
 
-    public void createNewResultReport(ClinicalFindingValue pf, Investigation ix) {
-        currentPtIx = createPatientInvestigation(pf, ix);
+    public void createNewResultReport(ClinicalFindingValue pf) {
+        currentPtIx = createPatientInvestigation(pf);
 
         patientReportController.setCurrentPtIx(currentPtIx);
         patientReportController.createNewReport(currentPtIx);
@@ -757,14 +757,13 @@ public class PatientEncounterController implements Serializable {
 
         getEncounterFindingValues().add(encounterInvestigationResult);
         setEncounterInvestigationResults(fillEncounterInvestigationResults(current));
+        createNewResultReport(encounterInvestigationResult);
         encounterInvestigationResult = null;
-        
-        
         JsfUtil.addSuccessMessage("Investigation Report added");
 
     }
 
-    public PatientInvestigation createPatientInvestigation(ClinicalFindingValue pf, Investigation ix) {
+    public PatientInvestigation createPatientInvestigation(ClinicalFindingValue pf) {
         PatientInvestigation pi = new PatientInvestigation();
         if (pf.getClinicalFindingValueType() != ClinicalFindingValueType.VisitInvestigationResult) {
             return pi;
@@ -776,7 +775,7 @@ public class PatientEncounterController implements Serializable {
         pi.setCollected(Boolean.TRUE);
         pi.setReceived(Boolean.TRUE);
         pi.setDataEntered(Boolean.FALSE);
-        pi.setInvestigation(ix);
+        pi.setInvestigation((Investigation)pf.getItemValue());
         pi.setOutsourced(Boolean.FALSE);
         pi.setEncounter(pf.getEncounter());
         pi.setPatient(pf.getPatient());
@@ -802,6 +801,7 @@ public class PatientEncounterController implements Serializable {
             bill = new Bill();
         }
         bi.setBill(bill);
+        bill.setPatient(pi.getPatient());
         bi.getBill().setPatient(pi.getPatient());
         bi.getBill().setBalance(0.0);
         if (bill.getId()==null){
