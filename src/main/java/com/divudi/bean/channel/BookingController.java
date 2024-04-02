@@ -196,6 +196,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ServiceSession selectedServiceSession;
     private SessionInstance selectedSessionInstance;
     private List<ItemFee> selectedItemFees;
+    private List<ItemFee> sessionFees;
+    private List<ItemFee> addedItemFees;
     private BillSession selectedBillSession;
     @Deprecated
     private BillSession managingBillSession;
@@ -300,8 +302,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select a Session");
             return "";
         }
-        fillFees();
+
         fillItemAvailableToAdd();
+        fillFees();
         printPreview = false;
         patient = new Patient();
         if (speciality == null) {
@@ -313,6 +316,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void fillFees() {
         selectedItemFees = new ArrayList<>();
+        sessionFees = new ArrayList<>();
+        addedItemFees = new ArrayList<>();
         if (selectedSessionInstance == null) {
             return;
         }
@@ -326,7 +331,20 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and f.serviceSession=:ses "
                 + " order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
-        selectedItemFees = itemFeeFacade.findByJpql(sql, m);
+        sessionFees = itemFeeFacade.findByJpql(sql, m);
+        m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:item "
+                + " order by f.id";
+        m.put("item", itemToAddToBooking);
+        addedItemFees = itemFeeFacade.findByJpql(sql, m);
+        if (sessionFees != null) {
+            selectedItemFees.addAll(sessionFees);
+        }
+        if (addedItemFees != null) {
+            selectedItemFees.addAll(addedItemFees);
+        }
     }
 
     public String navigateToChannelBookingFromMenu() {
@@ -836,6 +854,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
+        itemsAvailableToAddToBooking=new ArrayList<>();
+        itemToAddToBooking = null;
         patient = new Patient();
     }
 
@@ -844,6 +864,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
+        itemToAddToBooking = null;
+        itemsAvailableToAddToBooking=new ArrayList<>();
         patient = new Patient();
     }
 
@@ -851,11 +873,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
+        itemToAddToBooking = null;
         patient = new Patient();
     }
 
     public void resetToStartFromSameSessionInstance() {
         patient = new Patient();
+        itemToAddToBooking = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -1819,12 +1843,25 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     private Bill saveBilledBill(boolean forReservedNumbers) {
         Bill savingBill = createBill();
-        BillItem savingBillItem = createBillItem(savingBill);
+        BillItem savingBillItem = createSessionItem(savingBill);
+        BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
         BillSession savingBillSession;
 
         savingBillSession = createBillSession(savingBill, savingBillItem, forReservedNumbers);
 
-        List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
+        List<BillFee> savingBillFees = new ArrayList<>();
+        
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItem);
+        List<BillFee> savingBillFeesFromAdditionalItem = createBillFeeForSessions(savingBill, additionalBillItem);
+        
+        if(savingBillFeesFromSession!=null){
+            savingBillFees.addAll(savingBillFeesFromSession);
+        }
+        if(savingBillFeesFromAdditionalItem!=null){
+            savingBillFees.addAll(savingBillFeesFromAdditionalItem);
+        }
+        
+        
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
         getBillItemFacade().edit(savingBillItem);
@@ -1992,12 +2029,36 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
+    
+    public List<ItemFee> findItemFees(Item i) {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:i "
+                + " order by f.id";
+        m.put("i", i);
+        return itemFeeFacade.findByJpql(sql, m);
+    }
+
+    
+    private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpDiscount = 0;
         double tmpGrossTotal = 0.0;
         List<ItemFee> sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
+    
+        if(billItem.getItem()!=null){
+            if(billItem.getItem() instanceof ServiceSession){
+                sessionsFees = findServiceSessionFees((ServiceSession) billItem.getItem());
+            }else if(billItem.getItem() instanceof Item){
+                sessionsFees = findItemFees(billItem.getItem());
+            }
+        }else{
+            sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
+        }
+        
         if (sessionsFees == null) {
             return billFeeList;
         }
@@ -2251,7 +2312,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return deptId;
     }
 
-    private BillItem createBillItem(Bill bill) {
+    private BillItem createSessionItem(Bill bill) {
         BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
         bi.setAgentRefNo(agentRefNo);
@@ -2272,6 +2333,27 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return bi;
     }
 
+    private BillItem createAdditionalItem(Bill bill, Item i) {
+        BillItem bi = new BillItem();
+        bi.setAdjustedValue(0.0);
+        bi.setAgentRefNo(agentRefNo);
+        bi.setBill(bill);
+        bi.setBillTime(new Date());
+        bi.setCreatedAt(new Date());
+        bi.setCreater(getSessionController().getLoggedUser());
+        bi.setGrossValue(i.getDblValue());
+        bi.setItem(i);
+        bi.setNetRate(i.getDblValue());
+        bi.setNetValue(i.getDblValue());
+        bi.setQty(1.0);
+        bi.setRate(i.getDblValue());
+        bi.setSessionDate(getSelectedSessionInstance().getSessionAt());
+        billItemFacade.create(bi);
+        return bi;
+    }
+
+    
+    
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
         BillSession bs = new BillSession();
         bs.setAbsent(false);
@@ -2894,6 +2976,22 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     private void fillItemAvailableToAdd() {
         itemsAvailableToAddToBooking = itemForItemController.getItemsForParentItem(selectedSessionInstance.getOriginatingSession());
+    }
+
+    public List<ItemFee> getSessionFees() {
+        return sessionFees;
+    }
+
+    public void setSessionFees(List<ItemFee> sessionFees) {
+        this.sessionFees = sessionFees;
+    }
+
+    public List<ItemFee> getAddedItemFees() {
+        return addedItemFees;
+    }
+
+    public void setAddedItemFees(List<ItemFee> addedItemFees) {
+        this.addedItemFees = addedItemFees;
     }
 
 }
