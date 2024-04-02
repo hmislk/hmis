@@ -334,14 +334,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and f.serviceSession=:ses "
                 + " order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
-        System.out.println("sessionFees = " + sessionFees);
+        
         sessionFees = itemFeeFacade.findByJpql(sql, m);
+        System.out.println("sessionFees = " + sessionFees);
         m = new HashMap();
         sql = "Select f from ItemFee f "
                 + " where f.retired=false "
                 + " and f.item=:item "
                 + " order by f.id";
         m.put("item", itemToAddToBooking);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
         System.out.println("addedItemFees = " + addedItemFees);
         if (sessionFees != null) {
