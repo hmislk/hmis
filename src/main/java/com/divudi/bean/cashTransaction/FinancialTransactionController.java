@@ -505,7 +505,11 @@ public class FinancialTransactionController implements Serializable {
         paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotals = new AtomicBillTypeTotals();
         for (Payment p : currentBillPayments) {
-            atomicBillTypeTotals.addRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            if(p.getBill().getBillTypeAtomic()==null){
+                System.out.println("p = " + p);
+                System.out.println("p.getBill() = " + p.getBill());
+            }
+            atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             calculateBillValuesFromBillTypes(p);
         }
         calculateTotalFundsFromShiftStartToNow();
