@@ -121,6 +121,7 @@ public class GrnController implements Serializable {
         printPreview = false;
         billItems = null;
         difference = 0;
+        insTotal = 0;
         createGrn();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
@@ -222,10 +223,6 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        if (insTotal < 1.0) {
-            JsfUtil.addErrorMessage("Fill the invoice Total");
-            return;
-        }
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
@@ -667,7 +664,6 @@ public class GrnController implements Serializable {
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
-        double remainsFreeQuantity = getPharmacyCalculation().getRemainingFreeQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
 //        System.err.println("2 " + tmp.getQty());
@@ -678,10 +674,6 @@ public class GrnController implements Serializable {
             JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
         }
 
-        if (remainsFreeQuantity < tmp.getPharmaceuticalBillItem().getFreeQtyInUnit()) {
-            tmp.setTmpFreeQty(remainsFreeQuantity);
-            JsfUtil.addErrorMessage("You cant Change Free Qty than Remaining free qty");
-        }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(getRetailPrice(tmp.getPharmaceuticalBillItem().getBillItem()));
