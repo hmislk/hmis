@@ -230,6 +230,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession billSession;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
+    
+    private Double feeTotalForSelectedBill;
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -315,6 +317,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillFees() {
+        System.out.println("fillFees");
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
         addedItemFees = new ArrayList<>();
@@ -331,6 +334,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and f.serviceSession=:ses "
                 + " order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
+        System.out.println("sessionFees = " + sessionFees);
         sessionFees = itemFeeFacade.findByJpql(sql, m);
         m = new HashMap();
         sql = "Select f from ItemFee f "
@@ -339,12 +343,22 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " order by f.id";
         m.put("item", itemToAddToBooking);
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
+        System.out.println("addedItemFees = " + addedItemFees);
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
         }
         if (addedItemFees != null) {
             selectedItemFees.addAll(addedItemFees);
         }
+        feeTotalForSelectedBill = 0.0;
+        for(ItemFee tbf:selectedItemFees){
+            if(foriegn){
+                feeTotalForSelectedBill+=tbf.getFfee();
+            }else{
+                feeTotalForSelectedBill+=tbf.getFee();
+            }
+        }
+        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
     }
 
     public String navigateToChannelBookingFromMenu() {
@@ -2993,5 +3007,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void setAddedItemFees(List<ItemFee> addedItemFees) {
         this.addedItemFees = addedItemFees;
     }
+
+    public Double getFeeTotalForSelectedBill() {
+        return feeTotalForSelectedBill;
+    }
+
+    public void setFeeTotalForSelectedBill(Double feeTotalForSelectedBill) {
+        this.feeTotalForSelectedBill = feeTotalForSelectedBill;
+    }
+    
+    
 
 }
