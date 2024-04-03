@@ -79,7 +79,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private boolean patientDetailsEditable;
 
     private boolean printPreview;
-    
+
     public OpdTokenController() {
     }
 
@@ -182,7 +182,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentToken.setCalledAt(currentToken.isCalled() ? new Date() : null);
         tokenFacade.edit(currentToken);
     }
-    
+
     public void toggleCompletedStatus() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No token selected");
@@ -194,12 +194,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentToken.setStartedAt(currentToken.isCompleted() ? (currentToken.getStartedAt() == null ? now : currentToken.getStartedAt()) : null);
         tokenFacade.edit(currentToken);
     }
-    
+
     public String navigateToManageOpdTokens() {
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
     }
-    
+
     public String navigateToSettleOpdPreBill() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
@@ -213,13 +213,13 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Bill Type");
             return "";
         }
-        
+
         findPreBill(currentToken.getBill());
         opdPreSettleController.setBillPreview(false);
         opdPreSettleController.setToken(currentToken);
         return "/opd_bill_pre_settle?faces-redirect=true";
     }
-    
+
     public void findPreBill(Bill args) {
         Bill tmp;
         String sql = "Select b from BilledBill b"
@@ -233,8 +233,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         if (tmp != null) {
             JsfUtil.addErrorMessage("Allready Paid");
             return;
-        }    
-        else{
+        } else {
             opdPreSettleController.setPreBill(args);
         }
     }
@@ -250,11 +249,11 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
-    
+
     public void navigateToNewOpdBill() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
-            return ;
+            return;
         }
 
         opdPreBillController.makeNull();
@@ -296,12 +295,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "Pending";
         }
     }
-    
-        public String navigateToManageOpdTokensCalled() {
+
+    public String navigateToManageOpdTokensCalled() {
         fillOpdTokensCalled();
         return "/opd/token/opd_tokens_called?faces-redirect=true"; // Adjust the navigation string as per your page structure
     }
-    
+
     public void fillOpdTokensCalled() {
         Map<String, Object> m = new HashMap<>();
         String j = "Select t "
@@ -323,10 +322,69 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         //System.out.println("currentTokens = " + currentTokens);
     }
 
-
     public String navigateToTokenIndex() {
         resetClassVariables();
         return "/opd/token/index?faces-redirect=true";
+    }
+
+    public String navigateToManageOpdTokensCompleted() {
+        fillOpdTokensCompleted();
+        return "/opd/token/opd_tokens_completed?faces-redirect=true";
+    }
+
+    public void fillOpdTokensCompleted() {
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenType=:ty"
+                + " and t.tokenDate=:date "
+                + " and t.completed=:com";
+        Map m = new HashMap();
+
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", true);
+        if (counter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", counter);
+        }
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+
+    public void callToken() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No token selected");
+            return;
+        }
+        currentToken.setCalled(true);
+        currentToken.setCalledAt(new Date());
+        tokenFacade.edit(currentToken);
+    }
+
+    public void startTokenService() {
+        
+    }
+
+    public void completeTokenService() {
+
+    }
+
+    public void reverseCallToken() {
+
+    }
+
+    public void recallToken() {
+
+    }
+
+    public void restartTokenService() {
+
+    }
+
+    public void reverseCompleteTokenService() {
+
     }
 
     public Token getCurrentToken() {

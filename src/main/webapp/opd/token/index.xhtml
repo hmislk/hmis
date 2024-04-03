@@ -32,22 +32,16 @@
                                          >
                                     </p:commandButton>
                                     <p:commandButton 
-                                        value="Called OPD Tokens (CounterWise)"
-                                        icon=""
-                                        ajax="false" 
-                                        action="#">
-                                    </p:commandButton>
-                                    <p:commandButton 
                                         value="Completed OPD Tokens"
                                         icon=""
                                         ajax="false" 
-                                        action="#" >
+                                        action="#{opdTokenController.navigateToManageOpdTokensCompleted}" >
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Scan Bills"
                                         icon=""
                                         ajax="false" 
-                                        action="#" 
+                                        action="#{opdPreSettleController.navigateToScanBills()}" 
                                         >
                                     </p:commandButton>
                                 </div>
