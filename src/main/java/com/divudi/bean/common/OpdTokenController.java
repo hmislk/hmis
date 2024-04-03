@@ -8,8 +8,10 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.BillType;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
@@ -61,6 +63,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private PharmacyBillSearch pharmacyBillSearch;
     @Inject
     OpdPreBillController opdPreBillController;
+    @Inject
+    OpdPreSettleController opdPreSettleController;
 
     // </editor-fold> 
     private Token currentToken;
@@ -175,6 +179,45 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     public String navigateToManageOpdTokens() {
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
+    }
+    
+    public String navigateToSettleOpdPreBill() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        if (currentToken.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (currentToken.getBill().getBillType() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+        
+        findPreBill(currentToken.getBill());
+        opdPreSettleController.setBillPreview(false);
+        opdPreSettleController.setToken(currentToken);
+        return "/opd_bill_pre_settle?faces-redirect=true";
+    }
+    
+    public void findPreBill(Bill args) {
+        Bill tmp;
+        String sql = "Select b from BilledBill b"
+                + " where b.referenceBill=:bil"
+                + " and b.retired=false "
+                + " and b.cancelled=false ";
+        HashMap hm = new HashMap();
+        hm.put("bil", args);
+        tmp = billFacade.findFirstByJpql(sql, hm);
+
+        if (tmp != null) {
+            JsfUtil.addErrorMessage("Allready Paid");
+            return;
+        }    
+        else{
+            opdPreSettleController.setPreBill(args);
+        }
     }
 
     public String navigateToNewOpdBillForCashier() {
