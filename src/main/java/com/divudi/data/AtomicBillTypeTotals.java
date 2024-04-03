@@ -12,8 +12,12 @@ public class AtomicBillTypeTotals {
     }
 
     private AtomicBillRecord findRecord(BillTypeAtomic billType, PaymentMethod paymentMethod) {
+        if (atomicBillRecords == null || billType == null || paymentMethod == null) {
+            return null;
+        }
+
         return atomicBillRecords.stream()
-                .filter(record -> record.getBillType().equals(billType) && record.getPaymentMethod().equals(paymentMethod))
+                .filter(record -> billType.equals(record.getBillType()) && paymentMethod.equals(record.getPaymentMethod()))
                 .findFirst()
                 .orElse(null);
     }
