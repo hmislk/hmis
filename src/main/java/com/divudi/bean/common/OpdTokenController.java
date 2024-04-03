@@ -10,6 +10,7 @@ import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
@@ -61,6 +62,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private PharmacyBillSearch pharmacyBillSearch;
     @Inject
     OpdPreBillController opdPreBillController;
+    @Inject
+    OpdPreSettleController opdPreSettleController;
 
     // </editor-fold> 
     private Token currentToken;
@@ -75,8 +78,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     private boolean patientDetailsEditable;
 
-    boolean printPreview;
-    
+    private boolean printPreview;
+
     public OpdTokenController() {
     }
 
@@ -166,15 +169,73 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
-//        return "/opd/token/opd_token_print?faces-redirect=true";
-        System.out.println("Create Token ");
         printPreview = true;
-        return "";
+        return "/opd/token/opd_token_print?faces-redirect=true";
+    }
+
+    public void toggleCalledStatus() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No token selected");
+            return;
+        }
+        currentToken.setCalled(!currentToken.isCalled());
+        currentToken.setCalledAt(currentToken.isCalled() ? new Date() : null);
+        tokenFacade.edit(currentToken);
+    }
+
+    public void toggleCompletedStatus() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No token selected");
+            return;
+        }
+        currentToken.setCompleted(!currentToken.isCompleted());
+        Date now = new Date();
+        currentToken.setCompletedAt(currentToken.isCompleted() ? now : null);
+        currentToken.setStartedAt(currentToken.isCompleted() ? (currentToken.getStartedAt() == null ? now : currentToken.getStartedAt()) : null);
+        tokenFacade.edit(currentToken);
     }
 
     public String navigateToManageOpdTokens() {
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
+    }
+
+    public String navigateToSettleOpdPreBill() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        if (currentToken.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (currentToken.getBill().getBillType() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+
+        findPreBill(currentToken.getBill());
+        opdPreSettleController.setBillPreview(false);
+        opdPreSettleController.setToken(currentToken);
+        return "/opd_bill_pre_settle?faces-redirect=true";
+    }
+
+    public void findPreBill(Bill args) {
+        Bill tmp;
+        String sql = "Select b from BilledBill b"
+                + " where b.referenceBill=:bil"
+                + " and b.retired=false "
+                + " and b.cancelled=false ";
+        HashMap hm = new HashMap();
+        hm.put("bil", args);
+        tmp = billFacade.findFirstByJpql(sql, hm);
+
+        if (tmp != null) {
+            JsfUtil.addErrorMessage("Allready Paid");
+            return;
+        } else {
+            opdPreSettleController.setPreBill(args);
+        }
     }
 
     public String navigateToNewOpdBillForCashier() {
@@ -187,6 +248,17 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.setPatient(currentToken.getPatient());
         opdPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
+    }
+
+    public void navigateToNewOpdBill() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return;
+        }
+
+        opdPreBillController.makeNull();
+        opdPreBillController.setPatient(currentToken.getPatient());
+        opdPreBillController.setToken(currentToken);
     }
 
     public void fillOpdTokens() {
@@ -207,7 +279,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
         j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-        System.out.println("currentTokens " + currentTokens);
+        //System.out.println("currentTokens " + currentTokens);
     }
 
     public String getTokenStatus(Token token) {
@@ -224,9 +296,95 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public String navigateToManageOpdTokensCalled() {
+        fillOpdTokensCalled();
+        return "/opd/token/opd_tokens_called?faces-redirect=true"; // Adjust the navigation string as per your page structure
+    }
+
+    public void fillOpdTokensCalled() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        //System.out.println("currentTokens = " + currentTokens);
+    }
+
     public String navigateToTokenIndex() {
         resetClassVariables();
         return "/opd/token/index?faces-redirect=true";
+    }
+
+    public String navigateToManageOpdTokensCompleted() {
+        fillOpdTokensCompleted();
+        return "/opd/token/opd_tokens_completed?faces-redirect=true";
+    }
+
+    public void fillOpdTokensCompleted() {
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenType=:ty"
+                + " and t.tokenDate=:date "
+                + " and t.completed=:com";
+        Map m = new HashMap();
+
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", true);
+        if (counter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", counter);
+        }
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+
+    public void callToken() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No token selected");
+            return;
+        }
+        currentToken.setCalled(true);
+        currentToken.setCalledAt(new Date());
+        tokenFacade.edit(currentToken);
+    }
+
+    public void startTokenService() {
+        
+    }
+
+    public void completeTokenService() {
+
+    }
+
+    public void reverseCallToken() {
+
+    }
+
+    public void recallToken() {
+
+    }
+
+    public void restartTokenService() {
+
+    }
+
+    public void reverseCompleteTokenService() {
+
     }
 
     public Token getCurrentToken() {
@@ -323,6 +481,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }
