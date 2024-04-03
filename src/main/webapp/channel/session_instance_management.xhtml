@@ -15,8 +15,18 @@
 
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h:outputText class="mx-4" value="Channel Schedule Management" />
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                                    <h:outputText class="mx-4" value="Channel Schedule Management" />
+                                </div>
+                                <p:commandButton value="Go To Channel Booking"
+                                                 icon="fa-solid fa-location-arrow"
+                                                 class="ui-button-secondary"
+                                                 rendered="#{webUserController.hasPrivilege('Developers')}"
+                                                 action="/channel/channel_booking" 
+                                                 ajax="false"  />
+                            </div>
                         </f:facet>
                         <div class="row">
                             <div class="col-6">
@@ -66,31 +76,32 @@
                                         </h:panelGroup>
 
                                     </h:panelGrid>
-                                    <h:panelGrid id="gpSelectButtons" columns="3" class="my-1 d-flex justify-content-end"  >                     
-                                        <p:commandButton ajax="false" id="btnAdd" value="Add New Session Instance" 
-                                                         class="ui-button-success"
-                                                         icon="fas fa-plus"
-                                                         action="#{channelScheduleController.prepareAdd()}" 
-                                                         >
-                                            <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
-                                            </f:ajax>
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="ui-button-danger" 
-                                            icon="fas fa-trash" 
-                                            id="btnDelete" 
-                                            onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                        return false;" action="#{channelScheduleController.delete()}" 
-                                            value="Delete Selected Session Instance" 
-                                            disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove') and false}" >
-                                        </p:commandButton>
-
-                                    </h:panelGrid>
-                                    <p:panelGrid columns="1" class="my-2 w-100" >
-                                        <f:facet name="header" >
-                                            Session Instances
-                                        </f:facet>
+                                </p:panel>
+                                <p:panel class="mt-2">
+                                    <f:facet name="header" >
+                                        Session Instances
+                                    </f:facet>
+                                    <h:panelGroup class="my-2 w-100" >
+                                        <div class="d-flex w-100 my-1 ">
+                                            <p:commandButton ajax="false" id="btnAdd" value="Add New Session Instance" 
+                                                             class="ui-button-success"
+                                                             icon="fas fa-plus"
+                                                             action="#{channelScheduleController.AddSessionInstance()}" 
+                                                             >
+                                                <p:ajax process="btnAdd lstSelect " update="gpDetail" >
+                                                </p:ajax>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="ui-button-danger mx-1" 
+                                                icon="fas fa-trash" 
+                                                id="btnDelete" 
+                                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                            return false;" action="#{channelScheduleController.deleteSelectedSessionInstance()}" 
+                                                value="Delete Selected Session Instance" 
+                                                disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove') and false}" >
+                                            </p:commandButton>
+                                        </div>
                                         <div style="overflow-y: auto;">
                                             <p:selectOneListbox 
                                                 scrollHeight="500"
@@ -155,8 +166,7 @@
 
                                             </p:selectOneListbox>
                                         </div>
-                                    </p:panelGrid>
-
+                                    </h:panelGroup>
                                 </p:panel>
                             </div>
                             <div class="col-6">
@@ -171,15 +181,10 @@
                                                          class="ui-button-warning" icon="fas fa-save" >
 
                                         </p:commandButton>
-                                        <p:commandButton value="Go To Channel Booking"
-                                                         icon="fa-solid fa-location-arrow"
-                                                         class="ui-button-secondary"
-                                                         rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                         action="/channel/channel_booking" 
-                                                         ajax="false"  />
+
                                         <p:commandButton value="Send SMS"
                                                          icon="fa-solid fa-location-arrow"
-                                                         class="ui-button-secondary"
+                                                         class="ui-button-primary"
                                                          rendered="#{webUserController.hasPrivilege('Developers')}"
                                                          action="#{channelScheduleController.sendSmsOnChannelDoctorArrival()}" 
                                                          ajax="false"  />
