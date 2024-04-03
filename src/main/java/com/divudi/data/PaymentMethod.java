@@ -1,89 +1,56 @@
-/*
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.data;
 
-/**
- *
- * @author buddhika
- */
+import java.util.Arrays;
+import java.util.List;
+
 public enum PaymentMethod {
-    Cash,
-    Credit,
-    OnCall,
-    Staff,
-    //   @Deprecated
-    Agent,
-    Card,
-    Cheque,
-    Slip,
-    ewallet,
-    PatientDeposit,
-    OnlineSettlement,
-    MultiplePaymentMethods,
-    YouOweMe;
+    Cash("Cash"),
+    Credit("Credit"),
+    OnCall("On Call (Credit)"),
+    Staff("Staff Payment"),
+    Voucher("Voucher"),
+    Agent("Agent Payment"),
+    Card("Credit Card"),
+    Cheque("Cheque"),
+    Slip("Slip Payment"),
+    ewallet("e-Wallet Payment"),
+    PatientDeposit("Patient Deposit"),
+    OnlineSettlement("Online Settlement"),
+    MultiplePaymentMethods("Multiple Payment Methods"),
+    YouOweMe("You Owe Me");
+
+    private final String label;
+
+    PaymentMethod(String label) {
+        this.label = label;
+    }
 
     public String getLabel() {
-        switch (this) {
-            case Agent:
-                return "Agent Payment";
-            case Card:
-                return "Credit Card";
-            case Cash:
-                return "Cash";
-            case Cheque:
-                return "Cheque";
-            case Credit:
-                return "Credit";
-            case OnCall:
-                return "On Call (Credit)";
-            case OnlineSettlement:
-                return "Online Settlement";
-            case Slip:
-                return "Slip Payment";
-            case Staff:
-                return "Staff Payment";
-            case ewallet:
-                return "e-Wallet Payment";
-            case PatientDeposit:
-                return "Patient Deposit";
-            case MultiplePaymentMethods:
-                return "Multiple Payment Methods";
-            case YouOweMe:
-                return "You Owe Me";
-            default:
-                return this.toString();
-
-        }
+        return label;
     }
 
     public String getInHandLabel() {
+        // Modified to use the label field directly, appending "Received" as needed.
+        // You can customize this part as per your requirement or remove if not needed.
         switch (this) {
-            case Agent:
-                return "Agent Payment Received";
-            case Card:
-                return "Credit Card Received";
             case Cash:
-                return "Cash in hand";
+            case Agent:
+            case Card:
             case Cheque:
-                return "Cheque Received";
             case Credit:
-                return "Credit Received";
             case OnCall:
-                return "On Call (Credit) Received";
             case OnlineSettlement:
-                return "Online Settlement Received";
             case Slip:
-                return "Slip Payment Received";
             case Staff:
-                return "Staff Payment Received";
             case ewallet:
-                return "e-Wallet Payment Received";
+                return label + " Received";
             default:
-                return this.toString();
-
+                return label;
         }
     }
 
+    // Method to get all PaymentMethod values as a List
+    public static List<PaymentMethod> asList() {
+        return Arrays.asList(PaymentMethod.values());
+    }
 }

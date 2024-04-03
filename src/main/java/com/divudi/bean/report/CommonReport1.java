@@ -1509,7 +1509,6 @@ public class CommonReport1 implements Serializable {
     public BillsTotals getPaymentBills() {
         if (paymentBills == null) {
             paymentBills = new BillsTotals();
-            //    paymentBills.setBillType(BillType.PaymentBill);
         }
         return paymentBills;
     }
@@ -1521,7 +1520,6 @@ public class CommonReport1 implements Serializable {
     public BillsTotals getPaymentCancelBills() {
         if (paymentCancelBills == null) {
             paymentCancelBills = new BillsTotals();
-            //    paymentCancelBills.setBillType(BillType.PaymentBill);
         }
         return paymentCancelBills;
     }
