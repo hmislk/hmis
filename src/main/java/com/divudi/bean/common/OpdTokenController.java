@@ -75,7 +75,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     private boolean patientDetailsEditable;
 
-    boolean printPreview;
+    private boolean printPreview;
     
     public OpdTokenController() {
     }
@@ -166,10 +166,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
-//        return "/opd/token/opd_token_print?faces-redirect=true";
-        System.out.println("Create Token ");
         printPreview = true;
-        return "";
+        return "/opd/token/opd_token_print?faces-redirect=true";
     }
 
     public String navigateToManageOpdTokens() {
@@ -323,6 +321,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }
