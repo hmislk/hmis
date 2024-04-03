@@ -33,7 +33,7 @@ import javax.persistence.TemporalType;
  *
  * @author Damiya
  */
-@Named(value = "opdTokenController")
+@Named
 @SessionScoped
 public class OpdTokenController implements Serializable, ControllerWithPatient {
 
@@ -63,13 +63,11 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     OpdPreBillController opdPreBillController;
 
     // </editor-fold> 
-    
-    
     private Token currentToken;
     private Token removeingToken;
     private List<Token> currentTokens;
     private Patient patient;
-    
+
     private Department department;
     private Institution institution;
     private Department counter;
@@ -77,6 +75,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     private boolean patientDetailsEditable;
 
+    boolean printPreview;
+    
     public OpdTokenController() {
     }
 
@@ -85,8 +85,22 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         removeingToken = null;
         currentTokens = null;
         patient = null;
+        printPreview = false;
     }
-    
+
+    public void saveToken(Token t) {
+        if (t == null) {
+            return;
+        }
+        if (t.getId() == null) {
+            t.setCreatedAt(new Date());
+            t.setCreatedBy(sessionController.getLoggedUser());
+            tokenFacade.create(t);
+        } else {
+            tokenFacade.edit(t);
+        }
+    }
+
     public String navigateToCreateNewOpdToken() {
         resetClassVariables();
         currentToken = new Token();
@@ -140,7 +154,13 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         if (currentToken.getToInstitution() == null) {
             currentToken.setToInstitution(sessionController.getInstitution());
         }
-        tokenFacade.create(currentToken);
+        if (currentToken.getId() == null) {
+            currentToken.setCreatedAt(new Date());
+            currentToken.setCreatedBy(sessionController.getLoggedUser());
+            tokenFacade.create(currentToken);
+        } else {
+            tokenFacade.edit(currentToken);
+        }
         currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
         currentToken.setCounter(counter);
         currentToken.setTokenDate(new Date());
@@ -148,17 +168,15 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         tokenFacade.edit(currentToken);
 //        return "/opd/token/opd_token_print?faces-redirect=true";
         System.out.println("Create Token ");
+        printPreview = true;
         return "";
     }
-    
-    
+
     public String navigateToManageOpdTokens() {
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
     }
-    
-    
-    
+
     public String navigateToNewOpdBillForCashier() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
@@ -170,7 +188,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
-    
+
     public void fillOpdTokens() {
         String j = "Select t "
                 + " from Token t"
@@ -181,7 +199,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
-        m.put("ty",TokenType.OPD_TOKEN);
+        m.put("ty", TokenType.OPD_TOKEN);
         m.put("com", false);
         if (counter != null) {
             j += " and t.counter =:ct";
@@ -191,7 +209,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
         System.out.println("currentTokens " + currentTokens);
     }
-    
+
     public String getTokenStatus(Token token) {
         if (token.isRetired()) {
             return "Retired";
@@ -205,7 +223,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "Pending";
         }
     }
-    
+
     public String navigateToTokenIndex() {
         resetClassVariables();
         return "/opd/token/index?faces-redirect=true";
