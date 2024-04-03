@@ -55,6 +55,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.annotation.FacesConfig;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.Session;
 import javax.persistence.TemporalType;
 
 /**
@@ -526,11 +527,11 @@ public class ChannelScheduleController implements Serializable {
         additionalItemToRemove = null;
         additionalItemsAddedForCurrentSession = null;
         itemFees = null;
-        currentSessionInstance=null;
         createFees();
     }
-
+    
     public void saveNewSessioninstance(){
+        currentSessionInstance.setOriginatingSession(current);
         sessionInstanceController.save(currentSessionInstance);
         JsfUtil.addSuccessMessage("Saved successfully");
     }
