@@ -52,7 +52,7 @@
 
                             <!-- Patient Name Column -->
                             <p:column headerText="Bill">
-                                <h:panelGrid rendered="#{token.bill ne null}" >
+                                <h:panelGrid rendered="#{not empty token.bill and token.bill.billType eq 'OpdBathcBillPre'}" >
                                     <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
                                         <h:outputText value="PAYMENT DONE" />
                                         <br/>
@@ -71,7 +71,9 @@
 
 
                                 </h:panelGrid>
-
+                                <h:panelGrid rendered="#{not empty token.bill and token.bill.billType.label eq 'OPD Accepet Payment'}" >
+                                    <h:outputText value="PAYMENT DONE" />
+                                </h:panelGrid>
 
                             </p:column>
 
@@ -128,7 +130,7 @@
                                     <p:commandButton 
                                         ajax="false"
                                         class="ui-button-success"
-                                        disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
+                                        disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true || token.bill.billType.label eq 'OPD Accepet Payment'}"
                                         icon="fa fa-money-bill" 
                                         rendered="#{token.bill ne null}"
                                         title="Pay at Cashier" 
