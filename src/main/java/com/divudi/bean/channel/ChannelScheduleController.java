@@ -530,16 +530,6 @@ public class ChannelScheduleController implements Serializable {
         createFees();
     }
     
-    public void AddSessionInstance() {
-        additionalItemToAdd = null;
-        additionalItemToRemove = null;
-        additionalItemsAddedForCurrentSession = null;
-        itemFees = null;
-        currentSessionInstance=new SessionInstance();
-        createFees();
-        currentSessionInstance=new SessionInstance();
-    }
-
     public void saveNewSessioninstance(){
         currentSessionInstance.setOriginatingSession(current);
         sessionInstanceController.save(currentSessionInstance);
@@ -587,29 +577,6 @@ public class ChannelScheduleController implements Serializable {
         current = null;
         getCurrent();
     }
-    
-    public void deleteSelectedSessionInstance() {
-
-        if (checkErrorForDeleteSessionInstance(currentSessionInstance)) {
-            JsfUtil.addErrorMessage("you can't Remove This Shedule.Because This Shedule has Channeling Bills");
-            return;
-        }
-
-        if (currentSessionInstance != null) {
-            currentSessionInstance.setRetired(true);
-            currentSessionInstance.setRetiredAt(new Date());
-            currentSessionInstance.setRetirer(getSessionController().getLoggedUser());
-            sessionInstanceFacade.edit(currentSessionInstance);
-            JsfUtil.addSuccessMessage("Deleted Successfully");
-        } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
-        }
-        
-        serviceSessionFacade.edit(current);
-        fillSessionInstance();
-        currentSessionInstance=new SessionInstance();
-        
-    }
 
     private boolean checkError() {
         if (current.getStartingTime() == null) {
@@ -651,20 +618,6 @@ public class ChannelScheduleController implements Serializable {
         List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         return sss.size() > 0;
-    }
-    
-    private boolean checkErrorForDeleteSessionInstance(SessionInstance si) {
-        String sql;
-        Map m = new HashMap();
-        sql = " select bs.sessionInstance from BillSession bs where "
-                + " bs.retired=false "
-                + " and bs.sessionDate>:td "
-                + " and bs.sessionInstance= :ss ";
-        m.put("ss", si);
-        m.put("td", new Date());
-        List<SessionInstance> lsi = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-//        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-        return lsi.size() > 0;
     }
 
     public boolean checkSessionNumberGenerater(ServiceSession ss) {

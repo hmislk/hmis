@@ -82,26 +82,7 @@
                                         Session Instances
                                     </f:facet>
                                     <h:panelGroup class="my-2 w-100" >
-                                        <div class="d-flex w-100 my-1 ">
-                                            <p:commandButton ajax="false" id="btnAdd" value="Add New Session Instance" 
-                                                             class="ui-button-success"
-                                                             icon="fas fa-plus"
-                                                             action="#{channelScheduleController.AddSessionInstance()}" 
-                                                             >
-                                                <p:ajax process="btnAdd lstSelect " update="gpDetail" >
-                                                </p:ajax>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                class="ui-button-danger mx-1" 
-                                                icon="fas fa-trash" 
-                                                id="btnDelete" 
-                                                onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                            return false;" action="#{channelScheduleController.deleteSelectedSessionInstance()}" 
-                                                value="Delete Selected Session Instance" 
-                                                disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove') and false}" >
-                                            </p:commandButton>
-                                        </div>
+                                        
                                         <div style="overflow-y: auto;">
                                             <p:selectOneListbox 
                                                 scrollHeight="500"
