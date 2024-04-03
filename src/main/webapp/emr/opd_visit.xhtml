@@ -647,22 +647,34 @@
                                                         <p:column headerText="Details">
                                                             <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Acttion">
+                                                        <p:column headerText="Action">
                                                             <div class="d-flex">
                                                                 <p:commandLink id="btnNewReport" ajax="false"
+                                                                               disabled="#{ix.patientInvestigation ne null}"
                                                                                action="/lab/patient_report">
                                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.currentEIResult}"></f:setPropertyActionListener>
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientReportController.clinicalFindingValue}"/>
                                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                                 </p:commandLink>
                                                                 <p:commandButton
                                                                     id="clRemoveIxp"
-                                                                    action="#{patientEncounterController.removeEncounterInvestigation()}"
+                                                                    action="#{patientEncounterController.removeEncounterInvestigationResult()}"
                                                                     process="clRemoveIxp"
-                                                                    update=":#{p:resolveFirstComponentWithId('tblIxp',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                    disabled="#{ix.patientInvestigation ne null}"
+                                                                    update=":#{p:resolveFirstComponentWithId('gpIxp',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                     class="mx-2 ui-button-danger"
                                                                     icon="fas fa-trash">
                                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
                                                                 </p:commandButton>
+                                                                <div>
+                                                                    <ui:repeat value="#{patientReportController.patientReports(ix.patientInvestigation)}" var="dpr">
+                                                                        <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
+                                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                            <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                                        </p:commandLink>
+                                                                    </ui:repeat>
+                                                                </div>
+
                                                             </div>
                                                         </p:column>
                                                     </p:dataTable>

@@ -42,6 +42,8 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.UserPreferenceFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.facade.ClinicalFindingValueFacade;
 import com.lowagie.text.DocumentException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -130,6 +132,8 @@ public class PatientReportController implements Serializable {
     SmsManagerEjb smsManager;
     @EJB
     SmsFacade smsFacade;
+    @EJB
+    ClinicalFindingValueFacade clinicalFindingValueFacade;
     //Controllers
     @Inject
     private PatientReportBean prBean;
@@ -174,6 +178,7 @@ public class PatientReportController implements Serializable {
     private String smsNumber;
     private String smsMessage;
     private boolean showBackground=false;
+    private ClinicalFindingValue clinicalFindingValue;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -1541,6 +1546,13 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
+        if(clinicalFindingValue!=null){
+            getClinicalFindingValue().setPatientInvestigation(currentPtIx);
+            if(clinicalFindingValue.getId()!=null){
+                clinicalFindingValueFacade.edit(clinicalFindingValue);
+            }
+            clinicalFindingValue = null;
+        }
 
         JsfUtil.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
@@ -2077,6 +2089,14 @@ public class PatientReportController implements Serializable {
 
     public void setShowBackground(boolean showBackground) {
         this.showBackground = showBackground;
+    }
+
+    public ClinicalFindingValue getClinicalFindingValue() {
+        return clinicalFindingValue;
+    }
+
+    public void setClinicalFindingValue(ClinicalFindingValue clinicalFindingValue) {
+        this.clinicalFindingValue = clinicalFindingValue;
     }
 
     @FacesConverter(forClass = PatientReport.class)
