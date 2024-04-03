@@ -68,6 +68,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Token;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -264,8 +265,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     List<BillSession> billSessions;
 
     private boolean duplicatePrint;
-
-    
+    private Token token;
 
     /**
      *
@@ -2018,7 +2018,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
-       
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -2337,6 +2336,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
+        token = null;
     }
 
     private void clearBillValuesForMember() {
@@ -2616,9 +2616,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
+                if (token != null) {
+                    setPatient(token.getPatient());
+                }
                 return "/opd/opd_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
+                if (token != null) {
+                    setPatient(token.getPatient());
+                }
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2628,6 +2634,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
+            if (token != null) {
+                setPatient(token.getPatient());
+            }
             return "/opd/opd_bill?faces-redirect=true";
         }
     }
@@ -3608,6 +3617,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.duplicatePrint = duplicatePrint;
     }
 
-    
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
 
 }

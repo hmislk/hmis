@@ -7,7 +7,7 @@
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
-        <ui:composition template="/token/index.xhtml">
+        <ui:composition template="/opd/token/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel id="panel" >
@@ -35,16 +35,16 @@
                                 action="#{opdTokenController.fillOpdTokens()}" >
                             </p:commandButton>
                         </h:panelGrid>
-                        
+
 
                         <p:dataTable var="token" value="#{opdTokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
 
                             <!-- Token Number Column -->
                             <p:column headerText="Token Number">
                                 <h:outputText value="#{token.tokenNumber}" />
-                                
+
                             </p:column>
-                            
+
                             <!-- Patient Name Column -->
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{token.patient.person.name}" />
@@ -62,13 +62,13 @@
 
                                     <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
                                         <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
-                                        
+
                                         <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
                                         <br/>
                                         <h:outputText value="Bill Number : " />
                                         <h:outputText value="#{token.bill.deptId}" />
                                     </h:panelGroup>
-                                    
+
 
                                 </h:panelGrid>
 
@@ -76,8 +76,8 @@
                             </p:column>
 
                             <!-- Status Column -->
-                           <p:column headerText="Status">
- <!--                                <h:outputText value="#{opdTokenController.getTokenStatus(token)}" />-->
+                            <p:column headerText="Status">
+  <!--                                <h:outputText value="#{opdTokenController.getTokenStatus(token)}" />-->
                                 <p:tag value="#{opdTokenController.getTokenStatus(token) == 'Pending' ? 'Pending' : 
                                                 opdTokenController.getTokenStatus(token) == 'Called' ? 'Called' :
                                                 opdTokenController.getTokenStatus(token) == 'In Progress' ? 'In Progress' :
@@ -92,55 +92,33 @@
 
                             <!-- Actions Column -->
                             <p:column headerText="Actions" styleClass="text-center">
-<!--                                <p:commandButton ajax="false"
+                                <p:commandButton ajax="false"
                                                  icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
                                                  class="#{token.called ? 'ui-button-warning mx-2' : 'ui-button-success mx-2'}"
                                                  update="@form"
                                                  title="#{token.called ? 'Cancel Call' : 'Call Token'}"
-                                                 action="#{tokenController.toggleCalledStatus}"
+                                                 action="#{opdTokenController.toggleCalledStatus}"
                                                  process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
                                     <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
-                                </p:commandButton>-->
+                                </p:commandButton>
 
-                                 <p:commandButton 
-                                    value="Billing for Cashier"
+                                <p:commandButton 
+                                    icon="fa fa-fw fa-cash-register"
+                                    disabled="#{token.bill ne null}"
                                     action="#{opdTokenController.navigateToNewOpdBillForCashier()}"
                                     ajax="false"
                                     >
                                     <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                 </p:commandButton>
-                                 
-                                 
-                                 
-<!--                                <p:commandButton ajax="false"
-                                                 icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
-                                                 class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
-                                                 update="@form"
-                                                 title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
-                                                 action="#{tokenController.toggleCompletedStatus}"
-                                                 process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
-                                </p:commandButton>-->
-
-
-
-<!--                                <p:commandButton 
-                                    id="btnRetailBillForCashier"
-                                    ajax="false"
-                                    class="ui-button-primary mx-2"
-                                    icon="fa fa-pills" 
-                                    rendered="#{token.bill eq null}"
-                                    title="Pharmacy Bill for Cashier" 
-                                    action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
-                                <p:tooltip value="Bill For Cashier" />
-
-
-                                 Pay at Cashier Button 
-                                 Add icon="fa fa-money" to display a money icon 
+                                <p:commandButton 
+                                    icon="fa fa-fw fa-notes-medical"
+                                    disabled="#{token.bill ne null}"
+                                    action="#{opdBillController.navigateToNewOpdBill()}"
+                                    ajax="false"
+                                    >
+                                    <f:setPropertyActionListener target="#{opdBillController.token}" value="#{token}" />
+                                </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-success mx-2"
@@ -148,20 +126,26 @@
                                     icon="fa fa-money-bill" 
                                     rendered="#{token.bill ne null}"
                                     title="Pay at Cashier" 
-                                    action="#{tokenController.navigateToSettlePharmacyPreBill}">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                </p:commandButton>-->
-                                 
-<!--                                <p:commandButton 
-                                    ajax="false"
-                                    class="ui-button-warning"
-                                    icon="fas fa-pen" 
-                                    disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
-                                    rendered="#{token.bill ne null}"
-                                    title="Edit Bill" 
-                                    action="#{tokenController.navigateToSaleForCashier}">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                </p:commandButton>-->
+                                    action="#{opdTokenController.navigateToSettleOpdPreBill}">
+                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+
+
+
+                                <p:commandButton ajax="false"
+                                                 icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                 class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                 update="@form"
+                                                 title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                 action="#{opdTokenController.toggleCompletedStatus}"
+                                                 process="@this">
+                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
+                                </p:commandButton>
+
+
+
+                                
                             </p:column>
 
                         </p:dataTable>
