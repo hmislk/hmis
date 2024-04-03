@@ -177,7 +177,7 @@ public class WorkingTimeController implements Serializable {
         bill.setBillDate(Calendar.getInstance().getTime());
         bill.setBillTime(Calendar.getInstance().getTime());
         bill.setBillType(BillType.PaymentBill);
-        bill.setBillTypeAtomic(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        bill.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setDepartment(getSessionController().getLoggedUser().getDepartment());
