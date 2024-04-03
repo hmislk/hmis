@@ -57,6 +57,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
@@ -1648,6 +1649,9 @@ public class BillController implements Serializable {
         }
 
         Bill tmp = new CancelledBill();
+        tmp.setDepartment(sessionController.getDepartment());
+        tmp.setInstitution(sessionController.getInstitution());
+        
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(tmp);

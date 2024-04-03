@@ -887,6 +887,7 @@ public class OpdPreSettleController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }
