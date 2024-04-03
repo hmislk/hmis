@@ -137,6 +137,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private SmsFacade SmsFacade;
     @EJB
     private SmsManagerEjb smsManagerEjb;
+    @EJB
+    TokenFacade tokenFacade;
 
     /**
      * Controllers
@@ -175,8 +177,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     WorkingTimeController workingTimeController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    
     @Inject
-    TokenFacade tokenFacade;
+    OpdTokenController opdTokenController;
+            
     /**
      * Class Variables
      */
@@ -1608,7 +1612,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getToken() != null) {
             getToken().setBill(getBatchBill());
             tokenFacade.edit(getToken());
-            markToken(tmp);
+            markToken(getBatchBill());
         }
 
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -1617,6 +1621,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         duplicatePrint = false;
         return true;
     }
+    
+    public void markToken(Bill b) {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(b);
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        opdTokenController.saveToken(t);
+    }
+
 
     public boolean checkBillValues(Bill b) {
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {

@@ -92,61 +92,66 @@
 
                             <!-- Actions Column -->
                             <p:column headerText="Actions" styleClass="text-center">
-                                <p:commandButton ajax="false"
-                                                 icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
-                                                 class="#{token.called ? 'ui-button-warning mx-2' : 'ui-button-success mx-2'}"
-                                                 update="@form"
-                                                 title="#{token.called ? 'Cancel Call' : 'Call Token'}"
-                                                 action="#{opdTokenController.toggleCalledStatus}"
-                                                 process="@this">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
-                                </p:commandButton>
+                                <div class="d-flex gap-2">
 
-                                <p:commandButton 
-                                    icon="fa fa-fw fa-cash-register"
-                                    disabled="#{token.bill ne null}"
-                                    action="#{opdTokenController.navigateToNewOpdBillForCashier()}"
-                                    ajax="false"
-                                    >
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fa fa-fw fa-notes-medical"
-                                    disabled="#{token.bill ne null}"
-                                    action="#{opdBillController.navigateToNewOpdBillFromToken()}"
-                                    actionListener="#{opdBillController.makeNull()}"
-                                    ajax="false"
-                                    >
-                                    <f:setPropertyActionListener target="#{opdBillController.token}" value="#{token}" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    ajax="false"
-                                    class="ui-button-success mx-2"
-                                    disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
-                                    icon="fa fa-money-bill" 
-                                    rendered="#{token.bill ne null}"
-                                    title="Pay at Cashier" 
-                                    action="#{opdTokenController.navigateToSettleOpdPreBill}">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                </p:commandButton>
+                                    <p:commandButton ajax="false"
+                                                     icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                     class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                     update="@form"
+                                                     title="#{token.called ? 'Cancel Call' : 'Call Token'}"
+                                                     action="#{opdTokenController.toggleCalledStatus}"
+                                                     process="@this">
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                        <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
+                                    </p:commandButton>
 
-
-
-                                <p:commandButton ajax="false"
-                                                 icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
-                                                 class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
-                                                 update="@form"
-                                                 title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
-                                                 action="#{opdTokenController.toggleCompletedStatus}"
-                                                 process="@this">
-                                    <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
-                                </p:commandButton>
+                                    <p:commandButton 
+                                        id="opdCashier"
+                                        icon="fa fa-fw fa-cash-register"
+                                        disabled="#{token.bill ne null}"
+                                        action="#{opdTokenController.navigateToNewOpdBillForCashier()}"
+                                        ajax="false"
+                                        >
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                        <p:tooltip value="Opd Billing for Cashier"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        id="opdBill"
+                                        icon="fa fa-fw fa-notes-medical"
+                                        disabled="#{token.bill ne null}"
+                                        action="#{opdBillController.navigateToNewOpdBillFromToken()}"
+                                        actionListener="#{opdBillController.makeNull()}"
+                                        ajax="false"
+                                        >
+                                        <f:setPropertyActionListener target="#{opdBillController.token}" value="#{token}" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        class="ui-button-success"
+                                        disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
+                                        icon="fa fa-money-bill" 
+                                        rendered="#{token.bill ne null}"
+                                        title="Pay at Cashier" 
+                                        action="#{opdTokenController.navigateToSettleOpdPreBill}">
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                    </p:commandButton>
 
 
 
-                                
+                                    <p:commandButton ajax="false"
+                                                     icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                     class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                     update="@form"
+                                                     title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                     action="#{opdTokenController.toggleCompletedStatus}"
+                                                     process="@this">
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                        <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
+                                    </p:commandButton>
+                                    <p:tooltip value="Opd Billing" for="opdBill"/>
+                                    <p:tooltip value="Opd Billing For Cashier" for="opdCashier"/>
+                                </div>
+
                             </p:column>
 
                         </p:dataTable>
