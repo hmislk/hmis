@@ -174,6 +174,28 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return "/opd/token/opd_token_print?faces-redirect=true";
     }
 
+    public void toggleCalledStatus() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No token selected");
+            return;
+        }
+        currentToken.setCalled(!currentToken.isCalled());
+        currentToken.setCalledAt(currentToken.isCalled() ? new Date() : null);
+        tokenFacade.edit(currentToken);
+    }
+    
+    public void toggleCompletedStatus() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No token selected");
+            return;
+        }
+        currentToken.setCompleted(!currentToken.isCompleted());
+        Date now = new Date();
+        currentToken.setCompletedAt(currentToken.isCompleted() ? now : null);
+        currentToken.setStartedAt(currentToken.isCompleted() ? (currentToken.getStartedAt() == null ? now : currentToken.getStartedAt()) : null);
+        tokenFacade.edit(currentToken);
+    }
+    
     public String navigateToManageOpdTokens() {
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
@@ -228,6 +250,17 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.setPatient(currentToken.getPatient());
         opdPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
+    }
+    
+    public void navigateToNewOpdBill() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return ;
+        }
+
+        opdPreBillController.makeNull();
+        opdPreBillController.setPatient(currentToken.getPatient());
+        opdPreBillController.setToken(currentToken);
     }
 
     public void fillOpdTokens() {
