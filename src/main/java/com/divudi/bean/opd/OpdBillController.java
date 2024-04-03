@@ -69,6 +69,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Token;
+import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -174,6 +175,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     WorkingTimeController workingTimeController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    @Inject
+    TokenFacade tokenFacade;
     /**
      * Class Variables
      */
@@ -1602,6 +1605,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             getPatientFacade().edit(getPatient());
         }
+        if (getToken() != null) {
+            getToken().setBill(getBatchBill());
+            tokenFacade.edit(getToken());
+            markToken(tmp);
+        }
 
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
@@ -2616,15 +2624,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
-                if (token != null) {
-                    setPatient(token.getPatient());
-                }
                 return "/opd/opd_bill?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                if (token != null) {
-                    setPatient(token.getPatient());
-                }
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2634,7 +2636,35 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
-            if (token != null) {
+            return "/opd/opd_bill?faces-redirect=true";
+        }
+    }
+    
+    public String navigateToNewOpdBillFromToken() {
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                paymentMethodData = null;
+                paymentScheme = null;
+                paymentMethod = PaymentMethod.Cash;
+                collectingCentreBillController.setCollectingCentre(null);
+                if (getToken() != null) {
+                    System.out.println("token = " + token);
+                    setPatient(token.getPatient());
+                }
+                return "/opd/opd_bill?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            paymentMethodData = null;
+            paymentScheme = null;
+            paymentMethod = PaymentMethod.Cash;
+            collectingCentreBillController.setCollectingCentre(null);
+            if (getToken() != null) {
+                System.out.println("token = " + token);
                 setPatient(token.getPatient());
             }
             return "/opd/opd_bill?faces-redirect=true";

@@ -114,7 +114,8 @@
                                 <p:commandButton 
                                     icon="fa fa-fw fa-notes-medical"
                                     disabled="#{token.bill ne null}"
-                                    action="#{opdBillController.navigateToNewOpdBill()}"
+                                    action="#{opdBillController.navigateToNewOpdBillFromToken()}"
+                                    actionListener="#{opdBillController.makeNull()}"
                                     ajax="false"
                                     >
                                     <f:setPropertyActionListener target="#{opdBillController.token}" value="#{token}" />
