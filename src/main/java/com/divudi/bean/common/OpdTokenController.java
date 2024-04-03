@@ -8,7 +8,6 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
@@ -281,7 +280,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
         j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-        System.out.println("currentTokens " + currentTokens);
+        //System.out.println("currentTokens " + currentTokens);
     }
 
     public String getTokenStatus(Token token) {
@@ -297,6 +296,33 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "Pending";
         }
     }
+    
+        public String navigateToManageOpdTokensCalled() {
+        fillOpdTokensCalled();
+        return "/opd/token/opd_tokens_called?faces-redirect=true"; // Adjust the navigation string as per your page structure
+    }
+    
+    public void fillOpdTokensCalled() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        //System.out.println("currentTokens = " + currentTokens);
+    }
+
 
     public String navigateToTokenIndex() {
         resetClassVariables();
