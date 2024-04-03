@@ -233,20 +233,6 @@
                                         <td></td> <!-- Assuming no refunded column for short/excess -->
                                         <td>#{financialTransactionController.financialReport.shortExcess}</td> <!-- Assuming short/excess equals net -->
                                     </tr>
-                                    <tr>
-                                        <td>Other Payments</td>
-                                        <td>#{financialTransactionController.financialReport.otherPayments}</td>
-                                        <td></td> <!-- Assuming no refunded column for other payments -->
-                                        <td>#{financialTransactionController.financialReport.otherPayments}</td> <!-- Assuming other payments equals net -->
-                                    </tr>
-
-                                    <!-- ... other rows ... -->
-                                    <tr>
-                                        <td>Total Shift Cash In</td>
-                                        <td colspan="2"></td> <!-- Colspan if no individual collected/refunded columns -->
-                                        <td>#{financialTransactionController.financialReport.totalShiftCashIn}</td>
-                                    </tr>
-                                    <!-- ... additional rows ... -->
                                     <tr class="table-primary"> <!-- Use a different class for the total row for emphasis -->
                                         <td>Total</td>
                                         <td colspan="2"></td>
