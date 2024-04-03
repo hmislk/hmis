@@ -13,6 +13,7 @@ import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -1037,6 +1038,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.PaymentBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
