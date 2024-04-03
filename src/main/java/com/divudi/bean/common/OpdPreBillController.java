@@ -70,6 +70,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Token;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -150,6 +151,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     SearchController searchController;
     @Inject
     WorkingTimeController workingTimeController;
+    @Inject
+    OpdTokenController opdTokenController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -214,6 +217,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
+    private Token token;
 
     // </editor-fold>
     public double getCashRemain() {
@@ -755,6 +759,13 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
         saveBatchBill();
         saveBillItemSessions();
+        
+        if (getToken() != null) {
+            getToken().setBill(getPreBill());
+            tokenFacade.edit(getToken());
+        }
+
+        markToken();
 
 //        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
 //            staffBean.updateStaffCredit(toStaff, netTotal);
@@ -766,6 +777,19 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         printPreview = true;
 
         return "/opd/opd_pre_bill?faces-redirect=true";
+    }
+    
+    public void markToken() {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        opdTokenController.save(t);
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1237,6 +1261,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
+        token = null;
     }
 
     private void recreateBillItems() {
@@ -2065,6 +2090,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         this.searchKeyword = searchKeyword;
     }
     
-    
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
 
 }
