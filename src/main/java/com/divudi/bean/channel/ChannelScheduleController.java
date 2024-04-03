@@ -531,7 +531,6 @@ public class ChannelScheduleController implements Serializable {
     }
     
     public void AddSessionInstance() {
-        current = null;
         additionalItemToAdd = null;
         additionalItemToRemove = null;
         additionalItemsAddedForCurrentSession = null;

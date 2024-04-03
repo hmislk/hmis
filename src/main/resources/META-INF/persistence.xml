@@ -5,8 +5,6 @@
 
         <jta-data-source>jdbc/arogya</jta-data-source>
 
-        <jta-data-source>jdbc/arogyaNew</jta-data-source>
-
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
