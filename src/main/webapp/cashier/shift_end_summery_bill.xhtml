@@ -171,8 +171,8 @@
                                 <thead class="thead-light">
                                     <tr>
                                         <th>Category</th>
-                                        <th>Collected</th>
-                                        <th>Refunded</th>
+                                        <th>In</th>
+                                        <th>Out</th>
                                         <th>Net Total</th>
                                     </tr>
                                 </thead>
@@ -183,12 +183,11 @@
                                         <td>#{financialTransactionController.financialReport.refundedCash}</td>
                                         <td>#{financialTransactionController.financialReport.netCashTotal}</td>
                                     </tr>
-                                    <!-- ...previous rows... -->
                                     <tr>
-                                        <td>Debit Card</td>
-                                        <td>#{financialTransactionController.financialReport.collectedDebitCard}</td>
-                                        <td>#{financialTransactionController.financialReport.refundedDebitCard}</td>
-                                        <td>#{financialTransactionController.financialReport.netDebitCardTotal}</td>
+                                        <td>Card</td>
+                                        <td>#{financialTransactionController.financialReport.collectedCreditCard}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedCreditCard}</td>
+                                        <td>#{financialTransactionController.financialReport.netCreditCardTotal}</td>
                                     </tr>
                                     <tr>
                                         <td>Voucher</td>
@@ -197,10 +196,10 @@
                                         <td>#{financialTransactionController.financialReport.netVoucherTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Float Collected</td>
-                                        <td>#{financialTransactionController.financialReport.floatCollected}</td>
-                                        <td></td> <!-- Assuming no refunded column for floats -->
-                                        <td>#{financialTransactionController.financialReport.floatCollected}</td> <!-- Assuming collected equals net for floats -->
+                                        <td>Other</td>
+                                        <td>#{financialTransactionController.financialReport.collectedOtherNonCredit}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedOtherNonCredit}</td>
+                                        <td>#{financialTransactionController.financialReport.netOtherNonCreditTotal}</td>
                                     </tr>
                                     <tr>
                                         <td>Float My-Safe</td>
@@ -208,29 +207,25 @@
                                         <td></td> <!-- Assuming no refunded column for My-Safe -->
                                         <td>#{financialTransactionController.financialReport.floatMySafe}</td> <!-- Assuming My-Safe equals net for floats -->
                                     </tr>
+                                    
                                     <tr>
-                                        <td>Bank Withdrawals</td>
+                                        <td>Float Collected / Handovers</td>
+                                        <td>#{financialTransactionController.financialReport.floatCollected}</td>
+                                        <td><#{financialTransactionController.financialReport.collectionHandover}/td> <!-- Assuming no refunded column for floats -->
+                                        <td>#{financialTransactionController.financialReport.floatCollected}</td> <!-- Assuming collected equals net for floats -->
+                                    </tr>
+                                    <tr>
+                                        <td>Bank Transaction</td>
                                         <td>#{financialTransactionController.financialReport.bankWithdrawals}</td>
-                                        <td></td> <!-- Assuming no refunded column for bank withdrawals -->
+                                        <td>#{financialTransactionController.financialReport.bankDeposits}</td> <!-- Assuming no refunded column for bank withdrawals -->
                                         <td>#{financialTransactionController.financialReport.bankWithdrawals}</td> <!-- Assuming withdrawals equals net -->
                                     </tr>
-                                    <tr>
-                                        <td>Collection Handover</td>
-                                        <td>#{financialTransactionController.financialReport.collectionHandover}</td>
-                                        <td></td> <!-- Assuming no refunded column for collection handover -->
-                                        <td>#{financialTransactionController.financialReport.collectionHandover}</td> <!-- Assuming handover equals net -->
-                                    </tr>
+                                    
                                     <tr>
                                         <td>Cash Given Out (Transfer Out)</td>
                                         <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td>
                                         <td></td> <!-- Assuming no refunded column for cash given out -->
                                         <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td> <!-- Assuming cash given out equals net -->
-                                    </tr>
-                                    <tr>
-                                        <td>Bank Deposits</td>
-                                        <td>#{financialTransactionController.financialReport.bankDeposits}</td>
-                                        <td></td> <!-- Assuming no refunded column for bank deposits -->
-                                        <td>#{financialTransactionController.financialReport.bankDeposits}</td> <!-- Assuming bank deposits equals net -->
                                     </tr>
                                     <tr>
                                         <td>Short/Excess</td>
@@ -244,12 +239,7 @@
                                         <td></td> <!-- Assuming no refunded column for other payments -->
                                         <td>#{financialTransactionController.financialReport.otherPayments}</td> <!-- Assuming other payments equals net -->
                                     </tr>
-                                    <tr>
-                                        <td>Credit Card</td>
-                                        <td>#{financialTransactionController.financialReport.collectedCreditCard}</td>
-                                        <td>#{financialTransactionController.financialReport.refundedCreditCard}</td>
-                                        <td>#{financialTransactionController.financialReport.netCreditCardTotal}</td>
-                                    </tr>
+
                                     <!-- ... other rows ... -->
                                     <tr>
                                         <td>Total Shift Cash In</td>

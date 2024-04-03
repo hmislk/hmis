@@ -28,9 +28,9 @@ public class FinancialReport {
     private double refundedCreditCard;
     private double netCreditCardTotal;
 
-    private double collectedDebitCard;
-    private double refundedDebitCard;
-    private double netDebitCardTotal;
+    private double collectedOtherNonCredit;
+    private double refundedOtherNonCredit;
+    private double netOtherNonCreditTotal;
 
     private double collectedVoucher;
     private double refundedVoucher;
@@ -199,19 +199,19 @@ public class FinancialReport {
         return netCreditCardTotal;
     }
 
-    public double getCollectedDebitCard() {
-        collectedDebitCard = atomicBillTypeTotals.getTotal(getBillTypesForCollectedDebitCard(), getPaymentMethodsForCollectedDebitCard());
-        return collectedDebitCard;
+    public double getCollectedOtherNonCredit() {
+        collectedOtherNonCredit = atomicBillTypeTotals.getTotal(getBillTypesForCollectedDebitCard(), getPaymentMethodsForCollectedDebitCard());
+        return collectedOtherNonCredit;
     }
 
-    public double getRefundedDebitCard() {
-        refundedDebitCard = atomicBillTypeTotals.getTotal(getBillTypesForRefundedDebitCard(), getPaymentMethodsForRefundedDebitCard());
-        return refundedDebitCard;
+    public double getRefundedOtherNonCredit() {
+        refundedOtherNonCredit = atomicBillTypeTotals.getTotal(getBillTypesForRefundedDebitCard(), getPaymentMethodsForRefundedDebitCard());
+        return refundedOtherNonCredit;
     }
 
-    public double getNetDebitCardTotal() {
-        netDebitCardTotal = getCollectedDebitCard() - getRefundedDebitCard();
-        return netDebitCardTotal;
+    public double getNetOtherNonCreditTotal() {
+        netOtherNonCreditTotal = getCollectedOtherNonCredit() - getRefundedOtherNonCredit();
+        return netOtherNonCreditTotal;
     }
 
     public double getCollectedVoucher() {
@@ -230,7 +230,7 @@ public class FinancialReport {
     }
 
     public double getCashTotal() {
-        cashTotal = getNetCashTotal() + getNetCreditTotal() + getNetCreditCardTotal() + getNetDebitCardTotal() + getNetVoucherTotal();
+        cashTotal = getNetCashTotal() + getNetCreditTotal() + getNetCreditCardTotal() + getNetOtherNonCreditTotal() + getNetVoucherTotal();
         return cashTotal;
     }
 
@@ -315,11 +315,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForCollectedCash() {
         if (billTypesForCollectedCash == null) {
             billTypesForCollectedCash = new ArrayList<>();
-            // Assuming that all pharmacy retail sales, direct purchases, and OPD bill payments are considered as collected cash
-            billTypesForCollectedCash.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billTypesForCollectedCash.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-            billTypesForCollectedCash.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            // Add other BillTypeAtomic entries if they are considered as part of collected cash
+            billTypesForCollectedCash = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
         }
         return billTypesForCollectedCash;
     }
@@ -335,11 +331,8 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForRefundedCash() {
         if (billTypesForRefundedCash == null) {
             billTypesForRefundedCash = new ArrayList<>();
-            // Add BillTypeAtomic entries related to refunded transactions
-            billTypesForRefundedCash.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            billTypesForRefundedCash.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            billTypesForRefundedCash.add(BillTypeAtomic.OPD_BILL_REFUND);
-            // Add other BillTypeAtomic entries if they are considered as part of refunded cash
+            billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+            billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
         }
         return billTypesForRefundedCash;
     }
@@ -617,9 +610,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForFloatCollected() {
         if (billTypesForFloatCollected == null) {
             billTypesForFloatCollected = new ArrayList<>();
-            // Float collection might be associated with specific bill types:
-            // Example: billTypesForFloatCollected.add(BillTypeAtomic.FUND_SHIFT_START_BILL);
-            // Adjust based on your specific use case
+            billTypesForFloatCollected.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
         }
         return billTypesForFloatCollected;
     }
@@ -627,9 +618,7 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForFloatHandover() {
         if (paymentMethodsForFloatHandover == null) {
             paymentMethodsForFloatHandover = new ArrayList<>();
-            // Float handover might also not be tied to a specific payment method:
-            paymentMethodsForFloatHandover.add(PaymentMethod.Cash);
-            // Include others as needed
+
         }
         return paymentMethodsForFloatHandover;
     }
@@ -637,8 +626,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForFloatHandover() {
         if (billTypesForFloatHandover == null) {
             billTypesForFloatHandover = new ArrayList<>();
-            // Include any bill types specifically associated with float handover
-            // Example: billTypesForFloatHandover.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
+            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
         }
         return billTypesForFloatHandover;
     }
@@ -646,9 +634,7 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForFloatMySafe() {
         if (paymentMethodsForFloatMySafe == null) {
             paymentMethodsForFloatMySafe = new ArrayList<>();
-            // Managing floats in a safe might not directly correspond to 'payment methods' in a traditional sense
-            paymentMethodsForFloatMySafe.add(PaymentMethod.Cash); // Presuming cash management is part of 'My Safe' operations
-            // Adjust if there are specific operations or transactions to track
+            paymentMethodsForFloatMySafe.addAll(PaymentMethod.asList()); // Presuming cash management is part of 'My Safe' operations
         }
         return paymentMethodsForFloatMySafe;
     }
@@ -656,9 +642,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForFloatMySafe() {
         if (billTypesForFloatMySafe == null) {
             billTypesForFloatMySafe = new ArrayList<>();
-            // Assuming specific operations or transactions associated with managing floats in a safe
-            // Example: billTypesForFloatMySafe.add(BillTypeAtomic.FUND_DEPOSIT_BILL);
-            // Adjust based on your specific processes
+            billTypesForFloatMySafe.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
         }
         return billTypesForFloatMySafe;
     }

@@ -1,5 +1,8 @@
 package com.divudi.data;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum PaymentMethod {
     Cash("Cash"),
     Credit("Credit"),
@@ -44,5 +47,10 @@ public enum PaymentMethod {
             default:
                 return label;
         }
+    }
+
+    // Method to get all PaymentMethod values as a List
+    public static List<PaymentMethod> asList() {
+        return Arrays.asList(PaymentMethod.values());
     }
 }
