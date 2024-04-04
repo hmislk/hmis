@@ -204,40 +204,33 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
-    
-    
-    public void clearBillList(){
-        if(bills == null){
+    private Long currentTokenId;
+
+    public void clearBillList() {
+        if (bills == null) {
             return;
-        }else{
+        } else {
             bills = new ArrayList<>();
         }
     }
 
-    public Bill searchBillFromBillId(Long currentBillILong) {
-        if (currentBillILong == null) {
+    public Bill searchBillFromBillId(Long currentTokenId) {
+        if (currentTokenId == null) {
             JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
         }
-        String sql = "Select b from Bill b"
-                + " where b.retired=false "
-                + " and b.id=:bid ";
-        HashMap hm = new HashMap();
-        hm.put("bid", currentBillILong);
+        String sql = "SELECT t.bill FROM Token t "
+                + "WHERE t.retired = false "
+                + "AND t.id = :tid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("tid", currentTokenId);
         return getBillFacade().findFirstByJpql(sql, hm);
     }
 
     public String settleBillByBarcode() {
-        currentBill = searchBillFromBillId(currentBillId);
+        currentBill = searchBillFromBillId(currentTokenId);
         String action;
-        if (currentBill == null) {
-            Token t = tokenController.findToken(currentBillId);
-            if (t != null) {
-                if (t.getBill() != null) {
-
-                    currentBill = t.getBill();
-                }
-            }
-        }
+        
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
@@ -279,7 +272,7 @@ public class SearchController implements Serializable {
                 case OpdBathcBillPre:
                     setPreBillForOpd(args);
                     return "/opd_bill_pre_settle";
-                    
+
                 default:
                     throw new AssertionError();
             }
@@ -1101,6 +1094,14 @@ public class SearchController implements Serializable {
         this.currentBillId = currentBillId;
     }
 
+    public Long getCurrentTokenId() {
+        return currentTokenId;
+    }
+
+    public void setCurrentTokenId(Long currentTokenId) {
+        this.currentTokenId = currentTokenId;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -1453,7 +1454,7 @@ public class SearchController implements Serializable {
     public void createPharmacyWholesaleBills() {
         createPharmacyRetailBills(BillType.PharmacyWholesalePre, true);
     }
-    
+
     public void createPharmacyWholeTableRe() {
         Date startTime = new Date();
 
@@ -6359,9 +6360,9 @@ public class SearchController implements Serializable {
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        
+
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
+
     }
 
     public void clearOpdBillSearchData() {
@@ -7583,7 +7584,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((b.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
