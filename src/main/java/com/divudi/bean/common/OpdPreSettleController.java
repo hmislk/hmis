@@ -29,6 +29,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
@@ -127,6 +128,7 @@ public class OpdPreSettleController implements Serializable {
     double netTotal;
     double balance;
     Double editingQty;
+    private Token token;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -1109,6 +1111,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
     }
     
     

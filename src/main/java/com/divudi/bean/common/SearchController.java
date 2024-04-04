@@ -276,6 +276,10 @@ public class SearchController implements Serializable {
                     setPreBillForPharmecy(args);
                     return "/pharmacy/pharmacy_bill_pre_settle";
 
+                case OpdBathcBillPre:
+                    setPreBillForOpd(args);
+                    return "/opd_bill_pre_settle";
+                    
                 default:
                     throw new AssertionError();
             }

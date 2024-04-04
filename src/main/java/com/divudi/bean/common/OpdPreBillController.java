@@ -70,6 +70,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Token;
+import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -103,6 +105,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
 
+    @EJB
+    TokenFacade tokenFacade;
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -150,6 +154,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     SearchController searchController;
     @Inject
     WorkingTimeController workingTimeController;
+    @Inject
+    OpdTokenController opdTokenController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -214,6 +220,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
+    private Token token;
 
     // </editor-fold>
     public double getCashRemain() {
@@ -389,47 +396,46 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        printPreview = true;
 //
 //    }
-   public void createBillFeePayments() {
-    Date startTime = new Date();
-    billFeePayments = new ArrayList<>();
-    String sql;
-    Map m = new HashMap();
+    public void createBillFeePayments() {
+        Date startTime = new Date();
+        billFeePayments = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
 
-    sql = "select bfp from BillFeePayment bfp where "
-            + "bfp.retired=false "
-            + "and bfp.createdAt between :fd and :td ";
+        sql = "select bfp from BillFeePayment bfp where "
+                + "bfp.retired=false "
+                + "and bfp.createdAt between :fd and :td ";
 
-    if (getSearchKeyword() != null && getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().isEmpty()) {
-        sql += "and bfp.creater.webUserPerson.name like :patientName ";
-        m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        if (getSearchKeyword() != null && getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().isEmpty()) {
+            sql += "and bfp.creater.webUserPerson.name like :patientName ";
+            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword() != null && getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += "and bfp.billFee.bill.deptId like :billNo ";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword() != null && getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            sql += "and ((bfp.billFee.bill.netTotal) like :netTotal) ";
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword() != null && getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().isEmpty()) {
+            sql += "and ((bfp.billFee.bill.balance) like :total) ";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += "order by bfp.billFee.bill.deptId";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        billFeePayments = getBillFeePaymentFacade().findByJpql(sql, m);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
     }
 
-    if (getSearchKeyword() != null && getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
-        sql += "and bfp.billFee.bill.deptId like :billNo ";
-        m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-    }
-
-    if (getSearchKeyword() != null && getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
-        sql += "and ((bfp.billFee.bill.netTotal) like :netTotal) ";
-        m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-    }
-
-    if (getSearchKeyword() != null && getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().isEmpty()) {
-        sql += "and ((bfp.billFee.bill.balance) like :total) ";
-        m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
-    }
-
-    sql += "order by bfp.billFee.bill.deptId";
-
-    m.put("fd", fromDate);
-    m.put("td", toDate);
-
-    billFeePayments = getBillFeePaymentFacade().findByJpql(sql, m);
-
-    commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
-}
-
-    
     public void clearPreBillSearchData() {
         getSearchKeyword().setPatientName(null);
         getSearchKeyword().setPatientPhone(null);
@@ -438,7 +444,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         getSearchKeyword().setBillNo(null);
 
     }
-    
+
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
     }
@@ -768,6 +774,19 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
+    public void markToken(Bill b) {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(b);
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        opdTokenController.saveToken(t);
+    }
+
     public boolean checkBillValues(Bill b) {
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             return false;
@@ -867,6 +886,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         tmp.setDiscount(dblD);
         tmp.setTotal(dblT);
         getBillFacade().edit(tmp);
+
+        if (getToken() != null) {
+            getToken().setBill(tmp);
+            tokenFacade.edit(getToken());
+            markToken(tmp);
+        }
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -1052,7 +1077,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
 //            return true;
 //        }
-
 //        if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
 //            if (toStaff == null && creditCompany == null) {
 //                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
@@ -1069,7 +1093,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //                }
 //            }
 //        }
-
         if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
             JsfUtil.addErrorMessage("Check Payment method");
             return true;
@@ -1237,6 +1260,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
+        token = null;
     }
 
     private void recreateBillItems() {
@@ -2055,7 +2079,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public SearchKeyword getSearchKeyword() {
-         if (searchKeyword == null) {
+        if (searchKeyword == null) {
             searchKeyword = new SearchKeyword();
         }
         return searchKeyword;
@@ -2064,7 +2088,13 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
     }
-    
-    
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
 
 }
