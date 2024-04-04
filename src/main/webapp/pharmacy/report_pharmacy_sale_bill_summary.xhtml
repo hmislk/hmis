@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/pharmacy"
                 xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier">
 
 
@@ -61,6 +61,15 @@
                             icon="fa-solid fa-print"
                             class="ui-button-info " >
                             <p:printer target="tbl"  />
+                        </p:commandButton>
+                        
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print POS Paper" 
+                            style="float: right;" 
+                            icon="fa-solid fa-print"
+                            class="mx-1 ui-button-info " >
+                            <p:printer target="tblPos"  />
                         </p:commandButton>
                     </div>
 
@@ -126,7 +135,7 @@
                             </h:outputText>
                             
                         </p:column>
-                        <p:column headerText="Action" >
+                        <p:column headerText="Action" exportable="false">
                              <p:commandButton class="w-100 ui-button-warning" ajax="false"
                                                              value="View Summary"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
@@ -139,7 +148,9 @@
                         </p:column>
                     </p:dataTable>
 
-                    <h1></h1>
+                    <h:panelGroup id="tblPos">
+                        <prints:pharmacySaleBillSummaryPos billSearch="#{billSearch}"/>
+                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </h:panelGroup>
