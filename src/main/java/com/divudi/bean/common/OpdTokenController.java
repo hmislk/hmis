@@ -68,6 +68,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     // </editor-fold> 
     private Token currentToken;
+    private Token onGoingToken;
     private Token removeingToken;
     private List<Token> currentTokens;
     private Patient patient;
@@ -93,15 +94,19 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public void saveToken(Token t) {
+        System.out.println("t.getId() = " + t.getId());
         if (t == null) {
             return;
         }
         if (t.getId() == null) {
+            System.out.println("t.getId() = " + t.getId());
             t.setCreatedAt(new Date());
             t.setCreatedBy(sessionController.getLoggedUser());
             tokenFacade.create(t);
         } else {
+            System.out.println("t.getId() = " + t.getId());
             tokenFacade.edit(t);
+            onGoingToken=t;
         }
     }
 
@@ -512,6 +517,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
+    }
+
+    public Token getOnGoingToken() {
+        return onGoingToken;
+    }
+
+    public void setOnGoingToken(Token onGoingToken) {
+        this.onGoingToken = onGoingToken;
     }
 
 }

@@ -130,6 +130,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     BillEjb billEjb;
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -156,6 +157,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     WorkingTimeController workingTimeController;
     @Inject
     OpdTokenController opdTokenController;
+    @Inject
+    TokenController tokenController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -776,6 +779,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void markToken(Bill b) {
         Token t = getToken();
+        System.out.println("getToken().getIdStr()  2   = " + getToken().getIdStr());
         if (t == null) {
             return;
         }
@@ -890,6 +894,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         if (getToken() != null) {
             getToken().setBill(tmp);
             tokenFacade.edit(getToken());
+            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
             markToken(tmp);
         }
 
