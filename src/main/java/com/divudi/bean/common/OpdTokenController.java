@@ -12,6 +12,7 @@ import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -75,7 +76,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Institution institution;
     private Department counter;
     private Department selectedCounter;
-
+    private Doctor doctor;
     private boolean patientDetailsEditable;
 
     private boolean printPreview;
@@ -171,6 +172,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
         }
         currentToken.setCounter(counter);
+        currentToken.setDoctor(doctor);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
@@ -340,6 +342,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokensCompleted() {
+        counter=null;
         fillOpdTokensCompleted();
         return "/opd/token/opd_tokens_completed?faces-redirect=true";
     }
@@ -501,6 +504,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
     }
 
 }
