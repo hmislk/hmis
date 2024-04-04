@@ -1451,7 +1451,7 @@ public class BillSearch implements Serializable {
     }
 
     public String refundOpdBill() {
-        if (refundingBill == null) {
+        if (getRefundingBill() == null) {
             JsfUtil.addErrorMessage("There is no Bill to Refund");
             return "";
         }
