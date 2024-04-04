@@ -282,7 +282,6 @@ public class SearchController implements Serializable {
 
     public void setPreBillForOpd(Bill preBill) {
         makeNull();
-        System.out.println("preBill = " + preBill.getBillItems().size());
         opdPreSettleController.setPreBill(preBill);
         //System.err.println("Setting Bill " + preBill);
         opdPreSettleController.setBillPreview(false);
