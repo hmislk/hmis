@@ -57,12 +57,17 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.HistoryType;
+import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.entity.AppEmail;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,6 +123,10 @@ public class BillController implements Serializable {
     PaymentFacade PaymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    BillItemFacade billItemFacede;
     /**
      * Controllers
      */
@@ -133,6 +142,7 @@ public class BillController implements Serializable {
     private EnumController enumController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
+
     /**
      * Class Vairables
      */
@@ -1648,27 +1658,287 @@ public class BillController implements Serializable {
             return;
         }
 
-        Bill tmp = new CancelledBill();
-        tmp.setDepartment(sessionController.getDepartment());
-        tmp.setInstitution(sessionController.getInstitution());
-        
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        getBillFacade().create(tmp);
+        Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.setDepartment(sessionController.getDepartment());
+        cancellationBatchBill.setInstitution(sessionController.getInstitution());
+        cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
+        cancellationBatchBill.setToDepartment(batchBill.getToDepartment());
+        cancellationBatchBill.setFromInstitution(batchBill.getFromInstitution());
+        cancellationBatchBill.setToInstitution(batchBill.getToInstitution());
 
-        for (Bill b : bills) {
-            getBillSearch().setBill((BilledBill) b);
-            getBillSearch().setPaymentMethod(b.getPaymentMethod());
-            getBillSearch().setComment("Batch Cancell");
-            //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+        cancellationBatchBill.setBillType(BillType.OpdBathcBill);
+        cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getDepartment(), cancellationBatchBill.getToDepartment(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+        String insId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getInstitution(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+
+        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setInsId(insId);
+        cancellationBatchBill.setCreatedAt(new Date());
+        cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
+
+        cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
+        cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
+        cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
+        cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
+        cancellationBatchBill.setPaymentMethod(batchBill.getPaymentMethod());
+
+        cancellationBatchBill.setForwardReferenceBill(batchBill);
+
+        getBillFacade().create(cancellationBatchBill);
+
+        List<Payment> ps = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+
+        for (Bill originalBills : bills) {
+            System.out.println("originalBills = " + originalBills);
+            cancelSingleBillWhenCancellingOpdBatchBill(originalBills, cancellationBatchBill);
         }
 
-        tmp.copy(batchBill);
-        tmp.setBilledBill(batchBill);
+        cancellationBatchBill.copy(batchBill);
+        cancellationBatchBill.setBilledBill(batchBill);
 
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
+        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+    }
+
+    public void cancelSingleBillWhenCancellingOpdBatchBill(Bill cancellingSingleBill, Bill cancellationBatchBill) {
+        System.out.println("cancellationBatchBill = " + cancellationBatchBill);
+        System.out.println("cancellationBatchBill = " + cancellationBatchBill);
+        if (cancellingSingleBill == null && cancellingSingleBill == null) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.copy(getBill());
+        cancellationBill.invertValue(getBill());
+
+        cancellationBill.setBillType(BillType.OpdBill);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+
+        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
+        String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
+
+        cancellationBill.setDeptId(deptId);
+        cancellationBill.setInsId(insId);
+
+        cancellationBill.setBalance(0.0);
+        cancellationBill.setPaymentMethod(cancellationBatchBill.getPaymentMethod());
+        cancellationBill.setBilledBill(cancellationBatchBill);
+        cancellationBill.setBillDate(new Date());
+        cancellationBill.setBillTime(new Date());
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setCreater(getSessionController().getLoggedUser());
+        cancellationBill.setDepartment(getSessionController().getDepartment());
+        cancellationBill.setInstitution(getSessionController().getInstitution());
+        cancellationBill.setForwardReferenceBill(cancellationBatchBill);
+        cancellationBill.setComments(comment);
+        if (cancellationBill.getId() == null) {
+            getBillFacade().create(cancellationBill);
+        } else {
+            getBillFacade().edit(cancellationBill);
+        }
+        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(cancellingSingleBill, cancellationBill);
+        try {
+            cancellationBill.setBillItems(list);
+        } catch (Exception e) {
+
+        }
+        if (cancellationBill.getId() == null) {
+            billFacade.create(cancellationBill);
+        } else {
+            billFacade.edit(cancellationBill);
+        }
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(cancellationBill);
+        getBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+
+        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+            if (getBill().getToStaff() != null) {
+                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBill.setFromStaff(getBill().getToStaff());
+                getBillFacade().edit(cancellationBill);
+            }
+        }
+    }
+
+    public List<Payment> createPaymentForOpdBatchBillCancellation(Bill cancellationBatchBill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(cancellationBatchBill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(cancellationBatchBill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+            p.setPaidValue(cancellationBatchBill.getNetTotal());
+
+            switch (pm) {
+                case Card:
+                    p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(getPaymentMethodData().getCheque().getDate());
+                    p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
+            ps.add(p);
+        }
+        return ps;
+    }
+
+    private List<BillItem> createBillItemsForOpdBatchBillCancellation(Bill originalBill, Bill cancellationBill) {
+        System.out.println("cancellationBill = " + cancellationBill);
+        System.out.println("originalBill = " + originalBill);
+        List<BillItem> list = new ArrayList<>();
+        for (BillItem originalBillItem : originalBill.getBillItems()) {
+            BillItem newBillItem = new BillItem();
+            newBillItem.setBill(cancellationBill);
+            newBillItem.setItem(originalBillItem.getItem());
+            newBillItem.setNetValue(0 - originalBillItem.getNetValue());
+            newBillItem.setGrossValue(0 - originalBillItem.getGrossValue());
+            newBillItem.setRate(0 - originalBillItem.getRate());
+            newBillItem.setVat(0 - originalBillItem.getVat());
+            newBillItem.setVatPlusNetValue(0 - originalBillItem.getVatPlusNetValue());
+            newBillItem.setCatId(originalBillItem.getCatId());
+            newBillItem.setDeptId(originalBillItem.getDeptId());
+            newBillItem.setInsId(originalBillItem.getInsId());
+            newBillItem.setDiscount(0 - originalBillItem.getDiscount());
+            newBillItem.setQty(1.0);
+            newBillItem.setRate(originalBillItem.getRate());
+            newBillItem.setCreatedAt(new Date());
+            newBillItem.setCreater(getSessionController().getLoggedUser());
+            newBillItem.setPaidForBillFee(originalBillItem.getPaidForBillFee());
+            newBillItem.setReferanceBillItem(originalBillItem);
+            billItemFacede.create(newBillItem);
+
+            cancelBillComponents(originalBill, cancellationBill, originalBillItem, newBillItem);
+
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
+            List<BillFee> originalBillFees = getBillFeeFacade().findByJpql(sql);
+            cancelBillFee(originalBill, cancellationBill, originalBillItem, newBillItem, originalBillFees);
+
+            list.add(newBillItem);
+
+        }
+
+        return list;
+    }
+
+    public void cancelBillFee(Bill originalBill, Bill cancellationBill, BillItem originalBillItem, BillItem cancellationBillItem, List<BillFee> originalBillFees) {
+        for (BillFee originalBillFee : originalBillFees) {
+            BillFee newBillFee = new BillFee();
+            newBillFee.setFee(originalBillFee.getFee());
+            newBillFee.setPatienEncounter(originalBillFee.getPatienEncounter());
+            newBillFee.setPatient(originalBillFee.getPatient());
+            newBillFee.setDepartment(originalBillFee.getDepartment());
+            newBillFee.setInstitution(originalBillFee.getInstitution());
+            newBillFee.setSpeciality(originalBillFee.getSpeciality());
+            newBillFee.setStaff(originalBillFee.getStaff());
+            newBillFee.setReferenceBillFee(originalBillFee);
+            newBillFee.setBill(cancellationBill);
+            newBillFee.setBillItem(originalBillItem);
+            newBillFee.setFeeValue(0 - originalBillFee.getFeeValue());
+            newBillFee.setFeeGrossValue(0 - originalBillFee.getFeeGrossValue());
+            newBillFee.setFeeDiscount(0 - originalBillFee.getFeeDiscount());
+            newBillFee.setSettleValue(0 - originalBillFee.getSettleValue());
+            newBillFee.setFeeVat(0 - originalBillFee.getFeeVat());
+            newBillFee.setFeeVatPlusValue(0 - originalBillFee.getFeeVatPlusValue());
+            newBillFee.setCreatedAt(new Date());
+            newBillFee.setCreater(getSessionController().getLoggedUser());
+            getBillFeeFacade().create(newBillFee);
+        }
+    }
+
+    private void cancelBillComponents(Bill originalBill, Bill cancellationBill, BillItem originalBillItem, BillItem newBillItem) {
+        String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + originalBill.getId();
+        List<BillComponent> billComponents = billComponentFacade.findByJpql(sql);
+        if (billComponents == null) {
+            billComponents = new ArrayList<>();
+        }
+        for (BillComponent originalBillComponent : billComponents) {
+            BillComponent newBillComponent = new BillComponent();
+            newBillComponent.setCatId(originalBillComponent.getCatId());
+            newBillComponent.setDeptId(originalBillComponent.getDeptId());
+            newBillComponent.setInsId(originalBillComponent.getInsId());
+            newBillComponent.setDepartment(originalBillComponent.getDepartment());
+            newBillComponent.setDeptId(originalBillComponent.getDeptId());
+            newBillComponent.setInstitution(originalBillComponent.getInstitution());
+            newBillComponent.setItem(originalBillComponent.getItem());
+            newBillComponent.setName(originalBillComponent.getName());
+            newBillComponent.setPackege(originalBillComponent.getPackege());
+            newBillComponent.setSpeciality(originalBillComponent.getSpeciality());
+            newBillComponent.setStaff(originalBillComponent.getStaff());
+            newBillComponent.setBill(cancellationBill);
+            newBillComponent.setBillItem(newBillItem);
+            newBillComponent.setCreatedAt(new Date());
+            newBillComponent.setCreater(getSessionController().getLoggedUser());
+            billComponentFacade.create(newBillComponent);
+
+        }
+
     }
 
     public void dateChangeListen() {

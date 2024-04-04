@@ -207,7 +207,7 @@
                                         <td></td> <!-- Assuming no refunded column for My-Safe -->
                                         <td>#{financialTransactionController.financialReport.floatMySafe}</td> <!-- Assuming My-Safe equals net for floats -->
                                     </tr>
-                                    
+
                                     <tr>
                                         <td>Float Collected / Handovers</td>
                                         <td>#{financialTransactionController.financialReport.floatCollected}</td>
@@ -220,7 +220,7 @@
                                         <td>#{financialTransactionController.financialReport.bankDeposits}</td> <!-- Assuming no refunded column for bank withdrawals -->
                                         <td>#{financialTransactionController.financialReport.bankWithdrawals}</td> <!-- Assuming withdrawals equals net -->
                                     </tr>
-                                    
+
                                     <tr>
                                         <td>Cash Given Out (Transfer Out)</td>
                                         <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td>
@@ -243,7 +243,7 @@
                         </h:panelGroup>
 
 
-                        <h:panelGroup rendered="false">
+                        <h:panelGroup rendered="true">
                             <p:dataTable 
                                 id="tblPayments" 
                                 value="#{financialTransactionController.currentBillPayments}" 
@@ -252,32 +252,29 @@
                                 paginatorPosition="bottom"
 
                                 >
+                                <p:column headerText="ID" >
+                                    <h:outputText value="#{bp.id}" ></h:outputText>
+                                </p:column>
                                 <p:column headerText="Payment Method" >
                                     <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: #ffcccc;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: #ccffcc;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'OpdBill' ? 'background-color: #cce5ff;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: #ffd9e6;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: #ffffcc;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'ShiftEndFundBill' ? 'background-color: #cce0ff;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'PharmacySale' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                          font-size: 15pt;font-weight:bold ">
+                                <p:column headerText="Bill ID" >
+                                    <h:outputText value="#{bp.bill.insId}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type" >
+                                    <h:outputText value="#{bp.bill.billType}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billTypeAtomic}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billClass}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Value" >
                                     <h:outputText value="#{bp.paidValue}" />
                                 </p:column>
 
-                                <p:column headerText="Details" >
-                                    Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
-                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                    Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
-                                        Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                                        Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
-                                        Bank Name : <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                                    </h:panelGroup><br/>
-                                </p:column>
+
                                 <p:column headerText="Action" >
                                     <p:commandButton 
                                         class="ui-button-success"
@@ -286,18 +283,6 @@
                                         action="#{billSearch.navigateToViewOpdBill}"
                                         >
                                         <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        class="ui-button-danger mx-1"
-                                        icon=" fa-solid fa-trash"
-                                        id="btnRemove"
-                                        value="Remove" 
-                                        action="#{financialTransactionController.removePayment}" 
-                                        process="btnRemove tblPayments"
-                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}
-                                        :#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('btotals',view).clientId}"
-                                        >
-                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
