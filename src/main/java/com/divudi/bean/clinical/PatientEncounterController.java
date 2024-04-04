@@ -59,6 +59,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientReportFacade;
+import com.mysql.cj.util.Util;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -229,6 +230,7 @@ public class PatientEncounterController implements Serializable {
     private List<Bill> pharmacyBills;
     private List<Bill> channelBills;
     private List<PatientInvestigation> investigations;
+    private List<PatientInvestigation> patientInvestigations;
     private String selectText = "";
 
     private Item diagnosis;
@@ -800,15 +802,19 @@ public class PatientEncounterController implements Serializable {
         if(bill==null){
             bill = new Bill();
         }
-        bi.setBill(bill);
         bill.setPatient(pi.getPatient());
-        bi.getBill().setPatient(pi.getPatient());
-        bi.getBill().setBalance(0.0);
+        bill.setCreatedAt(new Date());
+        bill.setCreater(sessionController.getLoggedUser());
+        bill.setPatient(pi.getPatient());
+        bill.setBalance(0.0);
+        bi.setCreatedAt(bill.getCreatedAt());
+        bi.setCreater(sessionController.getLoggedUser());
         if (bill.getId()==null){
             billFacade.create(bill);
         }
-        bi.setCreatedAt(new Date());
-        bi.setCreater(sessionController.getLoggedUser());
+        
+        bi.setBill(bill);
+        
         if (bi.getId() == null) {
             billItemFacade.create(bi);
         }
@@ -1297,6 +1303,7 @@ public class PatientEncounterController implements Serializable {
         encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
         encounterPlanOfActions = fillPlanOfAction(encounter);
+        encounterInvestigationResults = fillEncounterInvestigationResults(encounter);
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1802,6 +1809,11 @@ public class PatientEncounterController implements Serializable {
     public void removeEncounterInvestigation() {
         removeCfv();
         encounterInvestigations = fillEncounterInvestigations(current);
+    }
+    
+    public void removeEncounterInvestigationResult() {
+        removeCfv();
+        encounterInvestigations = fillEncounterInvestigationResults(current);
     }
 
     public void removeEncounterMedicine() {
@@ -3092,7 +3104,8 @@ public class PatientEncounterController implements Serializable {
         setEncounterImages(fillEncounterImages(getCurrent()));
         setEncounterImage(null);
     }
-
+    
+    
     public UploadedFile getUploadedFile() {
         return uploadedFile;
     }
@@ -3329,6 +3342,17 @@ public class PatientEncounterController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public List<PatientInvestigation> getPatientInvestigations() {
+        if(patientInvestigations==null){
+            patientInvestigations = new ArrayList<>();
+        }
+        return patientInvestigations;
+    }
+
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
