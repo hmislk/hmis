@@ -18,12 +18,7 @@
         <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
         <div class="posbill" style="text-align: center;">
 
-            <div class="institutionName" style="text-align: center!important;
-                 font-weight: bold!important;
-                 font-size: 15px!important;
-                 font-weight: bold;">
-                <h:outputLabel value="#{cc.attrs.token.bill.institution.name}" />
-            </div>
+            
             <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.token.department.address}"/>
@@ -57,11 +52,11 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div style="margin-top: -10px;font-size: 18pt;font-weight: bold">
-                #{cc.attrs.token.doctor.person.name}
+            <div style="margin-top: -10px;font-size: 12pt;font-weight: bold">
+                #{cc.attrs.token.doctor.person.nameWithTitle}
 
             </div>
-            <div class="billline d-flex justify-content-center">
+            <div class="billline d-flex justify-content-center my-1">
                 <p:barcode value="#{cc.attrs.token.idStr}" 
                            width="400"
                            height="100"
