@@ -53,7 +53,7 @@
 
                 <div class="row">
                     <h:outputLabel value="P.O.Date" class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.createdAt}" class="col-3">
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" class="col-3">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
                     <h:outputLabel value="G.R.N.Date" class="col-2"/>
@@ -72,7 +72,8 @@
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                     </h:outputLabel>
                 </div>
-
+                
+                
                 <div class="row">
                     <h:outputLabel value="P.O.Approve By " class="col-3"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.code}" class="col-3"/>
@@ -85,6 +86,13 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.name}" class="col-3"/>
                     <h:outputLabel value="Supplier" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="col-4"/>
+                </div>
+                
+                <div class="row">
+                    <h:outputLabel value="Payment Method" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="col-3"/>
+                    <h:outputLabel value="Crd. Duration" class="col-2" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-2" style="text-align: left;" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
                 </div>
 
             </div>
@@ -109,7 +117,8 @@
                 <table style="text-align: center; width: 100%; border: 2px!important;">
                     <thead style="font-size: 14px;">
                         <tr>
-                            <th style="text-align: left!important;min-width: 40%; font-weight: bold!important;">Item</th>
+                            <th style="text-align: left!important;min-width: 36%; font-weight: bold!important;">Item</th>
+                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Code</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Expiry</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
@@ -123,6 +132,10 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
                                 <td style="text-align: left;">#{bip.item.name}</td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.item.code}">
+                                    </h:outputText>
+                                </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.pharmaceuticalBillItem.doe}">
                                         <f:convertDateTime pattern="d/M/yy"/>
