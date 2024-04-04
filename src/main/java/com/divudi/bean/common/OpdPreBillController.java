@@ -755,6 +755,13 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(b);
             getBills().add(b);
 
+            if (getToken() != null) {
+                getToken().setBill(b);
+                tokenFacade.edit(getToken());
+                System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
+                markToken(b);
+            }
+
         } else {
             boolean result = putToBills();
             if (result == false) {
@@ -891,15 +898,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         tmp.setTotal(dblT);
         getBillFacade().edit(tmp);
 
-        if (getToken() != null) {
-            getToken().setBill(tmp);
-            tokenFacade.edit(getToken());
-            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
-            markToken(tmp);
-        }
-
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+        
+//        if (getToken() != null) {
+//            getToken().setBill(tmp);
+//            tokenFacade.edit(getToken());
+//            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
+//            markToken(tmp);
+//        }
     }
 
     @Inject
