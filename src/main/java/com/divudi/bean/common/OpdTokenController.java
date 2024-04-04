@@ -164,13 +164,24 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         } else {
             tokenFacade.edit(currentToken);
         }
-        currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
+        if (sessionController.getDepartmentPreference().isGenarateOpdTokenNumbersToCounterWise()) {
+            currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumberCounterWise(currentToken.getFromDepartment(), counter, null, null, TokenType.OPD_TOKEN));
+        }
+        else{
+            currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
+        }
         currentToken.setCounter(counter);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
         printPreview = true;
         return "/opd/token/opd_token_print?faces-redirect=true";
+    }
+
+    public void genarateTokenNumberCounterWise() {
+        if (counter != null) {
+
+        }
     }
 
     public void toggleCalledStatus() {
@@ -364,7 +375,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public void startTokenService() {
-        
+
     }
 
     public void completeTokenService() {

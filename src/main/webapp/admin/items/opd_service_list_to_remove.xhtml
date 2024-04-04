@@ -109,7 +109,7 @@
 
                             <p:column headerText="Service Date Created"
                                       style="font-weight:normal ;color: black;text-align: left;"
-                                      sortBy="#{sv.createdAt}">
+                                      sortBy="#{sv.createdAt}" filterBy="#{sv.createdAt}" filterMatchMode="contains" >
 
                                 <h:outputLabel value="#{sv.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" 
