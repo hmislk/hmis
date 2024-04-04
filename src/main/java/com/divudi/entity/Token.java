@@ -83,6 +83,8 @@ public class Token implements Serializable {
     private Department counter;
     @Transient
     private String idStr;
+    @ManyToOne
+    private Doctor doctor;
 // </editor-fold> 
 
     public Long getId() {
@@ -375,6 +377,14 @@ public class Token implements Serializable {
 
     public void setTokenAt(Date tokenAt) {
         this.tokenAt = tokenAt;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
     }
 
   
