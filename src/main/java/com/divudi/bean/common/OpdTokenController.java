@@ -207,6 +207,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokens() {
+        counter=null;
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
     }
