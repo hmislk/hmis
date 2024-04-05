@@ -211,7 +211,7 @@ public class BillSearch implements Serializable {
     private double multiplePaymentsTotal;
     private double patientDepositsTotal;
     private OverallSummary overallSummary;
-    
+
     private Bill currentRefundBill;
 
     public void preparePatientReportByIdForRequests() {
@@ -510,10 +510,10 @@ public class BillSearch implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
-    
+
     public void processCashierPharmacySaleBillTotalDateWise() {
         //For Auditing Purposes
-        
+
         Map m = new HashMap();
         String j;
         j = "select new com.divudi.data.BillSummery(Function('DATE',(b.createdAt)),sum(b.netTotal), count(b)) "
@@ -530,7 +530,7 @@ public class BillSearch implements Serializable {
             j += " and b.department=:dep ";
             m.put("dep", department);
         }
-        
+
         j += " group by Function('DATE',(b.createdAt))";
 
         m.put("fd", fromDate);
@@ -698,7 +698,6 @@ public class BillSearch implements Serializable {
         }
         m.put("fd", fromDate);
         m.put("td", toDate);
-
 
         bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
 
@@ -1398,7 +1397,7 @@ public class BillSearch implements Serializable {
             }
 
             RefundBill rb = (RefundBill) createRefundBill();
-            Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
+            Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(rb, paymentMethod);
             refundBillItems(rb, p);
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
 
@@ -1486,13 +1485,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already paid to Service Provider. Can not refund again.");
             return "";
         }
-        
-        if (refundingBill.getBillItems()!=null) {
-            for(BillItem bi : refundingBill.getBillItems()){
-                for(BillFee bf: bi.getBillFees()){
-                    if (bf.getReferenceBillFee().getFeeValue()<bf.getFeeValue()) {
+
+        if (refundingBill.getBillItems() != null) {
+            for (BillItem bi : refundingBill.getBillItems()) {
+                for (BillFee bf : bi.getBillFees()) {
+                    if (bf.getReferenceBillFee().getFeeValue() < bf.getFeeValue()) {
                         JsfUtil.addErrorMessage("Pleace Enter Correct Value");
-                        return"";
+                        return "";
                     }
                 }
             }
@@ -1515,8 +1514,8 @@ public class BillSearch implements Serializable {
             return "";
         }
         saveRefundBill(refundingBill);
-        
-        Payment p = getOpdPreSettleController().createPayment(refundingBill, paymentMethod);
+
+        Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
 
         //TODO: Create Payments for Bill Items
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -1608,7 +1607,7 @@ public class BillSearch implements Serializable {
         rb.setReferenceBill(bill);
         rb.setBilledBill(bill);
         billController.save(rb);
-        currentRefundBill=rb;
+        currentRefundBill = rb;
         for (BillItem bi : rb.getBillItems()) {
             billController.saveBillItem(bi);
             for (BillFee bf : bi.getBillFees()) {
@@ -1621,8 +1620,6 @@ public class BillSearch implements Serializable {
         billController.save(bill);
         return true;
     }
-    
-    
 
     private Bill createRefundBill() {
         RefundBill rb = new RefundBill();
@@ -1893,6 +1890,7 @@ public class BillSearch implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
+            cb.copyValue(getBill());
             cb.invertValue(getBill());
 
             if (getBill().getBillType() == BillType.PaymentBill) {
@@ -2007,147 +2005,151 @@ public class BillSearch implements Serializable {
     }
 
     public void cancelBill() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (errorCheck()) {
-                return;
-            }
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return;
+        }
+        if (getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Saved bill");
+            return;
+        }
 
-            try {
-                if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
-                    AppEmail e = new AppEmail();
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
+        if (errorCheck()) {
+            return;
+        }
 
-                    e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
-                    e.setMessageSubject("A Bill is Cancelled");
-                    String tb = "";
+        try {
+            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
+                AppEmail e = new AppEmail();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
 
-                    tb = "<!DOCTYPE html>"
-                            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
-                            + "<head>"
-                            + "<title>"
-                            + "Cancellation of Bill Number "
-                            + getBill().getInsId()
-                            + "</title>"
-                            + "</head>"
-                            + "<h:body>";
-                    tb += "<p>";
-                    tb += "Bill No : " + getBill().getInsId() + "<br/>";
-                    tb += "Bill Date : " + getBill().getBillDate() + "<br/>";
-                    tb += "Bill Value : " + getBill().getNetTotal() + "<br/>";
-                    tb += "Billed By : " + getBill().getCreater().getWebUserPerson().getNameWithTitle() + "<br/>";
-                    tb += "Cancelled Date : " + new Date() + "<br/>";
-                    tb += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + "<br/>";
-                    tb += "</p>";
-                    Calendar c = Calendar.getInstance();
-                    c.add(Calendar.MONTH, 1);
+                e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
+                e.setMessageSubject("A Bill is Cancelled");
+                String tb = "";
 
-                    String temId = getBill().getId() + "";
-                    temId = getSecurityController().encrypt(temId);
-                    try {
-                        temId = URLEncoder.encode(temId, "UTF-8");
-                    } catch (UnsupportedEncodingException ex) {
-                    }
+                tb = "<!DOCTYPE html>"
+                        + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
+                        + "<head>"
+                        + "<title>"
+                        + "Cancellation of Bill Number "
+                        + getBill().getInsId()
+                        + "</title>"
+                        + "</head>"
+                        + "<h:body>";
+                tb += "<p>";
+                tb += "Bill No : " + getBill().getInsId() + "<br/>";
+                tb += "Bill Date : " + getBill().getBillDate() + "<br/>";
+                tb += "Bill Value : " + getBill().getNetTotal() + "<br/>";
+                tb += "Billed By : " + getBill().getCreater().getWebUserPerson().getNameWithTitle() + "<br/>";
+                tb += "Cancelled Date : " + new Date() + "<br/>";
+                tb += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + "<br/>";
+                tb += "</p>";
+                Calendar c = Calendar.getInstance();
+                c.add(Calendar.MONTH, 1);
 
-                    String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-                    ed = getSecurityController().encrypt(ed);
-                    try {
-                        ed = URLEncoder.encode(ed, "UTF-8");
-                    } catch (UnsupportedEncodingException ex) {
-                    }
-                    String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
-                    tb += "<p>"
-                            + "Your Report is attached"
-                            + "<br/>"
-                            + "Please visit "
-                            + "<a href=\""
-                            + url
-                            + "\">this link</a>"
-                            + " to view or print the bill.The link will expire in one month for privacy and confidentially issues."
-                            + "<br/>"
-                            + "</p>";
-
-                    tb += "</h:body></html>";
-
-                    e.setMessageBody((tb));
-
-                    e.setSenderPassword(getSessionController().getLoggedUser().getInstitution().getEmailSendingPassword());
-                    e.setSenderUsername(getSessionController().getLoggedUser().getInstitution().getEmailSendingUsername());
-                    e.setSenderEmail(getSessionController().getLoggedUser().getInstitution().getEmail());
-
-                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-
-                    e.setSentSuccessfully(false);
-
-                    getEmailFacade().create(e);
+                String temId = getBill().getId() + "";
+                temId = getSecurityController().encrypt(temId);
+                try {
+                    temId = URLEncoder.encode(temId, "UTF-8");
+                } catch (UnsupportedEncodingException ex) {
                 }
 
-            } catch (Exception e) {
+                String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+                ed = getSecurityController().encrypt(ed);
+                try {
+                    ed = URLEncoder.encode(ed, "UTF-8");
+                } catch (UnsupportedEncodingException ex) {
+                }
+                String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+                tb += "<p>"
+                        + "Your Report is attached"
+                        + "<br/>"
+                        + "Please visit "
+                        + "<a href=\""
+                        + url
+                        + "\">this link</a>"
+                        + " to view or print the bill.The link will expire in one month for privacy and confidentially issues."
+                        + "<br/>"
+                        + "</p>";
+
+                tb += "</h:body></html>";
+
+                e.setMessageBody((tb));
+
+                e.setSenderPassword(getSessionController().getLoggedUser().getInstitution().getEmailSendingPassword());
+                e.setSenderUsername(getSessionController().getLoggedUser().getInstitution().getEmailSendingUsername());
+                e.setSenderEmail(getSessionController().getLoggedUser().getInstitution().getEmail());
+
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+                e.setSentSuccessfully(false);
+
+                getEmailFacade().create(e);
             }
 
-            CancelledBill cb = createCancelBill();
-            Calendar now = Calendar.getInstance();
-            now.setTime(new Date());
-            Calendar created = Calendar.getInstance();
-            created.setTime(cb.getBilledBill().getCreatedAt());
+        } catch (Exception e) {
+        }
 
-            //Copy & paste
-            if ((now.get(Calendar.DATE) == created.get(Calendar.DATE))
-                    || (getBill().getBillType() == BillType.LabBill && getWebUserController().hasPrivilege("LabBillCancelling"))
-                    || (getBill().getBillType() == BillType.OpdBill && getWebUserController().hasPrivilege("OpdCancel"))
-                    || (getBill().getBillType() == BillType.CollectingCentreBill && getWebUserController().hasPrivilege("CollectingCentreCancelling"))) {
+        CancelledBill cb = createCancelBill();
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        Calendar created = Calendar.getInstance();
+        created.setTime(cb.getBilledBill().getCreatedAt());
 
-                getBillFacade().create(cb);
-                Payment p = getOpdPreSettleController().createPayment(cb, paymentMethod);
-                List<BillItem> list = cancelBillItems(getBill(), cb, p);
-                cb.setBillItems(list);
-                billFacade.edit(cb);
-                getBill().setCancelled(true);
-                getBill().setCancelledBill(cb);
-                getBillFacade().edit(getBill());
-                JsfUtil.addSuccessMessage("Cancelled");
+        //Copy & paste
+        if ((now.get(Calendar.DATE) == created.get(Calendar.DATE))
+                || (getBill().getBillType() == BillType.LabBill && getWebUserController().hasPrivilege("LabBillCancelling"))
+                || (getBill().getBillType() == BillType.OpdBill && getWebUserController().hasPrivilege("OpdCancel"))
+                || (getBill().getBillType() == BillType.CollectingCentreBill && getWebUserController().hasPrivilege("CollectingCentreCancelling"))) {
 
-                WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
-                getSessionController().setLoggedUser(wb);
+            getBillFacade().create(cb);
+            Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cb, paymentMethod);
+            List<BillItem> list = cancelBillItems(getBill(), cb, p);
+            cb.setBillItems(list);
+            billFacade.edit(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit(getBill());
+            JsfUtil.addSuccessMessage("Cancelled");
 
-                if (getBill().getBillType() == BillType.CollectingCentreBill) {
+            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
 
-                    List<BillFee> lstBillFees = new ArrayList<>();
-                    lstBillFees.addAll(billFeeFacade.findByJpql("SELECT bf FROM BillFee bf WHERE bf.retired=false and bf.bill.id=" + getBill().getId()));
-                    double feeTotalExceptCcfs = 0.0;
-                    for (BillFee bf : lstBillFees) {
-                        if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                            feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
-                        }
-                    }
+            if (getBill().getBillType() == BillType.CollectingCentreBill) {
 
-                    collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getCancelledBill(), getBill().getReferenceNumber());
-                }
-
-                if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                    //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                    //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
-                    if (getBill().getToStaff() != null) {
-                        //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
-                        staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
-                        JsfUtil.addSuccessMessage("Staff Credit Updated");
-                        cb.setFromStaff(getBill().getToStaff());
-                        getBillFacade().edit(cb);
+                List<BillFee> lstBillFees = new ArrayList<>();
+                lstBillFees.addAll(billFeeFacade.findByJpql("SELECT bf FROM BillFee bf WHERE bf.retired=false and bf.bill.id=" + getBill().getId()));
+                double feeTotalExceptCcfs = 0.0;
+                for (BillFee bf : lstBillFees) {
+                    if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                        feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
                     }
                 }
 
-                bill = billFacade.find(bill.getId());
-                createCollectingCenterfees(getBill());
-                printPreview = true;
-                comment = null;
-            } else {
-                getEjbApplication().getBillsToCancel().add(cb);
-                JsfUtil.addSuccessMessage("Awaiting Cancellation");
+                collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getCancelledBill(), getBill().getReferenceNumber());
             }
 
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+                //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                if (getBill().getToStaff() != null) {
+                    //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+                    JsfUtil.addSuccessMessage("Staff Credit Updated");
+                    cb.setFromStaff(getBill().getToStaff());
+                    getBillFacade().edit(cb);
+                }
+            }
+
+            bill = billFacade.find(bill.getId());
+            createCollectingCenterfees(getBill());
+            printPreview = true;
+            comment = null;
         } else {
-            JsfUtil.addErrorMessage("No Bill to cancel");
+            getEjbApplication().getBillsToCancel().add(cb);
+            JsfUtil.addSuccessMessage("Awaiting Cancellation");
         }
 
     }
@@ -2285,7 +2287,7 @@ public class BillSearch implements Serializable {
             //Copy & paste
 
             getBillFacade().create(cb);
-            Payment p = getOpdPreSettleController().createPayment(cb, paymentMethod);
+            Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cb, paymentMethod);
 //            cancelBillItems(cb);
             cancelBillItems(cb, p);
             cancelPaymentItems(bill);
@@ -3492,39 +3494,34 @@ public class BillSearch implements Serializable {
     public Institution getInstitution() {
         return institution;
     }
-    
-    public void calculateTotalForBillSummaries(){
-        cashTotal=0;
-        slipTotal=0;
-        creditCardTotal=0;
-        creditTotal=0;
-        multiplePaymentsTotal=0;
-        patientDepositsTotal=0;
-        
-        if(getBillSummeries()==null){
+
+    public void calculateTotalForBillSummaries() {
+        cashTotal = 0;
+        slipTotal = 0;
+        creditCardTotal = 0;
+        creditTotal = 0;
+        multiplePaymentsTotal = 0;
+        patientDepositsTotal = 0;
+
+        if (getBillSummeries() == null) {
             return;
         }
-        if(getBillSummeries().isEmpty()){
-            return ;
+        if (getBillSummeries().isEmpty()) {
+            return;
         }
-        for (BillSummery bs: getBillSummeries()){
-            if(bs.getPaymentMethod()==PaymentMethod.Cash){
-                cashTotal+=bs.getNetTotal();
-            }
-            else if(bs.getPaymentMethod()==PaymentMethod.Slip){
-                slipTotal+=bs.getNetTotal();
-            }
-            else if(bs.getPaymentMethod()==PaymentMethod.Card){
-                creditCardTotal+=bs.getNetTotal();
-            }
-            else if(bs.getPaymentMethod()==PaymentMethod.Credit){
-                creditTotal+=bs.getNetTotal();
-            }
-            else if(bs.getPaymentMethod()==PaymentMethod.MultiplePaymentMethods){
-                multiplePaymentsTotal+=bs.getNetTotal();
-            }
-            else if(bs.getPaymentMethod()==PaymentMethod.PatientDeposit){
-                patientDepositsTotal+=bs.getNetTotal();
+        for (BillSummery bs : getBillSummeries()) {
+            if (bs.getPaymentMethod() == PaymentMethod.Cash) {
+                cashTotal += bs.getNetTotal();
+            } else if (bs.getPaymentMethod() == PaymentMethod.Slip) {
+                slipTotal += bs.getNetTotal();
+            } else if (bs.getPaymentMethod() == PaymentMethod.Card) {
+                creditCardTotal += bs.getNetTotal();
+            } else if (bs.getPaymentMethod() == PaymentMethod.Credit) {
+                creditTotal += bs.getNetTotal();
+            } else if (bs.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+                multiplePaymentsTotal += bs.getNetTotal();
+            } else if (bs.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                patientDepositsTotal += bs.getNetTotal();
             }
         }
     }
@@ -3534,7 +3531,7 @@ public class BillSearch implements Serializable {
     }
 
     public Department getDepartment() {
-        if(department==null){
+        if (department == null) {
             sessionController.getLoggedUser().getDepartment();
         }
         return department;
@@ -3715,20 +3712,20 @@ public class BillSearch implements Serializable {
             refundVat += bi.getVat();
             refundVatPlusTotal += bi.getVatPlusNetValue();
         }
-        b.setTotal(0-Math.abs(billTotal));
-        b.setNetTotal(0-Math.abs(billTotal));
-        b.setTotal(0-Math.abs(refundTotal));
-        b.setDiscount(0-Math.abs(refundDiscount));
-        b.setNetTotal(0-Math.abs(refundAmount));
-        b.setVat(0-Math.abs(refundVat));
-        b.setVatPlusNetTotal(0-Math.abs(refundVatPlusTotal));
+        b.setTotal(0 - Math.abs(billTotal));
+        b.setNetTotal(0 - Math.abs(billTotal));
+        b.setTotal(0 - Math.abs(refundTotal));
+        b.setDiscount(0 - Math.abs(refundDiscount));
+        b.setNetTotal(0 - Math.abs(refundAmount));
+        b.setVat(0 - Math.abs(refundVat));
+        b.setVatPlusNetTotal(0 - Math.abs(refundVatPlusTotal));
         return true;
 
     }
 
     public Bill getCurrentRefundBill() {
-        if (currentRefundBill==null && bill!=null) {
-            currentRefundBill=bill;
+        if (currentRefundBill == null && bill != null) {
+            currentRefundBill = bill;
         }
         return currentRefundBill;
     }
@@ -3959,9 +3956,7 @@ public class BillSearch implements Serializable {
         public void setBillTypeSummaries(List<BillTypeSummary> billTypeSummaries) {
             this.billTypeSummaries = billTypeSummaries;
         }
-        
-        
-        
+
     }
 
 }

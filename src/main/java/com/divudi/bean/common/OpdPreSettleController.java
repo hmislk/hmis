@@ -887,7 +887,7 @@ public class OpdPreSettleController implements Serializable {
         JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
 
-    public Payment createPayment(Bill bill, PaymentMethod pm) {
+    public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
         p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
