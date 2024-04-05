@@ -1686,8 +1686,7 @@ public class BillController implements Serializable {
 
         getBillFacade().create(cancellationBatchBill);
 
-        List<Payment> ps = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
-
+        
         for (Bill originalBills : bills) {
             System.out.println("originalBills = " + originalBills);
             cancelSingleBillWhenCancellingOpdBatchBill(originalBills, cancellationBatchBill);
