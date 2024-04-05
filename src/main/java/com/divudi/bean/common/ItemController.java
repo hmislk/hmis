@@ -1735,7 +1735,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeOpdItemsByNamesAndCode(String query) {
-        if (sessionController.getLoggedPreference().isInstitutionRestrictedBilling()) {
+        if (sessionController.getApplicationPreference().isInstitutionRestrictedBilling()) {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, true);
         } else {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, false);

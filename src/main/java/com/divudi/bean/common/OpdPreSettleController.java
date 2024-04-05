@@ -594,7 +594,7 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public boolean errorCheck() {
-        if (cashPaid == 0.0 && getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (cashPaid == 0.0 && getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             JsfUtil.addErrorMessage("Please Enter Correct Amount");
             return true;
         }
@@ -674,7 +674,7 @@ public class OpdPreSettleController implements Serializable {
                 continue;
             }
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 for (BillItem bi : b.getBillItems()) {
 
                     String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
@@ -769,7 +769,7 @@ public class OpdPreSettleController implements Serializable {
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(paymentMethod);
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             if (cashPaid < getBilledBill().getBalance()) {
                 p.setPaidValue(cashPaid);
             } else {
@@ -850,7 +850,7 @@ public class OpdPreSettleController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);

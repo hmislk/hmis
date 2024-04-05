@@ -2946,7 +2946,7 @@ public class BillBeanController implements Serializable {
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);
 //        bill.setDiscount(dis);
-        if (sessionController.getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////System.out.println("cashRemain" + billController.getCashRemain());
             if (billController.getCashRemain() != 0) {
                 if (tot > billController.getCashRemain()) {

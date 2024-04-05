@@ -8422,7 +8422,7 @@ public class SearchController implements Serializable {
     }
 
     public void sendSms() {
-        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getLoggedPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
     }
 
     public void sendSmsAll() {
@@ -8440,7 +8440,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            smsController.sendSmsToNumberList(stn, getSessionController().getLoggedPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
             JsfUtil.addSuccessMessage("Done.");
         }
 

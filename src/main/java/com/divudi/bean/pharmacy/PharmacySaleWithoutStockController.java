@@ -1201,7 +1201,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         Date fromDate = null;
         Date toDate = null;
         editingQty = null;
-        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
+        if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 JsfUtil.addErrorMessage("Please select Payment Scheme");
                 return;
