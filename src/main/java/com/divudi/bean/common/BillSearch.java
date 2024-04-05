@@ -148,6 +148,8 @@ public class BillSearch implements Serializable {
     private BillBeanController billBean;
     @Inject
     private SecurityController securityController;
+    @Inject
+    NotificationController notificationController;
 
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
@@ -1942,7 +1944,7 @@ public class BillSearch implements Serializable {
         return cb;
     }
 
-    private boolean errorCheck() {
+    private boolean errorsPresentOnOpdBillCancellation() {
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
@@ -1983,8 +1985,8 @@ public class BillSearch implements Serializable {
             }
         }
 
-        if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a payment scheme.");
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
             return true;
         }
 
@@ -1996,6 +1998,26 @@ public class BillSearch implements Serializable {
         return false;
     }
 
+    private boolean errorsPresentOnProfessionalPaymentBillCancellation() {
+        if (getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (getBill().isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+
+       
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+
+        return false;
+    }
+    
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
@@ -2014,83 +2036,13 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        if (errorCheck()) {
+        if (errorsPresentOnOpdBillCancellation()) {
             return;
         }
+        
+        notificationController.createNotification(bill);
 
-        try {
-            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
-                AppEmail e = new AppEmail();
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
-
-                e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
-                e.setMessageSubject("A Bill is Cancelled");
-                String tb = "";
-
-                tb = "<!DOCTYPE html>"
-                        + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
-                        + "<head>"
-                        + "<title>"
-                        + "Cancellation of Bill Number "
-                        + getBill().getInsId()
-                        + "</title>"
-                        + "</head>"
-                        + "<h:body>";
-                tb += "<p>";
-                tb += "Bill No : " + getBill().getInsId() + "<br/>";
-                tb += "Bill Date : " + getBill().getBillDate() + "<br/>";
-                tb += "Bill Value : " + getBill().getNetTotal() + "<br/>";
-                tb += "Billed By : " + getBill().getCreater().getWebUserPerson().getNameWithTitle() + "<br/>";
-                tb += "Cancelled Date : " + new Date() + "<br/>";
-                tb += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + "<br/>";
-                tb += "</p>";
-                Calendar c = Calendar.getInstance();
-                c.add(Calendar.MONTH, 1);
-
-                String temId = getBill().getId() + "";
-                temId = getSecurityController().encrypt(temId);
-                try {
-                    temId = URLEncoder.encode(temId, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                }
-
-                String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-                ed = getSecurityController().encrypt(ed);
-                try {
-                    ed = URLEncoder.encode(ed, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                }
-                String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
-                tb += "<p>"
-                        + "Your Report is attached"
-                        + "<br/>"
-                        + "Please visit "
-                        + "<a href=\""
-                        + url
-                        + "\">this link</a>"
-                        + " to view or print the bill.The link will expire in one month for privacy and confidentially issues."
-                        + "<br/>"
-                        + "</p>";
-
-                tb += "</h:body></html>";
-
-                e.setMessageBody((tb));
-
-                e.setSenderPassword(getSessionController().getLoggedUser().getInstitution().getEmailSendingPassword());
-                e.setSenderUsername(getSessionController().getLoggedUser().getInstitution().getEmailSendingUsername());
-                e.setSenderEmail(getSessionController().getLoggedUser().getInstitution().getEmail());
-
-                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-
-                e.setSentSuccessfully(false);
-
-                getEmailFacade().create(e);
-            }
-
-        } catch (Exception e) {
-        }
+        
 
         CancelledBill cb = createCancelBill();
         Calendar now = Calendar.getInstance();
@@ -2280,7 +2232,7 @@ public class BillSearch implements Serializable {
 
     public void cancelPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (errorCheck()) {
+            if (errorsPresentOnProfessionalPaymentBillCancellation()) {
                 return;
             }
             CancelledBill cb = createCancelBill();

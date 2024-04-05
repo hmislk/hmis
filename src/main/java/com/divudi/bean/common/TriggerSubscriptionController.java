@@ -317,14 +317,11 @@ public class TriggerSubscriptionController implements Serializable {
 
     public List<TriggerType> getTriggerTypes() {
         if (triggerTypes == null) {
-            triggerTypes = Arrays.asList(TriggerType.values());
+            triggerTypes = TriggerType.getAlphabeticallySortedValues();
         }
         return triggerTypes;
     }
 
-    public void setTriggerTypes(List<TriggerType> Subscription) {
-        this.triggerTypes = triggerTypes;
-    }
 
     @FacesConverter(forClass = TriggerSubscription.class)
     public static class UserSubscriptionConverter implements Converter {
