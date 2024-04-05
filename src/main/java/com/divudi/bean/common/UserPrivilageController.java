@@ -599,13 +599,10 @@ public class UserPrivilageController implements Serializable {
         return phs;
     }
     
-    public void saveWebUserPrivileges(WebUser u) {
+    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected) {
         currentWebUser = u;
-        System.out.println("u = " + u);
         department = u.getDepartment();
-        System.out.println("department = " + department);
-        List<PrivilegeHolder> selectedPrivileges = currentUserPrivilegeHolders;
-        System.out.println("selectedPrivileges = " + selectedPrivileges);
+        List<PrivilegeHolder> selectedPrivileges = selected;
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
             wup.setRetired(true);
 
@@ -620,7 +617,6 @@ public class UserPrivilageController implements Serializable {
         
          for (PrivilegeHolder ph : selectedPrivileges) {
             if (ph.getPrivilege() == null) {
-                System.out.println("ph = " + ph.getPrivilege());
                 continue;
             }
             String jpql = "select w"
@@ -639,19 +635,16 @@ public class UserPrivilageController implements Serializable {
                 wup.setWebUser(currentWebUser);
                 wup.setPrivilege(ph.getPrivilege());
                 newWups.add(wup);
-                System.out.println("Added : wup = " +  wup);
             } else {
                 wup.setRetired(false);
                 oldWups.add(wup);
             }
         }
         getFacade().batchCreate(newWups);
-        System.out.println("newWups = " + newWups);
         getFacade().batchEdit(oldWups);
-        System.out.println("oldWups = " + oldWups);
+        
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
-        System.out.println("updated");
     }
 
     public void saveWebUserPrivileges() {

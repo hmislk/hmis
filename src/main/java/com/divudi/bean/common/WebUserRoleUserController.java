@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
 import com.divudi.entity.TriggerSubscription;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.WebUser;
@@ -66,12 +67,15 @@ public class WebUserRoleUserController implements Serializable {
             ru.setCreater(sessionController.loggedUser);
             save(ru);
             JsfUtil.addSuccessMessage("Save Success ");
-            userPrivilageController.fillUserRolePrivileges(current.getWebUserRole());
-            userPrivilageController.saveWebUserPrivileges(current.getWebUser());
-            fillUsers();
+            List<PrivilegeHolder> userRolePrivilage = userPrivilageController.getCurrentUserPrivilegeHolders();
+            userPrivilageController.saveWebUserPrivileges(current.getWebUser(),userRolePrivilage);
             fillRoleUsers();
         }
 
+    }
+    
+    public void fillUseRolePrivilage(){
+        userPrivilageController.fillUserRolePrivileges(current.getWebUserRole());
     }
     
     public void fillUsers() {
@@ -83,6 +87,7 @@ public class WebUserRoleUserController implements Serializable {
         m.put("ret", false);
         users = getFacade().findByJpql(jpql, m);
         fillRoleUsers();
+        fillUseRolePrivilage();
     }
 
 
