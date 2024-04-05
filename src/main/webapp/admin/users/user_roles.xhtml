@@ -88,6 +88,17 @@
                                     </div>
 
                                     <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
+                                        <p:commandButton
+                                            disabled="#{webUserRoleController.current.id == null}"
+                                            icon="fa fa-user-cog"
+                                            value="Manage Users"
+                                            class="m-1"
+                                            action="#{webUserRoleController.navigateToManageWebUserRoleUsers()}"
+                                            ajax="false" >
+                                            <f:setPropertyActionListener
+                                                value="#{webUserRoleController.current}"
+                                                target="#{userPrivilageController.webUserRole}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
                                         <p:commandButton 
                                             disabled="#{webUserRoleController.current.id == null}" 
                                             icon="fa fa-unlock-alt" 
