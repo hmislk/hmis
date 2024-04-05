@@ -19,6 +19,7 @@
                                 ajax="false" 
                                 icon="fa-solid fa-rotate-left">
                             </p:commandButton>
+                            
 
                             <div class="d-flex mt-2" style="float: right;">
                                 <p:outputLabel  value="Recievable Amount" /> 
@@ -33,13 +34,25 @@
                         var="ph" 
                         value="#{preReturnController.billItems}"
                         scrollable="true" 
-                        scrollHeight="250"
+                        scrollHeight="350"
                         id="itemList"
                         class="m-2"
                         >  
 
                         <f:facet name="header">  
-                            Returning Item
+                            <div>
+                                <h:outputLabel value="Returning Item"></h:outputLabel>
+                            <p:commandButton  
+                                value="Fill All" 
+                                action="#{preReturnController.fillReturningQty}" 
+                                process="@this"
+                                update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
+                                class="ui-button-warning"
+                                style="float: right;"
+                                icon="fa-solid fa-fill">
+                            </p:commandButton>
+                            </div>
+                            
                         </f:facet>  
 
                         <p:column headerText="Item Name" style="width:50px!important;">  
