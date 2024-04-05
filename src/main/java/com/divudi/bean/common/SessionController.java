@@ -1751,7 +1751,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     @Deprecated
-    public UserPreference getApplicationPreference() {
+    public UserPreference getLoggedPreference() {
         return loggedPreference;
     }
 
