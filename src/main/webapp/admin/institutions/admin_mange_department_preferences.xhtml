@@ -213,6 +213,16 @@
                                         class="form-label w-100"
                                         value="Number of Collection Centre Bill Copies"></h:outputLabel>
                                     <p:inputText value="#{sessionController.currentPreference.numberOfCCBillCopies}"/>
+                                    
+                                    <h:outputLabel
+                                        class="form-label"
+                                        value="Genarate OPD TOken Numbers To Counter Wise"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        class="form-control" 
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
+                                        value="#{sessionController.currentPreference.genarateOpdTokenNumbersToCounterWise}"/>
+
                                 </h:panelGrid>
 
 

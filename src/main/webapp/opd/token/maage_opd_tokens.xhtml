@@ -17,7 +17,7 @@
 
                         <h:panelGrid columns="3" class="my-2">
                             <p:outputLabel value="Counter" ></p:outputLabel>
-                            <p:selectOneMenu class="mx-2" value="#{tokenController.counter}" >
+                            <p:selectOneMenu class="mx-2" value="#{opdTokenController.counter}" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems 
                                     value="#{sessionController.loggableSubDepartments}" 
@@ -48,6 +48,10 @@
                             <!-- Patient Name Column -->
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{token.patient.person.name}" />
+                            </p:column>
+                            
+                            <p:column headerText="Counter">
+                                <h:outputText value="#{token.counter.name}" />
                             </p:column>
 
                             <!-- Patient Name Column -->
