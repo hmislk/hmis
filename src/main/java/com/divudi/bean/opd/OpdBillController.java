@@ -1433,6 +1433,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private boolean processBillsByDepartment() {
+        bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
             billDepts.add(e.getBillItem().getItem().getDepartment());
@@ -1458,12 +1459,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             getBillBean().calculateBillItems(myBill, tmp);
 //            createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
-            bills.add(myBill);
+            getBills().add(myBill);
         }
         return true;
     }
 
     private boolean processBillsByDepartmentAndCategory() {
+        bills = new ArrayList<>();
         Map<Department, Set<Category>> billDeptCats = new HashMap<>();
         // Collecting unique Departments and Categories
         for (BillEntry e : lstBillEntries) {
@@ -1542,8 +1544,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return false;
         }
         savePatient();
-        Bill newBatchBill = saveBatchBill();
-        List<Payment> newBatchBillPayments;
+        
+
         int numberOfBillsForTheOrder = getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries());
         if (numberOfBillsForTheOrder == 1) {
             BilledBill newBilledBill = new BilledBill();
@@ -1562,6 +1564,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                     newBill = saveBill(sessionController.getDepartment(), newBilledBill);
                     break;
             }
+            
 
             if (newBill == null) {
                 return false;
@@ -1596,8 +1599,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-        saveBatchBill();
-        newBatchBillPayments = createPayment(newBatchBill);
+        Bill newBatchBill = saveBatchBill();
+        createPayment(newBatchBill);
         saveBillItemSessions();
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
@@ -2838,9 +2841,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return ps;
     }
 
-    private SmsManagerEjb getSmsManagerEjb() {
-        return smsManagerEjb;
-    }
+   
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(getSessionController().getInstitution());
