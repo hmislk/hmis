@@ -230,7 +230,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private BillSession billSession;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
-    
+
     private Double feeTotalForSelectedBill;
 
     public boolean chackNull(String template) {
@@ -334,7 +334,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and f.serviceSession=:ses "
                 + " order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
-        
+
         sessionFees = itemFeeFacade.findByJpql(sql, m);
         System.out.println("sessionFees = " + sessionFees);
         m = new HashMap();
@@ -354,11 +354,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
             selectedItemFees.addAll(addedItemFees);
         }
         feeTotalForSelectedBill = 0.0;
-        for(ItemFee tbf:selectedItemFees){
-            if(foriegn){
-                feeTotalForSelectedBill+=tbf.getFfee();
-            }else{
-                feeTotalForSelectedBill+=tbf.getFee();
+        for (ItemFee tbf : selectedItemFees) {
+            if (foriegn) {
+                feeTotalForSelectedBill += tbf.getFfee();
+            } else {
+                feeTotalForSelectedBill += tbf.getFee();
             }
         }
         System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
@@ -871,7 +871,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
-        itemsAvailableToAddToBooking=new ArrayList<>();
+        itemsAvailableToAddToBooking = new ArrayList<>();
         itemToAddToBooking = null;
         patient = new Patient();
     }
@@ -882,7 +882,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         billSessions = null;
         sessionStartingDate = null;
         itemToAddToBooking = null;
-        itemsAvailableToAddToBooking=new ArrayList<>();
+        itemsAvailableToAddToBooking = new ArrayList<>();
         patient = new Patient();
     }
 
@@ -1867,18 +1867,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
         savingBillSession = createBillSession(savingBill, savingBillItem, forReservedNumbers);
 
         List<BillFee> savingBillFees = new ArrayList<>();
-        
+
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItem);
         List<BillFee> savingBillFeesFromAdditionalItem = createBillFeeForSessions(savingBill, additionalBillItem);
-        
-        if(savingBillFeesFromSession!=null){
+
+        if (savingBillFeesFromSession != null) {
             savingBillFees.addAll(savingBillFeesFromSession);
         }
-        if(savingBillFeesFromAdditionalItem!=null){
+        if (savingBillFeesFromAdditionalItem != null) {
             savingBillFees.addAll(savingBillFeesFromAdditionalItem);
         }
-        
-        
+
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
         getBillItemFacade().edit(savingBillItem);
@@ -2046,7 +2045,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    
     public List<ItemFee> findItemFees(Item i) {
         String sql;
         Map m = new HashMap();
@@ -2058,24 +2056,23 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    
     private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpDiscount = 0;
         double tmpGrossTotal = 0.0;
         List<ItemFee> sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
-    
-        if(billItem.getItem()!=null){
-            if(billItem.getItem() instanceof ServiceSession){
+
+        if (billItem.getItem() != null) {
+            if (billItem.getItem() instanceof ServiceSession) {
                 sessionsFees = findServiceSessionFees((ServiceSession) billItem.getItem());
-            }else if(billItem.getItem() instanceof Item){
+            } else if (billItem.getItem() instanceof Item) {
                 sessionsFees = findItemFees(billItem.getItem());
             }
-        }else{
+        } else {
             sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
         }
-        
+
         if (sessionsFees == null) {
             return billFeeList;
         }
@@ -2358,19 +2355,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
-        bi.setGrossValue(i.getDblValue());
-        bi.setItem(i);
-        bi.setNetRate(i.getDblValue());
-        bi.setNetValue(i.getDblValue());
-        bi.setQty(1.0);
-        bi.setRate(i.getDblValue());
+        if (i != null) {
+            bi.setGrossValue(i.getDblValue());
+            bi.setItem(i);
+            bi.setNetRate(i.getDblValue());
+            bi.setNetValue(i.getDblValue());
+            bi.setQty(1.0);
+            bi.setRate(i.getDblValue());
+        }
         bi.setSessionDate(getSelectedSessionInstance().getSessionAt());
         billItemFacade.create(bi);
         return bi;
     }
 
-    
-    
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
         BillSession bs = new BillSession();
         bs.setAbsent(false);
@@ -3018,7 +3015,5 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void setFeeTotalForSelectedBill(Double feeTotalForSelectedBill) {
         this.feeTotalForSelectedBill = feeTotalForSelectedBill;
     }
-    
-    
 
 }

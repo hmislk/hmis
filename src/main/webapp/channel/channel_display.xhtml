@@ -35,8 +35,7 @@
             .circle {
                 width: 40px; /* Set the width of the circle */
                 height: 40px; /* Set the height of the circle */
-                background-color: yellow; /* Set the background color of the circle */
-                color: black; /* Set the text color */
+                color: yellow; /* Set the text color */
                 border-radius: 50%; /* Make the element a circle by setting border-radius to 50% */
                 display: flex;
                 justify-content: center;
@@ -84,7 +83,7 @@
 
                             <div class="d-flex justify-content-between align-items-center w-100 ">
                                 <div class="px-2">
-                                    <h3 class="text-white p-1">#{sessionController.institution.name}</h3>
+                                    <h3  onclick="toggleFullScreen()"  class="text-white p-1">#{sessionController.institution.name}</h3>
                                 </div>
                                 <div class="mx-2 px-2">
                                     <div class="text-white">
@@ -110,72 +109,61 @@
                             id="tblSessions"
                             var="s" 
                             value="#{bookingController.sessionInstances}" 
-                            columns="3" 
+                            columns="2" 
                             layout="grid" 
                             emptyMessage="No Sessions for Today"
-                            styleClass="ui-datagrid-responsive">
+                            styleClass="ui-datagrid-responsive"
+                            class="m-0 p-0">
 
                             <h:panelGroup  style="font-size: 8pt" class="p-0 m-0" >
-                                <div class="card text-white bg-dark shadow" style="min-width: 10rem;min-height: 5rem;">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <h:panelGroup rendered="#{s.roomNo ne 0}">
-                                                <div class="text-center">
-                                                    <h:outputText value="Room" style="font-weight: bold;
-                                                                  text-align: right;
-                                                                  color:  yellow"/>
-                                                    <div style="box-sizing: border-box;
-                                                         width: 50px;
-                                                         height: 40px;
-                                                         border-radius: 10px;
-                                                         border: 2px solid yellow">
-
-                                                        <h3><h:outputText value="#{s.roomNo}" style="font-weight: bold;
-                                                                          text-align: right;
-                                                                          color:  yellow"/></h3>
-                                                    </div>
-                                                </div>
-                                            </h:panelGroup>
+                                <div class="row w-100 text-white " style="box-sizing: border-box;height: 80px;">
+                                    <div class="col-2 bg-primary d-flex justify-content-center align-items-center text-left">
+                                        <h2><h:outputText value="R&nbsp;#{s.roomNo}"/></h2>
+                                    </div>
+                                    <div class="col-8 bg-dark">
+                                        <div class="p-2">
                                             <div>
-                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;font-size: 12pt"/><br></br>
-                                                <div class="text-center">
-                                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-size: 1em;
-                                                                  font-weight: bold;
-                                                                  text-align: right"/>
-                                                </div>
-
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-size: 16pt"/><br></br>
                                             </div>
-
-                                            <h:panelGroup>
+                                            <div >
+                                                <h:outputText value="#{s.staff.speciality.name}" style="font-size: 2em;
+                                                              text-align: right"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 bg-dark" style="box-sizing: border-box;border-left: 2px solid yellow">
+                                        <h:panelGroup>
+                                            <div class="text-white">
                                                 <div>
-                                                    <div>
-                                                        <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
-                                                            <div class="d-flex align-items-center justify-content-center">
-                                                                <h7>Pending...</h7>
-                                                            </div>
-                                                            <!--                                                            <span class="spinner mt-4 d-flex justify-content-end"></span>-->
-                                                        </h:panelGroup>
-                                                    </div>
-                                                    <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}">
-                                                        <div class="circle">
-                                                            <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" style="font-size: 1.5em;
+                                                    <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
+                                                        <div class="d-flex align-items-center justify-content-center mt-2">
+                                                            <h6 class="text-white mt-4">Awaiting...</h6>
+                                                        </div>
+                                                        <!--                                                            <span class="spinner mt-4 d-flex justify-content-end"></span>-->
+                                                    </h:panelGroup>
+                                                </div>
+                                                <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}">
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <div class=" text-center text-warning" >
+                                                            <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}"
+                                                                          style="font-size: 5em;
                                                                           font-weight: bold;
                                                                           text-align: right"/>
                                                         </div>
-                                                    </h:panelGroup>
-                                                </div>
-                                            </h:panelGroup>
-                                        </div>
-
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
+
                             </h:panelGroup>
                         </p:dataGrid>
 
                     </div>
                 </div>
             </h:form>
-            <script>
+            <script  type="text/javascript">
                 function updateTime() {
                     const now = new Date();
                     const dateElement = document.getElementById('date');
@@ -199,6 +187,34 @@
                     document.getElementById('date').style.display = 'none';
                     document.getElementById('time').style.display = 'none';
                 });
+
+                //<![CDATA[
+                function toggleFullScreen() {
+                    var elem = document.documentElement;
+                    if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                            !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                        if (elem.requestFullscreen) {
+                            elem.requestFullscreen();
+                        } else if (elem.msRequestFullscreen) {
+                            elem.msRequestFullscreen();
+                        } else if (elem.mozRequestFullScreen) {
+                            elem.mozRequestFullScreen();
+                        } else if (elem.webkitRequestFullscreen) {
+                            elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                }
+                //]]>
             </script>
         </body>
     </ui:define>
