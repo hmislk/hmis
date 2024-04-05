@@ -715,6 +715,45 @@ public class BillNumberGenerator {
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
+    
+     public String generateDailyTokenNumberCounterWise(Department department, Department counter,Category cat, Staff staff, TokenType tokenType) {
+        String sql = "SELECT count(b) "
+                + " FROM Token b "
+                + " where b.tokenType=:tt "
+                + " and b.tokenDate=:bd ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
+        }
+        
+        if (counter != null) {
+            sql += " and b.counter=:cun ";
+            hm.put("cun", counter);
+        }
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (staff != null) {
+            sql += " and b.staff=:staff ";
+            hm.put("staff", staff);
+        }
+
+        hm.put("tt", tokenType);
+        hm.put("bd", new Date());
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        if (dd == null) {
+            dd = 0l;
+        } else {
+            dd++;
+        }
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
+    
 
     public String generateDailyTokenNumber(Department department, Category cat, Staff staff, TokenType tokenType) {
         String sql = "SELECT count(b) "

@@ -115,8 +115,8 @@
                             emptyMessage="No Sessions for Today"
                             styleClass="ui-datagrid-responsive">
 
-                            <h:panelGroup  style="font-size: 12pt" >
-                                <div class="card text-white bg-dark shadow" style="min-width: 10rem;min-height: 6.5rem;">
+                            <h:panelGroup  style="font-size: 8pt" class="p-0 m-0" >
+                                <div class="card text-white bg-dark shadow" style="min-width: 10rem;min-height: 5rem;">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h:panelGroup rendered="#{s.roomNo ne 0}">
@@ -137,7 +137,7 @@
                                                 </div>
                                             </h:panelGroup>
                                             <div>
-                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;"/><br></br>
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;font-size: 12pt"/><br></br>
                                                 <div class="text-center">
                                                     <h:outputText value="(#{s.staff.speciality.name})" style="font-size: 1em;
                                                                   font-weight: bold;
@@ -151,7 +151,7 @@
                                                     <div>
                                                         <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
                                                             <div class="d-flex align-items-center justify-content-center">
-                                                                <h5>Pending...</h5>
+                                                                <h7>Pending...</h7>
                                                             </div>
                                                             <!--                                                            <span class="spinner mt-4 d-flex justify-content-end"></span>-->
                                                         </h:panelGroup>

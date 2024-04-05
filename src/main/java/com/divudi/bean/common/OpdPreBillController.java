@@ -130,6 +130,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     BillEjb billEjb;
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -156,6 +157,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     WorkingTimeController workingTimeController;
     @Inject
     OpdTokenController opdTokenController;
+    @Inject
+    TokenController tokenController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -752,6 +755,13 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(b);
             getBills().add(b);
 
+            if (getToken() != null) {
+                getToken().setBill(b);
+                tokenFacade.edit(getToken());
+                System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
+                markToken(b);
+            }
+
         } else {
             boolean result = putToBills();
             if (result == false) {
@@ -776,6 +786,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void markToken(Bill b) {
         Token t = getToken();
+        System.out.println("getToken().getIdStr()  2   = " + getToken().getIdStr());
         if (t == null) {
             return;
         }
@@ -887,14 +898,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         tmp.setTotal(dblT);
         getBillFacade().edit(tmp);
 
-        if (getToken() != null) {
-            getToken().setBill(tmp);
-            tokenFacade.edit(getToken());
-            markToken(tmp);
-        }
-
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+        
+//        if (getToken() != null) {
+//            getToken().setBill(tmp);
+//            tokenFacade.edit(getToken());
+//            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
+//            markToken(tmp);
+//        }
     }
 
     @Inject

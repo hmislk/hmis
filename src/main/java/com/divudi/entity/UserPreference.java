@@ -271,6 +271,7 @@ public class UserPreference implements Serializable {
     private String channelingBillHeaderTemplate;
 
     private boolean showBarCodeInChannelBookingBill;
+    private boolean genarateOpdTokenNumbersToCounterWise;
 
     @Deprecated
     public ApplicationInstitution getApplicationInstitution() {
@@ -1452,6 +1453,14 @@ public class UserPreference implements Serializable {
 
     public void setSmsTemplateForChannelBookingNoShow(String smsTemplateForChannelBookingNoShow) {
         this.smsTemplateForChannelBookingNoShow = smsTemplateForChannelBookingNoShow;
+    }
+
+    public boolean isGenarateOpdTokenNumbersToCounterWise() {
+        return genarateOpdTokenNumbersToCounterWise;
+    }
+
+    public void setGenarateOpdTokenNumbersToCounterWise(boolean genarateOpdTokenNumbersToCounterWise) {
+        this.genarateOpdTokenNumbersToCounterWise = genarateOpdTokenNumbersToCounterWise;
     }
 
 }

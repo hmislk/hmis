@@ -321,6 +321,7 @@ public class OpdPreSettleController implements Serializable {
     }
     
     private void saveSaleBillItems() {
+        System.out.println("getPreBill().getBillItems() = " + getPreBill().getBillItems().size());
         for (BillItem tbi : getPreBill().getBillItems()) {
             BillItem newBil = new BillItem();
             newBil.copy(tbi);

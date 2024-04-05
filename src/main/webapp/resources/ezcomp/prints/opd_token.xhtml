@@ -18,12 +18,7 @@
         <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
         <div class="posbill" style="text-align: center;">
 
-            <div class="institutionName" style="text-align: center!important;
-                 font-weight: bold!important;
-                 font-size: 15px!important;
-                 font-weight: bold;">
-                <h:outputLabel value="#{cc.attrs.token.department.printingName}" />
-            </div>
+
             <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.token.department.address}"/>
@@ -36,7 +31,9 @@
                     <h:outputLabel value="#{cc.attrs.token.department.fax}"/>                                                 
                 </div>
             </div>
-
+            <div class="headingBill">
+                <h:outputLabel value="#{cc.attrs.token.counter.name}" style="font-size: 16px; font-weight: 900"/>    
+            </div>
             <div class="headingBill">
                 <h:outputLabel value="OPD Token" style="font-size: 13px; font-weight: 900"/>    
             </div>
@@ -55,8 +52,11 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
+            <div style="margin-top: -10px;font-size: 12pt;font-weight: bold">
+                #{cc.attrs.token.doctor.person.nameWithTitle}
 
-            <div class="billline d-flex justify-content-center">
+            </div>
+            <div class="billline d-flex justify-content-center my-1">
                 <p:barcode value="#{cc.attrs.token.idStr}" 
                            width="400"
                            height="100"
@@ -98,11 +98,11 @@
                             </td>
                         </tr>
                     </h:panelGroup>
-
                 </table>
-
             </div>
-
+            <div class="billline">
+                <h:outputLabel value="#{cc.attrs.token.bill.re}"   />                           
+            </div>
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>

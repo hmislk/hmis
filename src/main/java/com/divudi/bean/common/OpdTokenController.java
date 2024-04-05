@@ -12,6 +12,7 @@ import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -67,6 +68,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     // </editor-fold> 
     private Token currentToken;
+    private Token onGoingToken;
     private Token removeingToken;
     private List<Token> currentTokens;
     private Patient patient;
@@ -75,7 +77,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Institution institution;
     private Department counter;
     private Department selectedCounter;
-
+    private Doctor doctor;
     private boolean patientDetailsEditable;
 
     private boolean printPreview;
@@ -92,15 +94,19 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public void saveToken(Token t) {
+        System.out.println("t.getId() = " + t.getId());
         if (t == null) {
             return;
         }
         if (t.getId() == null) {
+            System.out.println("t.getId() = " + t.getId());
             t.setCreatedAt(new Date());
             t.setCreatedBy(sessionController.getLoggedUser());
             tokenFacade.create(t);
         } else {
+            System.out.println("t.getId() = " + t.getId());
             tokenFacade.edit(t);
+            onGoingToken=t;
         }
     }
 
@@ -164,13 +170,25 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         } else {
             tokenFacade.edit(currentToken);
         }
-        currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
+        if (sessionController.getDepartmentPreference().isGenarateOpdTokenNumbersToCounterWise()) {
+            currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumberCounterWise(currentToken.getFromDepartment(), counter, null, null, TokenType.OPD_TOKEN));
+        }
+        else{
+            currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
+        }
         currentToken.setCounter(counter);
+        currentToken.setDoctor(doctor);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
         printPreview = true;
         return "/opd/token/opd_token_print?faces-redirect=true";
+    }
+
+    public void genarateTokenNumberCounterWise() {
+        if (counter != null) {
+
+        }
     }
 
     public void toggleCalledStatus() {
@@ -196,6 +214,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokens() {
+        counter=null;
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
     }
@@ -328,6 +347,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokensCompleted() {
+        counter=null;
         fillOpdTokensCompleted();
         return "/opd/token/opd_tokens_completed?faces-redirect=true";
     }
@@ -364,7 +384,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public void startTokenService() {
-        
+
     }
 
     public void completeTokenService() {
@@ -489,6 +509,22 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public Token getOnGoingToken() {
+        return onGoingToken;
+    }
+
+    public void setOnGoingToken(Token onGoingToken) {
+        this.onGoingToken = onGoingToken;
     }
 
 }
