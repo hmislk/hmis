@@ -106,12 +106,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         } else {
             System.out.println("t.getId() = " + t.getId());
             tokenFacade.edit(t);
-            onGoingToken=t;
+            onGoingToken = t;
         }
     }
 
     public String navigateToCreateNewOpdToken() {
-        resetClassVariables();
+        if (patient == null) {
+            resetClassVariables();
+        }
         currentToken = new Token();
         currentToken.setTokenType(TokenType.OPD_TOKEN);
         currentToken.setDepartment(sessionController.getDepartment());
@@ -172,8 +174,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
         if (sessionController.getDepartmentPreference().isGenarateOpdTokenNumbersToCounterWise()) {
             currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumberCounterWise(currentToken.getFromDepartment(), counter, null, null, TokenType.OPD_TOKEN));
-        }
-        else{
+        } else {
             currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
         }
         currentToken.setCounter(counter);
@@ -214,7 +215,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokens() {
-        counter=null;
+        counter = null;
         fillOpdTokens();
         return "/opd/token/maage_opd_tokens?faces-redirect=true";
     }
@@ -347,7 +348,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageOpdTokensCompleted() {
-        counter=null;
+        counter = null;
         fillOpdTokensCompleted();
         return "/opd/token/opd_tokens_completed?faces-redirect=true";
     }
