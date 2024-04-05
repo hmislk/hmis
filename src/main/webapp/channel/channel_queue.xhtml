@@ -30,11 +30,13 @@
             .blink {
                 animation: blink 1s infinite;
             }
+            
+           
 
         </style>
 
         <h:form id="form">
-            <div class="row">
+            <div class="row w-100">
                 <div class="col-12" >
 
                     <nav class="navbar navbar-light p-2" style="background-color: #e3f2fd;">
@@ -77,19 +79,20 @@
                 </div>
                 <ui:repeat var="s" 
                            id="tblSessions"
-                           value="#{bookingController.sessionInstances}" >
+                           value="#{bookingController.sessionInstances}" 
+                           class="w-100">
 
-                    <div class="row  w-100 p-2 shadow mt-1">
+                    <div class="bgCard row  w-100 p-2 shadow mt-1">
                         <div class="col-3 bg-primary text-white d-flex align-items-center">
                             <div class="px-4">
                                 <h:outputText style="font-size: 30pt" styleClass="far fa-clock"/>
                             </div>
                             <div class="p-1 px-2">
-                                <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 18pt"/><br/>
-                                <h:outputText value="#{s.sessionDate}"  style="font-size: 1.2em;">
+                                <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 10pt"/><br/>
+                                <h:outputText value="#{s.sessionDate}"  style="font-size: 8pt;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
-                                <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
+                                <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 8pt;">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                                 </h:outputText>
                             </div>
@@ -100,25 +103,25 @@
                                     <h:outputText style="font-size: 20pt" styleClass="fas fa-user-md"/>
                                 </div>
                                 <div class="text-white">
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.2em;"/><br/>
+                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
                                     <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
                                 </div>
                             </div>
 
                         </div>
-                        <div class="col-2">
+                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black">
                             <div class="text-center ">
                                 <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
-                                    <div class="d-flex justify-content-center align-items-center">
-                                        <span style="font-size: 38pt;font-weight: bold">
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        <span style="font-size: 20pt;font-weight: bold">
                                             <span class="text-success">
-                                                <span class="blink">&#x25CF;</span>
+                                                <span class="blink" style="font-size: 8pt">&#x25CF;</span>
                                                 <h:outputText value="#{s.completedPatientCount}">
                                                     <f:convertNumber pattern="#,##00"/>
                                                 </h:outputText>
                                             </span>
                                             :
-                                            <span class="text-primary" style="font-size: 38pt;font-weight: bold"> 
+                                            <span class="text-primary" style="font-size: 20pt;font-weight: bold"> 
                                                 <h:outputText value="#{s.paidPatientCount}">
                                                     <f:convertNumber pattern="#,##00"/>
                                                 </h:outputText>
@@ -129,31 +132,37 @@
                             </div>
 
                         </div>
-                        <div class="col-3">
+                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black;">
                             <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
                                 <div class="d-flex justify-content-center align-items-center">
                                     <span>
-                                        <span class="text-center">
-                                            <h:outputText class="mx-2" value="Paid"/>
-                                            <h:outputText style="font-size: 38pt;font-weight: bold" value="#{s.paidPatientCount}">
-                                                <f:convertNumber pattern="#,##00"/>
-                                            </h:outputText>
-                                        </span>
-
-                                        <span class="text-center"> 
-                                            <h:outputText class="mx-2" value="Booked"/>
-                                            <h:outputText style="font-size: 38pt;font-weight: bold" value="#{s.bookedPatientCount}">
-                                                <f:convertNumber pattern="#,##00"/>
-                                            </h:outputText>
-                                        </span>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="text-center mx-4">
+                                                <h:panelGrid columns="1">
+                                                    <h:outputText  style="font-size: 8pt;font-weight: bold" value="Paid"/>
+                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.paidPatientCount}">
+                                                        <f:convertNumber pattern="#,##00"/>
+                                                    </h:outputText>
+                                                </h:panelGrid>
+                                            </span>
+                                            
+                                            <span class="text-center"> 
+                                                <h:panelGrid columns="1">
+                                                    <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
+                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
+                                                        <f:convertNumber pattern="#,##00"/>
+                                                    </h:outputText>
+                                                </h:panelGrid>
+                                            </span>
+                                        </div>
                                     </span>
                                 </div>
                             </h:panelGroup>
                         </div>
-                        <div class="col-1">
-                            <div class="d-flex justify-content-center align-items-center p-4">
+                        <div class="col-2 ">
+                            <div class="d-flex justify-content-end align-items-center mt-2">
                                 <div>
-                                    <p:commandButton value="Manage" icon="fa fa-check-circle" iconPos="right"
+                                    <p:commandButton icon="fas fa-play" iconPos="right"
                                                      styleClass=" rounded-button ui-button-success " ajax="false"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                      rendered="#{s.completed}">
@@ -161,7 +170,7 @@
                                     </p:commandButton>
 
 
-                                    <p:commandButton value="Manage" icon="fa fa-hourglass-half" iconPos="right"
+                                    <p:commandButton  icon="fas fa-play" iconPos="right"
                                                      styleClass="rounded-button ui-button-warning" ajax="false"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                      rendered="#{not s.completed and not s.started}">
@@ -169,7 +178,7 @@
                                     </p:commandButton>
 
 
-                                    <p:commandButton  value="Manage" icon="fa fa-play-circle" iconPos="right"
+                                    <p:commandButton  icon="fas fa-play" iconPos="right"
                                                       styleClass="rounded-button ui-button-info " ajax="false"
                                                       action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                       rendered="#{s.started and not s.completed}">
