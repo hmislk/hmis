@@ -37,6 +37,8 @@ public class WebUserRoleController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    WebUserRoleUserController webUserRoleUserController;
     @EJB
     private WebUserRoleFacade ejbFacade;
 
@@ -71,6 +73,19 @@ public class WebUserRoleController implements Serializable {
             return null;
         }
         return "/admin/users/user_role_icons?faces-redirect=true";
+    }
+    
+    public String navigateToManageWebUserRoleUsers(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select a role");
+            return null;
+        }
+        if(current.getId()==null){
+            JsfUtil.addErrorMessage("Save first");
+            return null;
+        }
+        webUserRoleUserController.getCurrent().setWebUserRole(current);
+        return "/admin/users/user_role_users?faces-redirect=true";
     }
     
     public String navigateToManageWebUserTriggerSubscriptions(){
@@ -157,6 +172,7 @@ public class WebUserRoleController implements Serializable {
         }
         return items;
     }
+    
 
     /**
      *
