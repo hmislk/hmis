@@ -72,7 +72,19 @@
                         id="itemList" >  
 
                         <f:facet name="header">  
-                            Returning Item 
+                            <div>
+                                <h:outputLabel value="Returning Item"></h:outputLabel>
+                                <p:commandButton  
+                                    value="Fill All" 
+                                    action="#{saleReturnController.fillReturningQty}" 
+                                    process="@this"
+                                    update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
+                                    class="ui-button-warning"
+                                    style="float: right;"
+                                    icon="fa-solid fa-fill">
+                                </p:commandButton>
+                            </div>
+
                         </f:facet>  
 
                         <p:column headerText="Item Name" style="width:50px!important;">  
@@ -120,7 +132,7 @@
                         class="ui-button-warning"
                         actionListener="#{saleReturnController.makeNull}">
                     </p:commandButton>  
-                    
+
                     <p:commandButton 
                         value="Print " 
                         class="ui-button-info mx-2"
@@ -129,27 +141,27 @@
                         >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                    
+
                 </f:facet>
 
                 <h:panelGroup   id="gpBillPreview"  > 
 
                     <h:panelGroup   id="gpBillPreviewSingle" rendered="true">                   
-                            <h:panelGroup rendered="true" > 
-                                <ph:saleBill bill="#{saleReturnController.returnBill}"></ph:saleBill>
-                            </h:panelGroup>
+                        <h:panelGroup rendered="true" > 
+                            <ph:saleBill bill="#{saleReturnController.returnBill}"></ph:saleBill>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                <ph:saleBill_prabodha bill="#{saleReturnController.returnBill}"></ph:saleBill_prabodha>
-                            </h:panelGroup>
+                        <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                            <ph:saleBill_prabodha bill="#{saleReturnController.returnBill}"></ph:saleBill_prabodha>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                <ph:saleBill_five_five bill="#{saleReturnController.returnBill}"></ph:saleBill_five_five>
-                            </h:panelGroup>
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                            <ph:saleBill_five_five bill="#{saleReturnController.returnBill}"></ph:saleBill_five_five>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                 </h:panelGroup>
