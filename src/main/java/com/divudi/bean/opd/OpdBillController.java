@@ -1383,40 +1383,40 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public boolean createMultipleBillsFromOrderListOld() {
-        bills = new ArrayList<>();
-        Set<Department> billDepts = new HashSet<>();
-        for (BillEntry e : lstBillEntries) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
-            // Category is available as Category c=e.getBillItem().getItem().getCategory();
-        }
-
-        for (Department d : billDepts) {
-            Bill myBill = new BilledBill();
-            myBill = saveBill(d, myBill);
-            if (myBill == null) {
-                return false;
-            }
-            List<BillEntry> tmp = new ArrayList<>();
-            for (BillEntry e : lstBillEntries) {
-                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
-                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    myBill.getBillItems().add(bi);
-                    tmp.add(e);
-                }
-            }
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                myBill.setCashPaid(cashPaid);
-            }
-            getBillFacade().edit(myBill);
-            getBillBean().calculateBillItems(myBill, tmp);
-            createPaymentsForBills(myBill, tmp);
-            getBillBean().checkBillItemFeesInitiated(myBill);
-            bills.add(myBill);
-        }
-
-        return true;
-    }
+//    public boolean createMultipleBillsFromOrderListOld() {
+//        bills = new ArrayList<>();
+//        Set<Department> billDepts = new HashSet<>();
+//        for (BillEntry e : lstBillEntries) {
+//            billDepts.add(e.getBillItem().getItem().getDepartment());
+//            // Category is available as Category c=e.getBillItem().getItem().getCategory();
+//        }
+//
+//        for (Department d : billDepts) {
+//            Bill myBill = new BilledBill();
+//            myBill = saveBill(d, myBill);
+//            if (myBill == null) {
+//                return false;
+//            }
+//            List<BillEntry> tmp = new ArrayList<>();
+//            for (BillEntry e : lstBillEntries) {
+//                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
+//                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
+//                    myBill.getBillItems().add(bi);
+//                    tmp.add(e);
+//                }
+//            }
+//            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//                myBill.setCashPaid(cashPaid);
+//            }
+//            getBillFacade().edit(myBill);
+//            getBillBean().calculateBillItems(myBill, tmp);
+//            createPaymentsForBills(myBill, tmp);
+//            getBillBean().checkBillItemFeesInitiated(myBill);
+//            bills.add(myBill);
+//        }
+//
+//        return true;
+//    }
 
     public boolean createMultipleBillsFromOrderList() {
         bills = new ArrayList<>();
@@ -1456,7 +1456,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             getBillFacade().edit(myBill);
             getBillBean().calculateBillItems(myBill, tmp);
-            createPaymentsForBills(myBill, tmp);
+//            createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
             bills.add(myBill);
         }
@@ -1500,7 +1500,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 // Finalizing the Bill
                 getBillFacade().edit(myBill);
                 getBillBean().calculateBillItems(myBill, tmp);
-                createPaymentsForBills(myBill, tmp);
+//                createPaymentsForBills(myBill, tmp);
                 getBillBean().checkBillItemFeesInitiated(myBill);
 
                 // Adding the finalized Bill to the list of Bills
@@ -1542,11 +1542,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return false;
         }
         savePatient();
+        Bill newBatchBill = saveBatchBill();
         List<Payment> newBatchBillPayments;
         int numberOfBillsForTheOrder = getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries());
         if (numberOfBillsForTheOrder == 1) {
             BilledBill newBilledBill = new BilledBill();
-            newBatchBillPayments = createPayment(newBilledBill);
             Bill newBill = null;
             switch (sessionController.getDepartmentPreference().getOpdBillingStrategy()) {
                 case ONE_BILL_PER_DEPARTMENT:
@@ -1586,7 +1586,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             newBill.setVat(newBill.getVat());
             newBill.setVatPlusNetTotal(newBill.getNetTotal() + newBill.getVat());
-            createPaymentsForBills(newBilledBill, getLstBillEntries(), newBatchBillPayments);
+//            createPaymentsForBills(newBilledBill, getLstBillEntries(), newBatchBillPayments);
             getBillFacade().edit(newBill);
             getBillBean().checkBillItemFeesInitiated(newBill);
             getBills().add(newBill);
@@ -1597,7 +1597,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
         saveBatchBill();
-        newBatchBillPayments = createPayment(newBilledBill);
+        newBatchBillPayments = createPayment(newBatchBill);
         saveBillItemSessions();
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
