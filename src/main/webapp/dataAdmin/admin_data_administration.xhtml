@@ -36,6 +36,15 @@
                                                 action="#{searchController.toListAllBills}" 
                                                 rendered="#{webUserController.hasPrivilege('Search')}">
                                             </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                value="List All Payments"  
+                                                ajax="false"
+                                                icon="fa fa-list"
+                                                class="w-100"
+                                                action="#{searchController.toListAllPayments()}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 value="Downlods"

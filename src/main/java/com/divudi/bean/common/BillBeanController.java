@@ -2975,8 +2975,10 @@ public class BillBeanController implements Serializable {
             ////System.out.println(".................");
 
         } else {
+            bill.setGrantTotal(tot);
             bill.setTotal(tot);
             bill.setNetTotal(net);
+            bill.setBillTotal(net);
             bill.setDiscount(dis);
         }
 

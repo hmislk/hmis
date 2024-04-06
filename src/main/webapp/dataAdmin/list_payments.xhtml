@@ -13,7 +13,7 @@
                     <p:panel class="m-1 ">
                         <f:facet name="header">
                             <i class="fa fa-list"/>
-                            <h:outputLabel value="List All Bills" class="mx-2"/>
+                            <h:outputLabel value="List All Payments" class="mx-2"/>
                         </f:facet>
 
                         <div class="d-flex justify-content-between mb-2">
@@ -27,10 +27,13 @@
                                 </h:panelGrid>
                             </div>
                             <div >
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
-                                                 action="#{searchController.listAllBills()}"
-                                                 icon="fa fa-search"
-                                                 class="mx-2 ui-button-primary"/>
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search" 
+                                    action="#{searchController.listAllPayments()}"
+                                    icon="fa fa-search"
+                                    class="mx-2 ui-button-primary"/>
                                 <p:commandButton 
                                     value="Download Excel" 
                                     ajax="false" 
@@ -45,8 +48,8 @@
                         <p:dataTable 
                             rowIndexVar="i" 
                             id="tblBills" 
-                            value="#{searchController.bills}" 
-                            var="bill" 
+                            value="#{searchController.payments}" 
+                            var="payment" 
                             class="w-100"
                             rows="10"
                             paginator="true" 
@@ -58,77 +61,95 @@
                             scrollWidth="95%">
 
                             <p:column headerText="ID" width="60" style="text-align: right;">
-                                <p:outputLabel value="#{bill.id}" />
-                            </p:column>
-
-                            <p:column headerText="Bill Type" width="120">
-                                <p:outputLabel value="#{bill.billType}" />
-                            </p:column>
-
-                            <p:column headerText="Bill Type Atomic" width="280">
-                                <p:outputLabel value="#{bill.billTypeAtomic}" />
-                            </p:column>
-
-                            <p:column headerText="Class" width="150">
-                                <p:outputLabel value="#{bill.billClassType}" />
-                            </p:column>
-
-                            <p:column headerText="Ins ID" width="100" style="text-align: right;">
-                                <p:outputLabel value="#{bill.insId}" />
-                            </p:column>
-
-                            <p:column headerText="Dept ID" width="100" style="text-align: right;">
-                                <p:outputLabel value="#{bill.deptId}" />
-                            </p:column>
-
-                            <p:column headerText="Institution" width="200">
-                                <p:outputLabel value="#{bill.institution.name}" />
-                            </p:column>
-
-                            <p:column headerText="Department" width="200">
-                                <p:outputLabel value="#{bill.department.name}" />
+                                <p:outputLabel value="#{payment.id}" />
                             </p:column>
 
                             <p:column headerText="Billed at" width="200">
-                                <p:outputLabel value="#{bill.createdAt}">
+                                <p:outputLabel value="#{payment.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </p:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Payment Method" width="80">
+                                <p:outputLabel value="#{payment.paymentMethod}" />
+                            </p:column>
+
+                            <p:column headerText="Paid Value" width="80">
+                                <p:outputLabel value="#{payment.paidValue}" />
+                            </p:column>
+
+                            <p:column headerText="Institution" width="200">
+                                <p:outputLabel value="#{payment.institution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department" width="200">
+                                <p:outputLabel value="#{payment.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Class" width="150">
+                                <p:outputLabel value="#{payment.bill.billClassType}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" width="150">
+                                <p:outputLabel value="#{payment.bill.billType}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type (Atomic)" width="200">
+                                <p:outputLabel value="#{payment.bill.billTypeAtomic}" />
+                            </p:column>
+
+
+                            <p:column headerText="Dept ID" width="100" style="text-align: right;">
+                                <p:outputLabel value="#{payment.bill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Ins ID" width="100" style="text-align: right;">
+                                <p:outputLabel value="#{payment.bill.insId}" />
+                            </p:column>
+
+
+
+
                             <p:column headerText="Billed by" width="200">
-                                <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                                <p:outputLabel value="#{payment.creater.webUserPerson.name}" />
                             </p:column>
 
                             <p:column headerText="Payment Method" width="150">
-                                <p:outputLabel value="#{bill.paymentMethod}" />
+                                <p:outputLabel value="#{payment.paymentMethod}" />
                             </p:column>
 
                             <p:column headerText="Total" width="120" style="text-align: right;">
-                                <p:outputLabel value="#{bill.total}">
+                                <p:outputLabel value="#{payment.bill.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Gross Total" width="120" style="text-align: right;">
-                                <p:outputLabel value="#{bill.grantTotal}">
+                                <p:outputLabel value="#{payment.bill.grantTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Discount" width="120" style="text-align: right;">
-                                <p:outputLabel value="#{bill.discount}">
+                                <p:outputLabel value="#{payment.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Margin" width="120" style="text-align: right;">
-                                <p:outputLabel value="#{bill.margin}">
+                                <p:outputLabel value="#{payment.bill.margin}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{payment.bill.billTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Net Value" width="120" style="text-align: right;">
-                                <p:outputLabel value="#{bill.netTotal}">
+                                <p:outputLabel value="#{payment.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>

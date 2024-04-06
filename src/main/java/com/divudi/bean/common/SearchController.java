@@ -50,6 +50,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Payment;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -84,6 +86,8 @@ public class SearchController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
+    @EJB
+    private PaymentFacade paymentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
@@ -138,6 +142,7 @@ public class SearchController implements Serializable {
     private BillType billType;
     private PaymentMethod paymentMethod;
     private List<Bill> bills;
+    private List<Payment> payments;
     private List<BillLight> billLights;
     private List<Bill> selectedBills;
     List<Bill> aceptPaymentBills;
@@ -351,12 +356,17 @@ public class SearchController implements Serializable {
 
     public String toSearchBills() {
         bills = null;
-        return "/search_bill";
+        return "/dataAdmin/search_bill?faces-redirect=true";
     }
 
     public String toListAllBills() {
         bills = null;
-        return "/list_bills";
+        return "/dataAdmin/list_bills?faces-redirect=true";
+    }
+    
+    public String toListAllPayments() {
+        bills = null;
+        return "/dataAdmin/list_payments?faces-redirect=true";
     }
 
     public void listAllBills() {
@@ -369,12 +379,24 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    public void listAllPayments() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select p from Payment"
+                + " p where "
+                + " p.createdAt between :fromDate and :toDate "
+                + " order by p.createdAt desc ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        payments = paymentFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     public String toViewBillSummery() {
         if (bill == null) {
             return "";
         }
-        return "/bill_summery";
+        return "/bill_summery?faces-redirect=true";
     }
 
     public void fillBillSessions() {
@@ -437,7 +459,7 @@ public class SearchController implements Serializable {
         billItems = null;
         patientInvestigations = null;
         searchKeyword = null;
-        return "/opd/search_opd_billd_of_logged_department";
+        return "/opd/search_opd_billd_of_logged_department?faces-redirect=true";
     }
 
     public void makeListNull2() {
@@ -1100,6 +1122,14 @@ public class SearchController implements Serializable {
 
     public void setCurrentTokenId(Long currentTokenId) {
         this.currentTokenId = currentTokenId;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
     public class billsWithbill {
@@ -9182,5 +9212,7 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
+    
+    
 
 }

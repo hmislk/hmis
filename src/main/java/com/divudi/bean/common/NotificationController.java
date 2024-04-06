@@ -99,6 +99,9 @@ public class NotificationController implements Serializable {
             case OPD_BATCH_BILL_CANCELLATION:
                 createOpdBatchBillCancellationNotification(bill);
                 break;
+            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                //No Notification is necessary
+                break;
             default:
                 throw new AssertionError();
         }

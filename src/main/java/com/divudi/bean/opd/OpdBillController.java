@@ -1848,6 +1848,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment(), newBill.getCategory(), newBill.getFromStaff()));
                 break;
         }
+        
+        
 
         if (newBill.getId() == null) {
             getFacade().create(newBill);

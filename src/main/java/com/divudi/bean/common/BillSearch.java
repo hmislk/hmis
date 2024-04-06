@@ -2067,7 +2067,7 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        notificationController.createNotification(bill);
+        
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
