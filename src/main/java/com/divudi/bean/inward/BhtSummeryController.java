@@ -1958,7 +1958,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        if (!sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (!sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             double mo = p.getCurrentMoCharge();
             double calculated = getCharge(p, mo) + p.getAddedMoCharge();
             p.setCalculatedMoCharge(calculated);

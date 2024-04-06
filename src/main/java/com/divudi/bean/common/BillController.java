@@ -388,21 +388,20 @@ public class BillController implements Serializable {
         return paid;
     }
 
-    public void save(Bill sb) {
-        if (sb == null) {
+    public void save(Bill savingBill) {
+        if (savingBill == null) {
             return;
         }
-
-        if (sb.getId() == null) {
-            sb.setCreatedAt(new Date());
-            sb.setCreater(sessionController.getLoggedUser());
+        if (savingBill.getId() == null) {
+            savingBill.setCreatedAt(new Date());
+            savingBill.setCreater(sessionController.getLoggedUser());
             try {
-                getFacade().create(sb);
+                getFacade().create(savingBill);
             } catch (Exception e) {
-                getFacade().edit(sb);
+                getFacade().edit(savingBill);
             }
         } else {
-            getFacade().edit(sb);
+            getFacade().edit(savingBill);
         }
     }
 
@@ -1321,7 +1320,7 @@ public class BillController implements Serializable {
                 }
             }
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
             }
 
@@ -1376,7 +1375,7 @@ public class BillController implements Serializable {
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
                 if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
@@ -1419,7 +1418,7 @@ public class BillController implements Serializable {
     }
 
     public boolean checkBillValues(Bill b) {
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             return false;
         }
 
@@ -1486,7 +1485,7 @@ public class BillController implements Serializable {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
 
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -1538,7 +1537,7 @@ public class BillController implements Serializable {
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
         tmp.copy(billedBill);
@@ -1686,7 +1685,6 @@ public class BillController implements Serializable {
 
         getBillFacade().create(cancellationBatchBill);
 
-        
         for (Bill originalBills : bills) {
             System.out.println("originalBills = " + originalBills);
             cancelSingleBillWhenCancellingOpdBatchBill(originalBills, cancellationBatchBill);
@@ -1715,6 +1713,7 @@ public class BillController implements Serializable {
 
         cancellationBill.setBillType(BillType.OpdBill);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        createPayment(cancellationBill, paymentMethod);
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
@@ -2166,7 +2165,7 @@ public class BillController implements Serializable {
 //            JsfUtil.addErrorMessage("Check Payment method");
 //            return true;
 //        }
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
 
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
@@ -2695,7 +2694,7 @@ public class BillController implements Serializable {
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////// // System.out.println("cashPaid = " + cashPaid);
             ////// // System.out.println("billNet = " + billNet);
             if (cashPaid >= (billNet + billVat)) {
@@ -2866,8 +2865,59 @@ public class BillController implements Serializable {
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment createdPayment = null;
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return createdPayment;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("No Saved Bill");
+            return createdPayment;
+        }
+        if (pm == null) {
+            JsfUtil.addErrorMessage("No payment Method");
+            return createdPayment;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Atomic Bill Type");
+            return createdPayment;
+        }
+        switch (bill.getBillTypeAtomic().getBillFinanceType()) {
+            case CASH_IN:
+                createdPayment = createPaymentForCashInBills(bill, pm);
+                break;
+            case CASH_OUT:
+                createdPayment = createPaymentForCashOutBills(bill, pm);
+                break;
+            case NO_FINANCE_TRANSACTIONS:
+                createdPayment = createPaymentForNoCashBills(bill, pm);
+                break;
+            default:
+                throw new AssertionError();
+        }
+        return createdPayment;
+    }
+
+    public Payment createPaymentForCashOutBills(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public Payment createPaymentForNoCashBills(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(0);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public Payment createPaymentForCashInBills(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(0 + Math.abs(bill.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -2898,7 +2948,7 @@ public class BillController implements Serializable {
 
         for (BillEntry be : billEntrys) {
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
 
@@ -2911,7 +2961,7 @@ public class BillController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);

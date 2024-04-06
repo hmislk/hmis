@@ -598,6 +598,54 @@ public class UserPrivilageController implements Serializable {
         }
         return phs;
     }
+    
+    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected) {
+        currentWebUser = u;
+        department = u.getDepartment();
+        List<PrivilegeHolder> selectedPrivileges = selected;
+        for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
+            wup.setRetired(true);
+
+        }
+        getFacade().batchEdit(getCurrentWebUserPrivileges());
+        if (selectedPrivileges == null) {
+            return;
+        }
+
+        List<WebUserPrivilege> newWups = new ArrayList<>();
+        List<WebUserPrivilege> oldWups = new ArrayList<>();
+        
+         for (PrivilegeHolder ph : selectedPrivileges) {
+            if (ph.getPrivilege() == null) {
+                continue;
+            }
+            String jpql = "select w"
+                    + " from WebUserPrivilege w "
+                    + " where w.department=:dep "
+                    + " and w.webUser=:wu "
+                    + " and w.privilege=:p";
+            Map m = new HashMap();
+            m.put("dep", department);
+            m.put("wu", currentWebUser);
+            m.put("p", ph.getPrivilege());
+            WebUserPrivilege wup = getFacade().findFirstByJpql(jpql, m);
+            if (wup == null) {
+                wup = new WebUserPrivilege();
+                wup.setDepartment(department);
+                wup.setWebUser(currentWebUser);
+                wup.setPrivilege(ph.getPrivilege());
+                newWups.add(wup);
+            } else {
+                wup.setRetired(false);
+                oldWups.add(wup);
+            }
+        }
+        getFacade().batchCreate(newWups);
+        getFacade().batchEdit(oldWups);
+        
+        fillUserPrivileges();
+        JsfUtil.addSuccessMessage("Updated");
+    }
 
     public void saveWebUserPrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
@@ -768,6 +816,11 @@ public class UserPrivilageController implements Serializable {
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
+    
+     public void fillUserRolePrivileges(WebUserRole u) {
+         webUserRole = u;
+         fillUserRolePrivileges();
+     }
 
     public void fillUserRolePrivileges() {
         List<WebUserPrivilege> wups;

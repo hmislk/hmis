@@ -746,7 +746,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         current = selected;
-        return "/admin/users/user";
+        return "/admin/users/user?faces-redirect=true";
     }
 
     public String navigateToManageStaff() {
@@ -755,7 +755,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getStaffController().setCurrent(selected.getStaff());
-        return "/hr/hr_staff_admin";
+        return "/hr/hr_staff_admin?faces-redirect=true";
     }
 
     public String navigateToEditPasswordByAdmin() {
@@ -764,7 +764,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         current = selected;
-        return "/admin/users/change_password";
+        return "/admin/users/change_password?faces-redirect=true";
     }
 
     public String navigateToManagePrivileges() {
@@ -775,7 +775,7 @@ public class WebUserController implements Serializable {
         getUserPrivilageController().setCurrentWebUser(selected);
         getUserPrivilageController().init();
         getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
-        return "/admin/users/user_privileges";
+        return "/admin/users/user_privileges?faces-redirect=true";
     }
 
     public String navigateToManagePaymentSchemes() {
@@ -784,7 +784,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getUserPaymentSchemeController().setSelectedUser(selected);
-        return "/admin/users/user_payment_schemes";
+        return "/admin/users/user_payment_schemes?faces-redirect=true";
     }
 
     public String navigateToManageUserIcons() {
@@ -794,7 +794,7 @@ public class WebUserController implements Serializable {
         }
         userIconController.setUser(selected);
         userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
-        return "/admin/users/user_icons";
+        return "/admin/users/user_icons?faces-redirect=true";
     }
 
     public String navigateToManageUserSubscriptions() {
@@ -804,7 +804,7 @@ public class WebUserController implements Serializable {
         }
         triggerSubscriptionController.setUser(selected);
         triggerSubscriptionController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
-        return "/admin/users/user_subscription";
+        return "/admin/users/user_subscription?faces-redirect=true";
     }
 
     public String toManageSignature() {
@@ -813,7 +813,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getStaffController().setCurrent(selected.getStaff());
-        return "/admin/institutions/admin_staff_signature";
+        return "/admin/institutions/admin_staff_signature?faces-redirect=true";
     }
 
     public String navigateToManageDepartments() {
@@ -823,7 +823,7 @@ public class WebUserController implements Serializable {
         }
         getUserDepartmentController().setSelectedUser(selected);
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
-        return "/admin/users/user_department";
+        return "/admin/users/user_department?faces-redirect=true";
     }
 
     public String toManageDashboards() {
@@ -833,7 +833,7 @@ public class WebUserController implements Serializable {
         }
         current = selected;
         listWebUserDashboards();
-        return "/admin_manage_dashboards";
+        return "/admin_manage_dashboards?faces-redirect=true";
     }
 
     public String toManageUserPreferences() {

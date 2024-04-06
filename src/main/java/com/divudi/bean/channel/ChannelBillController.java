@@ -1613,8 +1613,8 @@ public class ChannelBillController implements Serializable {
     public void loadUserPreferances() {
         UserPreference pf = null;
         //System.out.println("pf = " + pf);
-        if (getSessionController().getLoggedPreference() != null) {
-            pf = getSessionController().getLoggedPreference();
+        if (getSessionController().getApplicationPreference() != null) {
+            pf = getSessionController().getApplicationPreference();
         } else if (getSessionController().getUserPreference() != null) {
             pf = getSessionController().getUserPreference();
         } else {

@@ -978,7 +978,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             return true;
         }
 
-        if (!getSessionController().getLoggedPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
+        if (!getSessionController().getApplicationPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
                 return true;
@@ -1318,7 +1318,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 
         editingQty = null;
 
-        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
+        if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 JsfUtil.addErrorMessage("Please select Payment Scheme");
                 return;
