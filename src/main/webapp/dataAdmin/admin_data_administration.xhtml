@@ -16,7 +16,7 @@
                         <h:form >
                             <p:panel header="Data Administration" >
                                 <p:accordionPanel>
-                                    <p:tab title="System Administrator Functions"  >
+                                    <p:tab title="Lists"  >
 
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
@@ -34,6 +34,15 @@
                                                 icon="fa fa-list"
                                                 class="w-100"
                                                 action="#{searchController.toListAllBills}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                value="List All Payments"  
+                                                ajax="false"
+                                                icon="fa fa-list"
+                                                class="w-100"
+                                                action="#{searchController.toListAllPayments()}" 
                                                 rendered="#{webUserController.hasPrivilege('Search')}">
                                             </p:commandButton>
 

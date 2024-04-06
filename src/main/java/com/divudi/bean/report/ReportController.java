@@ -9,6 +9,7 @@ import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
@@ -325,15 +326,20 @@ public class ReportController implements Serializable {
     }
 
     public void processOpdServiceCountDoctorWise() {
+        List<BillTypeAtomic> billtypes = new ArrayList<>();
+        billtypes.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        
         String jpql = "select new com.divudi.data.ItemCount(bi.bill.fromStaff.person.name, bi.bill.fromStaff.id, bi.item.name, bi.item.id, count(bi)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
+                + " and bi.bill.billTypeAtomic IN :bt"
                 + " and bi.bill.billDate between :fd and :td ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("bt", billtypes);
         if (department != null) {
             jpql += " and bi.bill.department=:fdept ";
             m.put("fdept", department);
