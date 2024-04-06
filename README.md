@@ -70,9 +70,17 @@ The features available to different roles of the users are stated in detail in t
 * Dr K M P Keerthi
 * Dr Anura Krishantha
 
-## Contributing 
+## System Architect 
 * Dr M H B Ariyaratne - Initiated the Project, Product owner, System Architect, Lead Developer since 2004 to date
+
+## Project Management 
 * Mr.K.M.G.T.R. Waidyarathne - Project Management from 2013 to date
+
+## Business Analyst
+* Miss Binuthi Nilakna Ariyaratne - From 2024 to date
+  
+## Developers
+* Dr M H B Ariyaratne
 * Mr Dushan Madhuranga
 * Mr Lahiru Madhushanka
 * Mr A C M Safrin
