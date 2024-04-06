@@ -30,13 +30,13 @@
             .blink {
                 animation: blink 1s infinite;
             }
-            
+
             .sticky-top {
-        position: sticky;
-        top: 0;
-        z-index: 1000; /* Ensure the navbar appears above other content */
-    }
-           
+                position: fixed;
+                top: 0;
+                z-index: 1000; /* Ensure the navbar appears above other content */
+            }
+
 
         </style>
 
@@ -44,7 +44,7 @@
             <div class="row w-100">
                 <div class="col-12" >
 
-                    <nav class="navbar navbar-light p-2 sticky-top" style="background-color: #e3f2fd;">
+                    <nav class="navbar navbar-light p-2 sticky-top w-100" style="background-color: #e3f2fd;">
                         <div class="d-flex align-items-center mx-4">
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
                             <h4 onclick="toggleFullScreen()" class="mx-4">Todays Session</h4>
@@ -82,10 +82,11 @@
                     </nav>
 
                 </div>
+                <p:spacer height="65px" />
                 <ui:repeat var="s" 
                            id="tblSessions"
                            value="#{bookingController.sessionInstances}" 
-                           class="w-100">
+                           class="w-100 mt-5">
 
                     <div class="bgCard row  w-100 p-2 shadow mt-1">
                         <div class="col-3 bg-primary text-white d-flex align-items-center">
@@ -150,7 +151,7 @@
                                                     </h:outputText>
                                                 </h:panelGrid>
                                             </span>
-                                            
+
                                             <span class="text-center"> 
                                                 <h:panelGrid columns="1">
                                                     <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
@@ -176,9 +177,9 @@
 
 
                                     <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                     styleClass="rounded-button ui-button-warning" ajax="false"
-                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                     rendered="#{not s.completed and not s.started}">
+                                                      styleClass="rounded-button ui-button-warning" ajax="false"
+                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                      rendered="#{not s.completed and not s.started}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
 
