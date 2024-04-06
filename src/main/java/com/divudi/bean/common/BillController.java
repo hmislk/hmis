@@ -1685,7 +1685,6 @@ public class BillController implements Serializable {
 
         getBillFacade().create(cancellationBatchBill);
 
-        
         for (Bill originalBills : bills) {
             System.out.println("originalBills = " + originalBills);
             cancelSingleBillWhenCancellingOpdBatchBill(originalBills, cancellationBatchBill);
@@ -1714,6 +1713,7 @@ public class BillController implements Serializable {
 
         cancellationBill.setBillType(BillType.OpdBill);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        createPayment(cancellationBill, paymentMethod);
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
@@ -2865,8 +2865,59 @@ public class BillController implements Serializable {
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment createdPayment = null;
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return createdPayment;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("No Saved Bill");
+            return createdPayment;
+        }
+        if (pm == null) {
+            JsfUtil.addErrorMessage("No payment Method");
+            return createdPayment;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Atomic Bill Type");
+            return createdPayment;
+        }
+        switch (bill.getBillTypeAtomic().getBillFinanceType()) {
+            case CASH_IN:
+                createdPayment = createPaymentForCashInBills(bill, pm);
+                break;
+            case CASH_OUT:
+                createdPayment = createPaymentForCashOutBills(bill, pm);
+                break;
+            case NO_FINANCE_TRANSACTIONS:
+                createdPayment = createPaymentForNoCashBills(bill, pm);
+                break;
+            default:
+                throw new AssertionError();
+        }
+        return createdPayment;
+    }
+
+    public Payment createPaymentForCashOutBills(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public Payment createPaymentForNoCashBills(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(0);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public Payment createPaymentForCashInBills(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(0 + Math.abs(bill.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }
