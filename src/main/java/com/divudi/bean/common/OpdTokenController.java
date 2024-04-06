@@ -80,6 +80,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Department selectedCounter;
     private Doctor doctor;
     private Staff staff;
+    private Bill bill;
     private boolean patientDetailsEditable;
 
     private boolean printPreview;
@@ -113,7 +114,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToCreateNewOpdToken() {
-        if (patient == null) {
+        if (bill != null) {
+            staff = bill.getFromStaff();
+            patient = bill.getPatient();
+        } else {
             resetClassVariables();
         }
         currentToken = new Token();
@@ -536,6 +540,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
 }
