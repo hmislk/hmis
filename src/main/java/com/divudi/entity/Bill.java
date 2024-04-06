@@ -105,7 +105,7 @@ public class Bill implements Serializable {
     // Bank Detail
     String creditCardRefNo;
     String chequeRefNo;
-    
+
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution bank;
@@ -738,7 +738,7 @@ public class Bill implements Serializable {
         hospitalFee = 0 - bill.getHospitalFee();
         margin = 0 - bill.getMargin();
         grnNetTotal = 0 - bill.getGrnNetTotal();
-
+        billTotal = 0 - bill.getBillTotal();
     }
 
     public void invertValue() {
@@ -761,6 +761,7 @@ public class Bill implements Serializable {
         hospitalFee = 0 - getHospitalFee();
         grnNetTotal = 0 - getGrnNetTotal();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
+        billTotal = 0 - getBillTotal();
     }
 
     public void copy(Bill bill) {
@@ -794,7 +795,7 @@ public class Bill implements Serializable {
         invoiceNumber = bill.getInvoiceNumber();
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
-        sessionId=bill.getSessionId();
+        sessionId = bill.getSessionId();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -807,6 +808,7 @@ public class Bill implements Serializable {
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
         this.vat = bill.getVat();
+        this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
     }
 
@@ -2113,7 +2115,5 @@ public class Bill implements Serializable {
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
     }
-    
-    
 
 }

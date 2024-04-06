@@ -103,9 +103,9 @@ public class UserNotificationController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    public void userNotificationRequestComplete(){
-        if (current==null) {
+
+    public void userNotificationRequestComplete() {
+        if (current == null) {
             JsfUtil.addErrorMessage("User Notification Error !");
             return;
         }
@@ -141,7 +141,7 @@ public class UserNotificationController implements Serializable {
         return items;
     }
 
-    public String navigateCurrentNotificationReuest(UserNotification cu) {
+    public String navigateToCurrentNotificationRequest(UserNotification cu) {
         if (cu.getNotification().getBill() == null) {
             return "";
         }
@@ -151,7 +151,7 @@ public class UserNotificationController implements Serializable {
             case PHARMACY_ORDER:
                 pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
                 return "/ward/ward_pharmacy_bht_issue";
-                
+
             case PHARMACY_TRANSFER_REQUEST:
                 pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
                 return "/ward/ward_pharmacy_bht_issue";
@@ -172,67 +172,36 @@ public class UserNotificationController implements Serializable {
         if (notification.getBill().getBillTypeAtomic() == null) {
             return;
         }
-        BillTypeAtomic bt = notification.getBill().getBillTypeAtomic();
-        switch (bt) {
-            case PHARMACY_TRANSFER_REQUEST:
-                createUserNotificationsForPharmacyTransferRequest(notification);
-                break;
-
-            case PHARMACY_ORDER:
-                createUserNotificationsForPharmacyReuestForBht(notification);
-                break;
-            default:
-        }
-
+        createUserNotificationsForMedium(notification);
     }
 
-    private void createUserNotificationsForPharmacyTransferRequest(Notification n) {
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
-        List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
-        List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
-        for (WebUser u : smsUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
+    private void createUserNotificationsForMedium(Notification n) {
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(n.getTriggerType());
+        switch (n.getTriggerType().getMedium()) {
+            case EMAIL:
+                for (WebUser u : notificationUsers) {
+                    String number = u.getWebUserPerson().getMobile();
+                    System.out.println("number = " + number);
+                    //TODo
+                }
+                break;
+            case SMS:
+                for (WebUser u : notificationUsers) {
+                    String number = u.getWebUserPerson().getMobile();
+                    System.out.println("number = " + number);
+                    //TODo
+                }
+                break;
+            case SYSTEM_NOTIFICATION:
+                for (WebUser u : notificationUsers) {
+                    UserNotification nun = new UserNotification();
+                    nun.setNotification(n);
+                    nun.setWebUser(u);
+                    getFacade().create(nun);
+                }
+                break;
         }
-        for (WebUser u : emailUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
-        }
-        for (WebUser u : notificationUsers) {
-            UserNotification nun = new UserNotification();
-            nun.setNotification(n);
-            nun.setWebUser(u);
-            getFacade().create(nun);
-        }
-    }
 
-    private void createUserNotificationsForPharmacyReuestForBht(Notification n) {
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
-        List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
-        List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
-        for (WebUser u : smsUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
-        }
-        for (WebUser u : emailUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
-        }
-        System.out.println("user notification = " + notificationUsers.size());
-        for (WebUser u : notificationUsers) {
-            UserNotification nun = new UserNotification();
-            nun.setNotification(n);
-            nun.setWebUser(u);
-            nun.setCreatedAt(new Date());
-            nun.setCreater(sessionController.getLoggedUser());
-            System.out.println("user notification = " + nun.getNotification().getMessage());
-            createAllertMessage(n);
-            getFacade().create(nun);
-        }
     }
 
     public void createAllertMessage(Notification n) {

@@ -226,7 +226,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
             }
@@ -249,7 +249,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public void addNewRoom() {
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
             }

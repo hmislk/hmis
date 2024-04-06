@@ -8,33 +8,31 @@ import com.divudi.data.TriggerType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
 /**
  *
- * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
+ * @author L C J Samarasekara
  */
 @Entity
-public class Notification implements Serializable {
+public class WebUserRoleUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    
     @ManyToOne
-    private Bill bill;
-    private boolean completed;
-    @Lob
-    private String message;
-    @Enumerated
-    private TriggerType triggerType;
+    private WebUserRole webUserRole;
+    @ManyToOne
+    private WebUser webUser;
+    
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -47,6 +45,13 @@ public class Notification implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    //Editer Properties
+    @ManyToOne
+
+    private WebUser editer;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date editedAt;
 
     public Long getId() {
         return id;
@@ -56,9 +61,6 @@ public class Notification implements Serializable {
         this.id = id;
     }
 
-    
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -69,10 +71,10 @@ public class Notification implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Notification)) {
+        if (!(object instanceof WebUserRoleUser)) {
             return false;
         }
-        Notification other = (Notification) object;
+        WebUserRoleUser other = (WebUserRoleUser) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -81,23 +83,15 @@ public class Notification implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.Notification[ id=" + id + " ]";
+        return "com.divudi.entity.TriggerSubscription[ id=" + id + " ]";
     }
 
-    public Bill getBill() {
-        return bill;
+    public WebUser getWebUser() {
+        return webUser;
     }
 
-    public void setBill(Bill bill) {
-        this.bill = bill;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
     }
 
     public WebUser getCreater() {
@@ -148,22 +142,27 @@ public class Notification implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public String getMessage() {
-        return message;
+    public WebUser getEditer() {
+        return editer;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public Date getEditedAt() {
+        return editedAt;
     }
 
-    public void setTriggerType(TriggerType triggerType) {
-        this.triggerType = triggerType;
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
     }
-
     
-    
+    public WebUserRole getWebUserRole() {
+        return webUserRole;
+    }
+
+    public void setWebUserRole(WebUserRole webUserRole) {
+        this.webUserRole = webUserRole;
+    } 
 }

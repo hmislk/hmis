@@ -1488,7 +1488,7 @@ public class PatientReportController implements Serializable {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (getCurrentPtIx().getBillItem().getBill().getBalance() == 0.0) {
                 if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
                     Sms e = new Sms();

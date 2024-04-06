@@ -926,7 +926,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Select Room ");
             return true;
         }
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
                 JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
                 return true;
@@ -956,7 +956,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Select Patient");
             return true;
         }
-        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
+        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Add Reference No");
                 return true;

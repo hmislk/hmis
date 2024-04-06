@@ -351,7 +351,7 @@ public class BillBhtController implements Serializable {
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
     }
@@ -671,7 +671,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (!getSessionController().getLoggedPreference().isInwardAddServiceBillTimeCheck()) {
+        if (!getSessionController().getApplicationPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
                 if (getCurrentBillItem().getBillTime() == null) {
                     JsfUtil.addErrorMessage("Please set Time To This Investigation");

@@ -50,6 +50,15 @@
                                         value="#{opdBillController.bills[0].patient}" 
                                         target="#{patientController.current}" />
                                 </p:commandButton>
+                                
+                                <p:commandButton value="New Opd Token" 
+                                                 class="ui-button-secondary mx-1"
+                                                 action="#{opdTokenController.navigateToCreateNewOpdToken()}"
+                                                 ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{opdBillController.bills[0].patient}" 
+                                        target="#{opdTokenController.patient}" />
+                                </p:commandButton>
 
                             </div>
 
