@@ -16,6 +16,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -78,6 +79,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Department counter;
     private Department selectedCounter;
     private Doctor doctor;
+    private Staff staff;
+    private Bill bill;
     private boolean patientDetailsEditable;
 
     private boolean printPreview;
@@ -111,7 +114,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToCreateNewOpdToken() {
-        if (patient == null) {
+        if (bill != null) {
+            staff = bill.getFromStaff();
+            patient = bill.getPatient();
+        } else {
             resetClassVariables();
         }
         currentToken = new Token();
@@ -526,6 +532,22 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setOnGoingToken(Token onGoingToken) {
         this.onGoingToken = onGoingToken;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
 }
