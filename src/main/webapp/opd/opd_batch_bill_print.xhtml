@@ -56,8 +56,8 @@
                                                  action="#{opdTokenController.navigateToCreateNewOpdToken()}"
                                                  ajax="false">
                                     <f:setPropertyActionListener 
-                                        value="#{opdBillController.bills[0].patient}" 
-                                        target="#{opdTokenController.patient}" />
+                                        value="#{opdBillController.bills[0]}" 
+                                        target="#{opdTokenController.bill}" />
                                 </p:commandButton>
 
                             </div>

@@ -21,7 +21,7 @@
                         </div>
                         <div class="col-4">
                             <p:panel header="Doctor Details">
-                                <p:selectOneListbox value="#{opdTokenController.doctor}">
+                                <p:selectOneListbox value="#{opdTokenController.staff}">
                                         <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
                                         <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" 
                                                        itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
