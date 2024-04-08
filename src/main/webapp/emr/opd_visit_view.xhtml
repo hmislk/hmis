@@ -116,6 +116,7 @@
                                                     <h:outputText styleClass="fas fa-notes-medical"/>
                                                     <h:outputText class="mx-4" value="Clinical Details" ></h:outputText>
                                                 </f:facet>
+                                                <h:outputText value="Presenting Complaints :"/><br/>
                                                 <p:inputTextarea id="txtComments" 
                                                                  queryDelay="0" 
                                                                  placeholder="Write comments here."
@@ -355,6 +356,42 @@
                                                         <h:outputLabel value="#{edx.lobValue}"></h:outputLabel>
                                                     </p:column>
                                                 </p:dataTable>
+                                            </p:panel>
+                                            
+                                            <p:panel class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-medkit"/>
+                                                    <h:outputText class="mx-4" value="Test Reults"/>
+                                                </f:facet>
+                                                <p:dataTable id="tblIxp"
+                                                             value="#{pastPatientEncounterController.encounterInvestigationResults}"
+                                                                 emptyMessage="No Investigations Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="ix" class="w-100">
+                                                        <p:column headerText="Name" >
+                                                            <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
+
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column headerText="Report">
+                                                            <div class="d-flex">
+                                                                
+                                                                <div>
+                                                                    <ui:repeat value="#{patientReportController.patientReports(ix.patientInvestigation)}" var="dpr">
+                                                                        <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
+                                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                            <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                                        </p:commandLink>
+                                                                    </ui:repeat>
+                                                                </div>
+
+                                                            </div>
+                                                        </p:column>
+                                                    </p:dataTable>
                                             </p:panel>
 
                                         </div>
