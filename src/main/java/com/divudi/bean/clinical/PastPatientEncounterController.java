@@ -1108,6 +1108,7 @@ public class PastPatientEncounterController implements Serializable {
         encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
         encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
+        encounterPlanOfActions = fillPlanOfAction(encounter);
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1139,6 +1140,9 @@ public class PastPatientEncounterController implements Serializable {
         String rr = e.getRespiratoryRate()+" bpm";
         String pfr = e.getPfr()+"";
         String saturation = e.getSaturation()+"";
+        if (comments == null) {
+            comments = "";
+        }
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1192,7 +1196,7 @@ public class PastPatientEncounterController implements Serializable {
 
         String ixAsString = "Ix" + "<br/>";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName() + "<br/>";;
+            ixAsString += ix.getItemValue().getName() + "<br/>";
         }
         
         String paAsString = "";
@@ -2582,6 +2586,13 @@ public class PastPatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
+    
+    private List<ClinicalFindingValue> fillPlanOfAction(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.PlanOfAction);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
 
     public ClinicalFindingValue getEncounterDiagnosticImage() {
         return encounterDiagnosticImage;
