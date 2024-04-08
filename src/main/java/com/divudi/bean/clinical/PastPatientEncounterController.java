@@ -177,6 +177,7 @@ public class PastPatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> encounterPrescreptions;
     private List<ClinicalFindingValue> encounterFindingValues;
     private List<ClinicalFindingValue> encounterPlanOfActions;
+    private List<ClinicalFindingValue> encounterInvestigationResults;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1148,6 +1149,7 @@ public class PastPatientEncounterController implements Serializable {
         encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
         encounterPlanOfActions = fillPlanOfAction(encounter);
+        encounterInvestigationResults = fillEncounterInvestigationResults(encounter);
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -2589,6 +2591,12 @@ public class PastPatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitProcedure);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
+    
+    private List<ClinicalFindingValue> fillEncounterInvestigationResults(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigationResult);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
 
     private List<ClinicalFindingValue> fillEncounterDiagnoses(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
@@ -2898,6 +2906,14 @@ public class PastPatientEncounterController implements Serializable {
 
     public void setEncounterPlanOfActions(List<ClinicalFindingValue> encounterPlanOfActions) {
         this.encounterPlanOfActions = encounterPlanOfActions;
+    }
+
+    public List<ClinicalFindingValue> getEncounterInvestigationResults() {
+        return encounterInvestigationResults;
+    }
+
+    public void setEncounterInvestigationResults(List<ClinicalFindingValue> encounterInvestigationResults) {
+        this.encounterInvestigationResults = encounterInvestigationResults;
     }
 
     
