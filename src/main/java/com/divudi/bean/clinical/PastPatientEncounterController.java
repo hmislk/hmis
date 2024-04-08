@@ -1037,6 +1037,45 @@ public class PastPatientEncounterController implements Serializable {
         return vs;
     }
 
+    public List<ClinicalFindingValue> fillPastPatientDiagnosisHistory(PatientEncounter encounter) {
+        List<ClinicalFindingValue> vs;
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts", ClinicalFindingValueType.VisitDiagnosis);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+
+        sql += " order by e.orderNo";
+        vs = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (vs == null) {
+            vs = new ArrayList<>();
+        }
+
+        return vs;
+    }
+
+    public List<ClinicalFindingValue> fillPastPatientMedicineHistory(PatientEncounter encounter) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts", ClinicalFindingValueType.VisitMedicine);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+
+        sql += " order by e.orderNo";
+
+        return clinicalFindingValueFacade.findByJpql(sql, m);
+    }
+    
     public String navigateToOldOpdVisitFromSearch() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing");

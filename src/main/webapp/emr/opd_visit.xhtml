@@ -763,30 +763,35 @@
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>
                                                     <h:outputText class="mx-4" value="Prescription"/>
+                                                    <div style="float: right">
+                                                        <p:commandButton
+                                                            icon="fas fa-refresh"
+                                                            class="mx-1 ui-button-warning"
+                                                            id="btnRefresh"
+                                                            ajax="false" 
+                                                            value="refresh" 
+                                                            action="#{patientEncounterController.refreshPrescription}"/>
+                                                        <p:commandButton
+                                                            class="ui-button-info mx-1" 
+                                                            ajax="false" 
+                                                            value="Print" 
+                                                            icon="pi pi-print">
+                                                            <p:printer target="txtPrescriptionDoc" />
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            class="ui-button-info mx-1" 
+                                                            ajax="false" 
+                                                            value="To Print" 
+                                                            action="opd_visit_print"
+                                                            icon="pi pi-print">
+                                                        </p:commandButton>
+
+
+                                                        
+                                                    </div>
+
                                                 </f:facet>
-                                                <p:commandButton
-                                                    class="ui-button-info mx-1" 
-                                                    ajax="false" 
-                                                    value="Print" 
-                                                    icon="pi pi-print">
-                                                    <p:printer target="txtPrescriptionDoc" />
-                                                </p:commandButton>
-                                                <p:commandButton
-                                                    class="ui-button-info mx-1" 
-                                                    ajax="false" 
-                                                    value="To Print" 
-                                                    action="opd_visit_print"
-                                                    icon="pi pi-print">
-                                                </p:commandButton>
 
-
-                                                <p:commandButton
-                                                    icon="fas fa-refresh"
-                                                    class="mx-1 ui-button-warning"
-                                                    id="btnRefresh"
-                                                    ajax="false" 
-                                                    value="refresh" 
-                                                    action="#{patientEncounterController.refreshPrescription}"/>
                                                 <style>
                                                     @media print {
                                                         /* Target the ui-texteditor container and its children */
@@ -1076,12 +1081,17 @@
                                                          rowsPerPageTemplate="5,10,15" 
                                                          currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
                                                 <p:column sortBy="#{visit.encounterDate}" filterMatchMode="date" >
+
                                                     <f:facet name="header">
                                                         <h:outputText value="Date / Time" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.encounterDate}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                                    </h:outputText>
+                                                    <h:commandLink action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" >
+                                                        <i class="fas fa-calendar-alt"></i> <!-- Calendar icon for date -->
+                                                        <h:outputText value="#{visit.encounterDate}" class="m-2">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        </h:outputText>
+                                                        <f:setPropertyActionListener value="#{visit}" target="#{pastPatientEncounterController.current}" />
+                                                    </h:commandLink>
                                                 </p:column>
                                                 <p:column>
                                                     <f:facet name="header">
@@ -1142,7 +1152,7 @@
                                                     <ul>
                                                         <ui:repeat value="#{patientEncounterController.fillPastPatientMedicineHistory(visit)}" var="medicine">
                                                             <li>
-                                                                <h:outputText value="#{medicine.prescription.item.name}" />
+                                                                <p:outputLabel value="#{medicine.prescription.formattedPrescription}" />
 
                                                             </li>
                                                         </ui:repeat>
