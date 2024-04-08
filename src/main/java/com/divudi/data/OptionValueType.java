@@ -9,6 +9,7 @@ public enum OptionValueType {
     SHORT_TEXT,
     BOOLEAN,
     LONG,
-    DOUBLE
+    DOUBLE,
+    ENUM
 }
 

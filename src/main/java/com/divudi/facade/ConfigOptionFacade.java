@@ -6,7 +6,7 @@
 
 package com.divudi.facade;
 
-import com.divudi.entity.Option;
+import com.divudi.entity.ConfigOption;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,7 +16,7 @@ import javax.persistence.PersistenceContext;
  * @author Sniper 619
  */
 @Stateless
-public class OptionFacade extends AbstractFacade<Option> {
+public class ConfigOptionFacade extends AbstractFacade<ConfigOption> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -25,8 +25,8 @@ public class OptionFacade extends AbstractFacade<Option> {
         if(em == null){}return em;
     }
 
-    public OptionFacade() {
-        super(Option.class);
+    public ConfigOptionFacade() {
+        super(ConfigOption.class);
     }
     
 }
