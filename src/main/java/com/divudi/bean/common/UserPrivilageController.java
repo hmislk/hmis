@@ -622,9 +622,9 @@ public class UserPrivilageController implements Serializable {
     }
     
     
-    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected) {
+    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
         currentWebUser = u;
-        department = u.getDepartment();
+        department = dept;
         System.out.println("selected = " + selected);
         List<PrivilegeHolder> selectedPrivileges = selected;
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
