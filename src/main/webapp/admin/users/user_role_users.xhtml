@@ -43,7 +43,8 @@
                             value="#{webUserRoleUserController.current.webUser}"
                             filter="true"
                             filterMatchMode="contains"
-                            class="w-100">
+                            class="w-100"
+                            autoWidth="false">
                             <f:selectItems value="#{webUserRoleUserController.users}"
                                            var="i"
                                            itemLabel="#{i.name}"
@@ -64,7 +65,8 @@
                             placeholder="Department"
                             class="w-100"
                             value="#{webUserRoleUserController.department}"
-                            filter="true">
+                            filter="true"
+                            autoWidth="false">
                             <f:selectItem itemLabel="All" ></f:selectItem>
                             <f:selectItems
                                 value="#{webUserRoleUserController.departments}"
