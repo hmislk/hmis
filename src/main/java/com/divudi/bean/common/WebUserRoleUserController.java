@@ -74,7 +74,6 @@ public class WebUserRoleUserController implements Serializable {
         } else {
             fillUseRolePrivilage();
             List<PrivilegeHolder> userRolePrivilage = userPrivilageController.getCurrentUserPrivilegeHolders();
-            System.out.println("userRolePrivilage = " + userRolePrivilage);
             if(userRolePrivilage == null){
                 JsfUtil.addErrorMessage("There are No Permission to add!");
             }else{
@@ -219,6 +218,12 @@ public class WebUserRoleUserController implements Serializable {
     }
 
     public List<WebUser> getUsers() {
+        if(users == null){
+             Map m = new HashMap();
+        String jpql = "SELECT i FROM WebUser i WHERE i.retired = :ret";
+        m.put("ret", false);
+        users = getFacade().findByJpql(jpql, m);
+        }
         return users;
     }
 
