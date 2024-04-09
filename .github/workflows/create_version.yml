@@ -4,10 +4,6 @@ on:
   push:
     branches: 
       - master
-      
-  #pull_request:
-    # The branches below must be a subset of the branches above
-   # branches: [ "master" ]
 
 jobs:
   update_version_and_readme:
@@ -49,8 +45,11 @@ jobs:
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
 
+      - name: Stage changes
+        run: |
+          git add VERSION.txt README.md .github/counter.txt
+          
       - name: Commit version and README update
         run: |
-          git add VERSION.txt README.md
           git commit -m "Update version to 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}"
           git push
