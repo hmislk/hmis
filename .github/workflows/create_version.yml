@@ -55,7 +55,7 @@ jobs:
 
       - name: Update template.xhtml
         run: |
-          sed -i "s/&emsp;V\..*\"\/&emsp;V\.3\.0\.0\.${{ steps.current_date.outputs.date }}\.${{ steps.increment_counter.outputs.counter }}\"\/" src/main/webapp/resources/template/template.xhtml
+          sed -i "s|&emsp;V\..*\"\/|&emsp;V\.3\.0\.0\.${{ steps.current_date.outputs.date }}\.${{ steps.increment_counter.outputs.counter }}\"\/|" src/main/webapp/resources/template/template.xhtml
 
       - name: Stage changes
         run: |
