@@ -14,6 +14,7 @@ import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import com.divudi.data.MessageType;
+import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.data.TriggerType;
 import com.divudi.ejb.SmsManagerEjb;
@@ -58,6 +59,8 @@ public class UserNotificationController implements Serializable {
     TriggerSubscriptionController triggerSubscriptionController;
     @Inject
     SmsController smsController;
+    @Inject
+    ConfigOptionController configOptionController;
     @EJB
     private UserNotificationFacade ejbFacade;
     @EJB
@@ -234,16 +237,20 @@ public class UserNotificationController implements Serializable {
     }
     
     public String createSmsForUserNotification(){
-//        s = template.replace("{patient_name}", patientName)
-//                .replace("{doctor}", doc)
-//                .replace("{appointment_time}", sessionTime)
-//                .replace("{appointment_date}", sessionDate)
-//                .replace("{serial_no}", String.valueOf(no))
-//                .replace("{doc}", doc)
-//                .replace("{time}", sessionTime)
-//                .replace("{date}", sessionDate)
-//                .replace("{No}", String.valueOf(no));
-        
+        String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
+        if(template==null||template.isEmpty()){
+            template= "{patient_name} {appointment_time}";
+        }
+        //TODO: Replace placeholders with actual values
+        template = template.replace("{patient_name}", "")
+                .replace("{doctor}", "")
+                .replace("{appointment_time}", "")
+                .replace("{appointment_date}", "")
+                .replace("{serial_no}", "")
+                .replace("{doc}", "")
+                .replace("{time}", "")
+                .replace("{date}", "")
+                .replace("{No}", "");
         return "";
     }
 

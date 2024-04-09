@@ -29,27 +29,51 @@
                             <h:outputText value="#{option.optionValue}" />
                         </p:column>
                         <p:column>
-                            <!-- CommandButton to Select and Edit Option -->
                             <p:commandButton 
                                 icon="ui-icon-pencil" 
                                 oncomplete="PF('optionEditDialog').show()" 
                                 update=":editForm"
-                                />
+                                >
+                                <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
+                            </p:commandButton>
                         </p:column>
                     </p:dataTable>
                 </h:form>
-                <!-- Dialog for Editing, outside the main form -->
                 <p:dialog header="Edit Option" widgetVar="optionEditDialog" modal="true" resizable="false">
                     <h:form id="editForm">
-                        <!-- Dialog contents go here. Adjust based on Option's attributes -->
                         <p:outputLabel for="keyInput" value="Key:" />
-                        <p:inputText id="keyInput" value="#{optionoptionKeytroller.option.key}" />
+                        <p:inputText id="keyInput" value="#{configOptionController.option.optionKey}" disabled="true" />
 
-                        <!-- Add other fields for editing Option here -->
+                        <p:outputLabel  value="Value:" />
 
-                        <p:commandButton value="Save" action="#{configOptionController.saveOption}" oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" />
+                        <!-- Rendered based on the valueType of the option -->
+                        <!-- For SHORT_TEXT -->
+                        <p:inputText id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                     rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
+
+                        <!-- For LONG_TEXT -->
+                        <p:inputTextarea id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="true"/>
+
+                        <!-- For ENUM, dynamically populate options -->
+                        <p:selectOneMenu id="valueInputEnum" value="#{configOptionController.option.enumValue}"
+                                         rendered="#{configOptionController.option.valueType eq 'ENUM'}" converter="enumConverter">
+                            <f:selectItems value="#{configOptionController.getEnumValues(configOptionController.option.enumType)}" var="enumVal"
+                                           itemLabel="#{enumVal}" itemValue="#{enumVal}" />
+                        </p:selectOneMenu>
+
+                        <!-- For BOOLEAN -->
+                        <p:selectBooleanCheckbox id="valueInputBoolean" value="#{configOptionController.option.optionValue}"
+                                                 rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}" />
+
+                        <p:commandButton 
+                            value="Save" 
+                            action="#{configOptionController.saveOption(configOptionController.option)}" 
+                            process="@this @form"
+                            oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" />
                     </h:form>
                 </p:dialog>
+
             </ui:define>
         </ui:composition>
 
