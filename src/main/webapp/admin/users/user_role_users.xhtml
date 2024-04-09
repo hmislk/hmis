@@ -38,17 +38,41 @@
                             action="#{webUserRoleUserController.fillUsers}"
                             >
                         </p:commandButton>
-
                         <p:outputLabel value="Users to Add" ></p:outputLabel>
                         <p:selectOneMenu
                             value="#{webUserRoleUserController.current.webUser}"
                             filter="true"
                             filterMatchMode="contains"
-                            class="w-100">
+                            class="w-100"
+                            autoWidth="false">
                             <f:selectItems value="#{webUserRoleUserController.users}"
                                            var="i"
                                            itemLabel="#{i.name}"
                                            itemValue="#{i}"/>
+                        </p:selectOneMenu>
+                        <p:commandButton
+                            value="List Department"
+                            icon="fa fa-list"
+                            class="ui-button-warning w-100"
+                            action="#{webUserRoleUserController.fillDepartment}"
+                            ajax="false"
+                            update="tbl"
+                            />
+
+                        <p:outputLabel  value="Department" ></p:outputLabel>
+                        <p:selectOneMenu
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            class="w-100"
+                            value="#{webUserRoleUserController.department}"
+                            filter="true"
+                            autoWidth="false">
+                            <f:selectItem itemLabel="All" ></f:selectItem>
+                            <f:selectItems
+                                value="#{webUserRoleUserController.departments}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" ></f:selectItems>
                         </p:selectOneMenu>
                         <p:commandButton
                             value="Add User"
@@ -70,8 +94,11 @@
                     value="#{webUserRoleUserController.roleUsers}"
                     rowKey="#{user.id}"
                     id="tbl">
-                    <p:column headerText="Users">
+                    <p:column headerText="User">
                         <h:outputText value="#{user.webUser.name}" />
+                    </p:column>
+                    <p:column headerText="Department">
+                        <h:outputText value="#{user.webUser.department.name}" />
                     </p:column>
                     <p:column headerText="Actions" style="text-align: center; width: 200px;" >
                         <h:panelGroup id="combinedActions" class="d-flex justify-content-end">

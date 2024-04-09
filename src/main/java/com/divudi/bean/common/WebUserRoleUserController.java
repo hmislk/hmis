@@ -7,16 +7,21 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
 import com.divudi.entity.TriggerSubscription;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Department;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserRole;
 import com.divudi.entity.WebUserRoleUser;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserRoleUserFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -41,9 +46,13 @@ public class WebUserRoleUserController implements Serializable {
     private UserPrivilageController userPrivilageController;
     @EJB
     private WebUserRoleUserFacade facade;
+    @EJB
+    private DepartmentFacade departmentFacade;
     private WebUserRoleUser current;
     private List<WebUser> users = null;
     private List<WebUserRoleUser> roleUsers = null;
+    private Department department;
+    private List<Department> departments;
     
     
      
@@ -52,14 +61,23 @@ public class WebUserRoleUserController implements Serializable {
             JsfUtil.addErrorMessage("Select UserRole");
             return;
         }
+        if (department == null){
+             JsfUtil.addErrorMessage("Select Department");
+            return;
+        }
         if (current.getWebUserRole() == null) {
             JsfUtil.addErrorMessage("Program Error. Cannot have this page without a user. Create an issue in GitHub");
             return;
         }
-
         if (isUsersAlreadyAdded()) {
             JsfUtil.addErrorMessage("User already Added to User Role");
         } else {
+            fillUseRolePrivilage();
+            List<PrivilegeHolder> userRolePrivilage = userPrivilageController.getCurrentUserPrivilegeHolders();
+            if(userRolePrivilage == null){
+                JsfUtil.addErrorMessage("There are No Permission to add!");
+            }else{
+            userPrivilageController.saveWebUserPrivileges(current.getWebUser(),userRolePrivilage,department);
             WebUserRoleUser ru = new WebUserRoleUser();
             ru.setWebUserRole(current.getWebUserRole());
             ru.setWebUser(current.getWebUser());
@@ -67,11 +85,30 @@ public class WebUserRoleUserController implements Serializable {
             ru.setCreater(sessionController.loggedUser);
             save(ru);
             JsfUtil.addSuccessMessage("Save Success ");
-            List<PrivilegeHolder> userRolePrivilage = userPrivilageController.getCurrentUserPrivilegeHolders();
-            userPrivilageController.saveWebUserPrivileges(current.getWebUser(),userRolePrivilage);
-            fillRoleUsers();
+            
+            fillRoleUsers();   
+            }
         }
 
+    }
+    
+    public void fillDepartment(){
+        departments = fillWebUserDepartments(current.getWebUser());
+    }
+    
+    public List<Department> fillWebUserDepartments(WebUser wu) {
+        Set<Department> departmentSet = new HashSet<>();
+        String sql = "SELECT i.department "
+                + " FROM WebUserDepartment i "
+                + " WHERE i.retired = :ret "
+                + " AND i.webUser = :wu "
+                + " ORDER BY i.department.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("wu", wu);
+        List<Department> depts = departmentFacade.findByJpql(sql, m);
+        departmentSet.addAll(depts);
+        return new ArrayList<>(departmentSet);
     }
     
     public void fillUseRolePrivilage(){
@@ -88,6 +125,7 @@ public class WebUserRoleUserController implements Serializable {
         users = getFacade().findByJpql(jpql, m);
         fillRoleUsers();
         fillUseRolePrivilage();
+        fillDepartment();
     }
 
 
@@ -180,6 +218,12 @@ public class WebUserRoleUserController implements Serializable {
     }
 
     public List<WebUser> getUsers() {
+        if(users == null){
+             Map m = new HashMap();
+        String jpql = "SELECT i FROM WebUser i WHERE i.retired = :ret";
+        m.put("ret", false);
+        users = getFacade().findByJpql(jpql, m);
+        }
         return users;
     }
 
@@ -193,6 +237,30 @@ public class WebUserRoleUserController implements Serializable {
 
     public void setRoleUsers(List<WebUserRoleUser> roleUsers) {
         this.roleUsers = roleUsers;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
+    }
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
     }
     
     
