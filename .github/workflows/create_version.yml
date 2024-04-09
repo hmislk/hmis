@@ -37,7 +37,7 @@ jobs:
 
       - name: Update README.md
         run: |
-          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}/" README.md
+          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
 
       - name: Set up Git identity
         run: |
