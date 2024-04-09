@@ -491,7 +491,7 @@ public class PurchaseOrderRequestController implements Serializable {
             currentBill = new BilledBill();
             currentBill.setBillType(BillType.PharmacyOrder);
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-            PaymentMethod pm = optionController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method", PaymentMethod.class, OptionScope.APPLICATION, null, null, null); // Assuming APPLICATION scope for this setting
+            PaymentMethod pm = optionController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method", PaymentMethod.class, OptionScope.APPLICATION, null, null, null); 
             System.out.println("pm = " + pm);
             currentBill.setPaymentMethod(pm);
         }

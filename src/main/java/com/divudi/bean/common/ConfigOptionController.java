@@ -135,8 +135,6 @@ public class ConfigOptionController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("key", key);
         params.put("scope", scope);
-
-        // Adjusting the query based on the specified scope
         switch (scope) {
             case DEPARTMENT:
                 if (department != null) {
@@ -169,20 +167,7 @@ public class ConfigOptionController implements Serializable {
             default:
                 throw new AssertionError("Unhandled scope: " + scope);
         }
-
         ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-        if (option == null) {
-            // Create a new option if it does not exist, with specific handling for APPLICATION scope
-            option = new ConfigOption();
-            option.setOptionKey(key);
-            option.setScope(scope);
-            if (scope != OptionScope.APPLICATION) {
-                option.setInstitution(institution);
-                option.setDepartment(department);
-                option.setWebUser(webUser);
-            }
-            optionFacade.create(option);
-        }
         return option;
     }
 
@@ -200,42 +185,136 @@ public class ConfigOptionController implements Serializable {
     }
 
     public <E extends Enum<E>> E getEnumValueByKey(String key, Class<E> enumClass, OptionScope scope, Institution institution, Department department, WebUser webUser) {
-        System.out.println("getEnumValueByKey");
-        System.out.println("key = " + key);
-        System.out.println("enumClass = " + enumClass);
-        System.out.println("scope = " + scope);
-        
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
-        // Check if the option was not found or if it's not of the expected enum type.
+        System.out.println("option = " + option);
+
         if (option == null || option.getValueType() != OptionValueType.ENUM || !option.getEnumType().equals(enumClass.getName())) {
-            // Create a new ConfigOption if it doesn't exist
             option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
             option.setOptionKey(key);
             option.setScope(scope);
             option.setInstitution(institution);
             option.setDepartment(department);
             option.setWebUser(webUser);
             option.setValueType(OptionValueType.ENUM);
+            System.out.println("option.getEnumValue() = " + option.getEnumValue());
             option.setEnumType(enumClass.getName());
-
-            // Set a default enum value if applicable. This requires a decision on what the default should be.
-            // For illustration, assuming 'DEFAULT' is a valid enum constant for your enumClass.
-            // Ensure your enumClass has a default value that can be used here.
-            if (EnumSet.allOf(enumClass).stream().anyMatch(e -> e.name().equals("DEFAULT"))) {
-                option.setEnumValue("DEFAULT");
-            } else {
-                // Handle the case where no default is appropriate
-                return null; // or throw an exception
-            }
-
+            System.out.println("enumClass.getName() = " + enumClass.getName());
             optionFacade.create(option); // Persist the new ConfigOption entity
 
-            // Optionally, after creation, you may want to do additional actions or logging here.
         }
 
         System.out.println("1 option = " + option);
         return getEnumValue(option, enumClass);
     }
+
+    public Double getDoubleValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+            option.setOptionKey(key);
+            option.setScope(scope);
+            option.setInstitution(institution);
+            option.setDepartment(department);
+            option.setWebUser(webUser);
+            option.setValueType(OptionValueType.DOUBLE);
+            optionFacade.create(option);
+        }
+        try {
+            return Double.parseDouble(option.getEnumValue());
+        } catch (NumberFormatException e) {
+            System.out.println("Failed to parse option value as double: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public String getLongTextValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+            option.setOptionKey(key);
+            option.setScope(scope);
+            option.setInstitution(institution);
+            option.setDepartment(department);
+            option.setWebUser(webUser);
+            option.setValueType(OptionValueType.LONG_TEXT);
+            option.setOptionValue(""); // Assuming an empty string is an appropriate default. Adjust as necessary.
+            optionFacade.create(option);
+        }
+        return option.getOptionValue();
+    }
+
+    public String getShortTextValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
+        if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+            option.setOptionKey(key);
+            option.setScope(scope);
+            option.setInstitution(institution);
+            option.setDepartment(department);
+            option.setWebUser(webUser);
+            option.setValueType(OptionValueType.SHORT_TEXT);
+            option.setOptionValue("");
+            optionFacade.create(option);
+        }
+        return option.getOptionValue();
+    }
+
+    public Long getLongValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+            option.setOptionKey(key);
+            option.setScope(scope);
+            option.setInstitution(institution);
+            option.setDepartment(department);
+            option.setWebUser(webUser);
+            option.setValueType(OptionValueType.LONG);
+            // Assuming a default Long value is needed; adjust as necessary.
+            // For instance, you might default to 0L if that makes sense for your use case.
+            option.setOptionValue("0");
+            optionFacade.create(option);
+        }
+
+        try {
+            // Attempt to convert the option's value to a Long
+            return Long.parseLong(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            // Log or handle the case where the value cannot be parsed into a Long
+            System.out.println("Failed to parse option value as Long: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public Boolean getBooleanValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+            option.setOptionKey(key);
+            option.setScope(scope);
+            option.setInstitution(institution);
+            option.setDepartment(department);
+            option.setWebUser(webUser);
+            option.setValueType(OptionValueType.BOOLEAN);
+            // Set a default Boolean value; adjust based on your application's default needs.
+            option.setOptionValue("false"); // Defaulting to false. Adjust as necessary.
+            optionFacade.create(option);
+        }
+        return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    
 
     public ConfigOption getOptionValueByKeyForInstitution(String key, Institution institution) {
         return getOptionValueByKey(key, OptionScope.INSTITUTION, institution, null, null);
