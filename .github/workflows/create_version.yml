@@ -23,7 +23,7 @@ jobs:
 
       - name: Determine current date
         id: current_date
-        run: echo "::set-output name=date::$(TZ=Asia/Colombo date +'%Y%m%d%H%M%S')"
+        run: echo "::set-output name=date::$(TZ=Asia/Colombo date +'%Y%m%d')"
 
       - name: Reset counter if it's a new day
         id: reset_counter
@@ -59,8 +59,8 @@ jobs:
 
       - name: Set Git user name and email
         run: |
-          git config --global user.email "action@github.com"
-          git config --global user.name "github-action"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
       - name: Stage changes
         run: |
