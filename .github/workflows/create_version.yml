@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'Issue#*'
+      - 'master' # Add master branch
 
 jobs:
   update_version_and_readme:
@@ -52,15 +53,19 @@ jobs:
         run: |
           sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
 
+      - name: Update template.xhtml
+        run: |
+          sed -i "s/&emsp;V\..*\"\/&emsp;V\.3\.0\.0\.${{ steps.current_date.outputs.date }}\.${{ steps.increment_counter.outputs.counter }}\"\/" src/main/webapp/resources/template/template.xhtml
+
       - name: Stage changes
         run: |
-          git add VERSION.txt README.md .github/counter.txt .github/last_date.txt
+          git add VERSION.txt README.md src/main/webapp/resources/template/template.xhtml .github/counter.txt .github/last_date.txt
 
       - name: Commit version and README update
         run: |
           git commit -m "Update version to 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}"
-        
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          branch: "Issue#${{ github.event.ref_name }}"
+          branch: ${{ github.event.ref_name }} # Adjust branch dynamically based on the event
