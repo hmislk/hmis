@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - 'Issue#*'
-      - 'master' # Add master branch
+      - 'master'
 
 jobs:
   update_version_and_readme:
@@ -57,6 +57,11 @@ jobs:
         run: |
           sed -i "s|&emsp;V\..*\"\/|&emsp;V\.3\.0\.0\.${{ steps.current_date.outputs.date }}\.${{ steps.increment_counter.outputs.counter }}\"\/|" src/main/webapp/resources/template/template.xhtml
 
+      - name: Set Git user name and email
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+
       - name: Stage changes
         run: |
           git add VERSION.txt README.md src/main/webapp/resources/template/template.xhtml .github/counter.txt .github/last_date.txt
@@ -68,4 +73,4 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          branch: ${{ github.event.ref_name }} # Adjust branch dynamically based on the event
+          branch: ${{ github.event.ref_name }}
