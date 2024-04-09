@@ -222,6 +222,7 @@
                                                     ajax="false" 
                                                     icon="fa fa-ban" 
                                                     value="Cancel All Bills of this Batch Bill"
+                                                    disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
                                                     action="#{billController.cancellAllBillsOfBatchBill()}" 
                                                     styleClass="m-1 ui-button-danger"
                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
