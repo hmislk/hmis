@@ -733,7 +733,7 @@ public class PatientEncounterController implements Serializable {
 
         patientReportController.setCurrentPtIx(currentPtIx);
         patientReportController.createNewReport(currentPtIx);
-        pf.setPatientReport(currentPatientReport);
+        pf.setPatientReport(patientReportController.getCurrentPatientReport());
     }
 
    
