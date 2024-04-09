@@ -103,7 +103,7 @@
                         <h5><h:outputLabel style="text-transform: uppercase" class="text-left" value="#{sessionController.loggedUser.department.name}"/></h5>
                         <h6 class="mx-2">|</h6>
                         <h6><h:outputLabel value="#{sessionController.loggedUser.name}"/></h6>
-                        <h6><h:outputLabel class="text-left" value="&emsp;V.#{versionController.systemVersion}"/></h6>
+                        <h6><h:outputLabel class="text-left" rendered="#{versionController.systemVersion ne null}" value="&emsp;V.#{versionController.systemVersion}"/></h6>
                     </div>
                 </div>
 

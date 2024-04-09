@@ -30,22 +30,21 @@ public class VersionController {
      * Reads the first line of the text file and checks if it contains the system version.
      */
     public void readFirstLine() {
-        String filePath = "../".repeat(7) + fileName;
     try {
         // Read the first line from the file
-        String firstLine = Files.lines(Paths.get(filePath)).findFirst().orElse(null);
+        String firstLine = Files.lines(Paths.get(fileName)).findFirst().orElse(null);
         if (firstLine != null && !firstLine.isEmpty()) {
             // Set systemVersion to the content of the first line
             systemVersion = firstLine.trim();
         } else {
             // If the first line is empty or the file does not exist, set systemVersion to "0.0.0.0"
-            systemVersion = "0.0.0.0";
+            systemVersion = null;
         }
     } catch (IOException e) {
         // Handle IOException by printing the stack trace
         e.printStackTrace();
         // Set systemVersion to "0.0.0.0" if an IOException occurs
-        systemVersion = "0.0.0.0";
+        systemVersion = null;
     }
 }
 
