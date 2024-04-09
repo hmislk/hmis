@@ -3,7 +3,6 @@ name: Update Version and README
 on:
   push:
     branches:
-     # - 'Issue#*'
       - 'master'
 
 jobs:
@@ -63,7 +62,7 @@ jobs:
 
       - name: Stage changes
         run: |
-          git add VERSION.txt README.md src/main/webapp/resources/template/template.xhtml .github/counter.txt .github/last_date.txt
+          git add VERSION.txt README.md src/main/java/com/divudi/bean/common/VERSION.txt .github/counter.txt .github/last_date.txt
 
       - name: Commit version and README update
         run: |
