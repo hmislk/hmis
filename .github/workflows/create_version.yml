@@ -3,7 +3,7 @@ name: Update Version and README
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   update_version_and_readme:
