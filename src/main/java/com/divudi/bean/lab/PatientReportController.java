@@ -1546,6 +1546,45 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
+        
+        JsfUtil.addSuccessMessage("Approved");
+        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+    }
+    
+    public void approveEmrPatientReport() {
+        Date startTime = new Date();
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to approve");
+            return;
+        }
+        if (currentPatientReport.getDataEntered() == false) {
+            JsfUtil.addErrorMessage("First Save report");
+            return;
+        }
+
+        BooleanMessage tbm = canApproveThePatientReport(currentPatientReport);
+        if (!tbm.isFlag()) {
+            JsfUtil.addErrorMessage(tbm.getMessage());
+            return;
+        }
+
+        getCurrentPtIx().setApproved(true);
+        currentPtIx.setApproveAt(Calendar.getInstance().getTime());
+        currentPtIx.setApproveUser(getSessionController().getLoggedUser());
+        currentPtIx.setApproveDepartment(getSessionController().getDepartment());
+        getPiFacade().edit(currentPtIx);
+        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setApproved(Boolean.TRUE);
+        currentPatientReport.setApproveAt(Calendar.getInstance().getTime());
+        currentPatientReport.setApproveDepartment(getSessionController().getLoggedUser().getDepartment());
+        currentPatientReport.setApproveInstitution(getSessionController().getLoggedUser().getInstitution());
+        currentPatientReport.setApproveUser(getSessionController().getLoggedUser());
+        currentPatientReport.setQrCodeContentsDetailed(generateQrCodeDetails(currentPatientReport));
+        currentPatientReport.setQrCodeContentsLink(generateQrCodeLink(currentPatientReport));
+        getFacade().edit(currentPatientReport);
+        getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
+        getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
+
         if(clinicalFindingValue!=null){
             getClinicalFindingValue().setPatientInvestigation(currentPtIx);
             if(clinicalFindingValue.getId()!=null){

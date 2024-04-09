@@ -1,9 +1,13 @@
 name: Update Version and README
 
 on:
-  pull_request:
+  push:
+    branches: 
+      - master
+      
+  #pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master" ]:
+   # branches: [ "master" ]
 
 jobs:
   update_version_and_readme:
@@ -24,13 +28,14 @@ jobs:
 
       - name: Read merge counter from file
         id: read_counter
-        run: echo "::set-output name=counter::$(cat counter.txt || echo '0')"
+        run: echo "::set-output name=counter::$(cat .github/counter.txt || echo '0')"
 
       - name: Increment merge counter
         id: increment_counter
         run: |
           counter=$((${{ steps.read_counter.outputs.counter }} + 1))
           echo "::set-output name=counter::$counter"
+          echo $counter > .github/counter.txt
 
       - name: Update version file with date and merge counter
         run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > VERSION.txt
