@@ -26,10 +26,10 @@
                             <h:outputLabel value=", " ></h:outputLabel>
                             <p:spacer width="20px"/>
                             <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.patient.person.sex}" ></h:outputLabel>
+
                         </h:panelGroup>
                     </f:facet>
                     <h:form id="form" >
-<!--                        <h1>#{patientReportController.currentPtIx.patient.patientPhoneNumber}</h1>-->
 
                         <p:growl id="messages" showDetail="true"/> 
 
@@ -51,87 +51,63 @@
 
                         </p:tooltip>
 
-                        <h:panelGrid columns="2" >
-                            <p:outputLabel value="Report Format" ></p:outputLabel>
+                        <div class="w-100 my-1" >
+                            <p:outputLabel value="Report Format" class="my-1"></p:outputLabel>
                             <p:selectOneMenu  id="mnuCat" value="#{patientReportController.currentPatientReport.reportFormat}"  style="width: 300px!important;">
                                 <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <f:ajax event="change" execute="mnuCat" render=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                             </p:selectOneMenu>
-                        </h:panelGrid>
-                        <div class="w-100 d-flex justify-content-between my-1" >
-                            <p:commandButton 
-                                rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
-                                value="Save" 
-                                icon="fa-solid fa-floppy-disk"
-                                class="mx-1 ui-button-warning"
-                                action="#{patientReportController.savePatientReport()}" ajax="false"   >
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                process="tblVals"
-                                icon="fa-solid fa-calculator"
-                                update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  
-                                value="Calculate" 
-                                action="#{patientReportController.calculate}">
-                            </p:commandButton>
-                            <p:commandButton 
-                                id="btnApprove"  
-                                class="mx-1 ui-button-success"
-                                icon="fa-solid fa-check"
-                                disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
-                                value="Approve" 
-                                action="#{patientReportController.approvePatientReport()}" 
-                                ajax="false"   >
-                            </p:commandButton>
-                            <p:commandButton 
-                                rendered="true"  
-                                icon="fa-solid fa-message"
-                                class="mx-1 ui-button-secondary"
-                                id="btnSms"  
-                                disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   
-                                value="Sent SMS"             
-                                action="#{patientReportController.sendSmsForPatientReport()}" ajax="false"   >
-                            </p:commandButton>
-                            <p:commandButton   
-                                id="btnCancelApproval"  
-                                disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
-                                value="Cancel Approval"
-                                icon="fa-solid fa-times"
-                                class="mx-1 ui-button-danger"
-                                action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
-                            </p:commandButton>
-                            <p:commandButton   
-                                ajax="false" 
-                                icon="fa-solid fa-print"
-                                class="mx-1 ui-button-info"
-                                value="Print" 
-                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                actionListener="#{patientReportController.printPatientReport()}">
-                                <p:printer target=":formPrint:divPrint" />
-                            </p:commandButton>
-                            <p:spacer width="20" ></p:spacer>
-                            <p:commandButton    value="Back to Report Search" 
-                                                action="/lab/search_for_reporting_ondemand" 
-                                                icon="fa-solid fa-arrow-left"
-                                                class="mx-1 ui-button-secondary"
-                                                ajax="false"   >
-                            </p:commandButton>
-                            <p:commandButton    value="Patient Report Search" 
-                                                icon="fa-solid fa-search"
-                                                class="mx-1 ui-button-warning"
-                                                action="#{patientReportController.patientReportSearch}" ajax="false" >
-                            </p:commandButton>
+                            <div class="justify-content-end" style="float: right;">
+                                <p:commandButton 
+                                    rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
+                                    value="Save" 
+                                    icon="fa-solid fa-floppy-disk"
+                                    class="mx-1 ui-button-warning"
+                                    action="#{patientReportController.savePatientReport()}" ajax="false"   >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    process="tblVals"
+                                    icon="fa-solid fa-calculator"
+                                    update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  
+                                    value="Calculate" 
+                                    action="#{patientReportController.calculate}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnApprove"  
+                                    class="mx-1 ui-button-success"
+                                    icon="fa-solid fa-check"
+                                    disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
+                                    value="Approve" 
+                                    action="#{patientReportController.approveEmrPatientReport()}" 
+                                    ajax="false"   >
+                                </p:commandButton>
+                                <p:commandButton   
+                                    id="btnCancelApproval"  
+                                    disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
+                                    value="Cancel Approval"
+                                    icon="fa-solid fa-times"
+                                    class="mx-1 ui-button-danger"
+                                    action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
+                                </p:commandButton>
+                                <p:commandButton   
+                                    ajax="false" 
+                                    icon="fa-solid fa-print"
+                                    class="mx-1 ui-button-info"
+                                    value="Print" 
+                                    disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                    actionListener="#{patientReportController.printPatientReport()}">
+                                    <p:printer target=":formPrint:divPrint" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Back to EMR" 
+                                    icon="fa-solid fa-arrow-left"
+                                    style="float: right;"
+                                    class="mx-1"
+                                    action="/emr/opd_visit" ajax="false">
+                                </p:commandButton>
 
-                            <p:commandButton    value="To Approve List" 
-                                                icon="fa-solid fa-list"
-                                                class="mx-1 ui-button-success"
-                                                action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
-                            </p:commandButton>
-                            <p:commandButton  ajax="false" value="Back to Visit"
-                                              action="/clinical/clinical_new_opd_visit.xhtml" 
-                                              icon="fa-solid fa-arrow-left"
-                                              class="mx-1"
-                                              style="float: right;"  ></p:commandButton>
+                            </div>
 
                         </div>
 
