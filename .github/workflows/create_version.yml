@@ -23,12 +23,12 @@ jobs:
 
       - name: Determine current date
         id: current_date
-        run: echo "::set-output name=date::$(date +'%Y%m%d')"
+        run: echo "::set-output name=date::$(TZ=Asia/Colombo date +'%Y%m%d%H%M%S')"
 
       - name: Reset counter if it's a new day
         id: reset_counter
         run: |
-          current_date=$(date +'%Y%m%d')
+          current_date=$(TZ=Asia/Colombo date +'%Y%m%d')
           last_date=$(cat .github/last_date.txt || echo '0')
           if [ "$current_date" != "$last_date" ]; then
             echo "0" > .github/counter.txt
@@ -59,8 +59,8 @@ jobs:
 
       - name: Set Git user name and email
         run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-action"
 
       - name: Stage changes
         run: |
