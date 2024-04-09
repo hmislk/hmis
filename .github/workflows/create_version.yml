@@ -28,13 +28,16 @@ jobs:
 
       - name: Increment merge counter
         id: increment_counter
-        run: echo "::set-output name=counter::${{ steps.read_counter.outputs.counter + 1 }}"
+        run: |
+          counter=$((${{ steps.read_counter.outputs.counter }} + 1))
+          echo "::set-output name=counter::$counter"
 
       - name: Update version file with date and merge counter
         run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > VERSION.txt
 
       - name: Update README.md
-        run: sed -i "s/Current Version: .*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}/" README.md
+        run: |
+          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}/" README.md
 
       - name: Commit version and README update
         run: |
