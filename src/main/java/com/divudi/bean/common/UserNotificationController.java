@@ -13,13 +13,18 @@ import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
+import com.divudi.data.MessageType;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.TriggerType;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Notification;
+import com.divudi.entity.Sms;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.NotificationFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.UserNotificationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -57,14 +62,22 @@ public class UserNotificationController implements Serializable {
     private UserNotificationFacade ejbFacade;
     @EJB
     NotificationFacade notificationFacade;
+    @EJB
+    SmsFacade smsFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
 
     @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject 
+    SmsManagerEjb smsManager;
 
-    public String navigateToUserNotification() {
+    public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
+    }
+    
+    public String navigateToSentNotification() {
+        return "/Notification/sent_notifications";
     }
 
     public void save(UserNotification userNotification) {
@@ -188,10 +201,9 @@ public class UserNotificationController implements Serializable {
             case SMS:
                 for (WebUser u : notificationUsers) {
                     String number = u.getWebUserPerson().getMobile();
-                    System.out.println("number = " + number);
-                    //TODo
+                    sendSmsForUserSubscriptions(number);
                 }
-                break;
+                break; 
             case SYSTEM_NOTIFICATION:
                 for (WebUser u : notificationUsers) {
                     UserNotification nun = new UserNotification();
@@ -202,6 +214,37 @@ public class UserNotificationController implements Serializable {
                 break;
         }
 
+    }
+    
+    public void sendSmsForUserSubscriptions(String userMobNumber){
+        Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(userMobNumber);
+            e.setSendingMessage(createSmsForUserNotification());
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            //e.setSmsType(MessageType.ChannelDoctorArrival);
+            smsFacade.create(e);
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
+            smsFacade.edit(e);
+    }
+    
+    public String createSmsForUserNotification(){
+//        s = template.replace("{patient_name}", patientName)
+//                .replace("{doctor}", doc)
+//                .replace("{appointment_time}", sessionTime)
+//                .replace("{appointment_date}", sessionDate)
+//                .replace("{serial_no}", String.valueOf(no))
+//                .replace("{doc}", doc)
+//                .replace("{time}", sessionTime)
+//                .replace("{date}", sessionDate)
+//                .replace("{No}", String.valueOf(no));
+        
+        return "";
     }
 
     public void createAllertMessage(Notification n) {
