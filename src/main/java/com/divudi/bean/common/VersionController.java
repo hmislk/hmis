@@ -9,7 +9,6 @@ import javax.enterprise.context.ApplicationScoped;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
-import java.nio.file.Path;
 
 
 /**
@@ -21,27 +20,20 @@ import java.nio.file.Path;
 public class VersionController {
 
     private final String fileName = "VERSION.txt";
-    private String systemVersion = ""; // Public vareiable to store the system version read from the file
+    private String systemVersion; // Public vareiable to store the system version read from the file
 
     public VersionController() {
-        //readFirstLine(); // Load first line content upon bean instantiation
+        readFirstLine(); // Load first line content upon bean instantiation
     }
 
     /**
      * Reads the first line of the text file and checks if it contains the system version.
      */
     public void readFirstLine() {
+        String filePath = "../".repeat(7) + fileName;
     try {
-        // Get the root directory of the application
-        Path rootDirectory = Paths.get("").toAbsolutePath();
-
-        // Construct the file path to VERSION.txt by navigating from the root directory
-        Path versionFilePath = rootDirectory.resolve(fileName);
-        
-        System.out.println("versionFilePath = " + versionFilePath);
-        
         // Read the first line from the file
-         String firstLine = Files.lines(versionFilePath).findFirst().orElse(null);
+        String firstLine = Files.lines(Paths.get(filePath)).findFirst().orElse(null);
         if (firstLine != null && !firstLine.isEmpty()) {
             // Set systemVersion to the content of the first line
             systemVersion = firstLine.trim();
