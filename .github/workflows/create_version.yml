@@ -1,12 +1,9 @@
 name: Update Version and README
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master" ]
+    branches: [ "master" ]:
 
 jobs:
   update_version_and_readme:
@@ -15,50 +12,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
-      - name: Determine current commit number
-        id: current_commit
-        run: echo "::set-output name=commit_number::$(git rev-parse HEAD)"
-
-      - name: Read previous commit number from file
-        id: read_prev_commit
-        run: echo "::set-output name=prev_commit::$(cat commit_number.txt || echo '')"
-
-      - name: Compare commit numbers
-        id: compare_commit
-        run: |
-          if [ "${{ steps.current_commit.outputs.commit_number }}" != "${{ steps.read_prev_commit.outputs.prev_commit }}" ]; then
-            echo "commit_numbers_different=true" >> $GITHUB_ENV
-          else
-            echo "commit_numbers_different=false" >> $GITHUB_ENV
-          fi
-
-      - name: Increment version if commit numbers differ
-        id: increment_version
-        if: env.commit_numbers_different == 'true'
-        run: echo "increment_version=true" >> $GITHUB_ENV
-
       - name: Determine current date
-        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        id: current_date
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
 
       - name: Read merge counter from file
-        run: echo "counter=$(cat counter.txt || echo '0')" >> $GITHUB_ENV
+        id: read_counter
+        run: echo "::set-output name=counter::$(cat counter.txt || echo '0')"
 
-      - name: Increment merge counter if needed
-        if: steps.increment_version.outputs.increment_version == 'true'
-        run: echo "counter=$((counter + 1))" >> $GITHUB_ENV
+      - name: Increment merge counter
+        id: increment_counter
+        run: |
+          counter=$((${{ steps.read_counter.outputs.counter }} + 1))
+          echo "::set-output name=counter::$counter"
 
       - name: Update version file with date and merge counter
-        run: echo "3.0.0.${{ env.date }}.${{ env.counter }}" > VERSION.txt
+        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > VERSION.txt
 
       - name: Update README.md
         run: |
-          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ env.date }}.${{ env.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
+          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
 
       - name: Set up Git identity
         run: |
@@ -68,5 +47,5 @@ jobs:
       - name: Commit version and README update
         run: |
           git add VERSION.txt README.md
-          git commit -m "Update version to 3.0.0.${{ env.date }}.${{ env.counter }}"
+          git commit -m "Update version to 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}"
           git push
