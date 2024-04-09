@@ -26,12 +26,22 @@ jobs:
         id: read_counter
         run: echo "::set-output name=counter::$(cat counter.txt || echo '0')"
 
+      - name: Determine if this is a merge commit
+        id: is_merge_commit
+        run: |
+          if git show --format=%P -s | grep -q " "; then
+            echo "::set-output name=is_merge::true"
+          else
+            echo "::set-output name=is_merge::false"
+          fi
+
       - name: Increment merge counter
+        if: steps.is_merge_commit.outputs.is_merge == 'true'
         id: increment_counter
         run: |
           counter=$((${{ steps.read_counter.outputs.counter }} + 1))
           echo "::set-output name=counter::$counter"
-
+        
       - name: Update version file with date and merge counter
         run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > VERSION.txt
 
