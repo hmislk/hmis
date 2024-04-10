@@ -170,6 +170,7 @@ public class PatientEncounterController implements Serializable {
     private ClinicalFindingValue patientMedicine;
     private ClinicalFindingValue patientImage;
     private ClinicalFindingValue patientDiagnosis;
+    private ClinicalFindingValue patientProcedure;
     private ClinicalFindingValue patientDiagnosticImage;
     private ClinicalFindingValue removingClinicalFindingValue;
 
@@ -178,6 +179,7 @@ public class PatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> patientMedicines;
     private List<ClinicalFindingValue> patientImages;
     private List<ClinicalFindingValue> patientDiagnoses;
+    private List<ClinicalFindingValue> patientProcedures;
     private List<ClinicalFindingValue> patientDiagnosticImages;
 
     private ClinicalFindingValue encounterMedicine;
@@ -1580,6 +1582,17 @@ public class PatientEncounterController implements Serializable {
         getPatientDiagnoses().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
+    
+    public void removePatientProcedure() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select Procedure");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        getPatientProcedures().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
+    }
 
     public void addPatientAllergy() {
         if (getPatientAllergy().getItemValue() == null) {
@@ -1604,6 +1617,20 @@ public class PatientEncounterController implements Serializable {
         clinicalFindingValueFacade.create(getPatientDiagnosis());
         getPatientDiagnoses().add(getPatientDiagnosis());
         setPatientDiagnosis(null);
+        JsfUtil.addSuccessMessage("Added");
+    }
+    
+    public void addPatientProcedure() {
+        if (getPatientProcedure().getItemValue() == null) {
+            JsfUtil.addErrorMessage("Select Surgery");
+            return;
+        }
+        System.out.println("get = " + getPatientProcedure().getItemValue().getName());
+        getPatientProcedure().setPatient(patient);
+        getPatientProcedure().setClinicalFindingValueType(ClinicalFindingValueType.PatientProcedure);
+        clinicalFindingValueFacade.create(getPatientProcedure());
+        getPatientProcedures().add(getPatientProcedure());
+        setPatientProcedure(null);
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -3399,6 +3426,29 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
         this.patientInvestigations = patientInvestigations;
+    }
+
+    public ClinicalFindingValue getPatientProcedure() {
+        if (patientProcedure == null) {
+            patientProcedure = new ClinicalFindingValue();
+            patientProcedure.setClinicalFindingValueType(ClinicalFindingValueType.PatientProcedure);
+        }
+        return patientProcedure;
+    }
+
+    public void setPatientProcedure(ClinicalFindingValue patientProcedure) {
+        this.patientProcedure = patientProcedure;
+    }
+
+    public List<ClinicalFindingValue> getPatientProcedures() {
+        if(patientProcedures==null){
+            patientProcedures = new ArrayList<>();
+        }
+        return patientProcedures;
+    }
+
+    public void setPatientProcedures(List<ClinicalFindingValue> patientProcedures) {
+        this.patientProcedures = patientProcedures;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
