@@ -809,7 +809,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private String createChanellBookingSms(Bill b) {
 //        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking", OptionScope.APPLICATION, null, null, null);
-        if(template==null||template.isBlank()){
+        if(template==null||template.isEmpty()){
             template = "Dear {patient_name}, Your appointment with {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
         }
         return createSmsForChannelBooking(b, template);
