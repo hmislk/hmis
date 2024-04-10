@@ -21,28 +21,23 @@ public class VersionController {
         readFirstLine(); // Load first line content upon bean instantiation
     }
 
+    import java.io.File ;
+
     public void readFirstLine() {
         try {
-            // Check if the file exists, if not, create it
-            java.nio.file.Path path = Paths.get(fileName);
+            // Adjust the file path as necessary to match your deployment environment
+            String filePath = System.getProperty("user.dir") + File.separator + fileName;
+            java.nio.file.Path path = Paths.get(filePath);
+
             if (!Files.exists(path)) {
                 Files.createFile(path);
             }
 
-            // Read the first line from the file
-            String firstLine = Files.lines(path).findFirst().orElse(null);
-            if (firstLine != null && !firstLine.isEmpty()) {
-                // Set systemVersion to the content of the first line
-                systemVersion = firstLine.trim();
-            } else {
-                // If the first line is empty or the file does not exist, set systemVersion to null
-                systemVersion = null;
-            }
+            String firstLine = Files.lines(path).findFirst().orElse("0.0.0.0");
+            systemVersion = firstLine.trim();
         } catch (IOException e) {
-            // Handle IOException by printing the stack trace
             e.printStackTrace();
-            // Set systemVersion to null if an IOException occurs
-            systemVersion = null;
+            systemVersion = "0.0.0.0"; // Default version in case of error
         }
     }
 
