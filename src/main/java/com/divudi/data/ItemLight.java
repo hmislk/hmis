@@ -63,6 +63,16 @@ public class ItemLight {
         this.fullName = fullName;
     }
 
+    public ItemLight(Long id, String departmentName, String name, String code, Double total) {
+        this.id = id;
+        this.departmentName = departmentName;
+        this.name = name;
+        this.code = code;
+        this.total = total;
+    }
+
+    
+    
     public ItemLight(Long id, Integer orderNo, Boolean isMasterItem, Boolean hasReportFormat,
             String categoryName, Long categoryId, String institutionName, Long institutionId,
             String departmentName, Long departmentId, String specialityName, Long specialityId,
