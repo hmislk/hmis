@@ -25,6 +25,7 @@ import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
+import com.divudi.data.PaymentContext;
 import com.divudi.data.RestAuthenticationType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.Title;
@@ -532,6 +533,10 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Credit};
 
         return p;
+    }
+    
+    public List<PaymentMethod> getPaymentMethodsForPurchases() {
+        return PaymentMethod.getMethodsByContext(PaymentContext.PURCHASES);
     }
     
     public CreditDuration[] getCreditDuration() {

@@ -170,7 +170,7 @@
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                     <f:selectItem itemLabel="Select Payment method"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForPo}">
+                                    <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
                                     </f:selectItems>
                                     <p:ajax process="@this" update="po" event="change"/>
                                     <p:ajax process="@this" update="duration" event="itemSelect" />
