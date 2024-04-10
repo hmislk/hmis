@@ -329,6 +329,14 @@ public class PharmacyController implements Serializable {
         importerController.getCurrent();
         return "/pharmacy/pharmacy_importer?faces-redirect=true";
     }
+    
+    public String navigateToSuppliers(){
+        return "/pharmacy/pharmacy_dealer?faces-redirect=true";
+    }
+    
+    public String navigateToItemSuppliers(){
+        return "/pharmacy/pharmacy_items_distributors?faces-redirect=true";
+    }
 
     public String navigateToVmp() {
         return "/pharmacy/admin/vmp?faces-redirect=true";

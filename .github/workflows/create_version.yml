@@ -46,7 +46,7 @@ jobs:
           echo $counter > .github/counter.txt
 
       - name: Update version file with date and merge counter
-        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > VERSION.txt
+        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > src/main/resources/VERSION.txt
 
       - name: Update README.md
         run: |
@@ -59,7 +59,7 @@ jobs:
 
       - name: Stage changes
         run: |
-          git add VERSION.txt README.md .github/counter.txt .github/last_date.txt
+          git add src/main/resources/VERSION.txt README.md .github/counter.txt .github/last_date.txt
 
       - name: Commit version and README update
         run: |

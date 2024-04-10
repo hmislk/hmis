@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:body>
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="optionsForm">
+                    <!-- Button to List Application Options -->
+                    <p:commandButton value="List Application Options" action="#{configOptionController.listApplicationOptions}" update="optionsTable" />
+
+                    <!-- Data Table for Options -->
+                    <p:dataTable var="option" value="#{configOptionController.options}" id="optionsTable"
+                                 paginator="true" rows="10" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15"
+                                 selection="#{configOptionController.option}">
+                        <p:column headerText="Key" sortBy="#{option.optionKey}" filterBy="#{ooptionKeyon.optionKey}" filterMatchMode="contains">
+                            #{option.optionKey}
+                        </p:column>
+                        <p:column headerText="Type" sortBy="#{option.valueType}">
+                            #{option.valueType}
+                        </p:column>
+                        <p:column headerText="Value">
+                            <h:outputText value="#{option.optionValue}" />
+                        </p:column>
+                        <p:column>
+                            <p:commandButton 
+                                icon="ui-icon-pencil" 
+                                oncomplete="PF('optionEditDialog').show()" 
+                                update=":editForm"
+                                >
+                                <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                <p:dialog header="Edit Option" widgetVar="optionEditDialog" modal="true" resizable="false">
+                    <h:form id="editForm">
+                        <p:outputLabel for="keyInput" value="Key:" />
+                        <p:inputText id="keyInput" value="#{configOptionController.option.optionKey}" disabled="true" />
+
+                        <p:outputLabel  value="Value:" />
+
+                        <!-- Rendered based on the valueType of the option -->
+                        <!-- For SHORT_TEXT -->
+                        <p:inputText id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                     rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
+
+                        <!-- For LONG_TEXT -->
+                        <p:inputTextarea id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="true"/>
+
+                        <!-- For ENUM, dynamically populate options -->
+                        <p:selectOneMenu id="valueInputEnum" value="#{configOptionController.option.enumValue}"
+                                         rendered="#{configOptionController.option.valueType eq 'ENUM'}" converter="enumConverter">
+                            <f:selectItems value="#{configOptionController.getEnumValues(configOptionController.option.enumType)}" var="enumVal"
+                                           itemLabel="#{enumVal}" itemValue="#{enumVal}" />
+                        </p:selectOneMenu>
+
+                        <p:selectBooleanCheckbox id="valueInputBoolean" value="#{configOptionController.option.optionValue}"
+                                                 rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}" />
+
+                        <p:commandButton 
+                            value="Save" 
+                            action="#{configOptionController.saveOption(configOptionController.option)}" 
+                            process="@this @form"
+                            oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" />
+                    </h:form>
+                </p:dialog>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

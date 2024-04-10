@@ -73,7 +73,7 @@ public class InstitutionController implements Serializable {
     private int managaeInstitutionIndex = -1;
 
     public String toAdminManageInstitutions() {
-        return "/admin/institutions/admin_institutions_index";
+        return "/admin/institutions/admin_institutions_index?faces-redirect=true";
     }
 
     public String toListInstitutions() {

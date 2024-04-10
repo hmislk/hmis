@@ -1,15 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
+import java.io.BufferedReader;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.io.IOException;
-
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -19,37 +15,39 @@ import java.io.IOException;
 @ApplicationScoped
 public class VersionController {
 
-    private final String fileName = "VERSION.txt";
     private String systemVersion; // Public vareiable to store the system version read from the file
 
     public VersionController() {
         readFirstLine(); // Load first line content upon bean instantiation
     }
 
-    /**
-     * Reads the first line of the text file and checks if it contains the system version.
-     */
     public void readFirstLine() {
-    try {
-        // Read the first line from the file
-        String firstLine = Files.lines(Paths.get(fileName)).findFirst().orElse(null);
-        if (firstLine != null && !firstLine.isEmpty()) {
-            // Set systemVersion to the content of the first line
-            systemVersion = firstLine.trim();
-        } else {
-            // If the first line is empty or the file does not exist, set systemVersion to "0.0.0.0"
-            systemVersion = null;
+        try {
+            // Use getClassLoader() to load the VERSION.txt file from src/main/resources
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("VERSION.txt");
+            if (inputStream != null) {
+                try ( BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                    String firstLine = reader.readLine();
+                    if (firstLine != null && !firstLine.isEmpty()) {
+                        systemVersion = firstLine.trim();
+                    } else {
+                        systemVersion = "0.0.0.0"; // Set to a default or indicate unavailable
+                    }
+                } // InputStream and BufferedReader are auto-closed here
+            } else {
+                // Handle case where VERSION.txt does not exist or could not be found
+                systemVersion = "0.0.0.0"; // Indicate that the version is unavailable
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle any exceptions, e.g., file not found, read errors
+            systemVersion = "0.0.0.0"; // Default version or indicate unavailable
         }
-    } catch (IOException e) {
-        // Handle IOException by printing the stack trace
-        e.printStackTrace();
-        // Set systemVersion to "0.0.0.0" if an IOException occurs
-        systemVersion = null;
     }
-}
 
     // Getter for systemVersion (to make it accessible from XHTML)
     public String getSystemVersion() {
         return systemVersion;
     }
+
 }
