@@ -155,6 +155,7 @@ public class ItemsDistributorsController implements Serializable {
         getFacade().edit(getCurrent());
         JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
+        listItemForDistributer();
     }
 
     /**
