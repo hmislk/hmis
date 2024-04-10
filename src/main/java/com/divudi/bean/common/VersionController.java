@@ -1,10 +1,11 @@
 package com.divudi.bean.common;
 
+import java.io.BufferedReader;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -14,7 +15,6 @@ import java.io.IOException;
 @ApplicationScoped
 public class VersionController {
 
-    private final String fileName = "VERSION.txt";
     private String systemVersion; // Public vareiable to store the system version read from the file
 
     public VersionController() {
@@ -23,26 +23,25 @@ public class VersionController {
 
     public void readFirstLine() {
         try {
-            // Check if the file exists, if not, create it
-            java.nio.file.Path path = Paths.get(fileName);
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-            }
-
-            // Read the first line from the file
-            String firstLine = Files.lines(path).findFirst().orElse(null);
-            if (firstLine != null && !firstLine.isEmpty()) {
-                // Set systemVersion to the content of the first line
-                systemVersion = firstLine.trim();
+            // Use getClassLoader() to load the VERSION.txt file from src/main/resources
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("VERSION.txt");
+            if (inputStream != null) {
+                try ( BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                    String firstLine = reader.readLine();
+                    if (firstLine != null && !firstLine.isEmpty()) {
+                        systemVersion = firstLine.trim();
+                    } else {
+                        systemVersion = "0.0.0.0"; // Set to a default or indicate unavailable
+                    }
+                } // InputStream and BufferedReader are auto-closed here
             } else {
-                // If the first line is empty or the file does not exist, set systemVersion to null
-                systemVersion = null;
+                // Handle case where VERSION.txt does not exist or could not be found
+                systemVersion = "0.0.0.0"; // Indicate that the version is unavailable
             }
-        } catch (IOException e) {
-            // Handle IOException by printing the stack trace
+        } catch (Exception e) {
             e.printStackTrace();
-            // Set systemVersion to null if an IOException occurs
-            systemVersion = null;
+            // Handle any exceptions, e.g., file not found, read errors
+            systemVersion = "0.0.0.0"; // Default version or indicate unavailable
         }
     }
 
