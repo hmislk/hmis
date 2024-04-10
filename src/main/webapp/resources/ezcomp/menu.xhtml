@@ -1193,7 +1193,7 @@
                                     update="notCount" />
                             <h:panelGroup id="notCount">
                                 <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
-                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToUserNotification()}"/>
+                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}"/>
                                 </p:badge>
                             </h:panelGroup>
                         </div>

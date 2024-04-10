@@ -78,14 +78,14 @@ public class AreaController implements Serializable {
 
     public List<Area> completeArea(String qry) {
         List<Area> list;
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "select c from Area c "
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select c from Area c "
                 + " where c.retired=false "
                 + " and (c.name) like :q "
                 + " order by c.name";
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findByJpql(sql, hm);
+        params.put("q", "%" + qry.toUpperCase() + "%");
+        list = getFacade().findByJpql(jpql, params);
 
         if (list == null) {
             list = new ArrayList<>();
