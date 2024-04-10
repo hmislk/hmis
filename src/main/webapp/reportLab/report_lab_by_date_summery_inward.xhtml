@@ -49,7 +49,7 @@
                 </h:panelGrid>
             </p:panel>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i"
+                <p:dataTable id="sum1" value="#{pharmacySaleReportController.billedSummery.bills}" var="i"
                              rows="20"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

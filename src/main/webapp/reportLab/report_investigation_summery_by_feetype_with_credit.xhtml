@@ -28,7 +28,7 @@
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
-                        <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{pharmacySaleReport.institution}"  
+                        <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{pharmacySaleReportController.institution}"  
                                         style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{institutionController.completeCollectingCenter}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select Institution" >
                         </p:autoComplete>
                     </h:panelGrid>

@@ -19,13 +19,13 @@
                             icon="fa fa-refresh"
                             ajax="false" 
                             value="Refresh"
-                            action="#{pharmacySaleReport.createItemsDistributersWithDistributer}">
+                            action="#{pharmacySaleReportController.createItemsDistributersWithDistributer}">
                         </p:commandButton>
                     </div>
                 </div>
                 
                 <p:dataTable 
-                    value="#{pharmacySaleReport.distributerWithDestributorItems}" 
+                    value="#{pharmacySaleReportController.distributerWithDestributorItems}" 
                     var="di"
                     paginatorPosition="bottom"
                     rows="10"

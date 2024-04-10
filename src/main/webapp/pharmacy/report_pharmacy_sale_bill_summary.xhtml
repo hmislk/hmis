@@ -143,11 +143,11 @@
                                     <p:commandButton class="w-100 ui-button-warning" ajax="false"
                                                      value="View Summary"
                                                      action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
-                                                     actionListener="#{pharmacySaleReport.makeNull}"> 
-                                        <f:setPropertyActionListener target="#{pharmacySaleReport.fromDate}" value="#{billSearch.fromDate}"/>
-                                        <f:setPropertyActionListener target="#{pharmacySaleReport.toDate}" value="#{billSearch.toDate}"/>
-                                        <f:setPropertyActionListener target="#{pharmacySaleReport.department}" value="#{billSearch.department}"/>
-                                        <f:setPropertyActionListener target="#{pharmacySaleReport.user}" value="#{bs.webUser}"/>
+                                                     actionListener="#{pharmacySaleReportController.makeNull}"> 
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.fromDate}" value="#{billSearch.fromDate}"/>
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.toDate}" value="#{billSearch.toDate}"/>
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.department}" value="#{billSearch.department}"/>
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.user}" value="#{bs.webUser}"/>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>

@@ -84,7 +84,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Named
 @SessionScoped
-public class PharmacySaleReport implements Serializable {
+public class PharmacySaleReportController implements Serializable {
 
     Category category;
     Item item;
@@ -7379,7 +7379,7 @@ public class PharmacySaleReport implements Serializable {
     /**
      * Creates a new instance of PharmacySaleReport
      */
-    public PharmacySaleReport() {
+    public PharmacySaleReportController() {
     }
 
     public Date getFromDate() {

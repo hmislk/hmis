@@ -30,14 +30,14 @@
                                     icon="fa fa-refresh"
                                     style="float: right;" 
                                     value="Refresh"
-                                    action="#{pharmacySaleReport.createItemListOneItemHasGreterThanOneDistributorOther}">
+                                    action="#{pharmacySaleReportController.createItemListOneItemHasGreterThanOneDistributorOther}">
                                 </p:commandButton>
                             </div>
                         </div>  
 
                         <p:dataTable 
                             id="tblItem" 
-                            value="#{pharmacySaleReport.items}" 
+                            value="#{pharmacySaleReportController.items}" 
                             var="i"
                             rowKey="#{i.id}"
                             rows="10"

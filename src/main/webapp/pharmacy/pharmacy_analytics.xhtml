@@ -46,15 +46,15 @@
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Sale Summary - By Bill Type"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>   
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Sale Summary - By Payment Method "
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethod()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>   
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="Sale Summary - By Payment Method (By Bill) "
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethodByBill}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                         </div>
                                     </p:tab>
 
@@ -89,7 +89,7 @@
                                             <p:commandButton class="w-100" value="Single Items Summary" action="#{pharmacyController.navigateToItemTransactionDetails}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="All Items Summary" action="#{pharmacyController.navigateToAllItemsTransactionSummary}" ajax="false"></p:commandButton>
                                             
-                                            <p:commandButton class="w-100" value="Items With Out Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndReportItemsWithoutDistributor}" ajax="false"></p:commandButton>
+                                            <p:commandButton class="w-100" value="Items Without Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndReportItemsWithoutDistributor}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Items With Suppliers and Prices" action="#{pharmacyController.navigateToItemsWithSuppliersAndPrices}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Items With Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithDistributor}" ajax="false"></p:commandButton>
                                             <p:commandButton class="w-100" value="Items With Multiple Distributor(Items Only)" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithMultipleDistributorsItemsOnly}" ajax="false"></p:commandButton>
@@ -118,32 +118,32 @@
                                             <p:commandButton class="w-100" value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Retail Sale Bill List" 
-                                                             action="#{pharmacySaleReport.navigateToReportPharmacyRetailSaleBillList()}"
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             action="#{pharmacySaleReportController.navigateToReportPharmacyRetailSaleBillList()}"
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
 
 
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Sale Detail - By Bill " 
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}"
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Sale Detail - By Bill Items" 
                                                              action="#{commonReport.navigateToPharmacyReportSaleByBillItems()}"
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Sale Detail - By Discount Scheme"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Sale Summary By Discount Scheme Summary"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme1()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false"  
                                                              value="Sale Detail - By Payment Method"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentMethod()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Pharmacy Sale Report" action="#{pharmacySaleReport.navigatePharmacyBillReport()}" />
+                                                             value="Pharmacy Sale Report" action="#{pharmacySaleReportController.navigatePharmacyBillReport()}" />
 
                                         </div>
                                     </p:tab>
@@ -151,9 +151,9 @@
                                     <p:tab title="wholesale Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Pharmacy Whole Sale Report" action="#{pharmacySaleReport.navigatePharmacyWholeBillReport()}" />
+                                                             value="Pharmacy Whole Sale Report" action="#{pharmacySaleReportController.navigatePharmacyWholeBillReport()}" />
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Pharmacy WholeSale Credit Bills" action="#{pharmacySaleReport.navigatePharmacyReportCredit}" />
+                                                             value="Pharmacy WholeSale Credit Bills" action="#{pharmacySaleReportController.navigatePharmacyReportCredit}" />
 
                                         </div>
                                     </p:tab>
@@ -162,21 +162,21 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="BHT Issue - By Bill" 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueBill()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportBhtIssueBill()}" 
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="BHT Issue - By Bill Item"
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueBillItem()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportBhtIssueBillItem()}" 
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="BHT Issue - By Item" 
-                                                             action="#{pharmacySaleReport.navigateReportBhtIssueByItem()}"/>
+                                                             action="#{pharmacySaleReportController.navigateReportBhtIssueByItem()}"/>
                                             <p:commandButton class="w-100" ajax="false"  
                                                              value="BHT Issue - Staff " 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportStaffIssueBill()}" />
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportStaffIssueBill()}" />
                                             <p:commandButton class="w-100" ajax="false"  
                                                              value="BHT Issue With Margin Report " 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueItemWithMargin()}" />
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportBhtIssueItemWithMargin()}" />
 
                                         </div>
                                     </p:tab>
@@ -192,40 +192,40 @@
                                             <p:commandButton class="w-100" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                             <p:commandButton class="w-100" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="GRN Summary" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="GRN Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="GRN Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="GRN Bill Item Report" action="#{pharmacySaleReport.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
+                                                             value="GRN Bill Item Report" action="#{pharmacySaleReportController.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReportController.makeNull}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="GRN Registry" action="#{pharmacySaleReport.navigatePharmacyReportGrnRegistory()}" ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false"  value="GRN Return List" action="#{pharmacySaleReport.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
+                                                             value="GRN Registry" action="#{pharmacySaleReportController.navigatePharmacyReportGrnRegistory()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false"  value="GRN Return List" action="#{pharmacySaleReportController.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReportController.makeNull}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Purchase Order Summary" action="#{commonReport.navigateToPharmacyPurchaseOrderReportDetail()}" actionListener="#{commonReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Purchase Bills by Department" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseBillByDepartment()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="Purchase Bills by Department" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseBillByDepartment()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Purchase Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="Purchase Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Purchase Summary (Credit / Cash )" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="Purchase Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Purchase &amp; GRN Summary (Credit / Cash )" action="#{pharmacySaleReport.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="Purchase &amp; GRN Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
 
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Purchase Summary By Supplier (Credit / Cash)" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="Purchase Summary By Supplier (Credit / Cash)" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Purchase Bill Item" 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportPurchaseBillItem()}" />
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseBillItem()}" />
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="GRN Payment Summary" action="#{pharmacySaleReport.navigatePharmacyReportGrnPaymentDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="GRN Payment Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="GRN Payment Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportGrnPaymentDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="GRN Payment Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Pharmacy Return Without Traising" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetail1()}" />
+                                                             value="Pharmacy Return Without Traising" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail1()}" />
                                         </div>
                                     </p:tab>
                                     <p:tab title="Disbursement Reports">
@@ -241,9 +241,9 @@
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Transfer Report Summary" action="#{commonReport.navigateToPharmacyTransferReportSummary()}" actionListener="#{commonReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Transfer Issue Summary Report By Date" action="#{pharmacySaleReport.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="Transfer Issue Summary Report By Date" action="#{pharmacySaleReportController.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Transfer Receive Vs BHT Issue Quntity Totals By Item" action="#{pharmacySaleReport.navigatePharmacyReportTransferRecieveItemCount}" />
+                                                             value="Transfer Receive Vs BHT Issue Quntity Totals By Item" action="#{pharmacySaleReportController.navigatePharmacyReportTransferRecieveItemCount}" />
 
 
                                         </div>
@@ -258,18 +258,18 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Unit Issue by bill" 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitIssueBill()}" 
-                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportUnitIssueBill()}" 
+                                                             actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Unit Issue by Department" 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitIssueDepartmentByDepartment}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportUnitIssueDepartmentByDepartment}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Unit Issue by Item (Batch)" 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem()}"/>
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportUnitReportByItem()}"/>
 
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Unit Issue by Item" 
-                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem1()}"/>
+                                                             action="#{pharmacySaleReportController.navigatePharmacyReportUnitReportByItem1()}"/>
 
                                         </div>
                                     </p:tab>
