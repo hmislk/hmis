@@ -2674,7 +2674,7 @@ public class BillSearch implements Serializable {
         printPreview = false;
         return "/opd/bill_cancel?faces-redirect=true;";
     }
-
+    
     public String navigateToViewOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
