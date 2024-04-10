@@ -1264,6 +1264,7 @@ public class PatientEncounterController implements Serializable {
         channelBills = searchController.fillBills(BillType.Channel, null, null, patient, 10);
         patientAllergies = new ArrayList<>();
         patientDiagnoses = new ArrayList<>();
+        patientProcedures = new ArrayList<>();
         patientImages = new ArrayList<>();
         patientDiagnosticImages = new ArrayList<>();
         patientMedicines = new ArrayList<>();
@@ -1291,6 +1292,9 @@ public class PatientEncounterController implements Serializable {
                     break;
                 case PatientMedicine:
                     patientMedicines.add(tcfv);
+                    break;
+                case PatientProcedure:
+                    patientProcedures.add(tcfv);
                     break;
             }
         }
