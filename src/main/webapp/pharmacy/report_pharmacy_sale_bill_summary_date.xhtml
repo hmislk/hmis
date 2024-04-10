@@ -14,7 +14,7 @@
     <ui:define name="subcontent">
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel  header="Pharmay Sale Bill Summery">
+                <p:panel  header="Pharmay Sale Bill Summary">
                     <h:panelGrid columns="4" class="w-100">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{billSearch.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -49,7 +49,7 @@
                             icon="fa-solid fa-file-excel"
                             class="ui-button-success mx-2" 
                             style="float: right;" >
-                            <p:dataExporter target="tbl" fileName="Pharmay Sale Bill Summery.xlsx" type="xlsx" ></p:dataExporter>
+                            <p:dataExporter target="tbl" fileName="Pharmay Sale Bill Summary.xlsx" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
 
                         <p:commandButton 

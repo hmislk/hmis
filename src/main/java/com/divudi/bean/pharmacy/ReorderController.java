@@ -517,7 +517,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill All Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -526,7 +526,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill Required Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
     }
 
     public List<Reorder> getReorders() {
@@ -599,7 +599,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(true, false, departmentListMethod);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(generate records)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -891,7 +891,7 @@ public class ReorderController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Saved.");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Reports for ordering/Reorder analysis(/faces/pharmacy/ordering_data.xhtml)");
+        
 
     }
 

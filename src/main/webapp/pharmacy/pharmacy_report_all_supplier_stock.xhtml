@@ -10,7 +10,7 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Supplier Stock Summery" >
+                    <p:panel header="Supplier Stock Summary" >
                         <h:panelGrid columns="8" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" 
@@ -38,7 +38,7 @@
                                          rowsPerPageTemplate="20, 50, 100" 
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Supplier Stock Summery - #{reportsStock.department.name}"/>  
+                                    <h:outputLabel value="Supplier Stock Summary - #{reportsStock.department.name}"/>  
                                 </f:facet>
                                 <p:column headerText="No." style="width: 40px;">
 

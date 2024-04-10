@@ -105,7 +105,7 @@ public class RevenueController implements Serializable {
             grandTotal += insTotal;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Revenue Reports/ Revenue  summery(/faces/revenue_reports/revenue_summery.xhtml)");
+        
 
     }
 
@@ -287,7 +287,7 @@ public class RevenueController implements Serializable {
 
         
         
-commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Revenue Reports/Revenue report(/faces/revenue_reports/revenue_report.xhtml)");
+
     }
 
     /**

@@ -13,7 +13,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel  header="All Cashier Summery Report">
+                <p:panel  header="All Cashier Summary Report">
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date" />
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
@@ -41,7 +41,7 @@
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
                     <f:facet name="header">
-                        <h:outputLabel value="All Cashier Summery Report"/><br/>
+                        <h:outputLabel value="All Cashier Summary Report"/><br/>
 <!--                        <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> -->
 
 

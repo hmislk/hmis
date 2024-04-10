@@ -174,7 +174,7 @@ public class CreditCompanyController implements Serializable {
                 + "where i.retired=false ";
         institutions = getEjbFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Credit Company/credit card companies(/faces/dataAdmin/credit_companies.xhtml)");
+        
     }
 
     public void fillInstitutions() {

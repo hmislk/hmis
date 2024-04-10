@@ -252,7 +252,7 @@ public class StaffShiftController implements Serializable {
 
         staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
+        
 
     }
 
@@ -313,7 +313,7 @@ public class StaffShiftController implements Serializable {
 
         staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
+        
 
     }
 

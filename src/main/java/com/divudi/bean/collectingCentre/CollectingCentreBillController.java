@@ -860,7 +860,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
+        
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {

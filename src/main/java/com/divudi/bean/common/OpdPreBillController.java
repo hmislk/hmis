@@ -436,7 +436,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
         billFeePayments = getBillFeePaymentFacade().findByJpql(sql, m);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
+        
     }
 
     public void clearPreBillSearchData() {

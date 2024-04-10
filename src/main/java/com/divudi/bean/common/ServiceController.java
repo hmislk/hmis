@@ -387,7 +387,7 @@ public class ServiceController implements Serializable {
         items = null;
         filterItem = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Service/Service list search(/faces/dataAdmin/opd_service_department_list.xhtml)");
+        
     }
 
     private boolean errorCheck() {

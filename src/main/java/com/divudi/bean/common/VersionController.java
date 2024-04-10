@@ -6,6 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.PostConstruct;
 
 /**
  *
@@ -18,9 +19,10 @@ public class VersionController {
     private String systemVersion; // Public vareiable to store the system version read from the file
 
     public VersionController() {
-        readFirstLine(); // Load first line content upon bean instantiation
+//        readFirstLine(); // Load first line content upon bean instantiation
     }
 
+    @PostConstruct
     public void readFirstLine() {
         try {
             // Use getClassLoader() to load the VERSION.txt file from src/main/resources

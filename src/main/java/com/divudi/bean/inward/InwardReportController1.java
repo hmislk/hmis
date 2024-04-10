@@ -1114,7 +1114,7 @@ public class InwardReportController1 implements Serializable {
         billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         totalBhtCreditPayments();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Reports/BHT payment(/faces/credit/inward_bht_credit_payment_report.xhtml)");
+        
 
     }
 
@@ -1193,7 +1193,7 @@ public class InwardReportController1 implements Serializable {
         billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         totalOfOpdCreditPayments();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Reports/OPD payment(/faces/credit/opd_credit_payment_report.xhtml)");
+        
     }
 
     public Double totalOfOpdCreditPayments() {
@@ -1251,7 +1251,7 @@ public class InwardReportController1 implements Serializable {
             categoryTimes.add(row);
         }
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Room time report(/faces/inward/inward_report_room.xhtml)");
+        
     }
 
     public void createRoomTime(Category cat) {
@@ -1326,7 +1326,7 @@ public class InwardReportController1 implements Serializable {
         inwardDiscount = dbl[2];
         inwardNetValue = dbl[3];
         
-        commonController.printReportDetails(fromDate, toDate, statTime, "Discount Report(/faces/inward/inward_report_discount.xhtml)");
+        
 
     }
 
@@ -1518,7 +1518,7 @@ public class InwardReportController1 implements Serializable {
         createPaidByPatient();
         createCreditPayment();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT income by categories All BHT/Process(/faces/inward/inward_report_bht_income_by_caregories.xhtml)");
+        
 
     }
 

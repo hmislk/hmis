@@ -676,7 +676,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Leave(/faces/hr/hr_staff_leave_edit_search.xhtml)");
+        
 
     }
 
@@ -757,7 +757,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
+        
 
     }
 
