@@ -1,0 +1,71 @@
+name: Update Version and README
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  update_version_and_readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Determine current date
+        id: current_date
+        run: echo "::set-output name=date::$(TZ=Asia/Colombo date +'%Y%m%d')"
+
+      - name: Reset counter if it's a new day
+        id: reset_counter
+        run: |
+          current_date=$(TZ=Asia/Colombo date +'%Y%m%d')
+          last_date=$(cat .github/last_date.txt || echo '0')
+          if [ "$current_date" != "$last_date" ]; then
+            echo "0" > .github/counter.txt
+            echo "$current_date" > .github/last_date.txt
+          fi
+
+      - name: Read merge counter from file
+        id: read_counter
+        run: echo "::set-output name=counter::$(cat .github/counter.txt || echo '0')"
+
+      - name: Increment merge counter
+        id: increment_counter
+        run: |
+          counter=$((${{ steps.read_counter.outputs.counter }} + 1))
+          echo "::set-output name=counter::$counter"
+          echo $counter > .github/counter.txt
+
+      - name: Update version file with date and merge counter
+        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > VERSION.txt
+
+      - name: Update README.md
+        run: |
+          sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
+
+      - name: Set Git user name and email
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Stage changes
+        run: |
+          git add VERSION.txt README.md .github/counter.txt .github/last_date.txt
+
+      - name: Commit version and README update
+        run: |
+          git commit -m "Update version to 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: ${{ github.event.ref_name }}

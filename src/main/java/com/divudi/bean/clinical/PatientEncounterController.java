@@ -733,6 +733,7 @@ public class PatientEncounterController implements Serializable {
 
         patientReportController.setCurrentPtIx(currentPtIx);
         patientReportController.createNewReport(currentPtIx);
+        pf.setPatientReport(patientReportController.getCurrentPatientReport());
     }
 
    
@@ -760,6 +761,7 @@ public class PatientEncounterController implements Serializable {
         getEncounterFindingValues().add(encounterInvestigationResult);
         setEncounterInvestigationResults(fillEncounterInvestigationResults(current));
         createNewResultReport(encounterInvestigationResult);
+        clinicalFindingValueFacade.edit(encounterInvestigationResult);
         encounterInvestigationResult = null;
         JsfUtil.addSuccessMessage("Investigation Report added");
 
@@ -786,7 +788,7 @@ public class PatientEncounterController implements Serializable {
         pi.setPrinted(Boolean.FALSE);
         pi.setReceived(Boolean.TRUE);
         pi.setRetired(false);
-        createBillItemForPatientInvestigation(pi);
+//        createBillItemForPatientInvestigation(pi);
         if (pi.getId() == null) {
             getPiFacade().create(pi);
         }
@@ -795,31 +797,31 @@ public class PatientEncounterController implements Serializable {
         return pi;
     }
     
-    public void createBillItemForPatientInvestigation(PatientInvestigation pi){
-        BillItem bi = new BillItem();
-        bi.setQty(1.0);
-        bi.setItem(pi.getInvestigation());
-        if(bill==null){
-            bill = new Bill();
-        }
-        bill.setPatient(pi.getPatient());
-        bill.setCreatedAt(new Date());
-        bill.setCreater(sessionController.getLoggedUser());
-        bill.setPatient(pi.getPatient());
-        bill.setBalance(0.0);
-        bi.setCreatedAt(bill.getCreatedAt());
-        bi.setCreater(sessionController.getLoggedUser());
-        if (bill.getId()==null){
-            billFacade.create(bill);
-        }
-        
-        bi.setBill(bill);
-        
-        if (bi.getId() == null) {
-            billItemFacade.create(bi);
-        }
-        pi.setBillItem(bi);
-    }
+//    public void createBillItemForPatientInvestigation(PatientInvestigation pi){
+//        BillItem bi = new BillItem();
+//        bi.setQty(1.0);
+//        bi.setItem(pi.getInvestigation());
+//        if(bill==null){
+//            bill = new Bill();
+//        }
+//        bill.setPatient(pi.getPatient());
+//        bill.setCreatedAt(new Date());
+//        bill.setCreater(sessionController.getLoggedUser());
+//        bill.setPatient(pi.getPatient());
+//        bill.setBalance(0.0);
+//        bi.setCreatedAt(bill.getCreatedAt());
+//        bi.setCreater(sessionController.getLoggedUser());
+//        if (bill.getId()==null){
+//            billFacade.create(bill);
+//        }
+//        
+//        bi.setBill(bill);
+//        
+//        if (bi.getId() == null) {
+//            billItemFacade.create(bi);
+//        }
+//        pi.setBillItem(bi);
+//    }
 
     public void addDx() {
         if (diagnosis == null) {

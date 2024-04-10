@@ -1682,38 +1682,47 @@ public class BillController implements Serializable {
         cancellationBatchBill.setPaymentMethod(batchBill.getPaymentMethod());
 
         cancellationBatchBill.setForwardReferenceBill(batchBill);
+        batchBill.setCancelled(true);
+        batchBill.setCancelledBill(cancellationBatchBill);
+        getBillFacade().edit(batchBill);
 
         getBillFacade().create(cancellationBatchBill);
 
-        for (Bill originalBills : bills) {
-            System.out.println("originalBills = " + originalBills);
-            cancelSingleBillWhenCancellingOpdBatchBill(originalBills, cancellationBatchBill);
+        for (Bill originalBill : bills) {
+            System.out.println("originalBills = " + originalBill);
+            cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
 
         cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setBilledBill(batchBill);
-
+        
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
+        
         getSessionController().setLoggedUser(wb);
     }
 
-    public void cancelSingleBillWhenCancellingOpdBatchBill(Bill cancellingSingleBill, Bill cancellationBatchBill) {
+    public void cancelSingleBillWhenCancellingOpdBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         System.out.println("cancellationBatchBill = " + cancellationBatchBill);
         System.out.println("cancellationBatchBill = " + cancellationBatchBill);
-        if (cancellingSingleBill == null && cancellingSingleBill == null) {
+        if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
         CancelledBill cancellationBill = new CancelledBill();
-        cancellationBill.copy(getBill());
-        cancellationBill.invertValue(getBill());
+        cancellationBill.copy(originalBill);
+        cancellationBill.invertValue(originalBill);
 
         cancellationBill.setBillType(BillType.OpdBill);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        createPayment(cancellationBill, paymentMethod);
+        if (cancellationBill.getId() == null) {
+            getBillFacade().create(cancellationBill);
+        } else {
+            getBillFacade().edit(cancellationBill);
+        }
+        createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
@@ -1737,7 +1746,7 @@ public class BillController implements Serializable {
         } else {
             getBillFacade().edit(cancellationBill);
         }
-        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(cancellingSingleBill, cancellationBill);
+        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, cancellationBill);
         try {
             cancellationBill.setBillItems(list);
         } catch (Exception e) {
@@ -1748,16 +1757,16 @@ public class BillController implements Serializable {
         } else {
             billFacade.edit(cancellationBill);
         }
-        getBill().setCancelled(true);
-        getBill().setCancelledBill(cancellationBill);
-        getBillFacade().edit(getBill());
+        originalBill.setCancelled(true);
+        originalBill.setCancelledBill(cancellationBill);
+        getBillFacade().edit(originalBill);
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+        if (originalBill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (originalBill.getToStaff() != null) {
+                staffBean.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
-                cancellationBill.setFromStaff(getBill().getToStaff());
+                cancellationBill.setFromStaff(originalBill.getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
         }
