@@ -28,8 +28,10 @@
                         placeholder="Department"
                         value="#{triggerSubscriptionController.department}" 
                         class="w-100"
+                        required="true"
+                        requiredMessage="Select a Department"
                         filter="true">
-                        <f:selectItem itemLabel="All" ></f:selectItem>
+                        <f:selectItem itemLabel="Select" ></f:selectItem>
                         <f:selectItems 
                             value="#{triggerSubscriptionController.departments}"
                             var="d"
