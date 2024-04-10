@@ -442,7 +442,7 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += bi.getNetValue() + bi.getVat();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
+        
 
     }
 
@@ -495,7 +495,7 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += bilst.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
+        
 
     }
 
@@ -1918,7 +1918,7 @@ public class CommonReport1 implements Serializable {
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1992,7 +1992,7 @@ public class CommonReport1 implements Serializable {
         biledBills = getLabBillsOwnBilled();
         getLabBillsOwnBilledTotals();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By department(/faces/reportIncome/report_income_with_credit_by_department.xhtml)");
+        
     }
 
     public void createWithCreditbyDepartmentBilledBillItem() {
@@ -2024,7 +2024,7 @@ public class CommonReport1 implements Serializable {
         }
 //        getLabBillsOwnBilledTotals();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By department(/faces/reportIncome/report_income_with_credit_by_department.xhtml)");
+        
     }
 
     public List<Bill> getLabBillsOwnBilled() {

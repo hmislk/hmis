@@ -283,7 +283,7 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
+        
     }
 
     public void calTotals(List<AdditionalForm> list) {
@@ -324,7 +324,7 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Form report that not comes toanalys(/faces/hr/hr_form_staff_form_report.xhtml)");
+        
     }
 
 //    public void searchFormByApprovedDate() {
@@ -366,7 +366,7 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Form report that not comes toanalys(/faces/hr/hr_form_staff_form_report.xhtml)");
+        
     }
 
     public List<HrForm> getHrForms() {
@@ -396,7 +396,7 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
+        
     }
 
     public void searchByApproveDate() {
@@ -418,7 +418,7 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
+        
     }
 
     public void createAmmendmentTable() {
@@ -454,7 +454,7 @@ public class StaffAdditionalFormController implements Serializable {
 
         calMinitsAditional(additionalForms);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
+        
 
     }
 
@@ -518,7 +518,7 @@ public class StaffAdditionalFormController implements Serializable {
 
         calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(Search Approved Date)(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
+        
 
     }
 
@@ -553,7 +553,7 @@ public class StaffAdditionalFormController implements Serializable {
 
         calMinitsAditional(additionalForms);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(Search Shift Date)(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
+        
 
     }
 

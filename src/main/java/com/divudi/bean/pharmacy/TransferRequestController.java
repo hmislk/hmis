@@ -88,7 +88,7 @@ public class TransferRequestController implements Serializable {
         billItems = null;
         printPreview = false;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(New Bill)(/faces/theater/theater_transfer_request.xhtml)");
+        
 
     }
 
@@ -299,7 +299,7 @@ public class TransferRequestController implements Serializable {
         
         notificationController.createNotification(bill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(/faces/theater/theater_transfer_request.xhtml)");
+        
 
     }
 

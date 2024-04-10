@@ -280,7 +280,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         recreate();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Purchase orders(Request)(/faces/store/store_purhcase_order_request.xhtml)");
+        
 
     }
 

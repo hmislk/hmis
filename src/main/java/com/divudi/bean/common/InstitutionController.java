@@ -242,7 +242,7 @@ public class InstitutionController implements Serializable {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent details(/faces/channel/channel_report_agent_details.xhtml)");
+        
 
         return agencies;
     }

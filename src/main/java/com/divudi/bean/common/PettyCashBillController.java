@@ -275,7 +275,7 @@ public class PettyCashBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Petty Cash/ Petty Cash payment(/faces/petty_cash_bill.xhtml)");
+        
 
     }
 

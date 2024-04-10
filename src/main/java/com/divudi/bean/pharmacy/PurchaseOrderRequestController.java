@@ -396,7 +396,7 @@ public class PurchaseOrderRequestController implements Serializable {
 //
 //        resetBillValues();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+        
 
     }
 
@@ -428,7 +428,7 @@ public class PurchaseOrderRequestController implements Serializable {
         finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+        
     }
 
     public void calTotal() {

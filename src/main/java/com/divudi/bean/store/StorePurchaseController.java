@@ -351,7 +351,7 @@ public class StorePurchaseController implements Serializable {
         printPreview = true;
 
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Direct purchase(/faces/store/store_purchase.xhtml)");
+        
     }
 
     private List<BillItem> billItems;

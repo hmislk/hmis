@@ -13,29 +13,29 @@
                 
                 <h:panelGrid columns="4" class="w-100" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  
-                                    value="#{pharmacySaleReport.department}"  
+                                    value="#{pharmacySaleReportController.department}"  
                                     completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                     <h:outputLabel  rendered="true" value="Category"/>
                     <p:autoComplete rendered="true" styleClass="noPrintButton" 
-                                    value="#{pharmacySaleReport.category}"  
+                                    value="#{pharmacySaleReportController.category}"  
                                     completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
                                     var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
                                     forceSelection="true"  >
                     </p:autoComplete>
 
                     <h:outputLabel value="Item"/>
-                    <p:autoComplete value="#{pharmacySaleReport.item}" 
+                    <p:autoComplete value="#{pharmacySaleReportController.item}" 
                                     forceSelection="true"
                                     completeMethod="#{ampController.completeAmpByName}" 
                                     var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
@@ -51,7 +51,7 @@
                     </p:autoComplete>
 
                     <h:outputLabel value="Genaric Name"/>
-                    <p:autoComplete value="#{pharmacySaleReport.vmp}" 
+                    <p:autoComplete value="#{pharmacySaleReportController.vmp}" 
                                     forceSelection="true"
                                     style="min-width: 223px" 
                                     completeMethod="#{ampController.completeVmpByName}" 
@@ -71,7 +71,7 @@
                         value="Process" 
                         icon="fa-solid fa-arrows-rotate"
                         class="ui-button-warning" 
-                        action="#{pharmacySaleReport.createTableSaleBillItems()}"/>
+                        action="#{pharmacySaleReportController.createTableSaleBillItems()}"/>
                     <p:commandButton 
                         ajax="false" 
                         value="Excel" 
@@ -93,18 +93,18 @@
                 <p:panel id="panelPrint">
                     <div class="row p-2">
                         <p:dataTable id="sum1" 
-                                     value="#{pharmacySaleReport.billItems}" 
+                                     value="#{pharmacySaleReportController.billItems}" 
                                      var="b" >
                             <f:facet name="header">
 
                                 <h:outputLabel value="To Date"/>
-                                <h:outputLabel class="mx-2" value="#{pharmacySaleReport.toDate}"  >
+                                <h:outputLabel class="mx-2" value="#{pharmacySaleReportController.toDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>  
                                 &#13;&nbsp;
                                 <h:outputLabel value="Pharmacy Sale Bill Items"/>
                                 &#13;&nbsp;
-                                <h:outputLabel value="Department : #{pharmacySaleReport.department.name}"/>
+                                <h:outputLabel value="Department : #{pharmacySaleReportController.department.name}"/>
                             </f:facet>
                             <p:column>
                                 <f:facet name="header">
@@ -183,7 +183,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.grantTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.grantTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -192,7 +192,7 @@
                     </div>
                     <div class="row p-2">
                         <p:dataTable id="sum2" 
-                                     value="#{pharmacySaleReport.wholeSaleBillItems}" 
+                                     value="#{pharmacySaleReportController.wholeSaleBillItems}" 
                                      var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="Pharmacy Whole Sale BillItems"/>
@@ -274,7 +274,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.grantNetTotalWholeSale}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.grantNetTotalWholeSale}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>

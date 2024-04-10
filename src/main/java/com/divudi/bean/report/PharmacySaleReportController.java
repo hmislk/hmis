@@ -84,7 +84,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Named
 @SessionScoped
-public class PharmacySaleReport implements Serializable {
+public class PharmacySaleReportController implements Serializable {
 
     Category category;
     Item item;
@@ -329,13 +329,33 @@ public class PharmacySaleReport implements Serializable {
         nonMovingItems = itemFacade.findByJpql(j, m);
         ////System.out.println("nonMovingItems = " + nonMovingItems);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk category(/faces/pharmacy/pharmacy_report_non_moving_items.xhtml)");
+        
     }
 
     public void setCategory(Category category) {
         this.category = category;
     }
 
+    public String navigateToMakeNullAndReportItemsWithoutDistributor() {
+        makeNull(); // Execute the logic initially in the actionListener
+        return "/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true";
+    }
+
+    public String navigateToMakeNullAndItemsWithDistributor() {
+        makeNull(); // Execute the logic initially in the actionListener
+        return "/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true";
+    }
+
+    public String navigateToMakeNullAndItemsWithMultipleDistributorsItemsOnly() {
+        makeNull(); // Execute the logic initially in the actionListener
+        return "/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true";
+    }
+
+    public String navigateToMakeNullAndItemWithMultipleDistributors() {
+        makeNull(); // Execute the logic initially in the actionListener
+        return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
+    }
+    
     public void makeNull() {
         fromDate = null;
         category = null;
@@ -451,7 +471,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN bill item report(/faces/pharmacy/pharmacy_report_grn_billitem.xhtml?faces-redirect=true)");
+        
     }
 
     public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
@@ -3827,7 +3847,7 @@ public class PharmacySaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by bill type(/faces/pharmacy/pharmacy_report_sale_by_date_summery.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4140,7 +4160,7 @@ public class PharmacySaleReport implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date(/faces/pharmacy/pharmacy_report_category_vice_movement.xhtml)");
+        
     }
 
     public void createCategoryMovementReportNew() {
@@ -4283,7 +4303,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date(/faces/pharmacy/pharmacy_report_category_vice_movement?faces-redirect=true)");
+        
     }
 
     public void createCategoryMovementReportByItemBatch() {
@@ -4581,7 +4601,7 @@ public class PharmacySaleReport implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date- by batch(/faces/pharmacy/pharmacy_report_category_vice_movement_item_batch.xhtml)");
+        
     }
 
     public List<Object[]> fetchTransferIssueReciveBills() {
@@ -4711,7 +4731,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer issue summery report by date(/faces/pharmacy/pharmacy_report_issue_by_date_summery?faces-redirect=true)");
+        
 
     }
 
@@ -4757,7 +4777,7 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setCancelledTotal(calGrantHandOverDiscount());
         billedSummery.setRefundedTotal(calGrantHandOverProf());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Handover Report by date(/reportLab/report_lab_hand_over_by_date_summery.xhtml)");
+        
     }
 
     public double calValueSale(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
@@ -4933,7 +4953,7 @@ public class PharmacySaleReport implements Serializable {
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Daily OPD fee summery with counts(/faces/reportLab/report_lab_by_date_summery_cash_credit_only_total.xhtml)");
+        
     }
 
     public void createDailyOpdFeeSummeryWithoutCounts() {
@@ -4942,7 +4962,7 @@ public class PharmacySaleReport implements Serializable {
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
         createFeeSummeryWithoutCounts(btps);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/OPD fee summery(/faces/reportLab/report_lab_by_date_summery_cash_credit.xhtml)");
+        
     }
 
     public void createDailyInwardFeeSummeryWithCounts() {
@@ -4951,7 +4971,7 @@ public class PharmacySaleReport implements Serializable {
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/OPD fee summery with count(/faces/reportLab/daily_inward_fee_summery_counts.xhtml)");
+        
     }
 
     public void createDailyInwardFeeSummeryWithoutCounts() {
@@ -4960,7 +4980,7 @@ public class PharmacySaleReport implements Serializable {
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithoutCounts(btps);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Daily OPD fee summery(report_lab_by_date_summery_cash_credit.xhtml)");
+        
     }
 
     public void createLabSummeryInward() {
@@ -5113,7 +5133,7 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery by day(/faces/reportLab/report_lab_by_date_summery.xhtml)");
+        
 
     }
 
@@ -5839,7 +5859,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/All department sale summery(/faces/pharmacy/pharmacy_report_summery.xhtml?faces-redirect=true)");
+        
 
     }
 
@@ -6120,7 +6140,7 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by paymentmethod(By bill)(/faces/pharmacy/pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -6232,7 +6252,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue with margin report(/faces/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true)");
+        
 
     }
 
@@ -6454,7 +6474,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail - by bill(/faces/pharmacy/pharmacy_report_sale_by_date_detail.xhtml?faces-redirect=true)");
+        
 
     }
 
@@ -6560,7 +6580,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail by discount schema(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml)");
+        
 
     }
 
@@ -6699,7 +6719,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml?faces-redirect=true)");
+        
 
     }
 
@@ -7055,7 +7075,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml?faces-redirect=true)");
+        
     }
 
     public void createSalePaymentMethodDetailBillItems() {
@@ -7170,7 +7190,7 @@ public class PharmacySaleReport implements Serializable {
         amps.addAll(allAmps);
         ////System.out.println("amps = " + amps.size());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Items without distributors(/faces/pharmacy/pharmacy_report_list_amps_with_out_distributor.xhtml)");
+        
     }
 
     public void createItemsDistributersWithDistributer() {
@@ -7192,7 +7212,7 @@ public class PharmacySaleReport implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/item with distributors(/faces/pharmacy/pharmacy_report_list_distributor_with_distributor_items.xhtml)");
+        
     }
 
     public void createItemListOneItemHasGreterThanOneDistributor() {
@@ -7242,7 +7262,7 @@ public class PharmacySaleReport implements Serializable {
         }
         ////System.out.println("items = " + items.size());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/item with multiple ditributors(Items only)(/faces/pharmacy/pharmacy_report_list_grater_than_one_distributor.xhtml)");
+        
     }
 
     public void createItemWithMultipleDistributor() {
@@ -7264,7 +7284,7 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with multiple ditributors(/faces/pharmacy/pharmacy_report_list_item_with_multiple_dealor.xhtml)");
+        
     }
 
     public List<Amp> getAllPharmacyItems() {
@@ -7359,7 +7379,7 @@ public class PharmacySaleReport implements Serializable {
     /**
      * Creates a new instance of PharmacySaleReport
      */
-    public PharmacySaleReport() {
+    public PharmacySaleReportController() {
     }
 
     public Date getFromDate() {

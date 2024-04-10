@@ -136,7 +136,7 @@ public class ReportsTransfer implements Serializable {
         fillMoving(true);
         fillMovingQty(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Fast moving(/faces/pharmacy/pharmacy_report_department_fast_moving.xhtml)");
+        
     }
 
     public void fillSlowMoving() {
@@ -145,7 +145,7 @@ public class ReportsTransfer implements Serializable {
         fillMoving(false);
         fillMovingQty(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Slow moving(/faces/pharmacy/pharmacy_report_department_slow_moving.xhtml)");
+        
     }
 
     public BillBeanController getBillBeanController() {
@@ -335,7 +335,7 @@ public class ReportsTransfer implements Serializable {
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer receieve by bill item(/faces/pharmacy/pharmacy_report_transfer_receive_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
@@ -349,13 +349,13 @@ public class ReportsTransfer implements Serializable {
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
+        
     }
     
     public void fillDepartmentAdjustmentByBillItem() {
         Date startTime = new Date();
         transferItems = fetchBillItems(BillType.PharmacyAdjustment);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
+        
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
@@ -450,7 +450,7 @@ public class ReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill (/faces/pharmacy/pharmacy_report_transfer_issue_bill.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill.xhtml)");
+        
     }
 
     public void fillDepartmentBHTIssueByBill() {
@@ -511,7 +511,7 @@ public class ReportsTransfer implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
        
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill(/faces/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true)");
+        
     }
 
     Item item;
@@ -587,7 +587,7 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill item(/faces/pharmacy/pharmacy_report_bht_issue_billItem?faces-redirect=true)");
+        
     }
 
     List<String1Value3> listz;
@@ -658,7 +658,7 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
       
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit issue by departments(/faces/pharmacy/pharmacy_report_unit_issue_department_by_department?faces-redirect=true)");
+        
 
     }
 
@@ -667,7 +667,7 @@ public class ReportsTransfer implements Serializable {
 
         fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Transfer Report/Transfer issue by bill(summery)(/faces/pharmacy/pharmacy_report_transfer_issue_bill_summery.xhtml)");
+        
     }
 
     public void createTransferReciveBillSummery() {
@@ -811,7 +811,7 @@ public class ReportsTransfer implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
     
     
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit issue by bill (/faces/pharmacy/pharmacy_report_unit_issue_bill?faces-redirect=true)");
+        
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
@@ -1133,7 +1133,7 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (batch)(/faces/pharmacy/unit_report_by_item.xhtml?faces-redirect=true)");
+        
     }
 
     public void fillItemCountsWithOutMarginPharmacy() {
@@ -1173,14 +1173,14 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (/faces/pharmacy/unit_report_by_item_1?faces-redirect=true)");
+        
     }
 
     public void fillItemCountsWithOutMarginStore() {
         Date startTime = new Date();
         fillItemCountsWithOutMargin(BillType.StoreIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_unit_report_by_item_1.xhtml)");
+        
     }
 
     public void fillItemCountsWithOutMargin(BillType bt) {
@@ -1254,7 +1254,7 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.StoreIssue);
         billNetTotal = fetchBillNetTotal(BillType.StoreIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(batch)(/faces/store/store_unit_report_by_item.xhtml)");
+        
     }
 
     public void fillItemCountsBht() {
@@ -1328,7 +1328,7 @@ public class ReportsTransfer implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml or /faces/inward/report_bht_issue_by_item?faces-redirect=true)");
+        
 
     }
 
@@ -1375,7 +1375,7 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml)");
+        
 
     }
 
@@ -1680,7 +1680,7 @@ public class ReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer receieve by bill(/faces/pharmacy/pharmacy_report_transfer_receive_bill.xhtml or /faces/pharmacy/pharmacy_report_transfer_receive_bill.xhtml)");
+        
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
@@ -1768,7 +1768,7 @@ public class ReportsTransfer implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer receieve vs BHT issue quantity total by item(/faces/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count?faces-redirect=true)");
+        
 
     }
 

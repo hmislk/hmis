@@ -766,7 +766,7 @@ public class PatientReportController implements Serializable {
             getPirivFacade().edit(priv);
 
         }
-        commonController.printReportDetails(null, null, startTime, "Calculate Lab Calculations");
+        
     }
 
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
@@ -964,7 +964,7 @@ public class PatientReportController implements Serializable {
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
-        commonController.printReportDetails(null, null, startTime, "Lab Report Save");
+        
 
         //JsfUtil.addSuccessMessage("Saved");
     }
@@ -1548,7 +1548,7 @@ public class PatientReportController implements Serializable {
         }
         
         JsfUtil.addSuccessMessage("Approved");
-        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+        
     }
     
     public void approveEmrPatientReport() {
@@ -1594,7 +1594,7 @@ public class PatientReportController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Approved");
-        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+        
     }
 
     public void sendSmsForPatientReport() {
@@ -1637,7 +1637,7 @@ public class PatientReportController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("SMS Sent");
-//        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+//        
     }
 
     public void reverseApprovalOfPatientReport() {
@@ -1697,7 +1697,7 @@ public class PatientReportController implements Serializable {
         } catch (Exception e) {
         }
 
-        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+        
     }
 
     public void printPatientReport() {

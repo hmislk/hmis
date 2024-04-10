@@ -211,7 +211,7 @@ public class StoreTransferRequestController implements Serializable {
 
         printPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Request(/faces/store/store_transfer_request.xhtml)");
+        
 
     }
 

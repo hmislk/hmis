@@ -482,7 +482,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, 10);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
+        
 
     }
 
@@ -647,7 +647,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
+        
     }
 
     public void fillToDepartmentPatientInvestigations() {
@@ -698,7 +698,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
+        
     }
 
     public void createPreRefundTable() {
@@ -750,7 +750,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 50);
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Search bills for refunds(/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash.xhtml)");
+        
 
     }
 
@@ -804,7 +804,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 50);
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Search bills for refunds(/opd/opd_search_pre_refund_bill_for_return_cash.xhtml)");
+        
 
     }
 
@@ -812,14 +812,14 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         settledBills(billType.OpdBill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Credit Payment Bills(/opd_search_bill_full_paid.xhtml)");
+        
     }
 
     public void reportSettledPharmacyBills() {
         Date startTime = new Date();
         settledBills(billType.PharmacyWholeSale);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Pharmacy/Credit bill pay search(/faces/credit/pharmacy_search_bill_full_paid.xhtml)");
+        
     }
 
     public void settledBills(BillType bt) {
@@ -862,7 +862,7 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         createCreditBillsWithBill(billType.OpdBill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Credit paid bills with OPDbills(/opd_search_bill_full_paid_bills.xhtml)");
+        
     }
 
     public void createCreditBillsWithPharmacyBill() {
@@ -870,7 +870,7 @@ public class SearchController implements Serializable {
 
         createCreditBillsWithBill(billType.PharmacyWholeSale);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Pharmacy/Credit bill with payment bills(/faces/credit/pharmacy_search_bill_full_paid_bills.xhtml)");
+        
     }
 
     public void createCreditBillsWithBill(BillType refBillType) {
@@ -1163,7 +1163,7 @@ public class SearchController implements Serializable {
 
         createReturnSaleBills(BillType.PharmacyPre, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Search return bill(/faces//pharmacy/pharmacy_search_return_bill_pre.xhtml)");
+        
 
     }
 
@@ -1172,7 +1172,7 @@ public class SearchController implements Serializable {
 
         createReturnSaleBills(BillType.PharmacyPre, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Search return bill(search all)(/faces//pharmacy/pharmacy_search_return_bill_pre.xhtml)");
+        
     }
 
     public void createReturnWholeSaleBills() {
@@ -1271,7 +1271,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Credit bill/Bill to pay search(/opd_search_bill_to_pay.xhtml)");
+        
     }
 
     public void createTablePharmacyCreditToPayBills() {
@@ -1317,7 +1317,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Pharmacy/Credit bill to pay search(/faces/credit/pharmacy_search_bill_to_pay.xhtml)");
+        
 
     }
 
@@ -1326,7 +1326,7 @@ public class SearchController implements Serializable {
 
         createReturnBhtBills(BillType.PharmacyBhtPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Search return bill(/faces/inward/pharmacy_search_return_bill_bht.xhtml)");
+        
 
     }
 
@@ -1421,7 +1421,7 @@ public class SearchController implements Serializable {
         tmp.put("bTp", BillType.PharmacyMajorAdjustment);
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant adjustments(/faces/pharmacy/pharmacy_variant_ajustment_pre_list.xhtml)");
+        
     }
 
     public Department getDepartment() {
@@ -1469,7 +1469,7 @@ public class SearchController implements Serializable {
 
         prescreptionBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Prescription report(/faces/pharmacy/report_prescreption.xhtml)");
+        
 
     }
 
@@ -1478,7 +1478,7 @@ public class SearchController implements Serializable {
 
         createPharmacyRetailBills(BillType.PharmacyPre, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/search sale bills(/faces/pharmacy/pharmacy_search_sale_bill.xhtml)");
+        
     }
 
     public void createPharmacyWholesaleBills() {
@@ -1534,7 +1534,7 @@ public class SearchController implements Serializable {
         //     //////System.out.println("sql = " + sql);
         bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Search sale pre bill(/faces/pharmacy/pharmacy_search_sale_pre_bill.xhtml)");
+        
 
     }
 
@@ -1543,7 +1543,7 @@ public class SearchController implements Serializable {
 
         createPharmacyRetailBills(BillType.PharmacyPre, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/search sale bills(search all)(/faces/pharmacy/pharmacy_search_sale_bill.xhtml)");
+        
 
     }
 
@@ -1705,7 +1705,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - staff(/faces/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true)");
+        
     }
 
     public void createPharmacyTableRe() {
@@ -1757,7 +1757,7 @@ public class SearchController implements Serializable {
         //     //////System.out.println("sql = " + sql);
         bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Search sale pre bill(/faces/pharmacy/pharmacy_search_sale_pre_bill.xhtml)");
+        
 
     }
 
@@ -1766,14 +1766,14 @@ public class SearchController implements Serializable {
 
         listPharmacyPreBills(BillType.PharmacyIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Search Issue Bill(/faces/pharmacy/pharmacy_search_issue_bill.xhtml)");
+        
     }
 
     public void listStoreIssue() {
         Date startTime = new Date();
         listPharmacyPreBills(BillType.StoreIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Unit Issue/Search Issue Bill(/faces/store/store_search_issue_bill.xhtml)");
+        
     }
 
     public void listPharmacyCancelled() {
@@ -1785,14 +1785,14 @@ public class SearchController implements Serializable {
 
         listPharmacyStoreReturnedBills(BillType.PharmacyIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Search issue return bills (/faces/pharmacy/pharmacy_search_issue_bill_return.xhtml)");
+        
     }
 
     public void listStoreReturns() {
         Date startTime = new Date();
         listPharmacyStoreReturnedBills(BillType.StoreIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Unit Issue/Search issue return bill(/faces/store/store_search_issue_bill_return.xhtml)");
+        
     }
 
     public void listPharmacyBilledBills(BillType bt) {
@@ -1931,7 +1931,7 @@ public class SearchController implements Serializable {
 
         createTableBht(BillType.PharmacyBhtPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Theater Billing(/faces/inward/pharmacy_search_sale_bill_bht.xhtml)");
+        
     }
 
     public void createStoreTableIssue() {
@@ -1942,7 +1942,7 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         createTableBht(BillType.StoreBhtPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/BHT issue/Search issue billing(/faces/store/store_search_sale_bill_bht.xhtml)");
+        
     }
 
     public void createTableBht(BillType btp) {
@@ -2039,7 +2039,7 @@ public class SearchController implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/receive (/faces/pharmacy/pharmacy_transfer_issued_list.xhtml)");
+        
 
     }
 
@@ -2094,7 +2094,7 @@ public class SearchController implements Serializable {
 //        fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
         fetchPharmacyBillsNew(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transfer Report/Report transfer issued not receieved(/faces/pharmacy/pharmacy_transfer_issued_list_report.xhtml)");
+        
     }
 
     public void createIssueStoreReport() {
@@ -2106,7 +2106,7 @@ public class SearchController implements Serializable {
 
         fetchPharmacyBills(BillType.PharmacyOrder, BillType.PharmacyAdjustment);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Purchase Reports/Purchase ordered not approved.(/faces/pharmacy/pharmacy_transfer_issued_list_not_approve_report.xhtml)");
+        
     }
 
     public void createPoNotStoreApproveReport() {
@@ -2242,7 +2242,7 @@ public class SearchController implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Receieve (/faces/store/store_transfer_issued_list.xhtml)");
+        
 
     }
 
@@ -2374,7 +2374,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, maxResult);
         //     //System.err.println("SIZE : " + lst.size());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Search/(/faces/pharmacy/pharmacy_search.xhtml)");
+        
     }
 
     public void createGRNRegistory() {
@@ -2554,7 +2554,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getIssudBills(b));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
+        
 
     }
 
@@ -2591,7 +2591,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getBHTIssudBills(b));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
+        
 
     }
 
@@ -2674,7 +2674,7 @@ public class SearchController implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
+        
 
     }
 
@@ -2741,7 +2741,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getIssudBills(b));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Issue(/faces/store/store_transfer_request_list.xhtml)");
+        
 
     }
 
@@ -2786,7 +2786,7 @@ public class SearchController implements Serializable {
 
         createPharmacyBillItemTable(BillType.PharmacyPre, BillType.PharmacySale);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Search sale bill item(/faces/pharmacy/pharmacy_search_sale_bill_item.xhtml)");
+        
     }
 
     public void createPharmacyWholeBillItemTable() {
@@ -2889,7 +2889,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/search Issue Bill items(/faces/pharmacy/pharmacy_search_issue_bill_item.xhtml)");
+        
 
     }
 
@@ -2939,7 +2939,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Unit Issue/Search issue bill items(/faces/store/store_search_issue_bill_item.xhtml)");
+        
 
     }
 
@@ -2991,7 +2991,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Administration/Error checking/Item issued from retired item(/faces/store/store_search_issue_bill_item_error.xhtml)");
+        
 
     }
 
@@ -3047,7 +3047,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Search adjustment bills(/faces/pharmacy/pharmacy_search_adjustment_bill_item.xhtml)");
+        
     }
 
     public void createPharmacyAdjustmentBillItemTableForStockTaking() {
@@ -3224,7 +3224,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Adjustments/Search adjustment bill(/faces/store/store_search_adjustment_bill_item.xhtml)");
+        
 
     }
 
@@ -3264,7 +3264,7 @@ public class SearchController implements Serializable {
 
         createBillItemTableBht(BillType.PharmacyBhtPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/search Inward Bill items(/faces/inward/pharmacy_search_sale_bill_item_bht.xhtml)");
+        
     }
 
     public void createStoreBillItemTableBht() {
@@ -3336,14 +3336,14 @@ public class SearchController implements Serializable {
 
         createPoRequestedAndApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/PO approval(All Requests)(/faces/pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml)");
+        
     }
 
     public void createPoRequestedAndApprovedStore() {
         Date startTime = new Date();
         createPoRequestedAndApproved(InstitutionType.StoreDealor, BillType.StoreOrder);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/PO approve(All request)(/faces/store/store_purhcase_order_list_to_approve.xhtml)");
+        
 
     }
 
@@ -3375,14 +3375,14 @@ public class SearchController implements Serializable {
 
         createApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/PO approval(Approved Requests)(/faces/pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml)");
+        
     }
 
     public void createApprovedStore() {
         Date startTime = new Date();
         createApproved(InstitutionType.StoreDealor, BillType.StoreOrder);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/PO approve(Approved Only)(/faces/store/store_purhcase_order_list_to_approve.xhtml)");
+        
     }
 
     public void createApproved(InstitutionType institutionType, BillType bt) {
@@ -3415,7 +3415,7 @@ public class SearchController implements Serializable {
 
         createNotApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/PO approval(To Approve Requests)(/faces/pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml)");
+        
     }
 
     public void createNotApprovedStore() {
@@ -3423,7 +3423,7 @@ public class SearchController implements Serializable {
 
         createNotApproved(InstitutionType.StoreDealor, BillType.StoreOrder);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/PO approve(Not Approved)(/faces/store/store_purhcase_order_list_to_approve.xhtml)");
+        
     }
 
     public void createNotApproved(InstitutionType institutionType, BillType bt) {
@@ -3575,7 +3575,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/GRN return(Logged Institution Search)(/faces/pharmacy/pharmacy_grn_list_for_return.xhtml)");
+        
 
     }
 
@@ -3604,7 +3604,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getReturnBill(b, BillType.StoreGrnReturn));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/GRN return(Logged Institution Search)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
 
     }
 
@@ -3632,7 +3632,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/GRN return(All Search)(/faces/pharmacy/pharmacy_grn_list_for_return.xhtmxl)");
+        
 
     }
 
@@ -3660,7 +3660,7 @@ public class SearchController implements Serializable {
             b.setListOfBill(getReturnBill(b, BillType.StoreGrnReturn));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/GRN return(All Search)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
 
     }
 
@@ -3679,7 +3679,7 @@ public class SearchController implements Serializable {
 
         createPoTable(InstitutionType.Dealer, BillType.PharmacyOrderApprove, BillType.PharmacyGrnBill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/GRN receive(search)(/faces/pharmacy/pharmacy_purchase_order_list_for_recieve.xhtml)");
+        
     }
 
     public void createPoTableStore() {
@@ -3687,7 +3687,7 @@ public class SearchController implements Serializable {
 
         createPoTable(InstitutionType.StoreDealor, BillType.StoreOrderApprove, BillType.StoreGrnBill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/GRN receieve(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void createPoTable(InstitutionType institutionType, BillType bt, BillType referenceBillType) {
@@ -3845,7 +3845,7 @@ public class SearchController implements Serializable {
         billFees.removeAll(removeingBillFees);
         calTotal();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Payment due search/(/faces/opd_search_professional_payment_due.xhtml or /faces/reportIncome/opd_professional_payment_due.xhtml)");
+        
     }
 
     public void createDueFeeTableAll() {
@@ -3912,7 +3912,7 @@ public class SearchController implements Serializable {
         billFees.removeAll(removeingBillFees);
         calTotal();
 
-        commonController.printReportDetails(fromDate, toDate, sartTime, "Doctor Payment Due Report(/faces/inward/inward_professional_payment_due.xhtml)");
+        
     }
 
     public void createDueFeeTableAndPaidFeeTable() {
@@ -4007,7 +4007,7 @@ public class SearchController implements Serializable {
             doneTotal += bf2.getFeeValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD doctor payment and due(/opd_search_professional_payment_due_1.xhtml)");
+        
     }
 
     double totalPaying;
@@ -4051,7 +4051,7 @@ public class SearchController implements Serializable {
             totalPaying += dFee.getPaidForBillFee().getFeeValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD doctor payments(by bill item)(/reportCashier/report_doctor_payment_opd.xhtml)");
+        
 
     }
 
@@ -4174,7 +4174,7 @@ public class SearchController implements Serializable {
         billFees.removeAll(removeingBillFees);
         calTotal();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment due search/(/faces/inward/inward_search_professional_payment_due.xhtml)");
+        
     }
 
     public void createDueFeeTableInwardAll() {
@@ -4258,7 +4258,7 @@ public class SearchController implements Serializable {
         billFees.removeAll(removeingBillFees);
         calTotal();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment due search all/(/faces/inward/inward_search_professional_payment_due.xhtml)");
+        
     }
 
     public void createDueFeeTableInwardAllWithCancelled() {
@@ -4430,7 +4430,7 @@ public class SearchController implements Serializable {
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor payment due report inward(/faces/inward/inward_report_professional_payment_due.xhtml)");
+        
     }
 
     public void createPaymentTable() {
@@ -4497,7 +4497,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Payment done search(search)(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
 
     }
 
@@ -4634,7 +4634,7 @@ public class SearchController implements Serializable {
 
         billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment done search/(/faces/inward/inward_search_professional_payment_done.xhtml)");
+        
 
     }
 
@@ -4749,7 +4749,7 @@ public class SearchController implements Serializable {
         checkLabReportsApprovedBillItem(billItems);
 
         //   searchBillItems = new LazyBillItem(tmp);
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD billIltem search(/opd_search_billitem_own.xhtml)");
+        
     }
 
     public String toCreateBillItemListForCreditCompany() {
@@ -4770,7 +4770,7 @@ public class SearchController implements Serializable {
         sql += " order by bi.id ";
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        checkLabReportsApprovedBillItem(billItems);
-//        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
+//        
     }
 
     public void createBillItemTableByKeywordAll() {
@@ -4820,7 +4820,7 @@ public class SearchController implements Serializable {
         checkLabReportsApprovedBillItem(billItems);
 
         //   searchBillItems = new LazyBillItem(tmp);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
+        
     }
 
     public void createPatientInvestigationsTable() {
@@ -4881,7 +4881,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
+        
     }
 
     public void createPatientInvestigationsTableByLoggedInstitution() {
@@ -4994,7 +4994,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/reporting(/faces/lab/search_reports.xhtml)");
+        
     }
 
     public String fillUserPatientReportMobile() {
@@ -5129,7 +5129,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab/search_for_reporting_ondemand.xhtml)");
+        
 
     }
 
@@ -5263,7 +5263,7 @@ public class SearchController implements Serializable {
 
         createPreBillsForReturn(BillType.PharmacyPre, BillType.PharmacySale);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Return - item only(/faces/pharmacy/pharmacy_search_pre_bill_for_return_item_only.xhtml or /faces/pharmacy/pharmacy_search_pre_bill_for_return_item_and_cash.xhtml)");
+        
     }
 
     public void createWholePreBillsForReturn() {
@@ -5319,7 +5319,7 @@ public class SearchController implements Serializable {
 
         bills = getBillBean().billsForTheDayNotPaid(BillType.PharmacyPre, getSessionController().getDepartment());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Add to stock/refresh(/faces/pharmacy/pharmacy_search_pre_bill_not_paid.xhtml)");
+        
 
     }
 
@@ -5356,7 +5356,7 @@ public class SearchController implements Serializable {
 
         createPreBillsNotPaid();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/Add to stock(/faces/pharmacy/pharmacy_search_pre_bill_not_paid.xhtml)");
+        
 
     }
 
@@ -5445,7 +5445,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         aceptPaymentBills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search All(/opd_search_pre_batch_bill.xhtml)");
+        
     }
 
     public void createOpdBillSearch() {
@@ -5453,7 +5453,7 @@ public class SearchController implements Serializable {
         createTableByKeyword(BillType.OpdBill);
 //        checkLabReportsApproved(bills);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     public void createOpdBathcBillPreTablePaidOnly() {
@@ -5481,7 +5481,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         aceptPaymentBills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search Paid only(/opd_search_pre_batch_bill.xhtml)");
+        
     }
 
     public void createOpdBathcBillPreTableNotPaidOly() {
@@ -5536,7 +5536,7 @@ public class SearchController implements Serializable {
         abs.removeAll(pbs);
         aceptPaymentBills.addAll(abs);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search not Paid only(/opd_search_pre_batch_bill.xhtml)");
+        
     }
 
     public String createOpdPreTable() {
@@ -5581,19 +5581,19 @@ public class SearchController implements Serializable {
     public void createPharmacyPreTable() {
         Date startTime = new Date();
         createPreTable(BillType.PharmacyPre);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy Bill Search to Pay(Search All :/pharmacy/pharmacy_search_pre_bill.xhtml)");
+        
     }
 
     public void createPharmacyPreTableNotPaid() {
         Date startTime = new Date();
         createPreTableNotPaid(BillType.PharmacyPre);
-        commonController.printReportDetails(fromDate, toDate, startTime, "PharmacyPreTableNotPaid(/pharmacy/pharmacy_search_pre_bill.xhtml)");
+        
     }
 
     public void createPharmacyPreTablePaid() {
         Date startTime = new Date();
         createPreTablePaid(BillType.PharmacyPre);
-        commonController.printReportDetails(fromDate, toDate, startTime, "PharmacyPreTablePaid(/pharmacy/pharmacy_search_pre_bill.xhtml)");
+        
     }
 
     public void createPreTable(BillType bt) {
@@ -5837,7 +5837,7 @@ public class SearchController implements Serializable {
         InstitutionType[] institutionTypes = {InstitutionType.Dealer};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment done search(Search Pharmacy Payment)(/faces/dealorPayment/search_dealor_payment.xhtml)");
+        
 
     }
 
@@ -5847,7 +5847,7 @@ public class SearchController implements Serializable {
         InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment done search(Search Store Payment)(/faces/dealorPayment/search_dealor_payment.xhtml)");
+        
     }
 
     public void createStorePaharmacyPayment() {
@@ -5856,7 +5856,7 @@ public class SearchController implements Serializable {
         InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment done search(Search All Payment)(/faces/dealorPayment/search_dealor_payment.xhtml)");
+        
     }
 
     public void createPharmacyPaymentPre() {
@@ -5865,7 +5865,7 @@ public class SearchController implements Serializable {
         InstitutionType[] institutionTypes = {InstitutionType.Dealer};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment approval(Search Pharmacy Payment)(/faces/dealorPayment/search_dealor_payment_pre.xhtml)");
+        
     }
 
     public void createStorePaymentPre() {
@@ -5874,7 +5874,7 @@ public class SearchController implements Serializable {
         InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment approval(Search Store Payment)(/faces/dealorPayment/search_dealor_payment_pre.xhtml)");
+        
     }
 
     public void createStorePaharmacyPaymentPre() {
@@ -5883,7 +5883,7 @@ public class SearchController implements Serializable {
         InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment approval(Search All Payment)(/faces/dealorPayment/search_dealor_payment_pre.xhtml)");
+        
     }
 
     private void createGrnPaymentTable(List<InstitutionType> institutionTypes, BillType billType) {
@@ -6012,27 +6012,27 @@ public class SearchController implements Serializable {
 
         createTableByKeyword(BillType.OpdBill, null, sessionController.getDepartment());
         checkLabReportsApproved(bills);
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     public void searchDepartmentOpdBillLights() {
         Date startTime = new Date();
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     public void searchOpdBatchBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBathcBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
         checkLabReportsApproved(bills);
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     public void searchOpdBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
         checkLabReportsApproved(bills);
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     public void listOpdBatcuBills() {
@@ -6046,14 +6046,14 @@ public class SearchController implements Serializable {
         createTableByKeyword(BillType.OpdBill);
         checkLabReportsApproved(bills);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     public void createCollectingCentreBillSearch() {
         Date startTime = new Date();
         createTableByKeyword(BillType.CollectingCentreBill);
         checkLabReportsApproved(bills);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Collecting Center Bill Search(/opd_search_pre_batch_bill.xhtml)");
+        
     }
 
     public void listOpdBilledBills() {
@@ -6943,7 +6943,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Payment done search(/faces/credit/credit_company_bill_search.xhtml)");
+        
 
     }
 
@@ -6952,21 +6952,21 @@ public class SearchController implements Serializable {
 
         createCreditTableBillItem(null, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Credit Company/Payment done search bill item(/faces/credit/credit_company_bill_search_billItems.xhtml)");
+        
     }
 
     public void createCreditTableBillItemOpd() {
         Date startTime = new Date();
         createCreditTableBillItem(BillType.OpdBill, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Payment done search bill item(Search OPD)(/faces/credit/credit_company_bill_search_billItems.xhtml)");
+        
     }
 
     public void createCreditTableBillItemBht() {
         Date startTime = new Date();
         createCreditTableBillItem(null, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Payment done search bill item(Search BHT)(/faces/credit/credit_company_bill_search_billItems.xhtml)");
+        
     }
 
     public void createCreditTableBillItem(BillType billType, boolean all) {
@@ -7129,7 +7129,7 @@ public class SearchController implements Serializable {
             billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Payment done search(/faces/channel/channel_payment_bill_search.xhtml)");
+        
 
     }
 
@@ -7198,7 +7198,7 @@ public class SearchController implements Serializable {
             billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Payment done search(/faces/channel/channel_payment_bill_search.xhtml)");
+        
 
     }
 
@@ -7222,7 +7222,7 @@ public class SearchController implements Serializable {
         m.put("bt", BillType.ChannelAgencyPayment);
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Channel/Agency/Payment done search(/faces/channel/channel_payment_agency_bill_search.xhtml)");
+        
 
     }
 
@@ -7311,7 +7311,7 @@ public class SearchController implements Serializable {
             billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP, 50);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Payment due search(/faces/channel/channel_payments_due_search.xhtml)");
+        
 
     }
 
@@ -7359,7 +7359,7 @@ public class SearchController implements Serializable {
 
         createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Agent/Agent payment bill search(/faces/agent_bill_search_own.xhtml)");
+        
     }
 
     public void createChannelAgencyCreditNoteTable() {
@@ -7390,7 +7390,7 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         createAgentPaymentTable(BillType.CollectingCentrePaymentReceiveBill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Collecting center/Collecting center bill serach(/faces/lab/collecting_centre_bill_search_own.xhtml)");
+        
     }
 
     public void createAgentPaymentTable(BillType billType) {
@@ -7483,7 +7483,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Service bill (/faces/inward/inward_search_service.xhtml)");
+        
 
     }
 
@@ -7536,7 +7536,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/inward billing/search bills(/faces/lab/lab/inward_search_service.xhtml)");
+        
 
     }
 
@@ -7633,7 +7633,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "search/Final Bill Search By Discharg date(/faces/inward/inward_search_final_check.xhtml)");
+        
 
     }
 
@@ -7689,7 +7689,7 @@ public class SearchController implements Serializable {
 //            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 //        }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final bill search(/faces/inward/inward_search_final.xhtml)");
+        
     }
 
     public void createCancelledInwardFinalBills() {
@@ -7739,7 +7739,7 @@ public class SearchController implements Serializable {
 //            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 //        }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final Cancel bill search(/faces/inward/inward_search_final.xhtml)");
+        
     }
 
     public void createInwardIntrimBills() {
@@ -7785,7 +7785,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Interim Bill Search(/faces/inward/inward_search_intrim.xhtml)");
+        
 
     }
 
@@ -7832,7 +7832,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Inward Deposite/Payemnt Search(/faces/inward/inward_search_payment.xhtml)");
+        
 
     }
 
@@ -7880,7 +7880,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Inward Deposite/Refund Search(/faces/inward/inward_search_refund.xhtml)");
+        
     }
 
     public void searchSurgery() {
@@ -7951,7 +7951,7 @@ public class SearchController implements Serializable {
             bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Search(/faces/theater/inward_search_surgery.xhtml)");
+        
 
     }
 
@@ -8029,7 +8029,7 @@ public class SearchController implements Serializable {
             bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Search(/faces/theater/inward_search_surgery.xhtml)");
+        
 
     }
 
@@ -8183,7 +8183,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Professional Bills(/faces/inward/inward_search_professional.xhtml)");
+        
 
     }
 
@@ -8280,7 +8280,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Petty Cash/ Petty Cash Bill search(/faces/petty_cash_bill_search_own.xhtml)");
+        
 
     }
 
@@ -8339,7 +8339,7 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Petty Cash/ Petty Cash Bill search(/faces/petty_cash_bill_search_own.xhtml)");
+        
 
     }
 

@@ -937,7 +937,7 @@ public class CommonReport implements Serializable {
         totalFee = displayOutsideCalBillFees();
         billTotal = displayOutsideBillFeeBillTotals();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Fees for outside institution(/faces/lab/lab_report_by_outside_institution.xhtml)");
+        
         return "/lab/report_by_outside_institution";
 
     }
@@ -3278,7 +3278,7 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
         createSum();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, " Summery by bill type(/reportCashier/report_cashier_detailed_user_by_billType.xhtml)");
+        
 
     }
 
@@ -3346,7 +3346,7 @@ public class CommonReport implements Serializable {
         //pharmacyUnitIssueCancelBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new CancelledBill());
         //pharmacyUnitIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new RefundBill());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Summery all reports/Pharmacy all report(/faces/pharmacy/pharmacy_report_summery_all.xhtml)");
+        
     }
 
     List<Bill> getPharmacyBills(PaymentMethod paymentMethod, BillType billType, Bill bill) {
@@ -3526,7 +3526,7 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery department(/faces/reportLab/report_cashier_detailed_by_department.xhtml)");
+        
 
     }
 
@@ -3885,7 +3885,7 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml?faces-redirect=true or /reportCashier/report_cashier_summery_by_user.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4166,7 +4166,7 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml?faces-redirect=true or /reportCashier/report_cashier_summery_by_user.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4199,7 +4199,7 @@ public class CommonReport implements Serializable {
         }
         createCashierTableByUser();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report/Using recipt No(//reportCashier/report_cashier_detailed_by_user_by_reciptno.xhtml or /reportCashier/report_cashier_summery_by_user_by_reciptno.xhtml)");
+        
     }
 
     public void createCashierTableByUserOnlyChannel() {
@@ -4620,7 +4620,7 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml or /reportCashier/report_cashier_summery_by_user.xhtml)");
+        
 
     }
 
@@ -4920,7 +4920,7 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true)");
+        
     }
 
     public void createGrnReturnDetailTable() {
@@ -4978,7 +4978,7 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true)");
+        
     }
 
     public void createGrnAndPurchaseBillsTable() {
@@ -5081,7 +5081,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/GRN/GRN summery(/faces/store/store_report_grn_detail.xhtml)");
+        
     }
 
     public void createGrnExpensTableStore() {
@@ -5123,7 +5123,7 @@ public class CommonReport implements Serializable {
 //        getGrnReturnCancel().setBillItems(getBillItems(new CancelledBill(), BillType.StoreGrnReturn, getDepartment()));
 ////        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
 ////        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/GRN/GRN summery(/faces/store/store_report_grn_detail.xhtml)");
+        
     }
 
 //    public void createGrnDetailTableStore() {
@@ -5272,7 +5272,7 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancellReturn().setCash(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Cash, getDepartment()));
         getGrnPaymentCancellReturn().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Credit, getDepartment()));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/GRN Payment summery(/faces/pharmacy/pharmacy_report_grnPayment_detail.xhtml or /faces/pharmacy/pharmacy_report_grnPayment_detail_by_supplier.xhtml)");
+        
     }
 
     public void createPurchaseDetailTable() {
@@ -5322,7 +5322,7 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase summery by supplier(/faces/pharmacy/pharmacy_report_purchase_detail_by_supplier.xhtml or /faces/pharmacy/pharmacy_report_purchase_detail.xhtml or /faces/pharmacy/pharmacy_report_purchase_detail_by_supplier.xhtml)");
+        
     }
 
     public void createPurchaseDetailTableStore() {
@@ -5359,7 +5359,7 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Purchase/Purchase summery(/faces/store/store_report_purchase_detail.xhtml)");
+        
     }
 
 //    public void createPurchaseDetailTableStore() {
@@ -5473,7 +5473,7 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/pharmacy/pharmacy_report_grn_detail_by_supplier.xhtml?faces-redirect=true)");
+        
     }
 
     public void createGrnDetailTableByDealorStore() {
@@ -5510,7 +5510,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/store/store_report_grn_detail_by_supplier.xhtml)");
+        
     }
 
 //    public void createGrnDetailTableByDealorStore() {
@@ -5654,7 +5654,7 @@ public class CommonReport implements Serializable {
         m.put("td", toDate);
         referralBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Referral Reports/Institution Referral/(/faces/reportInstitution/report_referrals_index.xhtml)");
+        
     }
 
     public void fillInstitutionReferralBillItems() {
@@ -5683,7 +5683,7 @@ public class CommonReport implements Serializable {
         m.put("td", toDate);
         referralBillItems = getBillItemFac().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Referral Reports/Institution Referral bill item wise(/faces/reportInstitution/report_referral_institution_detail_by_billItem.xhtml)");
+        
 
     }
 
@@ -5819,7 +5819,7 @@ public class CommonReport implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier service count report(/reportCashier/report_cashier_item_count_by_user.xhtml)");
+        
 
     }
 
@@ -6801,7 +6801,7 @@ public class CommonReport implements Serializable {
             totalVat += b.getVat();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc detail(/faces/reportLab/report_lab_collection_centre.xhtml)");
+        
     }
 
     public void calculateTotalOfPuchaseOrderSummaryBills() {
@@ -6855,7 +6855,7 @@ public class CommonReport implements Serializable {
             totalVat += totVat;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc summeries(/faces/reportLab/report_lab_collection_centre_summery.xhtml)");
+        
 
     }
 

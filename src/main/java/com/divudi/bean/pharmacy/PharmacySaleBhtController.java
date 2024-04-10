@@ -178,7 +178,7 @@ public class PharmacySaleBhtController implements Serializable {
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/BHT issue/pharmacy issue/Pharmacy BHT issue(/faces/theater/inward_bill_surgery_issue.xhtml)");
+        
 
     }
 
@@ -747,7 +747,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
+        
     }
 
     public void settlePharmacyBhtIssueAccept() {
@@ -765,7 +765,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         settleBhtIssueRequestAccept(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
         userNotificationController.userNotificationRequestComplete();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
+        
     }
 
     public void settlePharmacyBhtIssueRequest() {
@@ -777,7 +777,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
+        
     }
 
     public void settleStoreBhtIssue() {

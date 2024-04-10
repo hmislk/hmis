@@ -1754,8 +1754,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             }
 
             if (institution.getBallance() - getSelectedSessionInstance().getOriginatingSession().getTotal() < 0 - institution.getAllowedCredit()) {
-                errorText = "Agency Ballance is Not Enough";
-                JsfUtil.addErrorMessage("Agency Ballance is Not Enough");
+                errorText = "Agency Balance is Not Enough";
+                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
             }
             if (agentReferenceBookController.checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
