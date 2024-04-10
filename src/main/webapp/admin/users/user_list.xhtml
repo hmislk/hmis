@@ -18,7 +18,7 @@
                     </h:panelGroup>
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                         <h:form  >
-                        
+
                             <div class="container-fluid p-2" >
                                 <div class="row" >
                                     <div class="col-md-9" >
@@ -44,11 +44,11 @@
                                                           filterMatchMode="contains">
                                                     <h:outputText value="#{u.userName}"/>
                                                 </p:column>
-                                                
+
                                             </p:dataTable>
                                         </ui:insert>
                                     </div>
-                                    
+
                                     <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
 
                                         <p:commandButton ajax="false"
@@ -59,17 +59,17 @@
                                                          onclick="if (!confirm('Are you sure you want to Remove User?'))
                                                                      return false;" action="#{webUserController.removeUser}" />
 
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-key" value="Manage Password" class="m-1" action="#{webUserController.navigateToEditPasswordByAdmin()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Manage Staff" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Departments" class="m-1" action="#{webUserController.navigateToManageDepartments()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-unlock-alt" value="Manage Privileges" class="m-1" action="#{webUserController.navigateToManagePrivileges()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-credit-card" value="Manage User Payment Schemes" class="m-1" action="#{webUserController.navigateToManagePaymentSchemes()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-icons" value="Manage User Icons" class="m-1" action="#{webUserController.navigateToManageUserIcons()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fas fa-rss" value="Manage User Subscriptions" class="m-1" action="#{webUserController.navigateToManageUserSubscriptions()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-signature" value="Manage Signature" class="m-1" action="#{webUserController.toManageSignature()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Dashboards" class="m-1" action="#{webUserController.toManageDashboards()}" ajax="false" />
-                                        <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Preferences" class="m-1" action="#{webUserController.toManageUserPreferences()}" ajax="false" />
+                                        <p:commandButton immediate="true" disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-key" value="Manage Password" class="m-1" action="#{webUserController.navigateToEditPasswordByAdmin()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Manage Staff" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Departments" class="m-1" action="#{webUserController.navigateToManageDepartments()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-unlock-alt" value="Manage Privileges" class="m-1" action="#{webUserController.navigateToManagePrivileges()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-credit-card" value="Manage User Payment Schemes" class="m-1" action="#{webUserController.navigateToManagePaymentSchemes()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-icons" value="Manage User Icons" class="m-1" action="#{webUserController.navigateToManageUserIcons()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fas fa-rss" value="Manage User Subscriptions" class="m-1" action="#{webUserController.navigateToManageUserSubscriptions()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-signature" value="Manage Signature" class="m-1" action="#{webUserController.toManageSignature()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Dashboards" class="m-1" action="#{webUserController.toManageDashboards()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Preferences" class="m-1" action="#{webUserController.toManageUserPreferences()}" ajax="false" />
 
                                     </h:panelGroup>
                                 </div>
