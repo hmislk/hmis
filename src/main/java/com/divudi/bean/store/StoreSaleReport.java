@@ -735,7 +735,7 @@ public class StoreSaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report by payment method/Sale summery report by date(/faces/store/store_report_sale_by_date_summery_payment_method.xhtml)");
+        
     }
 
     public void createSaleReportByDateDetail() {
@@ -809,7 +809,7 @@ public class StoreSaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalByDepartment();
         grantDiscount = calGrantDiscountByDepartment();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report all/sale detail report by date(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
 
     }
 
@@ -906,7 +906,7 @@ public class StoreSaleReport implements Serializable {
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
         grantDiscount = calGrantDiscountByDepartment();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report all/sale detail report by date(/faces/store/store_report_sale_by_date_detail_payment_method.xhtml)");
+        
 
     }
     
@@ -1040,7 +1040,7 @@ public class StoreSaleReport implements Serializable {
 //            grantTotal+=getGrantTotal();
 //        }
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Assest transfer report/transfer issue  summery  report by  date(/faces/store/store_report_asset_issue_summery.xhtml)");
+        
 
     }
     

@@ -1125,7 +1125,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
         //   createStaffSalaryTable();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Generate Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
     }
 
     private void fetchAndSetBankData() {
@@ -1252,7 +1252,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         //   createStaffSalaryTable();
-         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Save Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+         
         
         
     }

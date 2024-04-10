@@ -434,7 +434,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //
 //        countTotal = billed - (refunded + cancelled);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc count(/faces/reportLab/report_lab_by_collection_centre_investigation_count.xhtml)");
+        
     }
 
     public List<InvestigationSummeryData> getItems3() {
@@ -1198,7 +1198,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count(/faces/reportLab/count_by_machine.xhtml)");
+        
 
     }
 
@@ -1287,7 +1287,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml)");
+        
     }
 
     public void createLabServiceWithCountAndValueByMachineAndBillType() {
@@ -1358,7 +1358,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml) new ");
+        
     }
 
     public void createLabServiceWithCountAndValueByMachineInvestigationAndBillType() {
@@ -1529,7 +1529,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         investigationCountWithMachines.add(row);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml) new ");
+        
     }
 
     public List<Item> getInvestigationItems() {

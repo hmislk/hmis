@@ -149,7 +149,7 @@ public class ReportsStockVariant implements Serializable {
             systemStockValue += (r.getSystemStock() * r.getPurchaseRate());
         }
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant report(/faces/pharmacy/pharmacy_variant_category_stock_by_item.xhtml)");
+        
 
     }
 

@@ -1000,7 +1000,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
+        
 
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
@@ -1193,7 +1193,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
+        
 
     }
 
@@ -1375,7 +1375,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1408,7 +1408,7 @@ public class CashierReportController implements Serializable {
         }
         calCashierData();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier report(Using recipt No)(/reportCashier/report_cashier_summery_all_by_reciptno.xhtml)");
+        
     }
 
     public void calculateCashierSummeryTotals() {
@@ -1482,7 +1482,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1572,7 +1572,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+        
 
     }
 
@@ -1697,7 +1697,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1817,7 +1817,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1893,7 +1893,7 @@ public class CashierReportController implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery without professional(/reportCashier/report_cashier_summery_all_total_only_without_pro.xhtml)");
+        
 
     }
 
@@ -2742,7 +2742,7 @@ public class CashierReportController implements Serializable {
         try {
 
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("All Cashier Summery");
+            Sheet sheet = workbook.createSheet("All Cashier Summary");
 
             Font font = workbook.createFont();
             font.setFontHeightInPoints((short) 12);

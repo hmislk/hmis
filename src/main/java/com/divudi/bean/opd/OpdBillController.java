@@ -369,7 +369,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 searchKeyword,
                 getFromDate(),
                 getToDate());
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     @Deprecated
@@ -1028,7 +1028,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+        
     }
 
     public void onLineSettleBills() {
@@ -1062,7 +1062,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+        
     }
 
     public void getPharmacySaleBills() {
@@ -1110,7 +1110,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Bill Lists/List of pharmacy bill(/faces/pharmacy/list_of_all_sale_bills.xhtml)");
+        
     }
 
     public Double getGrosTotal() {
@@ -1132,7 +1132,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy wholesale report/Pharmacy wholeale credit bills(/faces/pharmacy_wholesale/pharmacy_report_credit.xhtml)");
+        
     }
 
     public void getPharmacyBills() {
@@ -1145,7 +1145,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+        
     }
 
     public void getPharmacyBillsBilled() {
@@ -1158,7 +1158,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+        
     }
 
     public void getPharmacyWholeBills() {
@@ -1171,7 +1171,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml)");
+        
     }
 
     public BillEjb getBillEjb() {

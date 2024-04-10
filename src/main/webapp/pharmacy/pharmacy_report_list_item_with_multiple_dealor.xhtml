@@ -15,17 +15,17 @@
                     <div class="col-md-12">
                         <p:commandButton 
                             ajax="false" 
-                            value="Refresh"
+                            value="Process"
                             style="float: right;"
                             class="ui-button-warning"
                             icon="fa fa-refresh"
-                            action="#{pharmacySaleReport.createItemWithMultipleDistributor()}">
+                            action="#{pharmacySaleReportController.createItemWithMultipleDistributor()}">
                         </p:commandButton>
                     </div>
                 </div>  
 
                 <p:dataTable 
-                    value="#{pharmacySaleReport.itemsWithDistributers}" 
+                    value="#{pharmacySaleReportController.itemsWithDistributers}" 
                     var="it" >
 
                     <f:facet name="header">

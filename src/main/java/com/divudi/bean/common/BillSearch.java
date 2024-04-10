@@ -1225,7 +1225,7 @@ public class BillSearch implements Serializable {
             userBills = new ArrayList<>();
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "Bill list(/opd_search_user_bills.xhtml)");
+        
         return userBills;
 
     }

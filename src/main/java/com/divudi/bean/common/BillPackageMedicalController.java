@@ -735,7 +735,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBillItems(new MedicalPackage());
 
-        commonController.printReportDetails(frmDate, toDate, startTime, "Medical package detail report(/reportCashier/report_opd_package_medical.xhtml)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -793,7 +793,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBillItems(new Packege());
 
-        commonController.printReportDetails(frmDate, toDate, startTime, "Package detail report -by bill item(/reportCashier/report_opd_package.xhtml)");
+        
 
     }
 
@@ -828,7 +828,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBills(new Packege());
 
-        commonController.printReportDetails(frmDate, toDate, startTime, " Package detail report - by bill(/reportCashier/report_opd_package_bill.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);

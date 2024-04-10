@@ -160,7 +160,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         fillDocPayingBillFee(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill item)(/faces/inward/report_doctor_payment.xhtml)");
+        
 
     }
 
@@ -234,7 +234,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         fillDocPayingBill(false);
         fillDocPayingBillCancel(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill)(/faces/inward/report_doctor_payment_by_bill.xhtml)");
+        
     }
 
     public void fillDocPayingBillByDischargeDate() {
@@ -243,7 +243,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         fillDocPayingBill(true);
         fillDocPayingBillCancel(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment summery(/faces/inward/report_doctor_payment_by_bill.xhtml)");
+        
     }
 
     public void fillDocPayingBill(boolean dischargeDate) {
@@ -1479,7 +1479,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public List<BillItem> getDocPayDischarged() {
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Discharged/Not discharged Doctor payment summery/Doctor Payments For Discharged patients(/faces/inward/inward_professional_payment_discharged_or_notdischarged.xhtml)");
+        
         return docPayDischarged;
 
     }

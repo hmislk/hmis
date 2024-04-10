@@ -901,7 +901,7 @@ public class StoreController1 implements Serializable {
         createInstitutionTransferReceive();
         createInstitutionIssue();
         
-commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Purchase orders(view Details)(/faces/store/store_purhcase_order_request.xhtml)");
+
     }
 
     public void createGrnTable() {

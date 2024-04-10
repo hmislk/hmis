@@ -105,7 +105,7 @@ public class FingerPrintRecordController implements Serializable {
         
         createFingerPrintRecordTable(true);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
+        
     }
 
     public void createFingerPrintRecordTableSiftDate() {
@@ -113,7 +113,7 @@ public class FingerPrintRecordController implements Serializable {
         
         createFingerPrintRecordTable(false);
         
-         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
+         
     }
 
     public void viewStaffFinger(FingerPrintRecord fpr) {

@@ -24,7 +24,7 @@ public class VersionController {
     public void readFirstLine() {
         try {
             // Use getClassLoader() to load the VERSION.txt file from src/main/resources
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("VERSION.txt");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("version.txt");
             if (inputStream != null) {
                 try ( BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                     String firstLine = reader.readLine();
