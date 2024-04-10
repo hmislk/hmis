@@ -5,6 +5,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
+import java.io.File;
 
 /**
  *
@@ -20,8 +21,6 @@ public class VersionController {
     public VersionController() {
         readFirstLine(); // Load first line content upon bean instantiation
     }
-
-    import java.io.File ;
 
     public void readFirstLine() {
         try {
