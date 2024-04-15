@@ -101,8 +101,10 @@
                         <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
                     </p:column>  
 
-                    <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
+                    <p:column headerText="Date of Expiry" style="width:25px!important;">                     
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                        </h:outputText> 
                     </p:column>
 
 
