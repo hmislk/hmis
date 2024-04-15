@@ -16,15 +16,15 @@
 
                     <f:facet name="header" >      
 
-                        <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Supplier : "/>
+                        <div class="w-100 d-flex" >
+                            <h:outputLabel value="Supplier : " class="my-1"/>
                             <p:autoComplete converter="deal" value="#{goodsReturnController.returnBill.toInstitution}"  
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >                               
                             </p:autoComplete>
-                                                          
-                            <p:selectOneMenu   id="cmbPs" value="#{goodsReturnController.returnBill.paymentMethod}">                                                                     
+
+                            <p:selectOneMenu   id="cmbPs" value="#{goodsReturnController.returnBill.paymentMethod}" class="mx-4">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                                 <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef 
                                         bank lblSlipRef txtSlipRef slipBank" event="change" />
@@ -45,15 +45,20 @@
                                 <f:selectItem itemLabel="Select Bank"/>
                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                             </h:selectOneMenu>
-                            
-                            <p:commandButton  value="Return" 
-                                              action="#{goodsReturnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                            </p:commandButton>
-                            <p:outputLabel  value="Recievable Amount" /> 
-                            <p:outputLabel id="total"  value="#{goodsReturnController.returnBill.total}" style="float: right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </h:panelGrid>
+                            <p:inputText placeholder="Enter Comments to Return Bill" value="#{goodsReturnController.comment}" class="p-2 w-25"/>
+
+                            <p:outputLabel  value="Recievable Amount" class="mx-4 my-2"/> 
+                            <div class="my-2">
+                                <p:outputLabel id="total"  value="#{goodsReturnController.returnBill.total}" style=" my-4">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </div>
+                            <div style="float: right">
+                                <p:commandButton  value="Return" 
+                                                  action="#{goodsReturnController.settle}" ajax="false" icon="fa fa-cancel" style="float: right;" class="mx-5 ui-button-danger">
+                                </p:commandButton>
+                            </div>
+                        </div>
                     </f:facet>
                 </p:panel>
 
@@ -82,6 +87,9 @@
 
                     <p:column  headerText="Balance Qty in Unit" style="width:25px!important;"> 
                         <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />                   
+                    </p:column>  
+                    <p:column  headerText="Balance Free Qty in Unit" style="width:25px!important;"> 
+                        <h:outputText id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" />                   
                     </p:column>  
 
                     <p:column headerText="Purchase Rate" style="width:25px!important;"> 
@@ -114,7 +122,19 @@
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
-                    </p:column>  
+                    </p:column> 
+                    <p:column headerText="Returning Free Qty in Unit" style="width:25px!important;">     
+                        <p:cellEditor>  
+                            <f:facet name="output">  
+                                <h:outputLabel value="#{ph.tmpFreeQty}" />
+
+                            </f:facet>
+                            <f:facet name="input">  
+                                <p:inputText autocomplete="off" value="#{ph.tmpFreeQty}" >
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
 
                 </p:dataTable>  
                 <p:spacer height="50"/>
@@ -129,11 +149,11 @@
                 <p:panel   id="gpBillPreview">
 
 <!--                    <ph:grnReturn bill="#{goodsReturnController.returnBill}"/>-->
-                    
+
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                         <ph:grnReturn bill="#{goodsReturnController.returnBill}"/>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                         <ph:grn_detail bill="#{goodsReturnController.returnBill}"/>
                     </h:panelGroup>
