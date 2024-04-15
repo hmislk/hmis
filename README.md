@@ -18,7 +18,7 @@ Developed using Java Enterprise Edition, the system offers both a web applicatio
 
 ## Current Version
 
-Current Version: 3.0.0.20240409.1 (This line will be automatically updated to reflect the latest version)
+Current Version: 3.0.0.20240413.1 (This line will be automatically updated to reflect the latest version)
 
 
 ## History
@@ -27,9 +27,9 @@ In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an
 
 Recognising the diverse needs of its users, which included clinical laboratories, medical channelling centres, and hospitals, the system expanded with additional modules to cater to these requirements.
 
-By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This project was fortunate to receive the dedicated support of students from the Sri Lanka Institute of Advanced Technical Education in Labuduwa, Galle. These students, as part of their Higher National Diploma in Information Technology (HNDIT) programme, contributed under the guidance of Mr. K.M.G.T.R. Waidyarathne, a lecturer from the Department Of Information Technology. Post-graduation, several students remained involved, continuing their support with financial backing from Dr. M H B Ariyaratne.
+By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This project was fortunate to receive the dedicated support of students from the Sri Lanka Institute of Advanced Technical Education in Labuduwa, Galle. As part of their Higher National Diploma in Information Technology (HNDIT) programme, these students contributed under Mr. K.M.G.T.R. Waidyarathne, a Department Of Information Technology lecturer. Post-graduation, several students remained involved, continuing their support with financial backing from Dr. M H B Ariyaratne.
 
-To further enhance the system's reach and reliability, commercial support was introduced, offering services such as installations, user training, maintenance, cloud hosting, and troubleshooting. 
+Commercial support was introduced to enhance the system's reach and reliability, offering services such as installations, user training, maintenance, cloud hosting, and troubleshooting. 
 
 ## Functionality
 * Electronic Medical Record System / EMR

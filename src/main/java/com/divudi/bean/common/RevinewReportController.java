@@ -355,7 +355,7 @@ public class RevinewReportController implements Serializable {
         reNewReportFinalTotal.add(createReNewTotal(reNewReportFinalTotal, null));
 
         
-        commonController.printReportDetails(fromDate, toDate, startime, "Department vise income(/reportCashierBillFeePayment/report_cashier_summery_departmentwise.xhtml)");
+        
     }
 
     public BillsTotals createReNewTotal(List<BillsTotals> bts, Department dep) {

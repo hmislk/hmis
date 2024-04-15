@@ -89,7 +89,7 @@ public class PharmacyUpdateBulkController implements Serializable {
 
         amps = getAmpFacade().findByJpql(sql, m);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk discount allowed(/faces/pharmacy/pharmacy_update_discount_allowed_bulk.xhtml)");
+        
     }
 
     public void updatePharmacyItemCategory() {

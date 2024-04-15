@@ -83,6 +83,10 @@ public class NavigationController implements Serializable {
         return "/admin/staff/admin_speciality?faces-redirect=true";
     }
     
+     public String navigateToManageStaff(){
+        return "/admin/staff/hr_staff_admin?faces-redirect=true";
+    }
+    
     public String navigateToAdminUserStaff(){
         return "/admin/staff/admin_user_staff?faces-redirect=true";
     }

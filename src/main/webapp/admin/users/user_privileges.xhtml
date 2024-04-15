@@ -34,8 +34,10 @@
                                 placeholder="Department"
                                 value="#{userPrivilageController.department}" 
                                 style="width: 500px"
+                                required="true"
+                                requiredMessage="Please select a department"
                                 filter="true">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItem itemLabel="Select Department" ></f:selectItem>
                                 <f:selectItems 
                                     value="#{userPrivilageController.departments}"
                                     var="d"

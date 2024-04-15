@@ -75,7 +75,7 @@ public class StockHistoryController implements Serializable {
         for (Date d : pharmacyStockHistoryDays) {
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display Available Days)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        
     }
 
     public List<StockHistory> findStockHistories(Date fd, Date td, HistoryType ht, Department dep, Item i) {
@@ -152,7 +152,7 @@ public class StockHistoryController implements Serializable {
             totalStockSaleValue += psh.getStockSaleValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display History)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        
     }
 
     public void fillStockHistoriesWithZero() {
@@ -215,7 +215,7 @@ public class StockHistoryController implements Serializable {
             JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Record History Now)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        
     }
 
     public List<Date> getPharmacyStockHistoryDays() {

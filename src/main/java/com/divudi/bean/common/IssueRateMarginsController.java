@@ -113,7 +113,7 @@ public class IssueRateMarginsController implements Serializable {
 
         createMargins();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Unit Issue/Unit issue margin(Add All)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void onEdit(IssueRateMargins tmp) {
@@ -196,7 +196,7 @@ public class IssueRateMarginsController implements Serializable {
 
         items = ejbFacade.findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Unit issue margin(/faces/store/issue_rate_margin_manager.xhtml)");
+        
     }
 
     public IssueRateMargins getCurrent() {

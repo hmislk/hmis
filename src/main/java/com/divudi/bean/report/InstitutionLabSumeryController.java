@@ -604,7 +604,7 @@ public class InstitutionLabSumeryController implements Serializable {
         ////// // System.out.println("refBills = " + refBills);
 
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Staff credit/OPD cash credit bill report(/faces/reportInstitution/report_opd_cash_credit_by_institution.xhtml)");
+        
     }
 
     public PaymentMethod[] getPaymentMethord() {
@@ -892,7 +892,7 @@ public class InstitutionLabSumeryController implements Serializable {
         labBilleds = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
         
         
-commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By institution bill count(/faces/reportIncome/report_income_with_credit_by_institution_for_build_bills.xhtml)");
+
     }
 
 //    public double calPaidTotal(List<Bill> bills) {
@@ -1013,7 +1013,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income
 
         setString1Value1Table();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Handover Report(/reportIncome/report_income_without_credit_by_institution.xhtml)");
+        
 
     }
 

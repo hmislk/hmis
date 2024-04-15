@@ -1005,7 +1005,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Tranfer all stock(/faces/pharmacy/pharmacy_adjustment_department_all.xhtml)");
+        
     }
 
     public void tem() {
@@ -1072,7 +1072,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
+        
     }
 
     public void adjustStockForDepartment() {
@@ -1106,7 +1106,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Stock Adjustment Successfully..");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
+        
     }
 
     public void adjustStaffStock() {
@@ -1141,7 +1141,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Staff Stock Adjustment Successfully..");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
+        
     }
 
     public void adjustDepartmentStockAll() {
@@ -1224,7 +1224,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully..");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Purchase rate(/faces/pharmacy/pharmacy_adjustment_purchase_rate.xhtml)");
+        
 
     }
 
@@ -1258,7 +1258,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Expiry Date Adjustment Successfully..");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Expiry Rate(/faces/pharmacy/pharmacy_adjustment_expiry_date.xhtml)");
+        
     }
 
     public void adjustRetailRate() {
@@ -1290,7 +1290,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Sale rate(/faces/pharmacy/pharmacy_adjustment_retail_sale_rate.xhtml)");
+        
     }
 
     public void adjustWholesaleRate() {
@@ -1321,7 +1321,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Wholesale Rate Adjustment Successfully..");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Wholesale rate(/faces/pharmacy/pharmacy_adjustment_whole_sale_rate.xhtml)");
+        
     }
 
     public void listnerItemSelect() {

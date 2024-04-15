@@ -67,7 +67,7 @@
                             <p:commandButton value="Print All" ajax="false" action="#" >
                                 <p:printer target="gpBillPreviewPrint" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Print(Summery)" ajax="false" action="#" >
+                            <p:commandButton value="Print(Summary)" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview1" ></p:printer>
                             </p:commandButton>
 
@@ -77,7 +77,7 @@
                                 <p:dataTable value="#{hrReportController.summeryForMonths}" var="ss">
                                     <f:facet name="header" >
                                         
-                                        <h:outputLabel value="Summery" />
+                                        <h:outputLabel value="Summary" />
                                         <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                             <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                             <br/>

@@ -12,19 +12,19 @@
             <p:panel  styleClass="noBorder summeryBorder" header="Sale Detail By Bill">
                 <h:panelGrid columns="4" class="w-100">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete value="#{pharmacySaleReport.department}" completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete value="#{pharmacySaleReportController.department}" completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                     <h:outputLabel value="Payment Method"/>
-                    <p:selectOneMenu   id="pay" value="#{pharmacySaleReport.paymentMethod}">    
+                    <p:selectOneMenu   id="pay" value="#{pharmacySaleReportController.paymentMethod}">    
                         <f:selectItem itemLabel="Select Payment Methord"/>
                         <f:selectItems value="#{enumController.paymentMethods}"/>
                     </p:selectOneMenu>
@@ -40,9 +40,9 @@
                         value="Process" 
                         icon="fa-solid fa-arrows-rotate"
                         class="ui-button-warning" 
-                        action="#{pharmacySaleReport.createSaleReportByDateDetail()}"/>
+                        action="#{pharmacySaleReportController.createSaleReportByDateDetail()}"/>
                     <p:commandButton 
-                        actionListener="#{pharmacySaleReport.createSaleReportByDateDetail()}" 
+                        actionListener="#{pharmacySaleReportController.createSaleReportByDateDetail()}" 
                         ajax="false" 
                         value="Excel"
                         icon="fa-solid fa-file-excel"
@@ -62,19 +62,19 @@
 
                 <p:panel id="panelPrint">
                     <p:dataTable id="sum1" 
-                                 value="#{pharmacySaleReport.billedDetail.datedBills}" 
+                                 value="#{pharmacySaleReportController.billedDetail.datedBills}" 
                                  var="i" >
                         <f:facet name="header">  
                             <h:outputLabel value="From  "/>&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.fromDate}">
+                            <h:outputLabel value="#{pharmacySaleReportController.fromDate}">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>&nbsp;&nbsp;
                             </h:outputLabel>
                             <p:spacer width="10" height="1"/>
                             <h:outputLabel value="To  "/>&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.toDate}">
+                            <h:outputLabel value="#{pharmacySaleReportController.toDate}">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                             </h:outputLabel>&#13;&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                            <h:outputLabel value="#{pharmacySaleReportController.department.name}"/>
                             &#13;&nbsp;
                             <br></br>
                             <h:outputLabel value="BILLED"/>
@@ -206,23 +206,23 @@
                         <p:columnGroup type="footer">
                             <p:row>
                                 <p:column footerText="Total" colspan="6"/>
-                                <p:column footerText="#{pharmacySaleReport.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReport.billedDetail.discount}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.billedDetail.discount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.billedDetail.discount}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.billedDetail.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReport.billedDetail.netTotal}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.billedDetail.netTotal}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.billedDetail.netTotal}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.billedDetail.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -232,7 +232,7 @@
                     </p:dataTable>
 
                     <p:dataTable id="sum2" 
-                                 value="#{pharmacySaleReport.cancelledDetail.datedBills}" var="i"
+                                 value="#{pharmacySaleReportController.cancelledDetail.datedBills}" var="i"
                                  >
                         <f:facet name="header">                        
                             <h:outputLabel value="CANCELLED"/>
@@ -363,23 +363,23 @@
                         <p:columnGroup type="footer">
                             <p:row>
                                 <p:column footerText="Total" colspan="6"/>
-                                <p:column footerText="#{pharmacySaleReport.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.cancelledDetail.discount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.discount}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReport.cancelledDetail.netTotal}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.cancelledDetail.netTotal}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.netTotal}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -389,7 +389,7 @@
                     </p:dataTable>
 
                     <p:dataTable id="sum3" 
-                                 value="#{pharmacySaleReport.refundedDetail.datedBills}" var="i"
+                                 value="#{pharmacySaleReportController.refundedDetail.datedBills}" var="i"
                                  >
                         <f:facet name="header">                        
                             <h:outputLabel value="REFUNDED"/>
@@ -512,23 +512,23 @@
                         <p:columnGroup type="footer">
                             <p:row>
                                 <p:column footerText="Total" colspan="5"/>
-                                <p:column footerText="#{pharmacySaleReport.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.refundedDetail.discount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{pharmacySaleReport.refundedDetail.netTotal}" style="text-align: right;">
+                                <p:column footerText="#{pharmacySaleReportController.refundedDetail.netTotal}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.refundedDetail.netTotal}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -539,11 +539,11 @@
 
                     <h:panelGrid columns="2" style="min-width: 100%;">
                         <h:outputLabel value="Final Total"/>
-                        <h:outputLabel value="#{pharmacySaleReport.grantDiscount+pharmacySaleReport.grantNetTotal}"/>
+                        <h:outputLabel value="#{pharmacySaleReportController.grantDiscount+pharmacySaleReport.grantNetTotal}"/>
                         <h:outputLabel value="Final Discount"/>
-                        <h:outputLabel value="#{pharmacySaleReport.grantDiscount}"/>
+                        <h:outputLabel value="#{pharmacySaleReportController.grantDiscount}"/>
                         <h:outputLabel value="Final NetTotal"/>
-                        <h:outputLabel value="#{pharmacySaleReport.grantNetTotal}"/>
+                        <h:outputLabel value="#{pharmacySaleReportController.grantNetTotal}"/>
 
                     </h:panelGrid>
                 </p:panel>

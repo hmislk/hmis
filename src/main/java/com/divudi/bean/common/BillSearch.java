@@ -1225,7 +1225,7 @@ public class BillSearch implements Serializable {
             userBills = new ArrayList<>();
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "Bill list(/opd_search_user_bills.xhtml)");
+        
         return userBills;
 
     }
@@ -2674,7 +2674,7 @@ public class BillSearch implements Serializable {
         printPreview = false;
         return "/opd/bill_cancel?faces-redirect=true;";
     }
-
+    
     public String navigateToViewOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");

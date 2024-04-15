@@ -1453,7 +1453,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         resetAll();
 
         billPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
+        
 
     }
 

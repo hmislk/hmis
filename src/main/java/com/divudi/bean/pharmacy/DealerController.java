@@ -150,7 +150,7 @@ public class DealerController implements Serializable {
         m.put("tp", InstitutionType.Dealer);
         dealor = getEjbFacade().findByJpql(sql, m);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Check deleted data/Dealor list(/faces/dataAdmin/deleted_distributors.xhtml)");
+        
 
     }
 

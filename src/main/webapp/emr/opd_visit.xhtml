@@ -93,6 +93,9 @@
                                                     conditions="#{patientEncounterController.patientDiagnoses}"
                                                     editable="true">
                                                 </emr:patient_conditions>
+                                                <emr:patient_procedures
+                                                    procedures="#{patientEncounterController.patientProcedures}"
+                                                    editable="true"/>
                                                 <emr:patient_medicines 
                                                     editable="true"
                                                     medicines="#{patientEncounterController.patientMedicines}">
@@ -643,8 +646,8 @@
                                                                  var="ix" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
-
                                                         </p:column>
+                                                        
                                                         <p:column headerText="Details">
                                                             <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
                                                         </p:column>
@@ -652,9 +655,10 @@
                                                             <div class="d-flex">
                                                                 <p:commandLink id="btnNewReport" ajax="false"
                                                                                disabled="#{ix.patientInvestigation ne null}"
-                                                                               action="/lab/patient_report">
+                                                                               action="/emr/patient_report">
                                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.currentEIResult}"></f:setPropertyActionListener>
                                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientReportController.clinicalFindingValue}"/>
+                                                                    <f:setPropertyActionListener value="#{ix.patientReport}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                                 </p:commandLink>
                                                                 <p:commandButton

@@ -20,9 +20,9 @@
                             <p:autoComplete  completeMethod="#{departmentController.completeDept}" styleClass="noPrintButton"
                                             forceSelection="true"
                                             var="d" itemLabel="#{d.name}" itemValue="#{d}"
-                                            value="#{pharmacySaleReport.department}" ></p:autoComplete>
+                                            value="#{pharmacySaleReportController.department}" ></p:autoComplete>
                             <p:commandButton ajax="false" value="Process" 
-                                            actionListener="#{pharmacySaleReport.fillNonMoving()}" ></p:commandButton>
+                                            actionListener="#{pharmacySaleReportController.fillNonMoving()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -36,7 +36,7 @@
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
-                                         value="#{pharmacySaleReport.nonMovingItems}" var="i" rowStyleClass="#{i.category eq null ? 'redText':'greenText'}"
+                                         value="#{pharmacySaleReportController.nonMovingItems}" var="i" rowStyleClass="#{i.category eq null ? 'redText':'greenText'}"
                                  
                                          rows="50"
                                          paginator="true"

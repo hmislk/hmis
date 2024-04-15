@@ -351,11 +351,11 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode clinicalsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinicals"), allNode);
         TreeNode clinicalDataNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Clinical, "Clinical Data"), clinicalsNode);
-        TreeNode patientSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientSummery, "Patient Summery"), clinicalsNode);
+        TreeNode patientSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientSummery, "Patient Summary"), clinicalsNode);
         TreeNode patientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDetails, "Patient Details"), clinicalsNode);
         TreeNode patientPhotoNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPhoto, "Patient Photo"), clinicalsNode);
         TreeNode visitDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitDetail, "Visit Details"), clinicalsNode);
-        TreeNode visitSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitSummery, "Visit Summery"), clinicalsNode);
+        TreeNode visitSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitSummery, "Visit Summary"), clinicalsNode);
         TreeNode historyNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalHistory, "History"), clinicalsNode);
         TreeNode clinicaladministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalAdministration, "Administration"), clinicalsNode);
         TreeNode clinicalPatientDeleteNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDelete, "Clinical Patient Delete"), clinicalsNode);
@@ -567,7 +567,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode PharmacyItemSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemSearch, "Item Search"), pharmacyNode);
         TreeNode PharmacyGenarateReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGenarateReports, "Genarate Reports"), pharmacyNode);
-        TreeNode PharmacySummaryViews = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummaryViews, "Summery Views"), pharmacyNode);
+        TreeNode PharmacySummaryViews = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummaryViews, "Summary Views"), pharmacyNode);
         return root;
     }
 
@@ -625,7 +625,6 @@ public class UserPrivilageController implements Serializable {
     public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
         currentWebUser = u;
         department = dept;
-        System.out.println("selected = " + selected);
         List<PrivilegeHolder> selectedPrivileges = selected;
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
             wup.setRetired(true);

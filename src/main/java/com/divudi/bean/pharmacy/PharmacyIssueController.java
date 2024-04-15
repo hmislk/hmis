@@ -560,7 +560,7 @@ public class PharmacyIssueController implements Serializable {
 
         billPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Issue(/faces/pharmacy/pharmacy_issue.xhtml)");
+        
 
     }
 

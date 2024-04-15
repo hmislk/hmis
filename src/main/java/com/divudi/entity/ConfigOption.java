@@ -19,7 +19,7 @@ import javax.persistence.Temporal;
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Entity
-public class Option implements Serializable {
+public class ConfigOption implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -34,18 +34,18 @@ public class Option implements Serializable {
         this.id = id;
     }
 
-    private String key; // Unique key for the option
+    private String optionKey; // Unique optionKey for the option
 
     @Enumerated(EnumType.STRING)
     private OptionScope scope; // Enum for scope
 
     @Enumerated(EnumType.STRING)
-    private OptionValueType valueType; // Enum for the type of value
+    private OptionValueType valueType; // Enum for the type of optionValue
 
     @Lob
-    private String value; // Store the value as a String
+    private String optionValue; // Store the optionValue as a String
     private String enumType; // To store the enum class name
-    private String enumValue; // To store the enum value (name of the enum constant)
+    private String enumValue; // To store the enum optionValue (name of the enum constant)
 
     // References to specific entities based on scope (nullable)
     @ManyToOne
@@ -71,23 +71,23 @@ public class Option implements Serializable {
     private String retireComments;
 
     // Constructors
-    public Option() {
+    public ConfigOption() {
     }
 
-    public Option(String key, OptionScope scope, String value, OptionValueType valueType) {
-        this.key = key;
+    public ConfigOption(String key, OptionScope scope, String value, OptionValueType valueType) {
+        this.optionKey = key;
         this.scope = scope;
-        this.value = value;
+        this.optionValue = value;
         this.valueType = valueType;
     }
 
     // Getters and Setters
-    public String getKey() {
-        return key;
+    public String getOptionKey() {
+        return optionKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setOptionKey(String optionKey) {
+        this.optionKey = optionKey;
     }
 
     public OptionScope getScope() {
@@ -98,12 +98,12 @@ public class Option implements Serializable {
         this.scope = scope;
     }
 
-    public String getValue() {
-        return value;
+    public String getOptionValue() {
+        return optionValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setOptionValue(String optionValue) {
+        this.optionValue = optionValue;
     }
 
     public OptionValueType getValueType() {
@@ -148,10 +148,10 @@ public class Option implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Option)) {
+        if (!(object instanceof ConfigOption)) {
             return false;
         }
-        Option other = (Option) object;
+        ConfigOption other = (ConfigOption) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

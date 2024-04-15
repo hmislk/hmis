@@ -860,7 +860,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
+        
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
@@ -1119,7 +1119,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //            return true;
 //        }
         if (collectingCentre.getBallance() - feeTotalExceptCcfs < 0 - collectingCentre.getAllowedCredit()) {
-            JsfUtil.addErrorMessage("Collecting Centre Ballance is Not Enough");
+            JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");
             return true;
         }
 
