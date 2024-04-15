@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
@@ -63,6 +64,8 @@ public class UserNotificationController implements Serializable {
     SmsController smsController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject 
+    TransferIssueController transferIssueController;
     @EJB
     private UserNotificationFacade ejbFacade;
     @EJB
@@ -151,6 +154,7 @@ public class UserNotificationController implements Serializable {
         String jpql = "select un "
                 + " from UserNotification un "
                 + " where un.seen=:seen "
+                + " and un.webUser=:wu "
                 + " and un.notification.completed=:com";
         Map m = new HashMap();
         m.put("seen", false);
@@ -168,12 +172,12 @@ public class UserNotificationController implements Serializable {
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:
-                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
-                return "/ward/ward_pharmacy_bht_issue";
+                pharmacySaleBhtController.setBhtRequestBill(bill);
+                return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
 
             case PHARMACY_TRANSFER_REQUEST:
-                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
-                return "/ward/ward_pharmacy_bht_issue";
+                transferIssueController.setRequestedBill(bill);
+                return transferIssueController.navigateToPharmacyIssueForRequests();
 
             default:
                 return "";

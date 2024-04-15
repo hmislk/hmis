@@ -54,7 +54,7 @@ public class NotificationController implements Serializable {
     SecurityController securityController;
     @Inject
     CommonController commonController;
-    @Inject 
+    @Inject
     ConfigOptionController configOptionController;
     @EJB
     private NotificationFacade ejbFacade;
@@ -109,7 +109,7 @@ public class NotificationController implements Serializable {
                 throw new AssertionError();
         }
     }
-
+    
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
@@ -123,34 +123,38 @@ public class NotificationController implements Serializable {
             userNotificationController.createUserNotifications(nn);
         }
     }
-    
-    private String createTemplateForNotificationMessage(BillTypeAtomic bt){
+
+    private String createTemplateForNotificationMessage(BillTypeAtomic bt) {
         String message = null;
-        if (bt==null) {
-            message="New Request from ";
+        if (bt == null) {
+            return null;
         }
-        
-        if (bt==BillTypeAtomic.PHARMACY_TRANSFER_REQUEST) {
-             message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
+
+        if (bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
         }
-        
-        if (bt==BillTypeAtomic.PHARMACY_ORDER) {
-             message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Order Request Notification", OptionScope.APPLICATION, null, null, null);
+
+        if (bt == BillTypeAtomic.PHARMACY_ORDER) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Order Request Notification", OptionScope.APPLICATION, null, null, null);
         }
-        
-        if (bt==BillTypeAtomic.OPD_BILL_CANCELLATION) {
-             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
+
+        if (bt == BillTypeAtomic.OPD_BILL_CANCELLATION) {
+            message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
         }
-        
-        if (bt==BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION) {
-             message = configOptionController.getLongTextValueByKey("Message Template for OPD Batch Bill Notification", OptionScope.APPLICATION, null, null, null);
+
+        if (bt == BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION) {
+            message = configOptionController.getLongTextValueByKey("Message Template for OPD Batch Bill Notification", OptionScope.APPLICATION, null, null, null);
         }
-        
-        if (bt==BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION) {
-             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
+
+        if (bt == BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION) {
+            message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
         }
-        
-     return message;
+
+        if (message == null || message=="" || message.isEmpty()) {
+            message = "New Request from ";
+        }
+
+        return message;
     }
 
     private void createOpdBillCancellationNotification(Bill bill) {
@@ -312,7 +316,7 @@ public class NotificationController implements Serializable {
             nn.setBill(bill);
             nn.setTriggerType(tt);
             nn.setCreater(sessionController.getLoggedUser());
-            nn.setMessage("New Request for Medicines for inpatient ");
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
         }
