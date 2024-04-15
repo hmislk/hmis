@@ -872,7 +872,7 @@ public class InwardReportControllerBht implements Serializable {
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
 
-        commonController.printReportDetails(startTime, startTime, startTime, "BHT income by categories individual BHT( /faces/inward/inward_report_bht_income_by_caregories_bht.xhtml)");
+        
     }
 
     public void calTotal() {

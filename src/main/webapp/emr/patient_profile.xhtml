@@ -329,6 +329,76 @@
 
                                             </h:form>
                                         </p:tab>
+                                        <p:tab title="Surgical Conditions" >
+                                            <h:form>
+                                                <div class="row m-2">
+                                                    <div class="col-md-3" >
+                                                        <p:autoComplete 
+                                                            id="acPr"
+                                                            completeMethod="#{procedureController.completeProcedures}"
+                                                            value="#{patientEncounterController.patientProcedure.itemValue}"
+                                                            var="item"
+                                                            itemLabel="#{item}"
+                                                            itemValue="#{item}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            placeholder="Select Surgery"
+                                                            />
+                                                    </div>
+                                                    <div class="col-md-6" >
+                                                        <p:inputText
+                                                            id="txtPr"
+                                                            class="w-100"
+                                                            value="#{patientEncounterController.patientProcedure.stringValue}"
+                                                            placeholder="Details"/>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton value="Add"
+                                                                         id="btnAddPr"
+                                                                         icon="fa fa-plus"
+                                                                         class="mx-1 ui-button-success"
+                                                                         process="btnAddPr acPr txtPr"
+                                                                         update="tblPrc acPr txtPr"
+                                                                         action="#{patientEncounterController.addPatientProcedure()}"
+                                                                         />
+                                                    </div>
+                                                </div>
+                                                <div class="row m-2" >
+                                                    <div class="col-md-12" >
+                                                        <p:dataTable
+                                                            id="tblPrc"
+                                                            value="#{patientEncounterController.patientProcedures}"
+                                                            var="pr">
+                                                            <p:column headerText="Procedure">
+                                                                <p:outputLabel value="#{pr.itemValue.name}">
+                                                                </p:outputLabel>
+                                                                <p:spacer height="1" width="5" ></p:spacer>
+                                                                <p:commandLink value="X" class="text-danger" 
+                                                                               id="btnDeletePr"
+                                                                               process="btnDeletePr"
+                                                                               update="tblPrc"
+                                                                               onclick="if (!confirm('Are you sure you want to delete this Procedure?'))
+                                                                                           return false;"
+
+                                                                               action="#{patientEncounterController.removePatientProcedure()}"
+                                                                               >
+                                                                    <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{pr}"/>
+                                                                </p:commandLink>
+                                                                <p:tooltip value="Delete" for="btnDeletePr" ></p:tooltip>
+                                                            </p:column>
+                                                            <p:column headerText="Details">
+                                                                <h:outputText value="#{pr.stringValue}"/>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+
+
+
+
+                                            </h:form>
+                                        </p:tab>
                                         <p:tab title="Allergies" >
                                             <h:form>
                                                 <div class="row m-2">
@@ -511,7 +581,7 @@
                                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>
                                                             </p:column>
-                                                             <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
+                                                            <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
                                                                 <p:outputLabel  value="#{bill.billDate}" >
                                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>

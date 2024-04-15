@@ -816,7 +816,7 @@
                     </p:submenu>
                     <p:menuitem  ajax="false" action="/store/store_search?faces-redirect=true"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/store/store_summery_index?faces-redirect=true"  value="Summery" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
+                    <p:menuitem  ajax="false" action="/store/store_summery_index?faces-redirect=true"  value="Summary" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
 
                 </p:submenu>
 
@@ -1193,7 +1193,7 @@
                                     update="notCount" />
                             <h:panelGroup id="notCount">
                                 <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
-                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToUserNotification()}"/>
+                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}"/>
                                 </p:badge>
                             </h:panelGroup>
                         </div>

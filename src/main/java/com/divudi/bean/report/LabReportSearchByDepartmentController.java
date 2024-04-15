@@ -563,7 +563,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
         billsList = getLabBillsOwn();
         calTotals();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By department(/faces/reportIncome/report_income_with_credit_by_department.xhtml)");
+        
     }
 
     public List<Bill> getLabBillsOwn() {

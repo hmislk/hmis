@@ -410,7 +410,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
+        
 
     }
 
@@ -463,7 +463,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("class", BilledBill.class);
         List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
+        
     }
 
     public void calculateDueFeesAgency() {
@@ -503,7 +503,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("bt", BillType.ChannelAgent);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Pay agent(/faces/channel/channel_payment_bill_search.xhtml)");
+        
 
     }
 

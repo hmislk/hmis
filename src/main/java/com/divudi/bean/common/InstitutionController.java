@@ -73,7 +73,7 @@ public class InstitutionController implements Serializable {
     private int managaeInstitutionIndex = -1;
 
     public String toAdminManageInstitutions() {
-        return "/admin/institutions/admin_institutions_index";
+        return "/admin/institutions/admin_institutions_index?faces-redirect=true";
     }
 
     public String toListInstitutions() {
@@ -242,7 +242,7 @@ public class InstitutionController implements Serializable {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent details(/faces/channel/channel_report_agent_details.xhtml)");
+        
 
         return agencies;
     }

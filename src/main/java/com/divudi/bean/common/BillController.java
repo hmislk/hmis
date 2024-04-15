@@ -56,6 +56,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -142,6 +143,10 @@ public class BillController implements Serializable {
     private EnumController enumController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
+    @Inject
+    private WebUserController webUserController;
+    @Inject
+    private OpdBillController opdBillController;
 
     /**
      * Class Vairables
@@ -912,7 +917,7 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -951,7 +956,7 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+        
     }
 
     public void getPharmacySaleBills() {
@@ -999,7 +1004,7 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Bill Lists/List of pharmacy bill(/faces/pharmacy/list_of_all_sale_bills.xhtml)");
+        
     }
 
     public Double getGrosTotal() {
@@ -1052,7 +1057,7 @@ public class BillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy wholesale report/Pharmacy wholeale credit bills(/faces/pharmacy_wholesale/pharmacy_report_credit.xhtml)");
+        
     }
 
     public void getPharmacyBills() {
@@ -1097,7 +1102,7 @@ public class BillController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml?faces-redirect=true)");
+        
     }
 
     public void getPharmacyBillsBilled() {
@@ -1110,7 +1115,7 @@ public class BillController implements Serializable {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+        
     }
 
     public void getPharmacyWholeBills() {
@@ -1154,7 +1159,7 @@ public class BillController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml?faces-redirect=true)");
+        
     }
 
     public BillEjb getBillEjb() {
@@ -1414,7 +1419,7 @@ public class BillController implements Serializable {
         checkBillValues();
         printPreview = true;
 
-        commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
+        
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1640,13 +1645,115 @@ public class BillController implements Serializable {
         return billFeeFacade.findByJpql(jpql, m);
     }
 
+    public String navigateToCancelOpdBatchBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("No Batch bill is selected");
+            return "";
+        }
+        bills = billsOfBatchBill(batchBill);
+        paymentMethod = batchBill.getPaymentMethod();
+        comment = null;
+        printPreview = false;
+        return "/opd/batch_bill_cancel?faces-redirect=true;";
+    }
+
+    public String cancelBatchBill() {
+        if (getBatchBill() == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return "";
+        }
+        if (getBatchBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Saved bill");
+            return "";
+        }
+
+        if (errorsPresentOnOpdBatchBillCancellation()) {
+            return "";
+        }
+
+        if (!getWebUserController().hasPrivilege("OpdCancel")) {
+            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
+            return "";
+        }
+
+        Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.setDepartment(sessionController.getDepartment());
+        cancellationBatchBill.setInstitution(sessionController.getInstitution());
+        cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
+        cancellationBatchBill.setToDepartment(batchBill.getToDepartment());
+        cancellationBatchBill.setFromInstitution(batchBill.getFromInstitution());
+        cancellationBatchBill.setToInstitution(batchBill.getToInstitution());
+
+        cancellationBatchBill.setBillType(BillType.OpdBathcBill);
+        cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getDepartment(), cancellationBatchBill.getToDepartment(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+        String insId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getInstitution(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+
+        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setInsId(insId);
+        cancellationBatchBill.setCreatedAt(new Date());
+        cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
+
+        cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
+        cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
+        cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
+        cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
+        cancellationBatchBill.setPaymentMethod(paymentMethod);
+
+        cancellationBatchBill.setForwardReferenceBill(batchBill);
+        batchBill.setCancelled(true);
+        batchBill.setCancelledBill(cancellationBatchBill);
+        getBillFacade().edit(batchBill);
+
+        getBillFacade().create(cancellationBatchBill);
+
+        for (Bill originalBill : bills) {
+            System.out.println("originalBills = " + originalBill);
+            cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
+        }
+        
+        cancellationBatchBill.copy(batchBill);
+        cancellationBatchBill.setBilledBill(batchBill);
+
+        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
+        opdBillController.setBills(bills);
+        opdBillController.setBatchBill(batchBill);
+        getSessionController().setLoggedUser(wb);
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
+    }
+
+    private boolean errorsPresentOnOpdBatchBillCancellation() {
+        if (getBatchBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (getBatchBill().isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
+            return true;
+        }
+
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+
+        return false;
+    }
+
     public void cancellAllBillsOfBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return;
         }
         bills = billsOfBatchBill(batchBill);
-
         if (bills == null) {
             JsfUtil.addErrorMessage("No bills to cancel");
             return;
@@ -1679,15 +1786,18 @@ public class BillController implements Serializable {
         cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
         cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
         cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
-        cancellationBatchBill.setPaymentMethod(batchBill.getPaymentMethod());
+        cancellationBatchBill.setPaymentMethod(paymentMethod);
 
         cancellationBatchBill.setForwardReferenceBill(batchBill);
+        batchBill.setCancelled(true);
+        batchBill.setCancelledBill(cancellationBatchBill);
+        getBillFacade().edit(batchBill);
 
         getBillFacade().create(cancellationBatchBill);
 
-        for (Bill originalBills : bills) {
-            System.out.println("originalBills = " + originalBills);
-            cancelSingleBillWhenCancellingOpdBatchBill(originalBills, cancellationBatchBill);
+        for (Bill originalBill : bills) {
+            System.out.println("originalBills = " + originalBill);
+            cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
 
         cancellationBatchBill.copy(batchBill);
@@ -1696,24 +1806,30 @@ public class BillController implements Serializable {
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
+
         getSessionController().setLoggedUser(wb);
     }
 
-    public void cancelSingleBillWhenCancellingOpdBatchBill(Bill cancellingSingleBill, Bill cancellationBatchBill) {
+    public void cancelSingleBillWhenCancellingOpdBatchBill(Bill originalBill, Bill cancellationBatchBill) {
         System.out.println("cancellationBatchBill = " + cancellationBatchBill);
         System.out.println("cancellationBatchBill = " + cancellationBatchBill);
-        if (cancellingSingleBill == null && cancellingSingleBill == null) {
+        if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
         CancelledBill cancellationBill = new CancelledBill();
-        cancellationBill.copy(getBill());
-        cancellationBill.invertValue(getBill());
+        cancellationBill.copy(originalBill);
+        cancellationBill.invertValue(originalBill);
 
         cancellationBill.setBillType(BillType.OpdBill);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        createPayment(cancellationBill, paymentMethod);
+        if (cancellationBill.getId() == null) {
+            getBillFacade().create(cancellationBill);
+        } else {
+            getBillFacade().edit(cancellationBill);
+        }
+        createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
@@ -1737,7 +1853,7 @@ public class BillController implements Serializable {
         } else {
             getBillFacade().edit(cancellationBill);
         }
-        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(cancellingSingleBill, cancellationBill);
+        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, cancellationBill);
         try {
             cancellationBill.setBillItems(list);
         } catch (Exception e) {
@@ -1748,16 +1864,16 @@ public class BillController implements Serializable {
         } else {
             billFacade.edit(cancellationBill);
         }
-        getBill().setCancelled(true);
-        getBill().setCancelledBill(cancellationBill);
-        getBillFacade().edit(getBill());
+        originalBill.setCancelled(true);
+        originalBill.setCancelledBill(cancellationBill);
+        getBillFacade().edit(originalBill);
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+        if (originalBill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (originalBill.getToStaff() != null) {
+                staffBean.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
-                cancellationBill.setFromStaff(getBill().getToStaff());
+                cancellationBill.setFromStaff(originalBill.getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
         }
@@ -3586,6 +3702,22 @@ public class BillController implements Serializable {
 
     public void setBatchBill(Bill batchBill) {
         this.batchBill = batchBill;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
+    }
+
+    public OpdBillController getOpdBillController() {
+        return opdBillController;
+    }
+
+    public void setOpdBillController(OpdBillController opdBillController) {
+        this.opdBillController = opdBillController;
     }
 
     /**

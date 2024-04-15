@@ -310,7 +310,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("sub", ServiceSubCategory.class);
         items = getFacade().findByJpql(sql, hm);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - service(/faces/inward/inward_price_adjustment_service.xhtml)");
+        
     }
 
     public void createCategroyServicePharmacy() {
@@ -345,8 +345,6 @@ public class InwardPriceAdjustmntController implements Serializable {
 
         items = getFacade().findByJpql(sql, hm);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Investigation"
-                + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
     }
 
     public void createCategroyPharmacy() {
@@ -365,8 +363,6 @@ public class InwardPriceAdjustmntController implements Serializable {
 
         items = getFacade().findByJpql(sql, hm);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Pharmacy"
-                + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
     }
 
     public void createCategroyStore() {
@@ -385,8 +381,6 @@ public class InwardPriceAdjustmntController implements Serializable {
 
         items = getFacade().findByJpql(sql, hm);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Store"
-                + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
     }
 
     public void onEdit(PriceMatrix tmp) {

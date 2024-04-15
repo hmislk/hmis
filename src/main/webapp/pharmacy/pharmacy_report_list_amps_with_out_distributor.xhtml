@@ -27,10 +27,10 @@
                                     <p:commandButton 
                                         ajax="false"
                                         style="float: right"
-                                        value="Refresh"
+                                        value="Process"
                                         icon="fa fa-refresh"
                                         class="ui-button-warning mx-2"
-                                        action="#{pharmacySaleReport.createItemListWithOutItemDistributer}">
+                                        action="#{pharmacySaleReportController.createItemListWithOutItemDistributer}">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -39,7 +39,7 @@
                         <h:panelGrid>
                             <p:dataTable 
                                 id="tblItem" 
-                                value="#{pharmacySaleReport.amps}" 
+                                value="#{pharmacySaleReportController.amps}" 
                                 var="i"
 
                                 rowKey="#{i.id}"

@@ -155,7 +155,7 @@ public class OpdPreBillReportController implements Serializable {
         userRefundedBillsPharmacy = createBillsTotals(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment(), getToDepartment());
 
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml or /reportCashierBillFeePayment/report_cashier_summery_by_user.xhtml)");
+        
     }
 
     public void createCashierTableByUserPayment() {
@@ -219,7 +219,7 @@ public class OpdPreBillReportController implements Serializable {
 
         calTotals(billsTotalses);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/Cashier Report(/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml/ /reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml)");
+        
     }
 
     public String createCashierTableByUserPaymentForDetail() {
@@ -399,14 +399,14 @@ public class OpdPreBillReportController implements Serializable {
         Date startTime = new Date();
         createCashierTableByAllUserPayment(true);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/ All cashier report(/reportCashierBillFeePayment/report_cashier_summery_all.xhtml)");
+        
     }
 
     public void createCashierTableByAllUserPaymentSummery() {
         Date startTime  = new Date();
         createCashierTableByAllUserPayment(false);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/ All cashier summery( /reportCashierBillFeePayment/report_cashier_summery_all_total_only.xhtml)");
+        
     }
 
     public void createCashierTableByAllUserPayment(boolean detail) {

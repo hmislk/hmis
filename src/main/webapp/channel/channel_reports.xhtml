@@ -40,7 +40,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat_1"/>
                                             <p:commandButton class="w-100" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
-                                            <p:commandButton class="w-100" ajax="false" value="Card Summery Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportController.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Card Summary Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportController.clearAll}"/>
 
                                         </div>
 
@@ -54,7 +54,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Agent Balance(32)" action="/channel/channel_report_agent_balance"/>
                                             <p:commandButton class="w-100" ajax="false" value="Agent Deposit(36)" action="/channel/channel_report_agent_payment_bill"/>
                                             <p:commandButton class="w-100" ajax="false" value="Agent Wise Channel Appoinment Total And Count(29 &amp; 30)" action="/channel/channel_report_agent_wise_channel_total"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Agent Wise Channel Appoinment Count Summery" action="/channel/channel_report_agent_wise_channel_total_summery"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Agent Wise Channel Appoinment Count Summary" action="/channel/channel_report_agent_wise_channel_total_summery"/>
                                             <p:commandButton class="w-100" ajax="false" value="Agent Channel Books Report()"  action="/channel/channel_report_agent_referece_book" />
                                             <p:commandButton class="w-100" ajax="false" value="Agent Channel Bills For Book"  action="/channel/channel_report_agent_referece_book_1" />
                                             <p:commandButton class="w-100" ajax="false" value="Agent Details()" action="/channel/channel_report_agent_details"/>
@@ -101,7 +101,7 @@
                                                              value="Entered Shedule Report" action="/channel/channel_report_channel_shedule" 
                                                              actionListener="#{channelScheduleController.makeNull()}" />                                        
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Entered Shedule Report Summery" action="/channel/channel_report_channel_shedule_sumery" 
+                                                             value="Entered Shedule Report Summary" action="/channel/channel_report_channel_shedule_sumery" 
                                                              actionListener="#{channelScheduleController.makeNull()}" />                                        
                                         </div>
                                     </p:tab>
@@ -110,9 +110,9 @@
 
                                             <p:commandButton class="w-100" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user" actionListener="#{channelReportController.clearAll}"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels" actionListener="#{channelReportController.clearAll}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summery" action="/channel/channel_report_cashier_summery_date"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Today All Cashier Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created_summery"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summary" action="/channel/channel_report_cashier_summery_date"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summary(Created Date)" action="/channel/channel_report_cashier_summery_date_created"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Today All Cashier Summary(Created Date)" action="/channel/channel_report_cashier_summery_date_created_summery"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord" actionListener="#{channelReportController.clearAll}"/>
                                             <p:commandButton class="w-100" ajax="false" value="Channel Count By Users" action="/channel/report_cashier_vise_count" />
                                             <p:commandButton class="w-100" ajax="false" value="Channel Count By Users(By Appoinment Date)" action="/channel/report_cashier_vise_count_1" />
@@ -125,7 +125,7 @@
                                     <p:tab title="Channel Reports (Staff)">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detail" actionListener="#{channelReportController.clearAll}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Summery Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportController.clearAll}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Summary Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportController.clearAll}"/>
                                         </div>
                                     </p:tab>
 

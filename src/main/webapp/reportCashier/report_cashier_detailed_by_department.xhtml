@@ -23,7 +23,7 @@
 
                             <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{commonReport.department.name}"/>
 
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
+                            <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" 
                                              style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
                             <p:defaultCommand target="btnRefresh"/>
 

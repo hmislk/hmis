@@ -662,7 +662,7 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Setup/report samples(/faces/lab/report_samples.xhtml)");
+        
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -1081,7 +1081,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public void unDeleteSelectedItems() {
@@ -1103,7 +1103,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public void markSelectedActive() {
@@ -1124,7 +1124,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
 
     }
 
@@ -1146,7 +1146,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public Institution getInstitution() {
@@ -1438,7 +1438,7 @@ public class InvestigationController implements Serializable {
             investigationWithInvestigationItemses.add(items);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administration/Setup/report dynamic labels(/faces/lab/report_dynamic_lables.xhtml)");
+        
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1719,7 +1719,7 @@ public class InvestigationController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation with fee (/faces/dataAdmin/report_entered_data.xhtml)");
+        
     }
 
     public class ItemWithFee {

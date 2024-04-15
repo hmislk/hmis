@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
@@ -66,6 +67,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Payment;
@@ -145,6 +147,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     /**
      * Controllers
      */
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     PriceMatrixController priceMatrixController;
     @Inject
@@ -803,7 +807,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     private String createChanellBookingSms(Bill b) {
-        return createSmsForChannelBooking(b, sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking());
+//        String template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        String template = configOptionController.getLongTextValueByKey("Template for SMS sent on Channel Booking", OptionScope.APPLICATION, null, null, null);
+        if(template==null||template.isEmpty()){
+            template = "Dear {patient_name}, Your appointment with {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+        }
+        return createSmsForChannelBooking(b, template);
     }
 
     public String createSmsForChannelBooking(Bill b, String template) {
@@ -1745,8 +1754,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             }
 
             if (institution.getBallance() - getSelectedSessionInstance().getOriginatingSession().getTotal() < 0 - institution.getAllowedCredit()) {
-                errorText = "Agency Ballance is Not Enough";
-                JsfUtil.addErrorMessage("Agency Ballance is Not Enough");
+                errorText = "Agency Balance is Not Enough";
+                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
             }
             if (agentReferenceBookController.checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {

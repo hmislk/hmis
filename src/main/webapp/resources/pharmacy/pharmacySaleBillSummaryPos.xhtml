@@ -19,10 +19,34 @@
         <div class="posbillBreak">            
 
             <div class="headingBill" style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">
-                <h:outputLabel value="Pharmacy Summery"   />
+                <h:outputLabel value="Pharmacy Summary"   />
 
             </div>
 
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+            
+            <div class="w-100">
+                <p:panelGrid columns="2" class="w-100" style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">
+                    <h:outputText value="From Date"/>
+                    <p:outputLabel value="#{cc.attrs.billSearch.fromDate}"  style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+                    
+                    <h:outputText value="To Date"/>
+                    <p:outputLabel value="#{cc.attrs.billSearch.toDate}"  style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+                    
+                    <h:outputText value="Department"/>
+                    <h:outputText value="#{cc.attrs.billSearch.department.name}"/>
+                    
+                    <h:outputText value="User" rendered="#{cc.attrs.billSearch.user ne null}"/>
+                    <h:outputText value="#{cc.attrs.billSearch.user.name}" rendered="#{cc.attrs.billSearch.user ne null}"/>
+                </p:panelGrid>
+            </div>
+            
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
@@ -67,7 +91,7 @@
             </div>
 
             <div>
-                <table style="width: 100%; margin-left:0.5cm; font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;font-weight: bold;">
+                <table style="width: 100%; margin-left:0.5cm; font-size: 15px!important;font-family:Arial, Helvetica, sans-serif!important;font-weight: bold;">
                     <h:panelGroup rendered="#{cc.attrs.billSearch.cashTotal ne 0.00}">
                         <tr>
                             <td><h:outputText value="Cash Total" /></td>

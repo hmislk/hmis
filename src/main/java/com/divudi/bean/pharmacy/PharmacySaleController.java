@@ -438,7 +438,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
 
         calculateBillItemForEditing(tmp);
-        
+
         calTotal();
 
     }
@@ -452,10 +452,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
 
         calculateBillItemForEditing(tmp);
-        
+
         calTotal();
 
     }
+
     public void editQty(BillItem bi) {
         if (bi == null) {
             //////System.out.println("No Bill Item to Edit Qty");
@@ -1490,6 +1491,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+
+                    setZeroToQty(bi);
+                    onEditCalculation(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    return ;
+                }
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
                 if (bi.getQty() <= 0.0) {
@@ -1632,7 +1640,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         resetAll();
 
         billPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
+        
 
     }
 
