@@ -45,7 +45,7 @@
                                 <f:selectItem itemLabel="Select Bank"/>
                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                             </h:selectOneMenu>
-                            <p:inputText placeholder="Enter Comments to Return Bill" value="#{goodsReturnController.comment}" class="p-2 w-25"/>
+                            <p:inputText placeholder="Enter Comments to Return Bill" value="#{goodsReturnController.returnBill.comments}" class="p-2 w-25"/>
 
                             <p:outputLabel  value="Recievable Amount" class="mx-4 my-2"/> 
                             <div class="my-2">
@@ -61,7 +61,6 @@
                         </div>
                     </f:facet>
                 </p:panel>
-
                 <p:dataTable var="ph" value="#{goodsReturnController.billItems}"
                              scrollable="true" scrollHeight="250"
                              id="itemList" editable="true">  
@@ -76,20 +75,16 @@
                         Returning Item 
                     </f:facet>
 
-                    <p:column style="width:10px!important;">  
-                        <p:rowEditor />  
-                    </p:column>
-
                     <p:column headerText="Item Name" style="width: 250px!important;"  > 
                         <h:outputText id="item" value="#{ph.item.name}" >                                   
                         </h:outputText>
                     </p:column>  
 
                     <p:column  headerText="Balance Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />                   
+                        <h:outputText id="qty" value="#{ph.referanceBillItem.pharmaceuticalBillItem.qty}" />                   
                     </p:column>  
                     <p:column  headerText="Balance Free Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" />                   
+                        <h:outputText id="freeQty" value="#{ph.referanceBillItem.pharmaceuticalBillItem.freeQty}" />                   
                     </p:column>  
 
                     <p:column headerText="Purchase Rate" style="width:25px!important;"> 
@@ -114,7 +109,7 @@
                     <p:column headerText="Returning Qty in Unit" style="width:25px!important;">     
                         <p:cellEditor>  
                             <f:facet name="output">  
-                                <h:outputLabel value="#{ph.tmpQty}" />
+                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.qty}" />
 
                             </f:facet>
                             <f:facet name="input">  
@@ -126,7 +121,7 @@
                     <p:column headerText="Returning Free Qty in Unit" style="width:25px!important;">     
                         <p:cellEditor>  
                             <f:facet name="output">  
-                                <h:outputLabel value="#{ph.tmpFreeQty}" />
+                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.freeQty}" />
 
                             </f:facet>
                             <f:facet name="input">  
@@ -134,6 +129,9 @@
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
+                    </p:column>
+                    <p:column style="width:10px!important;">  
+                        <p:rowEditor />  
                     </p:column>
 
                 </p:dataTable>  
