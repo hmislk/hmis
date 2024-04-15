@@ -23,74 +23,83 @@
                                 <h:outputLabel styleClass="fas fa-list" />
                                 <h:outputLabel value="Requested Items" class="mx-4" />
                             </f:facet>
-                            <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
-                                         value="#{transferIssueController.billItems}" 
-                                         id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
-
-
-
+                            <p:dataTable 
+                                styleClass="noBorder" 
+                                var="bItm" 
+                                scrollable="true" 
+                                scrollHeight="250" 
+                                value="#{transferIssueController.billItems}" 
+                                id="itemList" 
+                                sortBy="#{bItm.searialNo}"  
+                                editable="true"> 
+                                
                                 <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />  
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
 
-
-
-                                <p:column headerText="Item Name" style="width: 50px!important;"  >                     
+                                <p:column headerText="Item Name">                     
                                     <h:outputText id="item" value="#{bItm.item.name}" >                                   
                                     </h:outputText>
                                 </p:column>  
 
-                                <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
+                                <p:column headerText="Batch No" width="100px;">  
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
                                 </p:column>
 
-                                <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
+                                <p:column headerText="Sale Rate" width="100px;">  
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
+                                <p:column headerText="Cost Rate" width="100px;">  
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>  
 
-                                <p:column style="width:6%">  
-                                    <p:rowEditor />  
-                                </p:column>
-
-                                <p:column headerText="Qty" style="width:25px!important; text-align: right;
-                                          ">                   
+                                <p:column headerText="Qty" width="70px;">                   
                                     <p:cellEditor>  
                                         <f:facet name="output">  
-                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qty}" />                               
+                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qty}" > 
+                                                <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                            </h:outputLabel>                             
                                         </f:facet>                        
                                         <f:facet name="input">  
-                                            <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
-                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
-                                            </p:inputText>
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column> 
-                                
-                                <p:column headerText="Free" style="width:25px!important; text-align: right;
-                                          ">                   
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.freeQty}" />                               
-                                        </f:facet>                        
-                                        <f:facet name="input">  
-                                            <p:inputText autocomplete="off" id="fqty" value="#{bItm.tmpQty}" >
+                                            <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" class="w-100">
                                                 <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
                                             </p:inputText>
                                         </f:facet>
                                     </p:cellEditor>
                                 </p:column> 
 
-                                <p:column style="width: 10px!important;">
-                                    <p:commandButton value="Remove" ajax="false" action="#{transferIssueController.remove(bItm)}">
+                                <p:column headerText="Free" width="70px;">                   
+                                    <p:cellEditor>  
+                                        <f:facet name="output">  
+                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.freeQty}">
+                                                <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                            </h:outputLabel>                                                            
+                                        </f:facet>                        
+                                        <f:facet name="input">  
+                                            <p:inputText autocomplete="off" id="fqty" value="#{bItm.tmpQty}" class="w-100">
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                            </p:inputText>
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column> 
+
+                                <p:column width="35px;">
+                                    <p:commandButton  
+                                        icon="fas fa-trash-alt"
+                                        ajax="false" 
+                                        class="ui-button-danger justify-content-center"
+                                        action="#{transferIssueController.remove(bItm)}">
                                     </p:commandButton>
                                 </p:column>
+
+                                <p:column width="75px;" >  
+                                    <p:rowEditor style="float: right;"/>  
+                                </p:column>
+                                
                             </p:dataTable>  
                         </p:panel>
                     </div>
