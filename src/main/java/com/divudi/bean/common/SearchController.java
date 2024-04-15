@@ -1755,7 +1755,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.total) like :total )";
             m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
-
+        
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patient.person.phone) like :phone )";
+            m.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+        
         sql += " order by b.createdAt desc  ";
 //    
         //     //////System.out.println("sql = " + sql);
