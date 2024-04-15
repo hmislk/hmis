@@ -19,10 +19,12 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.TriggerType;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
+import com.divudi.entity.Department;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Notification;
 import com.divudi.entity.Sms;
+import com.divudi.entity.TriggerSubscription;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.NotificationFacade;
 import com.divudi.facade.SmsFacade;
@@ -74,6 +76,8 @@ public class UserNotificationController implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject 
     SmsManagerEjb smsManager;
+    
+   
 
     public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
@@ -147,7 +151,6 @@ public class UserNotificationController implements Serializable {
         String jpql = "select un "
                 + " from UserNotification un "
                 + " where un.seen=:seen "
-                + " and un.webUser=:wu "
                 + " and un.notification.completed=:com";
         Map m = new HashMap();
         m.put("seen", false);
@@ -192,12 +195,16 @@ public class UserNotificationController implements Serializable {
     }
 
     private void createUserNotificationsForMedium(Notification n) {
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(n.getTriggerType());
+        Department department =n.getBill().getToDepartment();
+        if (n.getBill()==null) {
+            return;
+        }
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(),department);
+        System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {
                     String number = u.getWebUserPerson().getMobile();
-                    System.out.println("number = " + number);
                     //TODo
                 }
                 break;
