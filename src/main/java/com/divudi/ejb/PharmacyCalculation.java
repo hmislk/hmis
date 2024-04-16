@@ -400,10 +400,10 @@ public class PharmacyCalculation implements Serializable {
 
     public double calQty(PharmaceuticalBillItem po) {
 
-        double billed = getTotalQtyWithFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
-        double cancelled = getTotalQtyWithFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
-        double returnedB = getReturnedTotalQtyWithFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalQtyWithFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+        double billed = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
+        double cancelled = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
+        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
 
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
         double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
