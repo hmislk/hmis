@@ -190,19 +190,21 @@ public class Lims {
             @PathParam("password") String password) {
 
         // Validation
-//        System.out.println("generateSamplesFromBill");
-//        System.out.println("billId = " + billId);
+        System.out.println("generateSamplesFromBill");
+        System.out.println("billId = " + billId);
         String validationError = validateInput(billId, username, password);
-//        System.out.println("validationError = " + validationError);
+        System.out.println("validationError = " + validationError);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }
 
         // Fetch necessary data
         WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
+        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
-
+        System.out.println("ptSamples = " + ptSamples);
         // Check if necessary data is present
         if (requestSendingUser == null) {
             return constructErrorJson(1, "Username / password mismatch.", billId);
@@ -212,9 +214,10 @@ public class Lims {
         }
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
-        if (ptSamples != null || !ptSamples.isEmpty()) {
+        if (ptSamples == null || ptSamples.isEmpty()) {
             for (Bill b : patientBills) {
                 JSONObject j = constructPatientSampleJson(b);
+                System.out.println("j = " + j);
                 if (j != null) {
                     array.put(j);
                 }
@@ -275,7 +278,7 @@ public class Lims {
                 }
             }
             jSONObject.put("barcode", ps.getPatient().getId() != null ? ps.getPatient().getId() : "");
-            
+
             Bill bill = ps.getBill();
             if (bill == null) {
                 return null;
@@ -315,35 +318,37 @@ public class Lims {
         return jSONObject;
     }
 
-    private JSONObject constructPatientSampleJson(Bill b) {
+    private JSONObject constructPatientSampleJson(Bill bill) {
+        System.out.println("constructPatientSampleJson");
+        System.out.println("b = " + bill);
         JSONObject jSONObject = new JSONObject();
-        if (b == null) {
+        if (bill == null) {
             return null;
         } else {
-            Patient patient = b.getPatient();
+            Patient patient = bill.getPatient();
+            System.out.println("patient = " + patient);
             if (patient == null) {
                 return null;
             } else {
                 Person person = patient.getPerson();
+                System.out.println("person = " + person);
                 if (person != null) {
                     jSONObject.put("name", person.getName() != null ? person.getName() : "");
                     jSONObject.put("age", person.getAgeAsString() != null ? person.getAgeAsString() : "");
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", b.getIdStr() != null ? b.getIdStr() : "");
-            Bill bill = b;
-            if (bill == null) {
-                return null;
-            } else {
-                jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
-                jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
-            }
-            jSONObject.put("id", b.getIdStr() != null ? b.getIdStr() : "");
+            jSONObject.put("barcode", bill.getIdStr() != null ? bill.getIdStr() : "");
+
+            jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
+            jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
+            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+
+            jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }
 
-        List<BillItem> bis = findBillItems(b);
+        List<BillItem> bis = findBillItems(bill);
+        System.out.println("bis = " + bis);
 
         String tbis = "";
         String temTube = "";
