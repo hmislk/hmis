@@ -103,6 +103,7 @@ public class ChannelReportController implements Serializable {
     double hospitalFeeBilledTotal;
     double hospitalFeeCancellededTotal;
     double hospitalFeeRefundededTotal;
+    private int channelReportMenuIndex;
     List<String1Value3> valueList;
     ReportKeyWord reportKeyWord;
     Date fromDate;
@@ -4163,6 +4164,14 @@ public class ChannelReportController implements Serializable {
 
     public void setSessionInstance(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
+    }
+
+    public int getchannelReportMenuIndex() {
+        return channelReportMenuIndex;
+    }
+
+    public void setReportCashierIndex(int channelReportMenuIndex) {
+        this.channelReportMenuIndex = channelReportMenuIndex;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
