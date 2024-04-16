@@ -151,18 +151,41 @@ public class GrnController implements Serializable {
         calGrossTotal();
     }
 
+    public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem){
+        List<BillItem> tmpBillItems = new ArrayList<>();
+        for (BillItem i : getBillItems()){
+            if(i.getReferanceBillItem()==referenceBillItem){
+                System.out.println("i = " + i.getPharmaceuticalBillItem().getQty());
+                tmpBillItems.add(i);
+            }
+        }
+        return tmpBillItems;
+    }
+    
     public void duplicateItem(BillItem originalBillItemToDuplicate) {
         BillItem newBillItemCreatedByDuplication = new BillItem();
+        double totalQuantityOfBillItemsRefernceToOriginalItem = 0.0;
+        double totalFreeQuantityOfBillItemsRefernceToOriginalItem = 0.0;
+        
+        double remainFreeQty = 0.0;
+        double remainQty = 0.0;
         if (originalBillItemToDuplicate != null) {
             PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
+            newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
             newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
             System.out.println("updateBillItem = " + originalBillItemToDuplicate.getItem().getName());
             newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
             newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
             newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
             
-            double remainQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit() - originalBillItemToDuplicate.getPharmaceuticalBillItem().getQtyInUnit();
-            double remainFreeQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getFreeQtyInUnit() - originalBillItemToDuplicate.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            List<BillItem> tmpBillItems = findAllBillItemsRefernceToOriginalItem(originalBillItemToDuplicate.getReferanceBillItem());
+           
+            for(BillItem bi:tmpBillItems){
+                totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
+                totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            }
+            remainQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
+            remainFreeQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
             
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
