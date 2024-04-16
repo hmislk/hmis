@@ -250,7 +250,7 @@
                                     <p:column headerText="Remarks"   >  
                                         <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                         <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
-                                        
+
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}" 
@@ -269,7 +269,31 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>                         
+                                    </p:column> 
+
+
+
+
+
+                                    <p:column headerText="Actions">                                
+                                        <p:commandLink 
+                                            ajax="false" 
+                                            value="View Bill" 
+                                            action="#{billSearch.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                        <p:spacer width="5" ></p:spacer>
+                                        |
+                                        <p:spacer width="5" ></p:spacer>
+                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                        </h:commandLink>  
+                                    </p:column>
+
+
+
+
+
                                 </p:dataTable>
                             </div>
                         </div>
