@@ -151,27 +151,29 @@ public class GrnController implements Serializable {
         calGrossTotal();
     }
 
-    public void duplicateItem(BillItem bi) {
-        BillItem updateBillItem = new BillItem();
-        if (bi != null) {
-            System.out.println("updateBillItem = " + bi.getItem().getName());
-            updateBillItem.setItem(bi.getItem());
-            updateBillItem.setReferanceBillItem(bi.getReferanceBillItem());
-            updateBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+    public void duplicateItem(BillItem originalBillItemToDuplicate) {
+        BillItem newBillItemCreatedByDuplication = new BillItem();
+        if (originalBillItemToDuplicate != null) {
+            PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
+            newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
+            System.out.println("updateBillItem = " + originalBillItemToDuplicate.getItem().getName());
+            newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
+            newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
+            newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
             
-            double remainQty = bi.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit() - bi.getPharmaceuticalBillItem().getQtyInUnit();
-            double remainFreeQty = bi.getReferanceBillItem().getPharmaceuticalBillItem().getFreeQtyInUnit() - bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            double remainQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit() - originalBillItemToDuplicate.getPharmaceuticalBillItem().getQtyInUnit();
+            double remainFreeQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getFreeQtyInUnit() - originalBillItemToDuplicate.getPharmaceuticalBillItem().getFreeQtyInUnit();
             
-            updateBillItem.getPharmaceuticalBillItem().setQty(remainQty);
-            updateBillItem.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
             
-            updateBillItem.getPharmaceuticalBillItem().setFreeQty(remainFreeQty);
-            updateBillItem.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty);
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQty(remainFreeQty);
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty);
             
-            updateBillItem.setTmpQty(remainQty);
-            updateBillItem.setTmpFreeQty(remainFreeQty);
+            newBillItemCreatedByDuplication.setTmpQty(remainQty);
+            newBillItemCreatedByDuplication.setTmpFreeQty(remainFreeQty);
             
-            getBillItems().add(updateBillItem);
+            getBillItems().add(newBillItemCreatedByDuplication);
         }
         calGrossTotal();
     }
