@@ -163,6 +163,22 @@ public class PharmacyCalculation implements Serializable {
         return value;
     }
     
+     public double getTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) from BillItem p where"
+                + "  type(p.bill)=:class and p.creater is not null and"
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+        hm.put("class", bill.getClass());
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        //System.err.println("GETTING TOTAL QTY " + value);
+        return value;
+    }
+    
     public double getTotalFreeQty(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.creater is not null and"
@@ -316,6 +332,20 @@ public class PharmacyCalculation implements Serializable {
 //    }
     public double getReturnedTotalQty(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  type(p.bill)=:class and p.bill.creater is not null and"
+                + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billType);
+        hm.put("class", bill.getClass());
+
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+    }
+    
+    public double getReturnedTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.bill.creater is not null and"
                 + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
 
