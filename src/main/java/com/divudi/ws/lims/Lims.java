@@ -26,6 +26,8 @@ import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -623,8 +625,9 @@ public class Lims {
     }
 
     public List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
-        //// // System.out.println("strBillId = " + strBillId);
+        System.out.println("strBillId = " + strBillId);
         Long billId = stringToLong(strBillId);
+        System.out.println("billId = " + billId);
         List<Bill> temBills;
         if (billId != null) {
             temBills = prepareSampleCollectionByBillId(billId);
@@ -635,17 +638,34 @@ public class Lims {
     }
 
     public List<Bill> prepareSampleCollectionByBillId(Long bill) {
-        //// // System.out.println("prepareSampleCollectionByBillId = ");
+        System.out.println("prepareSampleCollectionByBillId");
         Bill b = billFacade.find(bill);
-        List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
-        if (bs == null || bs.isEmpty()) {
-            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+        if (b == null) {
             return null;
         }
-        return bs;
+        List<Bill> bs = new ArrayList<>();
+        if (b.getBillTypeAtomic() != null) {
+            if (b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+            } else {
+                bs.add(b);
+                return bs;
+            }
+        }
+        if (b.getBillType() == BillType.OpdBathcBill) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+        }else{
+            bs.add(b);
+            return bs;
+        }
     }
 
     public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
+        System.out.println("prepareSampleCollectionByBillNumber");
+        System.out.println("insId = " + insId);
         String j = "Select b from Bill b where b.insId=:id order by b.id desc";
         Map m = new HashMap();
         m.put("id", insId);
@@ -655,20 +675,31 @@ public class Lims {
         }
         List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
-            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+//            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
             return null;
         }
         return bs;
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
+        System.out.println("validBillsOfBatchBill");
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb "
+                + " and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findByJpql(j, m);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        System.out.println("tbs = " + tbs);
+        return tbs;
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {
+        System.out.println("getPatientSamplesForBillId");
+        System.out.println("temBills = " + temBills);
+        System.out.println("wu = " + wu);
         List<PatientSample> pss = prepareSampleCollectionByBillsForRequestss(temBills, wu);
         return pss;
     }
