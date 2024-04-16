@@ -182,10 +182,13 @@ public class GrnController implements Serializable {
            
             for(BillItem bi:tmpBillItems){
                 totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
+                System.out.println("totalQuantityOfBillItemsRefernceToOriginalItem = " + totalQuantityOfBillItemsRefernceToOriginalItem);
                 totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
             }
-            remainQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
-            remainFreeQty = originalBillItemToDuplicate.getReferanceBillItem().getPharmaceuticalBillItem().getFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
+            System.out.println("originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() = " + originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
+            remainQty = originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
+            System.out.println("remainQty = " + remainQty);
+            remainFreeQty = originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
             
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
@@ -196,6 +199,8 @@ public class GrnController implements Serializable {
             newBillItemCreatedByDuplication.setTmpQty(remainQty);
             newBillItemCreatedByDuplication.setTmpFreeQty(remainFreeQty);
             
+            newBillItemCreatedByDuplication.setPreviousRecieveQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
+            newBillItemCreatedByDuplication.setPreviousRecieveFreeQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit());
             getBillItems().add(newBillItemCreatedByDuplication);
         }
         calGrossTotal();
@@ -598,13 +603,16 @@ public class GrnController implements Serializable {
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
+                
+                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
 
                 ph.setQty(tmpQty);
                 ph.setQtyInUnit((double) tmpQty);
 
                 ph.setFreeQtyInUnit((double) tmpFreeQty);
                 ph.setFreeQty((double) tmpFreeQty);
-
+                
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
 
@@ -613,6 +621,7 @@ public class GrnController implements Serializable {
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
                 bi.setPharmaceuticalBillItem(ph);
+                
 
                 getBillItems().add(bi);
                 //  getBillItems().r
@@ -709,11 +718,17 @@ public class GrnController implements Serializable {
 //        System.err.println("2 " + tmp.getQty());
 //        System.err.println("3 " + tmp.getPharmaceuticalBillItem().getQty());
 //        System.err.println("4 " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
+//System.out.println("remains = " + remains);
+//        System.out.println("tmp.getPharmaceuticalBillItem().getQtyInUnit() = " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
             JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
         }
-
+//        System.out.println("tmp.getPreviousRecieveQtyInUnit() = " + tmp.getPreviousRecieveQtyInUnit());
+//        if(tmp.getPreviousRecieveQtyInUnit() < tmp.getPharmaceuticalBillItem().getQtyInUnit()){
+//            tmp.setTmpQty(tmp.getPreviousRecieveQtyInUnit());
+//            JsfUtil.addErrorMessage("You cant Order Qty than Remaining qty to recieve");
+//        }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(getRetailPrice(tmp.getPharmaceuticalBillItem().getBillItem()));
