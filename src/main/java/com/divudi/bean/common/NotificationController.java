@@ -60,6 +60,8 @@ public class NotificationController implements Serializable {
     private NotificationFacade ejbFacade;
     private Notification current;
     private List<Notification> items = null;
+    
+    
 
     public void save(Notification notification) {
         if (notification == null) {

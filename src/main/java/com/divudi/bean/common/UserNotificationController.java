@@ -64,7 +64,7 @@ public class UserNotificationController implements Serializable {
     SmsController smsController;
     @Inject
     ConfigOptionController configOptionController;
-    @Inject 
+    @Inject
     TransferIssueController transferIssueController;
     @EJB
     private UserNotificationFacade ejbFacade;
@@ -77,15 +77,14 @@ public class UserNotificationController implements Serializable {
 
     @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
-    @Inject 
+    @Inject
     SmsManagerEjb smsManager;
-    
-   
+
 
     public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
     }
-    
+
     public String navigateToSentNotification() {
         return "/Notification/sent_notifications";
     }
@@ -199,11 +198,11 @@ public class UserNotificationController implements Serializable {
     }
 
     private void createUserNotificationsForMedium(Notification n) {
-        Department department =n.getBill().getToDepartment();
-        if (n.getBill()==null) {
+        Department department = n.getBill().getToDepartment();
+        if (n.getBill() == null) {
             return;
         }
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(),department);
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), department);
         System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
@@ -217,7 +216,7 @@ public class UserNotificationController implements Serializable {
                     String number = u.getWebUserPerson().getMobile();
                     sendSmsForUserSubscriptions(number);
                 }
-                break; 
+                break;
             case SYSTEM_NOTIFICATION:
                 for (WebUser u : notificationUsers) {
                     UserNotification nun = new UserNotification();
@@ -229,28 +228,28 @@ public class UserNotificationController implements Serializable {
         }
 
     }
-    
-    public void sendSmsForUserSubscriptions(String userMobNumber){
+
+    public void sendSmsForUserSubscriptions(String userMobNumber) {
         Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(userMobNumber);
-            e.setSendingMessage(createSmsForUserNotification());
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
-            //e.setSmsType(MessageType.ChannelDoctorArrival);
-            smsFacade.create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            smsFacade.edit(e);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(userMobNumber);
+        e.setSendingMessage(createSmsForUserNotification());
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        //e.setSmsType(MessageType.ChannelDoctorArrival);
+        smsFacade.create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        smsFacade.edit(e);
     }
-    
-    public String createSmsForUserNotification(){
+
+    public String createSmsForUserNotification() {
         String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
-        if(template==null||template.isEmpty()){
-            template= "{patient_name} {appointment_time}";
+        if (template == null || template.isEmpty()) {
+            template = "{patient_name} {appointment_time}";
         }
         //TODO: Replace placeholders with actual values
         template = template.replace("{patient_name}", "")

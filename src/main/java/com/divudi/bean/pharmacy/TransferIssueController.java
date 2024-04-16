@@ -453,7 +453,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setNetTotal(calTotal());
 
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
-
+`
         getBillFacade().edit(getIssuedBill());
 
         //Update ReferenceBill
