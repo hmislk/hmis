@@ -288,15 +288,15 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setToDepartment(null);
 
         for (BillItem oi : bis) {
-            
+
             System.out.println("oi = " + oi);
-            
+
             BillItem ni = new BillItem();
 
             if (oi.getPharmaceuticalBillItem() == null) {
                 continue;
             }
-            
+
             System.out.println("oi.getPharmaceuticalBillItem() = " + oi.getPharmaceuticalBillItem());
 
             PharmaceuticalBillItem npi = new PharmaceuticalBillItem();
@@ -327,9 +327,7 @@ public class TransferIssueController implements Serializable {
                 npi.setFreeQty(oi.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 npi.setFreeQtyInUnit(oi.getPharmaceuticalBillItem().getFreeQtyInUnit());
             }
-           
-            
-            
+
             npi.setPurchaseRate(oi.getPharmaceuticalBillItem().getPurchaseRate());
             npi.setLastPurchaseRate(oi.getPharmaceuticalBillItem().getLastPurchaseRate());
             npi.setRetailRate(oi.getPharmaceuticalBillItem().getRetailRate());
@@ -342,8 +340,6 @@ public class TransferIssueController implements Serializable {
             ni.setItemId(oi.getItemId());
             ni.setNetRate(oi.getNetRate());
 
-            
-            
             ni.setQty(oi.getQty());
 
             ni.setGrossValue(oi.getGrossValue());
@@ -660,6 +656,27 @@ public class TransferIssueController implements Serializable {
 
     @Inject
     private PharmacyController pharmacyController;
+    
+    public void onEditDepartmentTransfer(BillItem billItem) {
+        System.out.println("billItem = " + billItem);
+        double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
+
+        System.out.println("availableStock = " + availableStock);
+
+        if (availableStock < billItem.getPharmaceuticalBillItem().getQtyInUnit()) {
+            billItem.setTmpQty(0.0);
+            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
+        }
+
+        //Check Is There Any Other User using same Stock
+        if (!userStockController.isStockAvailable(billItem.getPharmaceuticalBillItem().getStock(), billItem.getQty(), getSessionController().getLoggedUser())) {
+            billItem.setTmpQty(0.0);
+            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
+        }
+
+        userStockController.updateUserStock(billItem.getTransUserStock(), billItem.getQty());
+
+    }
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
