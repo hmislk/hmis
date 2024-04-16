@@ -4,7 +4,7 @@
     <jta-data-source>jdbc/arogya</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
+      <!--<property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>-->
        <!-- EclipseLink Logging -->
       
     </properties>
@@ -13,7 +13,7 @@
     <jta-data-source>jdbc/arogyaAudit</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
+      <!--<property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>-->
     </properties>
   </persistence-unit>
 </persistence>
