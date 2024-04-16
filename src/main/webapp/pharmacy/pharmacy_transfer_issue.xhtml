@@ -32,7 +32,7 @@
                                 id="itemList" 
                                 sortBy="#{bItm.searialNo}"  
                                 editable="true"> 
-                                
+
                                 <p:ajax event="rowEdit" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}"  />  
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
 
@@ -58,33 +58,9 @@
                                 </p:column>  
 
                                 <p:column headerText="Qty" width="70px;">                   
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qty}" > 
-                                                <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                            </h:outputLabel>                             
-                                        </f:facet>                        
-                                        <f:facet name="input">  
-                                            <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" class="w-100">
-                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
-                                            </p:inputText>
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column> 
-
-                                <p:column headerText="Free" width="70px;">                   
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.freeQty}">
-                                                <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                            </h:outputLabel>                                                            
-                                        </f:facet>                        
-                                        <f:facet name="input">  
-                                            <p:inputText autocomplete="off" id="fqty" value="#{bItm.tmpQty}" class="w-100">
-                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
-                                            </p:inputText>
-                                        </f:facet>
-                                    </p:cellEditor>
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
                                 </p:column> 
 
                                 <p:column width="35px;">
@@ -96,10 +72,6 @@
                                     </p:commandButton>
                                 </p:column>
 
-                                <p:column width="75px;" >  
-                                    <p:rowEditor style="float: right;"/>  
-                                </p:column>
-                                
                             </p:dataTable>  
                         </p:panel>
                     </div>
