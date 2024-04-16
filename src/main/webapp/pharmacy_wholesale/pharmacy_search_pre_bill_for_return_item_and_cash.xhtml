@@ -13,87 +13,98 @@
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="SEARCH BILL FOR RETURN ITEM AND CASH"/>
-                            <h:panelGrid columns="5" >
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                <p:calendar styleClass="dateTimePicker" 
+                                            class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            id="fromDate" 
+                                            value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                <p:calendar class="w-100" 
+                                            inputStyleClass="w-100"
+                                            id="toDate" 
+                                            value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createWholePreBillsForReturn}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-                                <h:outputLabel value="Bill No"/>                               
-                                <h:outputLabel value="Net Total"/>
-                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />                             
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>                               
-                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                            </h:panelGrid>
-
-                        </f:facet>
-                        <p:dataTable 
-                            id="tblBills" 
-                            value="#{searchController.bills}" 
-                            var="bill"  
-                            paginator="true"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,15"
-                            >
-                            <p:column headerText="View">
-                                <p:commandButton ajax="false" value="View Bill"
-                                                action="/pharmacy/pharmacy_reprint_bill_sale">
-                                    <f:setPropertyActionListener value="#{bill.referenceBill}" 
-                                                                 target="#{pharmacyBillSearch.bill}"/>   
-                                </p:commandButton>
-                            </p:column>
-
-                            <p:column headerText="Pre Bill No" >
-                                <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
-                            </p:column>     
-                            <p:column headerText="Billed at"  >
-                                <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel>
-                                <br/>
-                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
-                                                   value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                </h:panelGroup>                             
-                            </p:column>                 
-                            <p:column headerText="Billed by" >
-                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                </h:outputLabel>
-                                <br/>
-                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>                               
-                            </p:column>                                                    
-                            <p:column headerText="Net Value" >
-                                <h:outputLabel value="#{bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search"
+                                    class="w-100 ui-button-warning mt-2 mb-3"
+                                    icon="fas fa-search"
+                                    action="#{searchController.createWholePreBillsForReturn}"/>
+                            
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />   
+                                <h:outputLabel value="Net Total"/>                 
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>                               
+                                
+                            </div>
+                            <div class="col-md-10">
+                                <p:dataTable 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill"  
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    >
+                                    <p:column headerText="Pre Bill No" >
+                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
+                                    </p:column>     
+                                    <p:column headerText="Billed At"  >
+                                        <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
+                                                           value="#{bill.cancelledBill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>                             
+                                    </p:column>                 
+                                    <p:column headerText="Billed By" >
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>                               
+                                    </p:column>                                                    
+                                    <p:column headerText="Net Value" >
+                                        <h:outputLabel value="#{bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
 
 
 
-                            <p:column>
-                                <p:commandButton ajax="false" value="Return Item and Cash"
-                                                action="/pharmacy/pharmacy_bill_return_retail"
-                                                 disabled="#{bill.cancelled eq true}">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{saleReturnController.bill}"/>
-                                </p:commandButton>
-                            </p:column>
+                                    <p:column headerText="Action">
+                                        <p:commandButton ajax="false" value="View Bill" class="ui-button-info mx-1" icon="fas fa-eye" 
+                                                         action="/pharmacy/pharmacy_reprint_bill_sale">
+                                            <f:setPropertyActionListener value="#{bill.referenceBill}" 
+                                                                         target="#{pharmacyBillSearch.bill}"/>   
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" value="Return Item and Cash" class="ui-button-primary" icon="fas fa-undo"
+                                                         action="/pharmacy/pharmacy_bill_return_retail"
+                                                         disabled="#{bill.cancelled eq true}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{saleReturnController.bill}"/>
+                                        </p:commandButton>
+                                    </p:column>
 
-                        
 
-                        </p:dataTable>
 
+                                </p:dataTable>
+                            </div>
+                        </div>
 
                     </p:panel>
 

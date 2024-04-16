@@ -48,9 +48,9 @@
                                         <common:patient patient="#{pharmacyBillSearch.bill.patient}" class="w-100"/>
 
                                     </p:panel>
-                                    <p:panel header="Dealor Detail" rendered="#{not empty pharmacyBillSearch.bill.toInstitution}">
+                                    <p:panel header="Supplier Detail" rendered="#{not empty pharmacyBillSearch.bill.toInstitution}">
                                         <p:panelGrid columns="2">
-                                            <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
+                                            <h:outputLabel value="Supplier ​Name:" ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution}" ></h:outputLabel>                                        
                                         </p:panelGrid>
                                     </p:panel>

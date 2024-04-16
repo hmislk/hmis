@@ -14,18 +14,25 @@
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputLabel styleClass="fas fa-cancel" />
-                                <h:outputLabel value="Cancellation"/>
+                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{pharmacyBillSearch.bill.comments}" style="float: right" class="p-2 w-100"/> 
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel Bill" 
+                                        icon="fa fa-cancel"
+                                        style="float: right"
+                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyTransferReceiveCancel}" >
+                                    </p:commandButton>  
+                                </h:panelGrid>
+
                             </f:facet>
+
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
-                            <p:commandButton 
-                                value="Cancel" 
-                                icon="fas fa-cancel"
-                                class="ui-button-danger mx-2"
-                                action="#{pharmacyBillSearch.pharmacyTransferReceiveCancel()}" >
-                            </p:commandButton>                            
+
                         </p:panel>
 
                         <div class="row" >
@@ -33,11 +40,11 @@
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputLabel styleClass="fas fa-user-circle" />
-                                        <h:outputLabel value="Dealer Details" class="mx-4"></h:outputLabel>
+                                        <h:outputLabel value="Supplier Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-75">
-                                        <h:outputLabel value="Dealer ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearcphBillll.toInstitution.name }" ></h:outputLabel>                                        
+                                        <h:outputLabel value="Supplier ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.institution.name }" ></h:outputLabel>                                        
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
@@ -61,13 +68,13 @@
                                 </p:panel>
                             </div>
                         </div>
-                        
+
                         <p:panel class="my-2">
                             <f:facet name="header" >
-                            <h:outputLabel styleClass="fas fa-list-alt" />
-                            <h:outputLabel value="Bill Item Details" class="mx-4"></h:outputLabel>
+                                <h:outputLabel styleClass="fas fa-list-alt" />
+                                <h:outputLabel value="Bill Item Details" class="mx-4"></h:outputLabel>
                             </f:facet>
-                            
+
                             <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
@@ -79,31 +86,35 @@
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">Value</f:facet>
-                                        #{bip.netValue}
+                                        #{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
-                        
-                        <p:panel>
-                            <f:facet name="header" >
-                            <h:outputLabel styleClass="fas fa-comment" />
-                            <h:outputLabel value="Comments" class="mx-4"></h:outputLabel>
-                            </f:facet>
-                            <h:inputTextarea value="#{pharmacyBillSearch.bill.comments}"/>                            
-                        </p:panel>
+
+
                     </h:panelGroup>
 
 
-                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
+                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}">
+                        <div class="d-flex my-2">
+                            <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton class="mx-2 ui-button-warning" value="Back" ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  icon="fas fa-arrow-left"  >
+                            </p:commandButton>
+
+                        </div>
 <!--                        <pharmacy:transferReceive bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
+                        <h:panelGroup id="gpBillPreview">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                                <pharmacy:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                            <pharmacy:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                                <pharmacy:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup> 
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                            <pharmacy:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
-                        </h:panelGroup>
                     </h:panelGroup>
 
 

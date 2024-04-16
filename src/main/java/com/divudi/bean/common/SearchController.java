@@ -6357,9 +6357,9 @@ public class SearchController implements Serializable {
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-
+        
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
+        
     }
 
     public void clearOpdBillSearchData() {

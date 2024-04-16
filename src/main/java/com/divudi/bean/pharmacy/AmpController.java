@@ -861,6 +861,8 @@ public class AmpController implements Serializable {
         }
         return items;
     }
+    
+    
 
     public List<Amp> findItems() {
         String jpql = "select i "
@@ -958,6 +960,10 @@ public class AmpController implements Serializable {
 
     public void setItemSupplierPrices(List<ItemSupplierPrices> itemSupplierPrices) {
         this.itemSupplierPrices = itemSupplierPrices;
+    }
+
+    public void setItems(List<Amp> items) {
+        this.items = items;
     }
 
     /**

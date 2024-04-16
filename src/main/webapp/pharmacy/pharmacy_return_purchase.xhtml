@@ -16,7 +16,7 @@
                     <f:facet name="header" >      
 
                         <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Dealor :#{purchaseReturnController.returnBill.fromInstitution.name} GRN" />
+                            <h:outputLabel value="Supplier :#{purchaseReturnController.returnBill.fromInstitution.name} GRN" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{purchaseReturnController.returnBill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
@@ -62,7 +62,7 @@
                         <h:outputLabel value="#{ph.item.name}"/>                                        
                     </p:column>  
 
-                    <p:column  headerText="Ballance Qty in Unit" style="width:25px!important;"> 
+                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;"> 
                         <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />                   
                     </p:column>  
 
@@ -76,7 +76,7 @@
                     </p:column>                 
 
 
-                    <p:column headerText="Bathch No" style="width:25px!important;">                       
+                    <p:column headerText="Batch No" style="width:25px!important;">                       
                         <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
                     </p:column>  
 

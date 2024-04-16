@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -58,7 +58,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author www.divudi.com
  */
 @Named
-@RequestScoped
+@SessionScoped
 public class CommonReport implements Serializable {
 
     /**
@@ -244,6 +244,7 @@ public class CommonReport implements Serializable {
     boolean onlyStaffFee = false;
     boolean onlyHosFee = false;
     PaymentMethod paymentMethod;
+    private String departmentId;
 
     public List<Bill> getBills() {
         return bills;
@@ -409,6 +410,10 @@ public class CommonReport implements Serializable {
         return "/pharmacy/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
     }
 
+    public String navigateToPharmacySaleSummery() {
+        return "/pharmacy/report_pharmacy_sale_bill_summary.xhtml?faces-redirect=true";
+    }
+    
     public String navigateToReportCashierDetailedByDepartment() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -1122,6 +1127,9 @@ public class CommonReport implements Serializable {
     }
 
     public Department getDepartment() {
+        if(department==null){
+            setDepartment(sessionController.getLoggedUser().getDepartment());
+        }
         return department;
     }
 
@@ -1886,7 +1894,13 @@ public class CommonReport implements Serializable {
             sql += " and b.fromInstitution=:fIns ";
             temMap.put("fIns", institution);
         }
-
+        
+        if (!getDepartmentId().trim().equals("")) {
+            System.out.println("test = "+getDepartmentId());
+            sql+= " and b.deptId like :deptId";
+            temMap.put("deptId", "%" + getDepartmentId() + "%");     
+        }
+        
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
@@ -4403,6 +4417,65 @@ public class CommonReport implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true)");
     }
+    
+    public void createGrnReturnDetailTable() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createGrnDetailTable()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        recreteModal();
+
+        grnBilled = new BillsTotals();
+        grnCancelled = new BillsTotals();
+        grnReturn = new BillsTotals();
+        grnReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select Department");
+            return;
+        }
+
+        
+        //GRN Refunded Bill
+        getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+
+        getGrnReturn().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+        getGrnReturn().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true)");
+    }
 
     public void createGrnAndPurchaseBillsTable() {
 //        createPurchaseDetailTable();
@@ -6352,6 +6425,14 @@ public class CommonReport implements Serializable {
 
     public void setManageLabReportIndex(int manageLabReportIndex) {
         this.manageLabReportIndex = manageLabReportIndex;
+    }
+
+    public String getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(String departmentId) {
+        this.departmentId = departmentId;
     }
 
     public class CollectingCenteRow {

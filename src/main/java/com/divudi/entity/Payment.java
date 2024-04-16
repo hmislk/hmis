@@ -76,12 +76,16 @@ public class Payment implements Serializable {
     private String creditCardRefNo;
 
     double paidValue;
+    
+    private int creditDurationInDays;
 
     @ManyToOne
     Institution institution;
     @ManyToOne
     Department department;
 
+    
+    
     public Long getId() {
         return id;
     }
@@ -321,6 +325,14 @@ public class Payment implements Serializable {
         // Note: ID is not copied to ensure the uniqueness of each entity
         // newPayment.setId(this.id); // This line is intentionally commented out
         return newPayment;
+    }
+
+    public int getCreditDurationInDays() {
+        return creditDurationInDays;
+    }
+
+    public void setCreditDurationInDays(int creditDurationInDays) {
+        this.creditDurationInDays = creditDurationInDays;
     }
 
 }

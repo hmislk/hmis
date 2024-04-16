@@ -8,9 +8,9 @@
 
     <h:body>
 
-        <ui:composition template="/admin/items/index.xhtml">
+        <ui:composition template="/admin/lims/index.xhtml">
 
-            <ui:define name="item">
+            <ui:define name="subcontent">
                 <f:view>
 
 
@@ -54,7 +54,7 @@
 
 
 
-                            <p:dataTable value="#{itemController.allItems}" 
+                            <p:dataTable value="#{itemController.items}" 
                                          var="item"
                                          paginator="true"
                                          rows="10"

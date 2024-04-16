@@ -2,10 +2,10 @@
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 template="/reportIncome/report_income.xhtml"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
                 >
 
 
@@ -26,7 +26,7 @@
                     <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{commonReport1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="To" />
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel  value="Department" />
                     <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{commonReport1.department}" 
@@ -35,7 +35,7 @@
                                     requiredMessage="You must select a department" >
                     </p:autoComplete>
                     <h:outputLabel  value="Only OPD Income" />
-                    <p:selectOneRadio class="w-100 mx-4 my-1" value="#{commonReport1.radio}" >
+                    <p:selectOneRadio class="w-100 mx-4" value="#{commonReport1.radio}" >
                         <f:selectItem itemLabel="All" itemValue="1" />
                         <f:selectItem itemLabel="Only OPD" itemValue="2" />
                         <f:selectItem itemLabel="Only Channel" itemValue="3" />
@@ -43,7 +43,7 @@
                     </p:selectOneRadio>
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2">
-                    <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-cogs" value="Process" ajax="false" 
+                    <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-refresh" value="Refresh" ajax="false" 
                                      action="#{commonReport1.createWithCreditbyDepartmentBilled()}">
                     </p:commandButton>
                     <p:defaultCommand target="btnRefresh"/>

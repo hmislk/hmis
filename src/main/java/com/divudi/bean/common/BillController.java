@@ -377,6 +377,7 @@ public class BillController implements Serializable {
         if (sb == null) {
             return;
         }
+       
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());

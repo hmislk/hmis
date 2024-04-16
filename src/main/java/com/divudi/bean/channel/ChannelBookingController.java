@@ -55,6 +55,8 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
         prepareForNewChannellingBill();
         return "/channel/channel_booking";
     }
+    
+   
 
     public void prepareForNewChannellingBill() {
 

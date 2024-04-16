@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.TimeZone;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
@@ -42,7 +43,14 @@ public class CommonFunctions {
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
     private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
 
-   
+    public static String generateRandomNumericHIN(int length) {
+        Random random = new Random();
+        StringBuilder hinId = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            hinId.append(random.nextInt(10)); // Append a random digit (0-9)
+        }
+        return hinId.toString();
+    }
 
     public static String convertToWord(double number) {
         if (number == 0) {
@@ -925,6 +933,5 @@ public class CommonFunctions {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
+
 }

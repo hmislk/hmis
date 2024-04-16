@@ -32,7 +32,11 @@
                             </p:tab>
                             <p:tab title="Item Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton class="w-100" value="Bin Card" action="/pharmacy/bin_card?faces-redirect=true" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        value="Bin Card" 
+                                        action="/pharmacy/bin_card?faces-redirect=true" 
+                                        ajax="false" ></p:commandButton>                            
                                     
                                     <p:commandButton class="w-100" value="Items List" action="/pharmacy/list_amps?faces-redirect=true" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
                                     <p:commandButton class="w-100" value="Medicine List" action="/pharmacy/list_medicines?faces-redirect=true" actionListener="#{ampController.createMedicineList()}" ajax="false" ></p:commandButton>                            
@@ -82,7 +86,7 @@
                                     <p:commandButton class="w-100" value="Purchase Ordered not Approved" action="pharmacy_transfer_issued_list_not_approve_report?faces-redirect=true" ajax="false" ></p:commandButton>
                                     <p:commandButton class="w-100" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false" ></p:commandButton>
                                     <p:commandButton class="w-100" value="Item - wise Purchase/Good Receive" action="/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true" ajax="false" ></p:commandButton>
-                                    <p:commandButton class="w-100" value="Purcharse Bill with Suppleir" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" ></p:commandButton>
+                                    <p:commandButton class="w-100" value="Purcharse Bill with Supplier" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" ></p:commandButton>
                                     <p:commandButton class="w-100" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                     <p:commandButton class="w-100" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" ></p:commandButton>                            
                                 </div>

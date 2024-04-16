@@ -15,6 +15,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Item;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -75,6 +76,38 @@ public class StockHistoryController implements Serializable {
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display Available Days)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+    }
+
+    public List<StockHistory> findStockHistories(Date fd, Date td, HistoryType ht, Department dep, Item i) {
+        String jpql;
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+
+        jpql = "select s"
+                + " from StockHistory s "
+                + " where s.createdAt between :fd and :td ";
+        if (ht != null) {
+            jpql += " and s.historyType=:ht ";
+            m.put("ht", ht);
+        }
+        if (dep != null) {
+            jpql += " and s.department=:dep ";
+            m.put("dep", dep);
+        }
+        if (i != null) {
+            jpql += " and s.item=:i ";
+            m.put("i", i);
+        }
+
+        jpql += " order by s.createdAt ";
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<StockHistory> shxs = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (shxs != null) {
+            System.out.println("shxs = " + shxs);
+        }
+        return shxs;
     }
 
     public void fillStockHistories(boolean withoutZeroStock) {

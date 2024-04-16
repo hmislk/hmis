@@ -153,7 +153,7 @@ public class ManufacturerController implements Serializable {
      */
 
     @FacesConverter(forClass = Institution.class)
-    public static class AreaConverter implements Converter {
+    public static class ManufacturerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {

@@ -64,6 +64,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -127,6 +128,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
+    @EJB
+    SmsManagerEjb smsManager;
     /**
      * Controllers
      */
@@ -167,9 +170,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private PaymentScheme paymentScheme;
     boolean settleSucessFully;
     Bill printingBill;
-
-    SmsFacade smsFacade;
-    SmsManagerEjb smsManagerEjb;
+    
+    @EJB
+    private SmsFacade smsFacade;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
@@ -232,13 +235,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Bill Items Null");
             return "";
         }
-        
+
         if (selectedBillSession.getBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return "";
         }
-        
-        if (selectedBillSession.getBill().getBillFees()== null) {
+
+        if (selectedBillSession.getBill().getBillFees() == null) {
             selectedBillSession.getBill().setBillFees(billController.billFeesOfBill(selectedBillSession.getBill()));
         }
 
@@ -246,7 +249,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Bill Fees Null");
             return "";
         }
-        
+
         if (selectedBillSession.getBill().getBillFees().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Fees");
             return "";
@@ -279,6 +282,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToSessionView() {
         if (preSet()) {
+            getChannelReportController().fillNurseView();
             return "/channel/channel_session_view?faces-redirect=true";
         } else {
             return "";
@@ -287,6 +291,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToPhoneView() {
         if (preSet()) {
+            getChannelReportController().fillNurseView();
             return "/channel/channel_phone_view?faces-redirect=true";
         } else {
             return "";
@@ -295,6 +300,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToUserView() {
         if (preSet()) {
+            getChannelReportController().fillDoctorView();
             return "/channel/channel_user_view?faces-redirect=true";
         } else {
             return "";
@@ -424,22 +430,24 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void sendSmsAfterBooking() {
-        try {
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(printingBill);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
-            e.setSendingMessage(chanellBookingSms(printingBill));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSmsType(MessageType.ChannelBooking);
-            smsFacade.create(e);
-            String suc = smsManagerEjb.sendSmsByApplicationPreferenceNoAuthenticationReturnString(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        } catch (Exception e) {
-        }
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(printingBill);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
+        e.setSendingMessage(chanellBookingSms(printingBill));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelBooking);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     private String chanellBookingSms(Bill b) {
@@ -475,18 +483,52 @@ public class BookingController implements Serializable, ControllerWithPatient {
         } else {
             //System.out.println("Null Error");
         }
+        if (sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking() == null) {
+            String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();
+            s = "Your Appointment with "
+                    + ""
+                    + doc
+                    + " @  Medical Services - "
+                    + "No "
+                    + b.getSingleBillSession().getSerialNo()
+                    + " at "
+                    + time
+                    + " on "
+                    + date
+                    + ". 0912293700";
+
+        } else {
+            s = genarateTemplateForSms(b);
+        }
+        return s;
+    }
+
+    public String genarateTemplateForSms(Bill b) {
+        System.out.println("working genarate");
+        String s;
+        ServiceSession ss = null;
+
+        ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+        String time = CommonController.getDateFormat(
+                b.getSingleBillSession().getSessionTime(),
+                "hh:mm a");
+
+        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
+                "dd MMM");
+
         String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();
-        s = "Your Appointment with "
-                + ""
-                + doc
-                + " @  Medical Services - "
-                + "No "
-                + b.getSingleBillSession().getSerialNo()
-                + " at "
-                + time
-                + " on "
-                + date
-                + ". 0912293700";
+        String patientName = b.getPatient().getPerson().getNameWithTitle();
+        int no = b.getSingleBillSession().getSerialNo();
+        String input = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
+        s = input.replace("{patient_name}", patientName)
+                .replace("{doctor}", doc)
+                .replace("{appointment_time}", time)
+                .replace("{appointment_date}", date)
+                .replace("{serial_no}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", time)
+                .replace("{date}", date)
+                .replace("{No}", String.valueOf(no));
 
         return s;
     }
@@ -1105,7 +1147,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void fillBillSessions() {
         selectedBillSession = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,BillType.ChannelCredit};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
                 + " From BillSession bs "
@@ -2168,6 +2210,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         getSelectedSessionInstance().getOriginatingSession().setTotalFee(getSelectedSessionInstance().getOriginatingSession().getTotalFee() - d);
         getSelectedSessionInstance().getOriginatingSession().setTotalFfee(getSelectedSessionInstance().getOriginatingSession().getTotalFfee() - d);
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
     }
 
 }

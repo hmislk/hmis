@@ -15,8 +15,8 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h:outputStylesheet library="css" name="token_pos.css" ></h:outputStylesheet>
-        <div class="posbillBreak" style="text-align: center;">
+        <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
+        <div class="posbill" style="text-align: center;">
 
             <div class="institutionName" style="text-align: center!important;
                  font-weight: bold!important;
@@ -50,22 +50,25 @@
                     #{cc.attrs.token.tokenNumber}
                 </h1>                         
             </div>
-
+            
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div class="">
+            
+            <div class="billline d-flex justify-content-center">
                 <p:barcode value="#{cc.attrs.token.idStr}" 
                            width="400"
                            height="100"
                            type="code128"  >
                 </p:barcode>
             </div>
+            
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
+
 
             <div class="billDetails" >
                 <table >

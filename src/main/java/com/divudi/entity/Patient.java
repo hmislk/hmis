@@ -591,7 +591,7 @@ public class Patient implements Serializable {
             if (this.getPerson() == null) {
                 return;
             }
-            this.getPerson().setPhone(phoneNumberStringTransient);
+            this.getPerson().setMobile(phoneNumberStringTransient);
             this.patientPhoneNumber = commonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
             this.phoneNumberStringTransient = phoneNumberStringTransient;
         } catch (Exception e) {

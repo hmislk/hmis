@@ -33,42 +33,6 @@
         <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
     <h:body >
-
-        <h:panelGroup id="checkDatabaseFields" 
-                      rendered="false">
-            <p:dataTable value="#{sessionController.applicationPreference}" var="i" >
-                <p:column >
-                    #{i}
-                </p:column>
-            </p:dataTable>
-            <p:dataTable value="#{institutionController.items}" var="i" >
-                <p:column >
-                    #{i.name}
-                </p:column>
-            </p:dataTable>
-            <h:form >
-                <p:selectBooleanButton value="#{applicationController.hasAwebsiteAsFrontEnd}"
-                                       offLabel="No Front End"
-                                       onLabel="Has Front End"></p:selectBooleanButton>
-                <p:commandButton value="SUbmit" ajax="false" ></p:commandButton>
-            </h:form>
-            <p:dataTable value="#{departmentController.items}" var="i" >
-                <p:column >
-                    #{i.name}
-                </p:column>
-            </p:dataTable>
-            <p:dataTable value="#{webUserController.items}" var="i" >
-                <p:column >
-                    #{i.name}
-                </p:column>
-            </p:dataTable>
-        </h:panelGroup>
-
-
-
-
-
-
         <style>
             .no-padding-margin-border > .ui-panel-content,
             .no-padding-margin-border > .ui-panel-titlebar {

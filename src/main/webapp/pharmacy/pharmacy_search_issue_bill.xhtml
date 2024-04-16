@@ -81,7 +81,7 @@
                                         <h:outputLabel value="#{bill.toDepartment.name}" />                                    
                                     </p:column>   
 
-                                    <p:column headerText="Billed at"  >
+                                    <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -102,7 +102,7 @@
                                         </h:panelGroup>
                                     </p:column>   
 
-                                    <p:column headerText="Billed at"  >
+                                    <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.referenceBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -131,7 +131,7 @@
                                         </h:panelGroup>
                                     </p:column> 
 
-                                    <p:column headerText="Pre Bill by" >
+                                    <p:column headerText="Pre Bill By" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                                      
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
@@ -149,7 +149,7 @@
                                         </h:panelGroup>                               
                                     </p:column>    
 
-                                    <p:column headerText="Billed by" >
+                                    <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" />                                      
                                         <br/>
                                         <h:panelGroup rendered="#{bill.referenceBill.cancelled}" >
@@ -167,11 +167,11 @@
                                         </h:panelGroup>                               
                                     </p:column>                      
 
-                                    <p:column headerText="Client" >
+<!--                                    <p:column headerText="Client" >
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
-                                    </p:column>
+                                    </p:column>-->
 
-                                    <p:column headerText="Paymentmethod">
+                                    <p:column headerText="Payment method">
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
                                     </p:column>

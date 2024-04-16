@@ -38,7 +38,7 @@
                                 value="#{opdPreSettleController.preBill.paymentMethod}"  
                                 disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet " event="change" />
+                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet MultiplePaymentMethods" event="change" />
                             </p:selectOneMenu>
 
                             <h:panelGroup id="creditCard" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
@@ -58,8 +58,7 @@
                             </h:panelGroup>
                             
                             <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                
-                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" class="w-100"/>
+                                <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
 
                              <p:commandButton ajax= "false"  

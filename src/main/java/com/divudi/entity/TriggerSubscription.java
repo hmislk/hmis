@@ -34,6 +34,8 @@ public class TriggerSubscription implements Serializable {
     private WebUser webUser;
     @ManyToOne
     private Department department;
+    @ManyToOne
+    private WebUserRole webUserRole;
     private double orderNumber;
     
     //Created Properties
@@ -186,5 +188,12 @@ public class TriggerSubscription implements Serializable {
     public void setOrderNumber(double orderNumber) {
         this.orderNumber = orderNumber;
     }
-    
+
+    public WebUserRole getWebUserRole() {
+        return webUserRole;
+    }
+
+    public void setWebUserRole(WebUserRole webUserRole) {
+        this.webUserRole = webUserRole;
+    } 
 }

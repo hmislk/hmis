@@ -129,7 +129,7 @@ public class WebUserController implements Serializable {
 
     private List<Department> departmentsOfSelectedUsersInstitution;
     
-    boolean testRun = false;
+    boolean testRun = true;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -405,6 +405,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToAddNewUser() {
         setCurrent(new WebUser());
+        getCurrent().setActivated(true);
         Person p = new Person();
         getCurrent().setWebUserPerson(p);
         setSpeciality(null);
@@ -499,7 +500,7 @@ public class WebUserController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(sessionController.loggedUser);
         getCurrent().setName((getCurrent().getName()));
-        getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
+        getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
         if (createOnlyUser) {
             JsfUtil.addSuccessMessage("Add New User Only");
@@ -902,8 +903,10 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return "";
         }
-
-        current.setWebUserPassword(getSecurityController().hash(newPassword));
+        String hashedPassword;
+        hashedPassword=getSecurityController().hashAndCheck(newPassword);
+        System.out.println("hashedPassword = " + hashedPassword);
+        current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
         JsfUtil.addSuccessMessage("Password changed");
         return navigateToListUsers();

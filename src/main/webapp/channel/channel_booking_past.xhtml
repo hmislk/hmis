@@ -184,7 +184,7 @@
                                              selectionMode="single" rowKey="#{bs.id}"
                                              rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
                                              selection="#{bookingPastController.selectedBillSession}" scrollable="true" scrollHeight="275">
-                                    <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
+                                    <p:ajax event="rowSelect" process="@this tblBookingsOfSelectedSession" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
                                             listener="#{channelBillController.createBillfees}" />  
 
                                     <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
@@ -612,7 +612,7 @@
                                 <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
                                 <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{channelBillController.settleAgentRefNo}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
-                                <h:outputLabel id="settleBallance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                <h:outputLabel id="settleBallance" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                 <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
 

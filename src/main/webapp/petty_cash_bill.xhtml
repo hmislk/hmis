@@ -74,7 +74,7 @@
                                                     forceSelection="true"
                                                     value="#{pettyCashBillController.current.person}" 
                                                     completeMethod="#{personController.completePerson}" 
-                                                    var="apt" itemLabel="#{apt.name}" converter="personCon"
+                                                    var="apt" itemLabel="#{apt.name}" 
                                                     itemValue="#{apt}" size="30"  style="width: 400px;">
                                         <p:ajax event="itemSelect" process="acPt" update="panSearch"/>
                                     </p:autoComplete>   

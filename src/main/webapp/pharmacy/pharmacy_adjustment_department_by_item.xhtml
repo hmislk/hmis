@@ -192,15 +192,27 @@
                     </p:panel>
 
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
-                        <p:commandButton ajax="false" action="#{pharmacyAdjustmentController.newBill()}" value="New Adjustment"/>
-                        <p:commandButton ajax="false" value="Print">
-                            <p:printer target="print"/>
-                        </p:commandButton>
-                        <p:panel id="print">
+                        <div class="d-flex gap-2 m-2">
+                            <p:commandButton
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                ajax="false"
+                                action="#{pharmacyAdjustmentController.newBill()}"
+                                value="New Adjustment"/>
+                            <p:commandButton
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                ajax="false"
+                                value="Print">
+                                <p:printer target="print"/>
+                            </p:commandButton>
+                        </div>
+
+                        <h:panelGroup id="print">
                             <ui:repeat value="#{pharmacyAdjustmentController.bills}" var="b" >
-                                <ph:adjustmentBill  bill="#{b}" />
+                                <ph:adjustmentBill_Single  bill="#{b}" />
                             </ui:repeat>
-                        </p:panel>
+                        </h:panelGroup>
                     </p:panel>
 
                 </h:form>

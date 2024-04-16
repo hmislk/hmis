@@ -26,5 +26,6 @@ public enum ClinicalFindingValueType {
     VisitProcedure,
     VisitPrescription,
     VisitDischargeMedicine,
-    PlanOfAction
+    PlanOfAction,
+    VisitInvestigationResult
 }

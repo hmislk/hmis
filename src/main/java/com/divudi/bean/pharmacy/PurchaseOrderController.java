@@ -137,6 +137,7 @@ public class PurchaseOrderController implements Serializable {
         calTotal();
 
         saveBill();
+
         saveBillComponent();
 
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
@@ -187,6 +188,7 @@ public class PurchaseOrderController implements Serializable {
 
     public void saveBill() {
 
+        getAprovedBill().setCreditDuration(getAprovedBill().getCreditDuration());
         getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
         getAprovedBill().setFromDepartment(getRequestedBill().getDepartment());
         getAprovedBill().setFromInstitution(getRequestedBill().getInstitution());
@@ -199,8 +201,14 @@ public class PurchaseOrderController implements Serializable {
         getAprovedBill().setCreater(getSessionController().getLoggedUser());
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        if (getAprovedBill().getId() == null) {
-            getBillFacade().create(getAprovedBill());
+        try {
+            if (getAprovedBill().getId() == null) {
+                getBillFacade().create(getAprovedBill());
+            } else {
+                getBillFacade().edit(getAprovedBill());
+            }
+        } catch (Exception e) {
+            System.err.println("e = " + e);
         }
 
     }
@@ -214,19 +222,34 @@ public class PurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
+            try {
+                if (i.getId() == null) {
+                    getBillItemFacade().create(i);
+                } else {
+                    getBillItemFacade().edit(i);
+                }
+            } catch (Exception e) {
+                System.out.println("e = " + e);
             }
 
             phItem.setBillItem(i);
 
-            if (phItem.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(phItem);
+            try {
+                if (phItem.getId() == null) {
+                    getPharmaceuticalBillItemFacade().create(phItem);
+                } else {
+                    getPharmaceuticalBillItemFacade().edit(phItem);
+                }
+            } catch (Exception e) {
+                System.out.println("e = " + e);
             }
 
             i.setPharmaceuticalBillItem(phItem);
-            getBillItemFacade().edit(i);
+            try {
+                getBillItemFacade().edit(i);
+            } catch (Exception e) {
 
+            }
             getAprovedBill().getBillItems().add(i);
         }
 
@@ -262,6 +285,7 @@ public class PurchaseOrderController implements Serializable {
         this.requestedBill = requestedBill;
         getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
         getAprovedBill().setToInstitution(getRequestedBill().getToInstitution());
+        getAprovedBill().setCreditDuration(getRequestedBill().getCreditDuration());
         generateBillComponent();
     }
 

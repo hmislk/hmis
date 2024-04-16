@@ -508,6 +508,10 @@ public class ServiceSession extends Item implements Serializable {
     public void setDataEntryForms(String dataEntryForms) {
         this.dataEntryForms = dataEntryForms;
     }
+
+   
+    
+    
     
     
 

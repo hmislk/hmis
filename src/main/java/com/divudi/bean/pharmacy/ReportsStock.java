@@ -232,7 +232,7 @@ public class ReportsStock implements Serializable {
         m.put("z", 0.0);
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
-        stockSaleValue += 0.0;
+        stockSaleValue = 0.0;
         for (PharmacyStockRow r : lsts) {
             stockPurchaseValue += r.getPurchaseValue();
             stockSaleValue += r.getSaleValue();
@@ -703,13 +703,14 @@ public class ReportsStock implements Serializable {
                 + " and s.itemBatch.item.category=:cat "
                 + " order by s.itemBatch.item.name";
         stocks = getStockFacade().findByJpql(sql, m);
+        totalQty = 0.0;
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
 
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-            totalQty = totalQty + ts.getStock();
+            totalQty += ts.getStock();
             totalPurchaseRate += ts.getItemBatch().getPurcahseRate();
             totalRetailSaleRate += ts.getItemBatch().getRetailsaleRate();
             totalPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();

@@ -50,6 +50,26 @@ public class CreditCompanyController implements Serializable {
     List<Institution> institutions;
     String selectText = "";
 
+    public Institution findCreditCompanyByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CreditCompany);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
         String sql;
@@ -128,6 +148,21 @@ public class CreditCompanyController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+    
+    public void save(Institution cc) {
+        if (cc == null) {
+            return;
+        }
+        if (cc.getId() != null) {
+            getFacade().edit(cc);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            cc.setCreatedAt(new Date());
+            cc.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(cc);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
     }
 
     public void fillCreditCompany() {

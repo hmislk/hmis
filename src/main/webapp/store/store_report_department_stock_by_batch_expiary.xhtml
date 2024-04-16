@@ -13,8 +13,6 @@
 
             <ui:define name="subcontent">
                 <h:form>
-
-
                     <p:panel header="Department Stock Report by Batch Expiry" >
 
                         <h:panelGrid columns="2" class="my-2" >
@@ -43,8 +41,6 @@
 
                         <h:panelGroup id="gpBillPreview" >
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
-
-
                                 <f:facet name="header">
                                     <h:outputLabel value="#{storeReportsStock.department.name} : Department Stock By Expiry" />
                                     <h:outputLabel value="&emsp; &emsp;From  :  " style=" white-space:pre-line;"/>
@@ -56,7 +52,6 @@
                                     <h:outputLabel value="#{storeReportsStock.toDate}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
-
                                 </f:facet>
 
                                 <p:column headerText="Item">

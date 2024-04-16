@@ -67,6 +67,7 @@ public class StockHistory implements Serializable {
     int hxMonth;
     int hxDate;
     int hxWeek;
+    private Double itemStock;
 
     //Created Properties
     @ManyToOne
@@ -322,4 +323,14 @@ public class StockHistory implements Serializable {
         this.retireComments = retireComments;
     }
 
+    public Double getItemStock() {
+        return itemStock;
+    }
+
+    public void setItemStock(Double itemStock) {
+        this.itemStock = itemStock;
+    }
+
+    
+    
 }

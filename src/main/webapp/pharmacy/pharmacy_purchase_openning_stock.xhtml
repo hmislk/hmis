@@ -21,7 +21,7 @@
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                             </p:selectOneMenu>
-                            <p:outputLabel value="Select Dealor"/>
+                            <p:outputLabel value="Select Supplier"/>
                             <p:autoComplete converter="deal" value="#{pharmacyPurchaseController.bill.fromInstitution}" 
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
@@ -58,7 +58,7 @@
                         <h:outputLabel value="Sale Rate"></h:outputLabel>
                         <h:outputLabel id="lblPr" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate *.85 }"></h:outputLabel>
                         <h:outputLabel value="DOE(dd mm yy)"/>
-                        <h:outputLabel value="Bathch No"/>
+                        <h:outputLabel value="Batch No"/>
 
                         <h:outputLabel/>
 

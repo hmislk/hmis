@@ -183,14 +183,14 @@ public enum BillType {
             case PharmacyGrnReturn:
                 return "Good Receive Note Return";
             case PharmacyPurchaseBill:
-                return "Pharmacy Purchase";
+                return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
             case PharmacyPre:
-                return "Pharmacy Sale Bill (Pre)";
+                return "Pharmacy Sale Bill for Cashier";
             case PharmacyAdjustment:
                 return "Pharmacy Adjustment";
             case GrnPayment:

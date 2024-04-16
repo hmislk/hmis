@@ -8,85 +8,69 @@
       xmlns:p="http://primefaces.org/ui"
       >
     <h:body>
-        <ui:composition template="/admin/users/user_list.xhtml">
+        <ui:composition template="/admin/users/user_roles.xhtml">
             <ui:define name="users">
                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>
 
-                <p:panelGrid 
+                <p:panel 
                     class="w-100"
-                    columns="3"
                     rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
                     <f:facet name="header">
                         <i class="fa fa-icons" />
-                        <h:outputLabel class="mx-2" value="Manage User Icons"/>
+                        <h:outputLabel class="mx-1" value="Manage User Icons"/>
                     </f:facet>
 
-                    <p:outputLabel value="Department" ></p:outputLabel>
-                    <p:selectOneMenu 
-                        id="cmbDepartment"
-                        placeholder="Department"
-                        value="#{userIconController.department}" 
-                        class="w-100"
-                        filter="true">
-                        <f:selectItem itemLabel="All" ></f:selectItem>
-                        <f:selectItems 
-                            value="#{userIconController.departments}"
-                            var="d"
-                            itemLabel="#{d.name}"
-                            itemValue="#{d}" ></f:selectItems>
-                    </p:selectOneMenu>
-                    <p:commandButton 
-                        id="btnList"
-                        title="List Icon for the Department"
-                        value="List Icon"
-                        process="btnList cmbDepartment"
-                        class="ui-button-warning w-100"
-                        ajax="false"
-                        icon="fa fa-list"
-                        update="tbl"
-                        action="#{userIconController.fillDepartmentIcon}"
-                        >
-                    </p:commandButton>
+                    <p:panelGrid  columns="3">    
+                        <p:outputLabel  value="User Role" ></p:outputLabel>
+                        <p:outputLabel class="form-control w-100" value="#{userRoleIconController.userRole.name}"></p:outputLabel>
+                        <p:commandButton 
+                            id="btnList"
+                            title="List Icon for the Department"
+                            value="List Icon"
+                            process="btnList cmbDepartment"
+                            class="ui-button-warning w-100"
+                            ajax="false"
+                            icon="fa fa-list"
+                            update="tbl"
+                            action="#{userRoleIconController.fillUserRoleIcon}"
+                            >
+                        </p:commandButton>
 
-                    <p:outputLabel value="Icon to add" ></p:outputLabel>
-                    <p:selectOneMenu 
-                        value="#{userIconController.icon}" 
-                        filter="true"
-                        filterMatchMode="contains"
-                        class="w-100">
-                        <f:selectItems value="#{userIconController.icons}" 
-                                       var="i"
-                                       itemLabel="#{i.label}"
-                                       itemValue="#{i}"/>
-                    </p:selectOneMenu>
-                    <p:commandButton 
-                        value="Add Icon" 
-                        icon="fa fa-plus" 
-                        class="ui-button-success w-100"
-                        action="#{userIconController.addUserIcon}" 
-                        update="tbl" 
-                        />
+                        <p:outputLabel value="Icon to add" ></p:outputLabel>
+                        <p:selectOneMenu 
+                            value="#{userRoleIconController.icon}" 
+                            filter="true"
+                            filterMatchMode="contains"
+                            class="w-100">
+                            <f:selectItems value="#{userIconController.icons}" 
+                                           var="i"
+                                           itemLabel="#{i.label}"
+                                           itemValue="#{i}"/>
+                        </p:selectOneMenu>
+                        <p:commandButton 
+                            value="Add Icon" 
+                            icon="fa fa-plus" 
+                            class="ui-button-success w-100"
+                            action="#{userRoleIconController.addUserRoleIcon}" 
+                            update="tbl" 
+                            />
 
 
 
 
-                </p:panelGrid>
+                    </p:panelGrid>
+                </p:panel>
 
 
                 <p:dataTable 
                     var="userIcon" 
-                    value="#{userIconController.userIcons}" 
+                    value="#{userRoleIconController.userIcons}" 
                     rowKey="#{userIcon.id}" 
                     id="tbl">
                     <p:column headerText="Icon">
                         <h:outputText value="#{userIcon.icon}" />
-                    </p:column>
-                    <p:column 
-                        headerText="Department" 
-                        rendered="#{userIconController.department eq null}">
-                        <h:outputText value="#{userIcon.department.name}" />
                     </p:column>
                     <p:column headerText="Order">
                         <h:outputText value="#{userIcon.orderNumber}" />
@@ -97,11 +81,11 @@
                                 id="up" 
                                 icon="fa fa-arrow-up"
                                 class="ui-button-warning"
-                                action="#{userIconController.moveSelectedUserIconUp}" 
+                                action="#{userRoleIconController.moveSelectedUserIconUp}" 
                                 update="tbl" >
                                 <f:setPropertyActionListener 
                                     value="#{userIcon}" 
-                                    target="#{userIconController.current}" >
+                                    target="#{userRoleIconController.current}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
 
@@ -109,22 +93,22 @@
                                 id="down" 
                                 icon="fa fa-arrow-down"
                                 class="mx-2 ui-button-warning"
-                                action="#{userIconController.moveSelectedUserIconDown}" 
+                                action="#{userRoleIconController.moveSelectedUserIconDown}" 
                                 update="tbl" >
                                 <f:setPropertyActionListener 
                                     value="#{userIcon}" 
-                                    target="#{userIconController.current}" >
+                                    target="#{userRoleIconController.current}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
                             <p:commandButton 
                                 id="remove" 
                                 icon="fa fa-trash"
-                                action="#{userIconController.removeUserIcon()}" 
+                                action="#{userRoleIconController.removeUserIcon()}" 
                                 class="ui-button-danger"
                                 update="tbl" >
                                 <f:setPropertyActionListener 
                                     value="#{userIcon}" 
-                                    target="#{userIconController.current}" >
+                                    target="#{userRoleIconController.current}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
 

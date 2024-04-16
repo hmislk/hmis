@@ -36,7 +36,7 @@ public class BillSummery {
         this.count = count;
         this.billType = billType;
     }
-    
+
     public BillSummery(PaymentMethod paymentMethod, BillClassType billClassType, Double total, Double discount, Double netTotal, Double tax, Long count, BillType billType) {
         this.paymentMethod = paymentMethod;
         this.total = total;
@@ -46,6 +46,18 @@ public class BillSummery {
         this.count = count;
         this.billType = billType;
         this.billClassType = billClassType;
+    }
+
+    public BillSummery(PaymentMethod paymentMethod, BillClassType billClassType, Double total, Double discount, Double netTotal, Double tax, Long count, BillType billType, WebUser webUser) {
+        this.paymentMethod = paymentMethod;
+        this.total = total;
+        this.discount = discount;
+        this.netTotal = netTotal;
+        this.tax = tax;
+        this.count = count;
+        this.billType = billType;
+        this.billClassType = billClassType;
+        this.webUser = webUser;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -128,6 +140,4 @@ public class BillSummery {
         this.billClassType = billClassType;
     }
 
-    
-    
 }

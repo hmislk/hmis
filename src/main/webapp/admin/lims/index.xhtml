@@ -188,12 +188,7 @@
                             </p:tab>
                             <p:tab title="Bulk Transactions">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
-
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
-
+                                    
                                 </div>
                             </p:tab>
                             <p:tab title="Setup">
@@ -205,7 +200,7 @@
                                     <p:commandButton  class="w-100" 
                                                       ajax="false" 
                                                       value="Create New Items for New Institution" 
-                                                      action="create_items_for_new_institution" 
+                                                      action="/admin/items/create_items_for_new_institution" 
                                                       />
 
 

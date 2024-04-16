@@ -32,11 +32,17 @@
                 </div>
             </f:facet>
 
+            <style>
+                .noDisplayRow {
+                    display: none;
+                }
+            </style>
+ 
             <p:dataTable id="tb1"
                          class="mt-2"
                          value="#{cc.attrs.bill.billItems}" 
                          var="bip"
-                         rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?bip.inwardChargeType.label eq 'Linen Charges' ?'redText':'':'noDisplayRow' }"
+                         rowStyleClass="#{(bip.grossValue ne 0) ? '' : 'noDisplayRow' }"
                          >
                 <p:column headerText="searialNo">
                     #{bip.id}

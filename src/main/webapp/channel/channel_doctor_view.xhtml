@@ -86,27 +86,27 @@
                         <p:outputLabel value="#{bs.serialNo}" />
                     </p:column>               
                     <p:column headerText="Patient Name">
-                        <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" />
+                        <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 8pt;font-weight: bold" />
                     </p:column>
                     <p:column headerText="Bill No" exportable="false">
-                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}" />
-                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}" />
+                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}"  style="font-size: 8pt;font-weight: bold"/>
+                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}"  style="font-size: 8pt;font-weight: bold"/>
                     </p:column>
-                    <p:column headerText="Agent" width="60" exportable="false">#{bs.bill.creditCompany.institutionCode}</p:column> 
+                    <p:column headerText="Agent" width="40" exportable="false" >#{bs.bill.creditCompany.institutionCode}</p:column> 
                     
                     <p:column headerText="Paid or Not" >
-                        <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;"/>
-                        <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;"/>
+                        <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;font-size: 10pt;font-weight: bold" />
+                        <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;font-size: 10pt;font-weight: bold"/>
                     </p:column> 
 
                     <p:column headerText="C / R" style="text-align: center;" >
-                        <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled eq true}" style="color: red;"/>
-                        <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded eq true}" style="color: red;"/>
+                        <p:outputLabel value="CAN" rendered="#{bs.bill.cancelled eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                        <p:outputLabel value="REF" rendered="#{bs.bill.refunded eq true}" style="color: red;font-size: 10pt;font-weight: bold"/>
                         <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
                     </p:column>
-                    <p:column headerText="P/A" width="40px;">
-                        <p:outputLabel value="Absent"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;"/>
-                        <p:outputLabel value="Present"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;"/>
+                    <p:column headerText="P/A" width="30px;">
+                        <p:outputLabel value="A"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;font-size: 10pt;font-weight: bold"/>
+                        <p:outputLabel value="P"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;font-size: 10pt;font-weight: bold"/>
                         <p:outputLabel value="-"  rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
                     </p:column>
 
@@ -114,7 +114,7 @@
                         <p:outputLabel value="#{bs.bill.billType}"/>
                     </p:column>
 
-                    <p:column headerText="Doctor Fee" styleClass="numberCol" width="100px;">
+                    <p:column headerText="Doctor Fee" styleClass="numberCol" width="50px;">
                         <h:outputLabel value="#{bs.bill.staffFee}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.serviceSession.originatingSession.refundable eq false}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
@@ -135,7 +135,7 @@
                         </f:facet>
                     </p:column>
 
-                    <p:column headerText="Total Amount" styleClass="numberCol" rendered="#{webUserController.hasPrivilege('Developers')}" width="100px;">
+                    <p:column headerText="Total Amount" styleClass="numberCol" rendered="#{webUserController.hasPrivilege('Developers')}" width="50px;">
                         <h:outputLabel value="#{bs.bill.netTotal}" rendered="#{bs.bill.balance eq 0.0 and bs.bill.cancelled ne true and bs.bill.refunded ne true and bs.serviceSession.originatingSession.refundable eq false}">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputLabel>
@@ -150,7 +150,7 @@
                         </h:outputLabel>
                         <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or(bs.absent ne false and bs.serviceSession.originatingSession.refundable ne false)}" value="0.00"/>
                         <f:facet name="footer" >
-                            <h:outputLabel value="#{channelReportController.grantNetTotal}" style="float: right;">
+                            <h:outputLabel value="#{channelReportController.grantNetTotal}" style="float: right;text-align: center">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                         </f:facet>

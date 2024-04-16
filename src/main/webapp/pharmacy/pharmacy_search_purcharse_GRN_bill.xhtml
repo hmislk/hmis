@@ -13,7 +13,7 @@
                 <h:form>
                     <p:panel id="gpBillPreview">
                         <f:facet name="header" >
-                            <h:outputLabel value="PHARMACY PURCHASE BILL  and GRN BIll WITH DEALER "/>                                 
+                            <h:outputLabel value="PHARMACY PURCHASE BILL  and GRN BIll WITH Supplier "/>                                 
                             <h:panelGrid columns="4" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
@@ -22,7 +22,7 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
 
-                                <h:outputLabel value="Dealer"/>
+                                <h:outputLabel value="Supplier"/>
                                 <p:autoComplete completeMethod="#{dealerController.completeDealor}" 
                                                 value="#{searchController}" 
                                                 var="d"
@@ -43,7 +43,7 @@
 
                         <p:dataTable rowIndexVar="i"  value="#{searchController.phamacypharchusebills}" var="bill" >
                             <f:facet name="header">
-                                <h:outputLabel value="PHARMACY PURCHASE BILL  and GRN BIll WITH DEALER "/>
+                                <h:outputLabel value="PHARMACY PURCHASE BILL  and GRN BIll WITH Supplier "/>
                             </f:facet>
 
                             <p:column headerText="BILL NO" 
@@ -58,7 +58,7 @@
                             </p:column> 
 
 
-                            <p:column headerText="Dealer Name"
+                            <p:column headerText="Supplier Name"
                                       sortBy="#{bill.toInstitution.name}"
                                       filterBy="#{bill.toInstitution.name}"
                                       filterMatchMode="contains">

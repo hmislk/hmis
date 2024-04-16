@@ -7,40 +7,95 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <ui:define name="content">
-        <p:outputLabel value="Nurse View"/>
-        <p:panel>
-            <f:facet name="header">
-                <h:panelGrid columns="2">
-                    <p:outputLabel value="Consultant"/>
-                    <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/>
-                    <p:outputLabel value="Date"/>
-                    <h:outputLabel value="#{channelReportController.serviceSession.sessionAt}" >
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </h:outputLabel>
-                    <p:outputLabel value="Session Name"/>
-                    <h:outputLabel value="#{channelReportController.serviceSession.name}" />
-                </h:panelGrid>
-            </f:facet>
+        <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h:outputText value="Session View" />
+                        <div class="d-flex gap-1">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Refresh"
+                                icon="fas fa-refresh" 
+                                class="ui-button-warning"
+                                action="#{channelReportController.fillNurseView()}">
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                class="ui-button-secondary"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{bookingController.navigateBackToBookings()}" 
+                                value="Back to Channel Booking" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false"
+                                class="ui-button-secondary"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{bookingController.navigateToViewSessionData()}" 
+                                value="Back to Sesion Data" >
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+                <div class="d-flex justify-content-end gap-2 mb-4">
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="fasle" 
+                        icon="fa fa-print"
+                        class="ui-button-info"
+                        action="#">
+                        <p:printer target="sessionView"/>
+                    </p:commandButton>
 
-            <p:dataTable value="#{channelReportController.billSessionsNurse}" var="bs">
+                </div>
 
-                <p:column headerText="No">#{bs.serialNo}</p:column>
-                <p:column headerText="Booking Id">#{bs.bill.bookingId}</p:column>
-                <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                <p:column headerText="Time">
-                    <h:outputLabel value="#{bs.sessionTime}">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                    </h:outputLabel>
+                <p:dataTable value="#{channelReportController.nurseViewSessions}" var="bs" id="sessionView">
+                    <f:facet name="header">
+                        <div style="text-align: center;">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br/>
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.address}" />
+                            <br/>
+                            <p:outputLabel value="Session View" style="font-size: 22px; font-weight: 700;" />
+                        </div>
 
-                </p:column>
-                <p:column headerText="P/A">
-                    <p:outputLabel value="Present"  rendered="#{!bs.absent}"/>    
-                    <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                </p:column> 
+                        <div class="d-flex gap-2">
+                            <p:outputLabel value="Consultant : "/>
+                            <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
+                        </div>
 
-            </p:dataTable>
+                        <div class="d-flex gap-2">
+                            <p:outputLabel value="Session Name : "/>
+                            <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
+                        </div>
 
-        </p:panel>
+                        <div class="d-flex gap-2">
+                            <p:outputLabel value="Date : "/>
+                            <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy"/>
+                            </h:outputLabel>
+                        </div>
+
+                    </f:facet>
+
+                    <p:column headerText="No">#{bs.serialNo}</p:column>
+                    <p:column headerText="Booking ID">#{bs.bill.bookingId}</p:column>
+                    <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                    <p:column headerText="Time">
+                        <h:outputLabel value="#{bs.sessionTime}">
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>
+
+                    </p:column>
+                    <p:column headerText="P/A">
+                        <p:outputLabel value="Present"  rendered="#{!bs.absent}"/>    
+                        <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                    </p:column> 
+
+                </p:dataTable>
+
+            </p:panel>
+        </h:form>
     </ui:define>
 
 

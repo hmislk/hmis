@@ -193,6 +193,14 @@ public class PatientPortalController {
         addNewPatient = false;
     }
 
+//    public void addNewPatientAction() {
+//        addNewPatient = true;
+//    }
+//
+//    public void GoBackfromPatientAddAction() {
+//        addNewPatient = false;
+//    }
+
     public void fillSessionInstance() {
         System.out.println("working");
         if (channelSessions != null) {
@@ -214,11 +222,11 @@ public class PatientPortalController {
     }
 
     public void otpCodeConverter() {
-        int codeSize = 4;
-//        if (sessionController.getCurrentPreference().getOtpIndexes() == null || sessionController.getCurrentPreference().getOtpIndexes() == "0") {
-//            codeSize = 4;
-//        }
-//        codeSize = Integer.parseInt(sessionController.getCurrentPreference().getOtpIndexes());
+        int codeSize = 0;
+        if (sessionController.getCurrentPreference().getLengthOfOTPIndexes()== null || sessionController.getCurrentPreference().getLengthOfOTPIndexes()== "0") {
+            codeSize = 4;
+        }
+        codeSize = Integer.parseInt(sessionController.getCurrentPreference().getLengthOfOTPIndexes());
 
         String numbers = "0123456789";
         Random random = new Random();

@@ -122,7 +122,7 @@
                                         <p:commandButton 
                                             ajax="false"
                                             value="Recieve"
-                                            class="w-50 ui-button-warning"
+                                            class="w-100 ui-button-warning"
                                             action="#{grnController.navigateToResive()}" 
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
@@ -130,6 +130,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="Recieve&nbsp;All" 
+                                            rendered="false"
                                             class="w-50 ui-button-info"
                                             action="#{grnController.navigateToResiveAll()}" 
                                             disabled="#{p.cancelled}">
@@ -139,7 +140,7 @@
                                     <div class="col-md-12">
                                         <p:commandButton 
                                             ajax="false" 
-                                            class="w-100 ui-button-secondary"
+                                            class="w-100 ui-button-info"
                                             value="Recieve Wholesale" 
                                             action="pharmacy_grn_wh" 
                                             disabled="#{p.cancelled}">
@@ -150,82 +151,54 @@
 
 
                             </p:column>
-                            <p:column headerText="GRNS" width="40%">                   
-                                <p:dataTable var="b" value="#{p.listOfBill}">                        
-                                    <p:column  >
-                                        <h:commandLink action="pharmacy_reprint_grn" actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}" >                                
-                                            <h:outputLabel  value="#{b.deptId}"/>
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}"  value="#{b}"/>
-                                        </h:commandLink>
-                                    </p:column>
-                                    <p:column >
-                                        <h:commandLink action="pharmacy_reprint_grn" actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
-                                            <h:outputLabel value="#{b.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
-                                        </h:commandLink>
-                                        <br/>                                      
-                                            <h:panelGroup rendered="#{b.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                               value="#{b.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        <h:panelGroup rendered="#{b.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.refunded}" 
-                                                           value="#{b.refundedBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
+                            <p:column headerText="Goods Received Notes" width="28em">                   
+                                <h:dataTable var="b" 
+                                             border="0"
+                                             class="table table-borderless"
+                                             value="#{p.listOfBill}" 
+                                             rendered="#{not empty p.listOfBill and p.listOfBill ne null}">
+                                    <h:column >
+                                        <h:outputText value="#{b.deptId}" />
+                                        <h:panelGroup rendered="#{b.cancelled}">
+                                            <span class="ui-icon ui-icon-circle-close" title="Cancelled" style="margin-left:5px;"></span>
                                         </h:panelGroup>
-                                    </p:column> 
-
-                                    <p:column >
-                                        <h:commandLink action="pharmacy_reprint_grn" actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
-                                            <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
-                                        </h:commandLink>
-                                        <br/>
-                                            <h:panelGroup rendered="#{b.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled by " />
-                                                <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                               value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        <h:panelGroup rendered="#{b.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded by " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.refunded}"
-                                                           value="#{b.refundedBill.creater.webUserPerson.name}" >                         
-                                            </h:outputLabel>
+                                        <h:panelGroup rendered="#{b.refunded}">
+                                            <span class="ui-icon ui-icon-arrowreturnthick-1-w" title="Refunded" style="margin-left:5px;"></span>
                                         </h:panelGroup>
-                                    </p:column> 
-                                    <p:column >
-                                        <h:commandLink action="pharmacy_reprint_grn" actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}" >   
-                                            <h:outputLabel  value="#{b.invoiceNumber}"/>
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                        </h:commandLink>
-                                    </p:column>
-                                    <p:column >
-                                        <h:commandLink action="pharmacy_reprint_grn"  actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">   
-                                            <h:outputLabel value="#{b.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                        </h:commandLink>
-                                    </p:column>
+                                    </h:column>
+                                    <h:column >
+                                        <h:outputText value="#{b.netTotal lt 0 ? b.netTotal * -1 : b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:column>
+                                    <h:column >
+                                        <h:outputText value="#{b.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                    </h:column>
+                                    <h:column >
+                                        <h:panelGroup layout="block" styleClass="btn-group">
+                                            <p:commandButton  
+                                                class="m-1"  
+                                                icon="fa fa-eye"
+                                                title="View GRN" 
+                                                ajax="false"
+                                                action="#{pharmacyBillSearch.navigateToViewPharmacyGrn()}" 
+                                                actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                class="m-1" 
+                                                icon="fas fa-file-alt" 
+                                                title="View PO" action="pharmacy_reprint_po" 
+                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </h:column>
+                                </h:dataTable>
 
-                                    <p:column >
-                                        <h:commandLink action="#{pharmacyBillSearch.navigateToViewPurchaseOrder()}" >   
-                                            <h:outputLabel value="#{b.saleValue}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                        </h:commandLink>
-                                    </p:column>
-                                </p:dataTable>
+
                             </p:column>
                         </p:dataTable>
                     </div>

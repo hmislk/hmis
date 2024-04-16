@@ -1270,7 +1270,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String changeTextCases(String nm, String tc) {
-        switch (tc) {
+        System.out.println("nm = " + nm);
+        System.out.println("tc = " + tc);
+        if (tc == null) {
+            return nm;
+        }
+        switch (tc.toUpperCase()) {
             case "UPPERCASE":
                 return nm.toUpperCase();
             case "LOWERCASE":
@@ -1955,6 +1960,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             if (getPatient().getPerson().getPhone().trim().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter a Phone Number");
+                return true;
+            }
+        }
+        
+         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
+            if (getPatient().getPerson().getArea()== null) {
+                JsfUtil.addErrorMessage("Please Select Pataient Area");
+                return true;
+            }
+            if (getPatient().getPerson().getArea().getName().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please Select Patient Area");
                 return true;
             }
         }

@@ -4,7 +4,7 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.bean.channel.SheduleController;
+import com.divudi.bean.channel.ChannelScheduleController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.entity.ServiceSession;
@@ -22,7 +22,7 @@ import javax.inject.Inject;
 public class FinalVariables {
 
     @Inject
-    SheduleController sheduleController;
+    ChannelScheduleController sheduleController;
     @Inject
     SessionController sessionController;
     @EJB
@@ -149,11 +149,11 @@ public class FinalVariables {
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    public SheduleController getSheduleController() {
+    public ChannelScheduleController getSheduleController() {
         return sheduleController;
     }
 
-    public void setSheduleController(SheduleController sheduleController) {
+    public void setSheduleController(ChannelScheduleController sheduleController) {
         this.sheduleController = sheduleController;
     }
 }

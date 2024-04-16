@@ -110,3 +110,6 @@ th.align-right-header .ui-column-title {
     padding: 1px 1px; /* Adjust padding to make it more condensed, if necessary */
 }
 
+.no-header-table .ui-datatable-header {
+    display: none;
+}

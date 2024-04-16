@@ -59,6 +59,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
+    
     double Rate;
     double discountRate;
     double marginRate;
@@ -139,6 +140,8 @@ public class BillItem implements Serializable {
     private List<Item> tmpSuggession;
     @Transient
     private double tmpQty;
+    @Transient
+    private double tmpFreeQty;
     @Transient
     private UserStock transUserStock;
     @Transient
@@ -563,6 +566,11 @@ public class BillItem implements Serializable {
     }
 
     public Double getQty() {
+        if(qty==null){
+            qty=0.0;
+        }else if(qty==0.0){
+            qty =0.0;
+        }
         return qty;
     }
 
@@ -659,6 +667,25 @@ public class BillItem implements Serializable {
         }
     }
 
+    public double getTmpFreeQty() {
+        if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
+            return tmpFreeQty / getItem().getDblValue();
+        } else {
+            return tmpFreeQty;
+        }
+    }
+
+    public void setTmpFreeQty(double tmpFreeQty) {
+        if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
+            this.tmpFreeQty = tmpFreeQty * getItem().getDblValue();
+        } else {
+            this.tmpFreeQty = tmpFreeQty;
+        }
+
+        if (getPharmaceuticalBillItem() != null) {
+            getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
+        }
+    }
     public UserStock getTransUserStock() {
         return transUserStock;
     }
@@ -853,4 +880,5 @@ public class BillItem implements Serializable {
         return billFees;
     }
 
+   
 }

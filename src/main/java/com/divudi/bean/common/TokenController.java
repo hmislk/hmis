@@ -222,7 +222,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public Token findPharmacyTokens(Bill bill) {
         if (bill == null) {
-            return null;
+            return new Token();
         }
         String j = "Select t "
                 + " from Token t"

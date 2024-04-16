@@ -1241,7 +1241,7 @@ public class ItemController implements Serializable {
                     + " or "
                     + " (c.barcode) like :str ) "
                     + "order by c.name";
-            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("dep", DepartmentType.Pharmacy);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
@@ -1251,9 +1251,6 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItemAll(String query) {
-//        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
-//        Class[] classes = new Class[]{Amp.class};
-//        return completeItem(query, classes, dts, 0);
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -1261,13 +1258,16 @@ public class ItemController implements Serializable {
         } else {
 
             sql = "select c from Item c where "
-                    + " (type(c)= :amp) and "
+                    + " c.retired=:ret "
+                    + " and (type(c)= :amp) "
+                    + " and "
                     + " ( c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and ((c.name) like :str or (c.code) like :str or"
-                    + " (c.barcode) like :str ) order by c.name";
-            //////// // System.out.println(sql);
+                    + " and "
+                    + " ((c.name) like :str or (c.code) like :str or (c.barcode) like :str ) "
+                    + " order by c.name";
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
+            tmpMap.put("ret", false);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }

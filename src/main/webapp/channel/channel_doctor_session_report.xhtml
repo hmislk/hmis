@@ -7,7 +7,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:dataTable value="#{sheduleController.allSession}" var="s" filteredValue="#{sheduleController.filteredValue}">
+            <p:dataTable value="#{channelScheduleController.allSession}" var="s" filteredValue="#{channelScheduleController.filteredValue}">
                 
                 <p:column headerText="Speciality" filterBy="#{s.staff.speciality}" filterMatchMode="contains">
                     <p:outputLabel value="#{s.staff.speciality.name}" />

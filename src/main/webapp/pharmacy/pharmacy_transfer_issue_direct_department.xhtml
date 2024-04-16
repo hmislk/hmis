@@ -136,6 +136,12 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>  
+                                
+                                <p:column headerText="DOE"  style="width:50px!important; text-align: center">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" style="text-align: right;">                        
+                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column> 
 
 
                                 <p:column headerText="Qty" style="width:25px!important; text-align: right;">

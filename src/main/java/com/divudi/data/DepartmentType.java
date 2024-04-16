@@ -11,6 +11,7 @@ package com.divudi.data;
 public enum DepartmentType {
     Pharmacy,
     Lab,
+    Channelling,
     Store,
     Theatre,
     Kitchen,

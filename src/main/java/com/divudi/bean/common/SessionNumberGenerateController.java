@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.channel.SheduleController;
+import com.divudi.bean.channel.ChannelScheduleController;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.facade.SessionNumberGeneratorFacade;
@@ -29,7 +29,7 @@ public class SessionNumberGenerateController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    SheduleController sheduleController;
+    ChannelScheduleController sheduleController;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
 

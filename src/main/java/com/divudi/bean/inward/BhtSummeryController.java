@@ -1289,16 +1289,24 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void dischargeCancel() {
+        
+        if(getPatientEncounter().isDischarged() == false){
+            JsfUtil.addErrorMessage("There is no discharge to cancel");
+            return;
+        }
+        
         if (getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == getPatientEncounter().getDateOfDischarge()) {
                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(null);
                 getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
             }
         }
-
+        
+        
         patientEncounter.setDischarged(false);
         patientEncounter.setDateOfDischarge(null);
         getPatientEncounterFacade().edit(patientEncounter);
+        JsfUtil.addSuccessMessage("Discharge Cancelled Successfully");
 
     }
 
@@ -1691,6 +1699,7 @@ public class BhtSummeryController implements Serializable {
         createChargeItemTotals();
 
         updateTotal();
+        JsfUtil.addSuccessMessage("Recalculated Successfully");
 
         if (patientEncounter != null && patientEncounter.getDateOfDischarge() != null) {
             date = patientEncounter.getDateOfDischarge();

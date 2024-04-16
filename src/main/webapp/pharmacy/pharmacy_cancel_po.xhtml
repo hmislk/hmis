@@ -40,9 +40,9 @@
                         </p:panel>
                         <div class="row">
                             <div class="col-6">
-                                <p:panel header="Dealor Details">
+                                <p:panel header="Supplier Details">
                                     <p:panelGrid columns="2">
-                                        <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="Supplier ​Name:" ></h:outputLabel>
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
                                     </p:panelGrid>
                                 </p:panel>
@@ -82,9 +82,40 @@
                     </h:panelGroup>
 
 
-                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:po bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                    </h:panelGroup>
+                    <p:panel rendered="#{pharmacyBillSearch.printPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between w-100">
+                                <h:outputLabel value="Canceled Bill" class="mt-2"></h:outputLabel>
+                                
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="pharmacy_purchase_order_list_for_recieve"
+                                        class="ui-button-warning"
+                                        icon="fa fa-arrow-left"
+                                        actionListener="#{grnController.viewPoList()}" 
+                                        value="Back to PO List"> 
+                                    </p:commandButton>   
+
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="false" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
+                            <div style="width: 212mm;">
+                                <pharmacy:po bill="#{pharmacyBillSearch.bill.cancelledBill}" Canceled="true"/>
+                            </div>
+                            
+                        </h:panelGroup>
+
+                    </p:panel>
 
 
                 </h:form>                

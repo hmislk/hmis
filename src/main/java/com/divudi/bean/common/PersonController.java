@@ -158,7 +158,7 @@ public class PersonController implements Serializable {
     /**
      *
      */
-    @FacesConverter("personCon")
+    @FacesConverter(forClass = Person.class)
     public static class PersonControllerConverter implements Converter {
 
         @Override
@@ -193,7 +193,7 @@ public class PersonController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PersonController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Person.class.getName());
             }
         }
     }

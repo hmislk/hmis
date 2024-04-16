@@ -12,7 +12,7 @@
                 <div class="row">
                     <div class="col-6">
                         <div>
-                             <p:commandButton 
+                            <p:commandButton 
                                 id="btnAdd" 
                                 ajax="false" 
                                 value="Add" 
@@ -35,7 +35,7 @@
                                 value="Delete"  >
                             </p:commandButton>
                         </div>
-                        
+
 
                         <p:selectOneListbox id="lstSelect" 
                                             filter="true"
@@ -65,16 +65,16 @@
                                     <p:inputText class="w-100 mx-2" autocomplete="off" value="#{rosterController.current.shiftPerDay}"/>
                                 </h:panelGrid>
                             </h:panelGrid>
-                                <p:commandButton 
-                                    id="btnSave"
-                                    process="btnSave gpDetail"
-                                    update="lstSelect"
-                                    ajax="false" 
-                                    value="Save" 
-                                    action="#{rosterController.saveSelected()}"
-                                    class="ui-button-warning w-25 mt-4">
-                                </p:commandButton>
-                                <p:defaultCommand target="btnSave"/>
+                            <p:commandButton 
+                                id="btnSave"
+                                process="btnSave gpDetail"
+                                update="lstSelect"
+                                ajax="false" 
+                                value="Save" 
+                                action="#{rosterController.saveSelected()}"
+                                class="ui-button-warning w-25 mt-4">
+                            </p:commandButton>
+                            <p:defaultCommand target="btnSave"/>
                         </p:panel>
                     </div>
                 </div>

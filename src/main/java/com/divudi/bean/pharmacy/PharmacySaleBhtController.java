@@ -808,7 +808,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Sorry this BHT was Settled !!!");
             return true;
         }
-        for (BillItem bi: getBillItems()){
+        for (BillItem bi: getPreBill().getBillItems()){
             if(bi.getItem()==null){
                 JsfUtil.addErrorMessage("Requested item could not empty"+bi.getItem().getName());
                 return true;

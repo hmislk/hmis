@@ -48,6 +48,27 @@
                             <h:outputText id="item" value="#{ph.item.name}" >                                   
                             </h:outputText>
                         </p:column>  
+                        
+                        <p:column headerText="Batch No"  style="width:25px!important;">  
+                            <h:outputText id="batchNo" value="#{ph.pharmaceuticalBillItem.itemBatch.batchNo}" >                                   
+                            </h:outputText>
+                        </p:column>  
+                        
+                        <p:column headerText="Purchase Rate"  style="width:25px!important;">  
+                            <h:outputText id="purchasePrice" value="#{ph.pharmaceuticalBillItem.itemBatch.purcahseRate}" >                                   
+                            </h:outputText>
+                        </p:column> 
+                        
+                        <p:column headerText="Sale Rate"  style="width:25px!important;">  
+                            <h:outputText id="retailPrice" value="#{ph.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >                                   
+                            </h:outputText>
+                        </p:column> 
+                        
+                        <p:column headerText="Expiry Date"  style="width:25px!important;">  
+                            <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                        </p:column>  
 
                         <p:column style="width:6%">  
                             <p:rowEditor />  
