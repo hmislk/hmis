@@ -41,57 +41,103 @@
                                         <p:panel class="mb-2 w-100">
                                             <h:panelGrid columns="2" class="w-100">
                                                 <p:outputLabel value="Speciality" />
-                                                <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100" forceSelection="true" value="#{channelStaffPaymentBillController.speciality}" id="acSpeciality"
-                                                                completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                                >
+                                                <p:autoComplete 
+                                                    class="w-100 mx-2" 
+                                                    inputStyleClass="w-100" 
+                                                    forceSelection="true" 
+                                                    value="#{channelStaffPaymentBillController.speciality}" 
+                                                    id="acSpeciality"
+                                                    completeMethod="#{doctorSpecialityController.completeSpeciality}" 
+                                                    var="mysp" 
+                                                    itemLabel="#{mysp.name}" 
+                                                    itemValue="#{mysp}"
+                                                    >
                                                     <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
                                                 </p:autoComplete>
 
                                                 <p:outputLabel value="Staff" />
-                                                <p:autoComplete minQueryLength="2"  class="w-100 mx-2 my-1"
-                                                                inputStyleClass="w-100"
-                                                                forceSelection="true" 
-                                                                value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
-                                                                completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
-                                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                                >                                            
-                                                    <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
-                                                            listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
+                                                <p:autoComplete 
+                                                    minQueryLength="2"  
+                                                    class="w-100 mx-2 my-1"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true" 
+                                                    value="#{channelStaffPaymentBillController.currentStaff}" 
+                                                    id="scStaff"
+                                                    completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
+                                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                    >                                            
+                                                    <p:ajax 
+                                                        event="itemSelect" 
+                                                        update="lstSelect" 
+                                                        process="scStaff"  
+                                                        listener="#{channelStaffPaymentBillController.fillSessions}">
+                                                    </p:ajax>
                                                 </p:autoComplete>
                                                 <p:outputLabel value="Consider Date" />
-                                                <p:selectBooleanCheckbox value="#{channelStaffPaymentBillController.considerDate}" 
-                                                                         class="w-100 mx-2 my-1">
+                                                <p:selectBooleanCheckbox 
+                                                    value="#{channelStaffPaymentBillController.considerDate}" 
+                                                    class="w-100 mx-2 my-1">
                                                     <p:ajax update="fDate tDate" process="@this" event="change" />
                                                 </p:selectBooleanCheckbox>
                                                 <p:outputLabel value="From Date" />
-                                                <p:calendar value="#{channelStaffPaymentBillController.fromDate}" id="fDate" class="w-100 mx-2" inputStyleClass="w-100" 
-                                                            disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                                <p:calendar 
+                                                    value="#{channelStaffPaymentBillController.fromDate}" 
+                                                    id="fDate" 
+                                                    class="w-100 mx-2" 
+                                                    inputStyleClass="w-100" 
+                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" 
+                                                    navigator="false" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 <p:outputLabel value="To Date" />
-                                                <p:calendar value="#{channelStaffPaymentBillController.toDate}" id="tDate" class="w-100 mx-2" inputStyleClass="w-100" 
-                                                            disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                                <p:calendar 
+                                                    value="#{channelStaffPaymentBillController.toDate}" 
+                                                    id="tDate" 
+                                                    class="w-100 mx-2" 
+                                                    inputStyleClass="w-100" 
+                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" 
+                                                    navigator="false" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 <p:outputLabel value="Session" />
-                                                <p:selectOneMenu  id="lstSelect" converter="sscon"  
-                                                                  value="#{channelStaffPaymentBillController.selectedServiceSession}" class="w-100 mx-2 my-1">
+                                                <p:selectOneMenu  
+                                                    id="lstSelect" 
+                                                    converter="sscon"  
+                                                    value="#{channelStaffPaymentBillController.selectedServiceSession}" 
+                                                    class="w-100 mx-2 my-1">
                                                     <f:selectItem itemLabel="Select"  ></f:selectItem>
                                                     <f:selectItems  value="#{channelStaffPaymentBillController.serviceSessionList}" var="ses" 
                                                                     itemValue="#{ses}" 
                                                                     itemLabel="#{ses.name} - #{ses.dayString}" ></f:selectItems>
                                                 </p:selectOneMenu>
                                                 <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                                <p:selectOneMenu  id="cmbPay" class="w-100 mx-2" 
-                                                                  value="#{channelStaffPaymentBillController.paymentMethod}" >
-
+                                                <p:selectOneMenu 
+                                                    id="cmbPay" 
+                                                    class="w-100 mx-2" 
+                                                    value="#{channelStaffPaymentBillController.paymentMethod}" >
                                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 </p:selectOneMenu>
                                                 <p:watermark value="Speciality" for="acSpeciality"/>
                                                 <p:watermark value="Staff" for="scStaff"/>
                                             </h:panelGrid>
                                             <div class="d-flex justify-content-end mt-2">
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    value="Tem Process" 
+                                                    icon="fa-solid fa-arrows-rotate"
+                                                    class="ui-button-warning my-1"/>
+
                                                 <div class="d-flex ">
-                                                    <p:commandButton ajax="false" value="Process" icon="fa-solid fa-arrows-rotate"
-                                                                     class="ui-button-warning my-1" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
-                                                    <p:commandButton ajax="false" value="Clear" icon="fa-solid fa-eraser"
-                                                                     class="ui-button-danger mx-1 my-1" action="#{channelStaffPaymentBillController.makenull()}"/>
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="Process" 
+                                                        icon="fa-solid fa-arrows-rotate"
+                                                        class="ui-button-warning my-1"
+                                                        action="#{channelStaffPaymentBillController.calculateDueFees}"/>
+                                                    <p:commandButton 
+                                                        ajax="false" 
+                                                        value="Clear"
+                                                        icon="fa-solid fa-eraser"
+                                                        class="ui-button-danger mx-1 my-1"
+                                                        action="#{channelStaffPaymentBillController.makenull()}"/>
                                                 </div>
                                             </div>
                                         </p:panel>
@@ -103,15 +149,17 @@
 
 
 
-                                <p:dataTable id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}"
-                                             selection="#{channelStaffPaymentBillController.payingBillFees}" 
-                                             rowIndexVar="i" var="bf" rowKey="#{bf.id}"
-                                             rows="10"
-                                             paginator="true" paginatorPosition="bottom"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                             rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                             >
+                                <p:dataTable 
+                                    id="tblFee" 
+                                    value="#{channelStaffPaymentBillController.dueBillFees}"
+                                    selection="#{channelStaffPaymentBillController.payingBillFees}" 
+                                    rowIndexVar="i" var="bf" rowKey="#{bf.id}"
+                                    rows="10"
+                                    paginator="true" paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                    >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
@@ -216,9 +264,11 @@
                                 </p:panel>
                                 <div class="w-50" >
 
-                                    <p:commandButton id="btnPay" value="Pay" class="w-25 ui-button-success my-1"
+                                    <p:commandButton id="btnPay"
+                                                     value="Pay Doctor" 
+                                                     class="w-25 ui-button-success my-1"
                                                      action="#{channelStaffPaymentBillController.settleBill}" 
-                                                     process="btnPay"
+                                                     ajax="false"
                                                      update="tblFee pTotals gpBillPreview" />
                                 </div>
 
@@ -231,13 +281,18 @@
 
 
 
+
+
+
+
+                </h:form>
+
+
+                <h:form>
                     <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
                         <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
                         <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                     </h:panelGroup>
-
-
-
                 </h:form>
             </ui:define>
 

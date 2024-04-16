@@ -31,13 +31,13 @@
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   
                                 id="cmbPs" 
-                                style="width: 10em;"
+                                class="w-100"
                                 value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
                                 disabled="#{sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                 <p:ajax 
                                     process="cmbPs" 
-                                    update="creditCard cheque slip " 
+                                    update="creditCard cheque slip multiplePaymentMethods" 
                                     event="change" />
                             </p:selectOneMenu>
 
@@ -62,7 +62,15 @@
 
                             <p:defaultCommand target="settle"/>
                         </h:panelGrid>
+                        <h:panelGroup
+                            class="row my-2 w-50"
+                            layout="block" 
+                            id="multiplePaymentMethods"  style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;" 
+                            >
+                            <pa:multiple_payment_methods paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}" controller="#{pharmacyPreSettleController}" class="w-100"/>
 
+                        </h:panelGroup>
+                        
                         <div class="row mt-2">
                             <div class="col-5">
                                 <p:panel header="Customer Detail">

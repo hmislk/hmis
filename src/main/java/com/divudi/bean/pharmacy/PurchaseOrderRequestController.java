@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -26,6 +27,8 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.OptionScope;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,10 +50,6 @@ import javax.inject.Named;
 @SessionScoped
 public class PurchaseOrderRequestController implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -65,6 +64,14 @@ public class PurchaseOrderRequestController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
+
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    CommonController commonController;
+    @Inject
+    ConfigOptionController optionController;
+
     private Bill currentBill;
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
@@ -76,23 +83,22 @@ public class PurchaseOrderRequestController implements Serializable {
     private PaymentMethodData paymentMethodData;
 
     public void removeSelected() {
-        //  //System.err.println("1");
         if (selectedBillItems == null) {
-            //   //System.err.println("2");
             return;
         }
-
         for (BillItem b : selectedBillItems) {
-            //System.err.println("SerialNO " + b.getSearialNo());
-            //System.err.println("Item " + b.getItem().getName());
-            BillItem tmp = getBillItems().remove(b.getSearialNo());
-            tmp.setRetired(true);
-            tmp.setRetirer(sessionController.getLoggedUser());
-            tmp.setRetiredAt(new Date());
-            //System.err.println("Removed Item " + tmp.getItem().getName());
-            calTotal();
+            b.setRetired(true);
+            b.setRetirer(sessionController.getLoggedUser());
+            b.setRetiredAt(new Date());
+            if (getCurrentBill().getId() != null) {
+                if (b.getId() != null) {
+                    billItemFacade.edit(b);
+                }
+            }
         }
 
+        getBillItems().removeAll(selectedBillItems);
+        calTotal();
         selectedBillItems = null;
     }
 
@@ -101,7 +107,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public String navigateToCreateNewPurchaseOrder() {
+        System.out.println("navigateToCreateNewPurchaseOrder");
         resetBillValues();
+        getCurrentBill();
         return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
     }
 
@@ -214,6 +222,8 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setEditedAt(null);
         getCurrentBill().setEditor(null);
 
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
+
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
         } else {
@@ -234,15 +244,21 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setEditor(sessionController.getLoggedUser());
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
 
         getBillFacade().edit(getCurrentBill());
 
     }
 
-    public void generateBillComponentsForAllSupplierItems() {
-        // int serialNo = 0;
-        setBillItems(new ArrayList<BillItem>());
-        for (Item i : getPharmacyBillBean().getItemsForDealor(getCurrentBill().getToInstitution())) {
+    public void generateBillComponentsForAllSupplierItems(List<Item> items) {
+        if (items == null) {
+            return;
+        }
+        if (items.isEmpty()) {
+            return;
+        }
+        setBillItems(new ArrayList<>());
+        for (Item i : items) {
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -289,6 +305,7 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void finalizeBillComponent() {
+        getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
             b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
@@ -297,13 +314,13 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreater(getSessionController().getLoggedUser());
 
             double qty = 0.0;
-            qty = b.getQty()+b.getPharmaceuticalBillItem().getFreeQty();
+            qty = b.getQty() + b.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 b.setRetired(true);
                 b.setRetirer(sessionController.getLoggedUser());
                 b.setRetiredAt(new Date());
                 b.setRetireComments("Retired at Finalising PO");
-                
+
             }
 
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
@@ -320,7 +337,6 @@ public class PurchaseOrderRequestController implements Serializable {
                 getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
 
-
         }
     }
 
@@ -329,7 +345,33 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Dealor");
             return;
         }
-        generateBillComponentsForAllSupplierItems();
+        List<Item> allItems = getPharmacyBillBean().getItemsForDealor(getCurrentBill().getToInstitution());
+        generateBillComponentsForAllSupplierItems(allItems);
+    }
+
+    public void addAllSupplierItemsBelowRol() {
+        if (getCurrentBill().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please Select Dealer");
+            return;
+        }
+
+        String jpql = "SELECT i FROM Item i WHERE i IN "
+                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false) "
+                + "AND i IN "
+                + "(SELECT s.itemBatch.item FROM Stock s JOIN Reorder r ON r.item = s.itemBatch.item AND r.department = s.department "
+                + "WHERE s.department = :department AND s.stock < r.rol GROUP BY s.itemBatch.item) "
+                + "ORDER BY i.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("supplier", getCurrentBill().getToInstitution());
+        parameters.put("department", getSessionController().getDepartment());
+        List<Item> itemsBelowReorderLevel = getItemFacade().findByJpql(jpql, parameters);
+
+        if (itemsBelowReorderLevel == null || itemsBelowReorderLevel.isEmpty()) {
+            JsfUtil.addErrorMessage("No items found below reorder level for the selected supplier and department.");
+        } else {
+            generateBillComponentsForAllSupplierItems(itemsBelowReorderLevel);
+        }
     }
 
     public void request() {
@@ -354,7 +396,7 @@ public class PurchaseOrderRequestController implements Serializable {
 //
 //        resetBillValues();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+        
 
     }
 
@@ -382,18 +424,11 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
-//
-//        if (checkItemPrice()) {
-//            JsfUtil.addErrorMessage("Please enter purchase price for all");
-//            return;
-//        }
-
-        
         finalizeBill();
         finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+        
     }
 
     public void calTotal() {
@@ -455,7 +490,10 @@ public class PurchaseOrderRequestController implements Serializable {
         if (currentBill == null) {
             currentBill = new BilledBill();
             currentBill.setBillType(BillType.PharmacyOrder);
-            currentBill.setPaymentMethod(PaymentMethod.Credit);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
+            PaymentMethod pm = optionController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method", PaymentMethod.class, OptionScope.APPLICATION, null, null, null); 
+            System.out.println("pm = " + pm);
+            currentBill.setPaymentMethod(pm);
         }
         return currentBill;
     }

@@ -28,7 +28,7 @@
                         </p:calendar> 
                     </h:panelGrid>
                     <h:panelGrid columns="6" class="my-2" >
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                        <p:commandButton id="btnRefresh" ajax="false" value="Process"
                                          class="ui-button-warning" icon="fas fa-refresh"
                                          action="#{revinewReportController.createCashierTableByDepartment()}" />  
                         <p:defaultCommand target="btnRefresh"/>
@@ -66,7 +66,7 @@
                                                            
 
                             </h:panelGrid>
-                            <p:panel toggleable="true" header="Detail Summery">
+                            <p:panel toggleable="true" header="Detail Summary">
 
                                 <p:dataTable id="billed" value="#{revinewReportController.userBilledBillsList}" rendered="#{revinewReportController.userBilledBillsList.size()>1}" var="b">
                                     <f:facet name="header">  

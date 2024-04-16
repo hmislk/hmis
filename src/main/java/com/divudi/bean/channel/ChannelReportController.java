@@ -1170,29 +1170,87 @@ public class ChannelReportController implements Serializable {
 
     public void createChannelCashierBillList() {
 
-        getBilledBillList().setBills(createUserBills(new BilledBill(), getWebUser(), getDepartment()));
-        getCanceledBillList().setBills(createUserBills(new CancelledBill(), getWebUser(), getDepartment()));
-        getRefundBillList().setBills(createUserBills(new RefundBill(), getWebUser(), getDepartment()));
+        getBilledBillList().setBills(createUserChannelBills(new BilledBill(), getWebUser(), getDepartment()));
+        getCanceledBillList().setBills(createUserChannelBills(new CancelledBill(), getWebUser(), getDepartment()));
+        getRefundBillList().setBills(createUserChannelBills(new RefundBill(), getWebUser(), getDepartment()));
 
-        getBilledBillList().setAgent(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getCanceledBillList().setAgent(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
-        getRefundBillList().setAgent(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getBilledBillList().setAgent(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getCanceledBillList().setAgent(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getRefundBillList().setAgent(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
 
-        getBilledBillList().setCash(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getCanceledBillList().setCash(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
-        getRefundBillList().setCash(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getBilledBillList().setCash(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getCanceledBillList().setCash(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getRefundBillList().setCash(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
 
-        getBilledBillList().setCard(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getCanceledBillList().setCard(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
-        getRefundBillList().setCard(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getBilledBillList().setCard(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getCanceledBillList().setCard(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getRefundBillList().setCard(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
 
-        getBilledBillList().setSlip(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getCanceledBillList().setSlip(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
-        getRefundBillList().setSlip(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getBilledBillList().setSlip(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getCanceledBillList().setSlip(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getRefundBillList().setSlip(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
 
-        getBilledBillList().setCheque(calTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getCanceledBillList().setCheque(calTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
-        getRefundBillList().setCheque(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getBilledBillList().setCheque(calChannelTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getCanceledBillList().setCheque(calChannelTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getRefundBillList().setCheque(calChannelTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+
+        createSummary();
+    }
+    
+    public void createCashierBillList() {
+
+        getBilledBillList().setBills(createUserCashierBills(new BilledBill(), getWebUser(), getDepartment()));
+        getCanceledBillList().setBills(createUserCashierBills(new CancelledBill(), getWebUser(), getDepartment()));
+        getRefundBillList().setBills(createUserCashierBills(new RefundBill(), getWebUser(), getDepartment()));
+
+        getBilledBillList().setAgent(calCashierTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getCanceledBillList().setAgent(calCashierTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getRefundBillList().setAgent(calCashierTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+
+        getBilledBillList().setCash(calCashierTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getCanceledBillList().setCash(calCashierTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getRefundBillList().setCash(calCashierTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+
+        getBilledBillList().setCard(calCashierTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getCanceledBillList().setCard(calCashierTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getRefundBillList().setCard(calCashierTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+
+        getBilledBillList().setSlip(calCashierTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getCanceledBillList().setSlip(calCashierTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getRefundBillList().setSlip(calCashierTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+
+        getBilledBillList().setCheque(calCashierTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getCanceledBillList().setCheque(calCashierTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getRefundBillList().setCheque(calCashierTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+
+        createSummary();
+    }
+    
+    public void createAllBillList() {
+
+        getBilledBillList().setBills(createUserAllBills(new BilledBill(), getWebUser(), getDepartment()));
+        getCanceledBillList().setBills(createUserAllBills(new CancelledBill(), getWebUser(), getDepartment()));
+        getRefundBillList().setBills(createUserAllBills(new RefundBill(), getWebUser(), getDepartment()));
+
+        getBilledBillList().setAgent(calAllTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getCanceledBillList().setAgent(calAllTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+        getRefundBillList().setAgent(calAllTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Agent));
+
+        getBilledBillList().setCash(calAllTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getCanceledBillList().setCash(calAllTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+        getRefundBillList().setCash(calAllTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cash));
+
+        getBilledBillList().setCard(calAllTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getCanceledBillList().setCard(calAllTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+        getRefundBillList().setCard(calAllTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Card));
+
+        getBilledBillList().setSlip(calAllTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getCanceledBillList().setSlip(calAllTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+        getRefundBillList().setSlip(calAllTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Slip));
+
+        getBilledBillList().setCheque(calAllTotal(new BilledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getCanceledBillList().setCheque(calAllTotal(new CancelledBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
+        getRefundBillList().setCheque(calAllTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
 
         createSummary();
     }
@@ -1261,9 +1319,77 @@ public class ChannelReportController implements Serializable {
         this.channelSummary = channelSummary;
     }
 
-    public List<Bill> createUserBills(Bill billClass, WebUser webUser, Department department) {
+    public List<Bill> createUserChannelBills(Bill billClass, WebUser webUser, Department department) {
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelProPayment, BillType.ChannelAgencyCommission, BillType.ChannelIncomeBill, BillType.ChannelExpenesBill, BillType.AgentCreditNoteBill, BillType.AgentDebitNoteBill};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType in :bt "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            temMap.put("web", webUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bill", billClass.getClass());
+        temMap.put("bt", bts);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    public List<Bill> createUserCashierBills(Bill billClass, WebUser webUser, Department department) {
+
+        BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType in :bt "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            temMap.put("web", webUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bill", billClass.getClass());
+        temMap.put("bt", bts);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    public List<Bill> createUserAllBills(Bill billClass, WebUser webUser, Department department) {
+
+        BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment, BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelProPayment, BillType.ChannelAgencyCommission, BillType.ChannelIncomeBill, BillType.ChannelExpenesBill, BillType.AgentCreditNoteBill, BillType.AgentDebitNoteBill};
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
@@ -1295,9 +1421,9 @@ public class ChannelReportController implements Serializable {
 
     }
 
-    public double calTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
+    public double calChannelTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelProPayment, BillType.ChannelAgencyCommission, BillType.ChannelIncomeBill, BillType.ChannelExpenesBill, BillType.AgentCreditNoteBill, BillType.AgentDebitNoteBill};
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
@@ -1333,6 +1459,81 @@ public class ChannelReportController implements Serializable {
 
     }
 
+     public double calCashierTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
+
+        BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+                + " type(b)=:bill "
+                + " and b.retired=false  "
+                + " and b.billType in :bt "
+                + " and b.paymentMethod=:pm"
+                + " and b.institution=:ins"
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:w";
+            temMap.put("w", wUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bt", bts);
+        temMap.put("pm", paymentMethod);
+
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calAllTotal(Bill billClass, WebUser wUser, Department department, PaymentMethod paymentMethod) {
+
+        BillType[] billTypes = {BillType.OpdBill, BillType.PharmacySale, BillType.PharmacyWholeSale, BillType.GrnPaymentPre, BillType.PaymentBill, BillType.PettyCash, BillType.CashRecieveBill, BillType.AgentPaymentReceiveBill, BillType.CollectingCentrePaymentReceiveBill, BillType.InwardPaymentBill, BillType.CashIn, BillType.CashOut, BillType.DrawerAdjustment, BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelProPayment, BillType.ChannelAgencyCommission, BillType.ChannelIncomeBill, BillType.ChannelExpenesBill, BillType.AgentCreditNoteBill, BillType.AgentDebitNoteBill};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+                + " type(b)=:bill "
+                + " and b.retired=false  "
+                + " and b.billType in :bt "
+                + " and b.paymentMethod=:pm"
+                + " and b.institution=:ins"
+                + " and b.createdAt between :fromDate and :toDate";
+        Map temMap = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (webUser != null) {
+            sql += " and b.creater=:w";
+            temMap.put("w", wUser);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bt", bts);
+        temMap.put("pm", paymentMethod);
+
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
     double finalCashTot;
     double finalAgentTot;
     double finalCardTot;
@@ -3108,8 +3309,6 @@ public class ChannelReportController implements Serializable {
             String sql = "Select bs "
                     + " From BillSession bs "
                     + " where bs.retired=false "
-                    + " and bs.bill.cancelled=false "
-                    + " and bs.bill.refunded=false "
                     + " and bs.bill.billType in :tbs "
                     + " and bs.sessionInstance=:si"
                     + " and bs.sessionDate= :ssDate"
@@ -3275,46 +3474,9 @@ public class ChannelReportController implements Serializable {
         return m;
     }
 
-    public String createArrivalSmsBody(BillSession bs) {
-        if (bs == null) {
-            return null;
-        }
+   
 
-        if (bs.getServiceSession() == null) {
-            return null;
-        }
-        return createArrivalSmsBody(bs.getServiceSession());
-    }
-
-    public void sendArrivalSms() {
-        sendingSmsText = createArrivalSmsBody(serviceSession);
-        if (serviceSession == null) {
-            JsfUtil.addErrorMessage("No Service Session");
-            return;
-        }
-        if (sendingSmsText == null) {
-            JsfUtil.addErrorMessage("Error");
-            return;
-        }
-        int count = 0;
-        for (BillSession bs : getBillSessionsNurse()) {
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setBill(bs.getBill());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getPhone());
-            e.setSendingMessage((sendingSmsText));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSmsType(MessageType.ChannelDoctorAraival);
-            smsFacade.create(e);
-            smsManagerEjb.sendSms(e);
-            count++;
-        }
-        sendingSmsText = null;
-    }
+  
 
     public void sendCancellationSms() {
 

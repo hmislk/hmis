@@ -9,7 +9,7 @@
 
     <ui:define name="subContent">
         <h:panelGroup>
-            <p:panel header="Get Card Summery Report">
+            <p:panel header="Get Card Summary Report">
                 <h:form >
 
                     <p:panel id="pan1" >
@@ -29,7 +29,7 @@
                             <p:outputLabel value="Report Type" rendered="#{channelReportController.reportKeyWord.bool1}"/>
                             <p:selectOneRadio id="console" value="#{channelReportController.reportKeyWord.string}" 
                                               rendered="#{channelReportController.reportKeyWord.bool1}">
-                                <f:selectItem itemLabel="Summery" itemValue="0" />
+                                <f:selectItem itemLabel="Summary" itemValue="0" />
                                 <f:selectItem itemLabel="Detail" itemValue="1" />
                             </p:selectOneRadio>
 

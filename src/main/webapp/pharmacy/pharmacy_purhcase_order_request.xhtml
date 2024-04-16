@@ -135,7 +135,7 @@
                                 </p:column>
 
                             </p:dataTable> 
-
+                            
                             <div >
                                 <ph:history/>
                             </div>
@@ -170,7 +170,7 @@
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                     <f:selectItem itemLabel="Select Payment method"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForPo}">
+                                    <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
                                     </f:selectItems>
                                     <p:ajax process="@this" update="po" event="change"/>
                                     <p:ajax process="@this" update="duration" event="itemSelect" />
@@ -236,7 +236,7 @@
                                     class="m-1 ui-button-success "  
                                     ajax="false" 
                                     value="Add Items Below ROL" 
-                                    action="#{purchaseOrderRequestController.addAllSupplierItems}"/>
+                                    action="#{purchaseOrderRequestController.addAllSupplierItemsBelowRol()}"/>
 
                                 <hr/>
                                 <p:outputLabel 
@@ -285,10 +285,6 @@
                                     </p:column>
                                     <p:column headerText="Code" >
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                     </p:column>
                                 </p:autoComplete>
                                 <p:commandButton 

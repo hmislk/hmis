@@ -1,0 +1,302 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="admission" type="com.divudi.entity.inward.Admission" />
+        <cc:attribute name="controller"  />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form >
+            <div style="width: 210mm;">
+                <div class="">
+                    <div class="col-12 text-center">
+                        <h3><h:outputLabel value="#{cc.attrs.admission.institution.name}" /></h3>
+                        <h5 style="margin-top: -10px;"><h:outputLabel value="#{cc.attrs.admission.institution.address}" /></h5>
+                        <div class="d-flex justify-content-center">
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.phone}</h6>
+                            <p:spacer width="10px"/>
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.email}</h6>
+                        </div>
+                        <div class="d-flex text-center">
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.fax}</h6>
+                            <p:spacer width="10px"/>
+                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.web}</h6>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-12 text-center" style="font-weight: bold;">
+                    <h3>WARD ADMISSION</h3>
+                </div>
+
+
+
+                <div class="mt-3" style="font-weight: bold;">
+                    <p:outputLabel   value="ADMISSION DETAILS" />
+                </div>
+
+                <div class="row">
+                    <table style="margin-left: 5%">
+                        <tr>
+                            <td style="width: 17%"><p:outputLabel   value="Admission Type " /></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><p:outputLabel  value="#{cc.attrs.admission.admissionType.name}" /></td>
+                            <td style="width: 3%"></td>
+                            <td style="width: 17%"><p:outputLabel   value="Room No " /></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><p:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Consultant Doctor"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" /></td>
+                            <td></td>
+                            <td><h:outputLabel value="OPD Doctor"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.opdDoctor.person.nameWithTitle}" /></td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel   value="BHT No " /></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><p:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></td>
+                            <td></td>
+                            <td><h:outputLabel value="Date of Admission "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Payment Type "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.paymentMethod}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Time of Admission "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+
+                <div class="mt-3" style="font-weight: bold;">
+                    <p:outputLabel   value="PATIENT DETAILS" />
+                </div>
+
+                <div class="row ">
+                    <table style="margin-left: 5%">
+                        <tr>
+                            <td style="width: 17%"><p:outputLabel value="Name" /></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><p:outputLabel value="#{cc.attrs.admission.patient.person.nameWithTitle}" /></td>
+                            <td style="width: 3%"></td>
+                            <td style="width: 17%"><h:outputLabel value="Sex "></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.patient.person.sex}" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Age  "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.age}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Date Of Birth"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.dob}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Blood Group "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.bloodGroup.name}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Civil Status "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.civilStatus.name}" ></h:outputLabel></td>
+                        </tr>
+
+                        <tr>
+                            <td><h:outputLabel value="Address "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.address}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="NIC "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.nic}" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Mobile No  "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.mobile}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Home No "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.patient.person.phone}" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Work Place"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.workplace.name}" ></h:outputLabel></td>
+                            <td></td>
+                            <td><h:outputLabel value="Employeement"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.patient.person.occupation.name}" >
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr class="p-2">
+                            <td><h:outputLabel value="Allergies"></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <p:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}" 
+                                                               value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
+                                                <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}" 
+                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:repeat>
+                            </td>
+                            <td></td>
+                            <td><h:outputLabel value="Referring Doctor "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.nameWithTitle}" ></h:outputLabel></td>
+                        </tr>
+                    </table>
+
+                </div>
+
+                <div class="mt-3" style="font-weight: bold;">
+                    <p:outputLabel   value="GUARDIAN DETAILS" />
+                </div>
+
+                <div class="row">
+                    <table style="margin-left: 5%">
+                        <tr>
+                            <td style="width: 17%"><h:outputLabel value="Name "></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%">
+                                <h:outputLabel value="#{cc.attrs.admission.guardian.name}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 3%"></td>
+                            <td style="width: 17%"><h:outputLabel value="NIC "></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.guardian.nic}" ></h:outputLabel></td>
+                        </tr>
+
+                        <tr>
+                            <td><h:outputLabel value="Address "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.guardian.address}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </td>
+                            <td></td>
+                            <td><h:outputLabel value="Home No "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.guardian.phone}" ></h:outputLabel></td>
+                        </tr>
+
+                        <tr>
+                            <td><h:outputLabel value="Mobile No "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </td>
+                            <td></td>
+                            <td><h:outputLabel value="Relationship "/></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.admission.guardianRelationshipToPatient.name}" />
+                            </td>                        
+                        </tr>
+
+                    </table>
+
+                </div>
+
+                <div class="mt-3" style="font-weight: bold;">
+                    <p:outputLabel   value="CREDIT COMPANY DETAILS" />
+                </div>
+
+                <div class="row">
+                    <table style="margin-left: 5%">
+                        <tr>
+                            <td style="width: 17%"><h:outputLabel value="Credit Company "></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" ></h:outputLabel></td>
+                            <td style="width: 3%"></td>
+                            <td style="width: 17%"><h:outputLabel value="Policy Number "></h:outputLabel></td>
+                            <td style="width: 5%"><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td style="width: 25%"><h:outputLabel value="#{cc.attrs.admission.policyNo}" ></h:outputLabel></td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel value="Reference Number "></h:outputLabel></td>
+                            <td><h:outputLabel value=" : " style="width: 20px; text-align: center;"></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.admission.referanceNo}" ></h:outputLabel></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="mt-3" style="font-weight: bold; font-size: 15px">
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish ne null}"  >
+                        <p>
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetEnglish}"/>
+                        </p>
+                    </h:panelGroup>
+                </div>
+                <div class="mt-3" style="font-weight: bold; font-size: 14px">
+                    <h:panelGroup rendered="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala ne null}"  >
+                        <p>
+                            <h:outputText value="#{sessionController.applicationPreference.inwardAddmissionStatemenetSinhala}"/>
+                        </p>
+                    </h:panelGroup>
+                </div>
+
+
+                <div class="d-flex justify-content-end mt-5">
+                    <h:outputLabel value="Guardian" style="text-decoration: overline; margin-left: 10mm;"></h:outputLabel>
+                </div>
+
+                <div class=" d-flex justify-content-between mt-5">
+                    <h:outputLabel value="Prepared by : #{cc.attrs.admission.creater.name}"></h:outputLabel>
+                    <div class="d-flex gap-2">
+                        <h:outputLabel value="Printed on :" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    </cc:implementation>
+</html>

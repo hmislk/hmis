@@ -105,6 +105,7 @@ public class DocumentTemplateController implements Serializable {
                 + "Outdoor : {outdoor}<br/>"
                 + "Indoor : {indoor}<br/>"
                 + "Order Tests For Visit : {ix}<br/>"
+                + "Order Tests For Visit Same Line: {ix-same-line}<br/>"
                 + "Plan of Action : {pa}<br/>"
                 + "Past Diagnosis : {past-dx}<br/>"
                 + "Routine Medicines : {routine-medicines}<br/>"

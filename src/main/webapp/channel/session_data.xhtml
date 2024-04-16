@@ -49,7 +49,7 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </p:outputLabel>
                             <p:outputLabel value="Time" ></p:outputLabel>
-                            <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.sessionTime}" >
+                            <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.startingTime}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                             </p:outputLabel>
                             <p:outputLabel value="Consultant Fee" ></p:outputLabel>
@@ -84,11 +84,21 @@
                                                  icon="pi pi-calendar"
                                                  styleClass="ui-button-warning mb-2 w-100">
                                 </p:commandButton>
+                                <p:commandButton value="Pay Session"
+                                                 action="#{bookingController.paySelectedSession()}"
+                                                 ajax="false"
+                                                 icon="pi pi-credit-card"
+                                                 styleClass="ui-button-danger mb-2 w-100">
+                                </p:commandButton>
                                 <p:commandButton value="Pay Selected Doctor"
                                                  action="#{bookingController.paySelectedDoctor}"
                                                  ajax="false"
                                                  icon="pi pi-credit-card"
                                                  styleClass="ui-button-danger mb-2 w-100">
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.speciality}" value="#{bookingController.speciality}"/>
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.currentStaff}" value="#{bookingController.staff}"/>
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.sessionInstance}" value="#{bookingController.selectedSessionInstance}"/>
+                                    <f:setPropertyActionListener target="#{channelStaffPaymentBillController.printPreview}" value="false"/>
                                 </p:commandButton>
                                 <p:commandButton value="Phone View"
                                                  action="#{bookingController.navigateToPhoneView}"

@@ -147,13 +147,16 @@
                                         <p:outputLabel value="Start Time"/>
                                     </div>
                                     <div class="col-4">
-                                        <p:calendar 
+                                        <p:datePicker 
                                             class="mx-2" 
                                             id="startTime" 
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
                                             value="#{inwardTimedItemController.current.fromTime}" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                             size="40" >
-                                        </p:calendar>  
+                                        </p:datePicker>  
                                     </div>
                                 </div>
 

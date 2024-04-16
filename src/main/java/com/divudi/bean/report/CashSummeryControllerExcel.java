@@ -261,7 +261,7 @@ public class CashSummeryControllerExcel implements Serializable {
         tmp.add(dd);
 
         dd = new String1Value1();
-        dd.setString("B/F Cash Ballance");
+        dd.setString("B/F Cash Balance");
         tmp.add(dd);
 
         return tmp;

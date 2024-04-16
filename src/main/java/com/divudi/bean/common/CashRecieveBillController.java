@@ -581,7 +581,7 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Payment/By OPD bill(/faces/credit/credit_compnay_bill_opd.xhtml)");
+        
     }
 
     public void settleBillPharmacy() {
@@ -608,7 +608,7 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Payment/By OPD bill(/faces/credit/credit_compnay_bill_opd.xhtml)");
+        
     }
 
     public void settleBillBht() {
@@ -633,7 +633,7 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Inward/By OPD bill(/faces/credit/credit_compnay_bill_inward.xhtml)");
+        
 
     }
 

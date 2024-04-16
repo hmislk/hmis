@@ -2778,8 +2778,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Item> itemFromPackage(Item packege) {
-        System.out.println("packege = " + packege.getName());
-        System.out.println("packege ID = " + packege.getId());
         String sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
         List<Item> packageItems = getItemFacade().findByJpql(sql);
 
@@ -2948,7 +2946,7 @@ public class BillBeanController implements Serializable {
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);
 //        bill.setDiscount(dis);
-        if (sessionController.getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////System.out.println("cashRemain" + billController.getCashRemain());
             if (billController.getCashRemain() != 0) {
                 if (tot > billController.getCashRemain()) {
@@ -2977,8 +2975,10 @@ public class BillBeanController implements Serializable {
             ////System.out.println(".................");
 
         } else {
+            bill.setGrantTotal(tot);
             bill.setTotal(tot);
             bill.setNetTotal(net);
+            bill.setBillTotal(net);
             bill.setDiscount(dis);
         }
 

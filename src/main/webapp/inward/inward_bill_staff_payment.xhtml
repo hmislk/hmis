@@ -59,10 +59,7 @@
                             </h:panelGrid>
                         </h:form>
 
-
-
                         <h:form>
-
                             <p:dataTable   
                                 id="tblFee"
                                 value="#{inwardStaffPaymentBillController.dueBillFees}"
@@ -152,37 +149,51 @@
                                 </h:panelGrid>
                             </p:panel>
                             <div class="w-25" >
-                                <h:commandButton
-
+                                <p:commandButton
+                                    ajax ="false"
                                     value="Pay" 
                                     action="#{inwardStaffPaymentBillController.settleBill()}" 
                                     class="w-25 ui-button-success my-1" >
-                                </h:commandButton>
+                                </p:commandButton>
 
                             </div>
                         </h:form>
-
-
-
-
                     </p:panel>
                 </h:panelGroup>
 
+                <h:form>
 
-                <h:panelGroup rendered="#{inwardStaffPaymentBillController.printPreview}" styleClass="alignTop" >
-                    <p:commandButton ajax="false" value="New Bill" action="#{inwardStaffPaymentBillController.recreateModel}" />
+                    <p:panel rendered="#{inwardStaffPaymentBillController.printPreview}">
+                        <f:facet name="header" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Payment Bill View" class="mt-2"></h:outputLabel>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false"  
+                                        value="New Bill"
+                                        icon="fa fa-plus"
+                                        class="ui-button-success"
+                                        action="#{inwardStaffPaymentBillController.navigateToInwardPayStaff()}"  >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Print" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        ajax="false" action="#" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
 
-                    <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
-                </h:panelGroup>
+                        </f:facet>
 
+                        <h:panelGroup id="gpBillPreview">
+                            <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                        </h:panelGroup>
 
-
-
-
+                    </p:panel>
+                </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

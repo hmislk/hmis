@@ -57,6 +57,10 @@ public class PlanController implements Serializable {
         return "/emr/admin/plans";
     }
     
+    public String navigateToManageClinicaEntities(){
+        return "/emr/admin/clinical_entities";
+    }
+    
     
     public void downloadAsExcel() {
         getItems();

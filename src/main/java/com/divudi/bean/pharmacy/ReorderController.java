@@ -124,13 +124,19 @@ public class ReorderController implements Serializable {
         return "/pharmacy/reorder_management?faces-redirect=true";
     }
 
+    public void updateReorder(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        save(ro);
+    }
+
     public List<Reorder> fillReordersBySelectedDepartment() {
         reorders = null;
         Map m = new HashMap();
         String sql = "select r from Reorder r where r.department=:dep";
         m.put("dep", department);
         reorders = reorderFacade.findByJpql(sql, m);
-        System.out.println("reorders dep = " + reorders.size());
         return reorders;
 
     }
@@ -141,7 +147,6 @@ public class ReorderController implements Serializable {
         String sql = "select r from Reorder r where r.institution=:ins";
         m.put("ins", institution);
         reorders = reorderFacade.findByJpql(sql, m);
-        System.out.println("reorders ins = " + reorders.size());
         return reorders;
     }
 
@@ -168,12 +173,12 @@ public class ReorderController implements Serializable {
             return true;
         }
     }
-    
-    public void removeReOrder(Reorder ro){
+
+    public void removeReOrder(Reorder ro) {
         if (ro != null) {
             reorderFacade.remove(ro);
         }
-   
+
     }
 
     public void createReOrdersByDepartment() {
@@ -188,10 +193,9 @@ public class ReorderController implements Serializable {
             }
         }
     }
-    
+
     public void createReOrdersByInstituion() {
         List<Amp> amps = getAmpController().findItems();
-        System.out.println("amps by ins = " + amps.size());
         for (Amp amp : amps) {
             if (isAmpHaveReorder(amp, null, institution) == false) {
                 Reorder ro = new Reorder();
@@ -513,7 +517,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill All Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -522,7 +526,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill Required Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
     }
 
     public List<Reorder> getReorders() {
@@ -595,7 +599,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(true, false, departmentListMethod);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(generate records)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -678,6 +682,17 @@ public class ReorderController implements Serializable {
         List<Department> deps = new ArrayList<>(ds.values());
 
         return deps;
+    }
+
+    private void save(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        if(ro.getId()==null) {
+            reorderFacade.create(ro);
+        }else{
+            reorderFacade.edit(ro);
+        }
     }
 
     enum AutoOrderMethod {
@@ -876,7 +891,7 @@ public class ReorderController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Saved.");
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Reports for ordering/Reorder analysis(/faces/pharmacy/ordering_data.xhtml)");
+        
 
     }
 

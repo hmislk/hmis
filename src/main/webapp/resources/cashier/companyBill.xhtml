@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{cc.attrs.data.bills.size()>0}">
+        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{cc.attrs.data.bills.size()>0}">
             <f:facet name="header">  
                 <h:outputLabel value="Credit Company Payment Recieve"/>
             </f:facet> 
@@ -75,10 +75,6 @@
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
             </p:column> 
-
-            <p:column exportable="false">
-                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-            </p:column>
 
             <p:columnGroup type="footer">  
                 <p:row>  

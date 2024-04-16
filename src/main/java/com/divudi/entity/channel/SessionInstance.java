@@ -3,6 +3,7 @@ package com.divudi.entity.channel;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
@@ -11,10 +12,6 @@ import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -22,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -42,6 +38,13 @@ import javax.persistence.Transient;
  */
 @Entity
 public class SessionInstance implements Serializable {
+    
+    @ManyToOne
+    private BillSession nextInLineBillSession;
+    @ManyToOne
+    private BillSession currentlyConsultingBillSession;
+    @ManyToOne
+    private BillSession lastCompletedBillSession;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -64,6 +67,20 @@ public class SessionInstance implements Serializable {
     @ManyToOne
     Department forDepartment;
 
+    @Transient
+    private boolean currentlyOngoing;
+
+    private boolean started;
+    @ManyToOne
+    private WebUser startedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date startedAt;
+
+    private boolean completed;
+    @ManyToOne
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
 
     String name;
     String sname;
@@ -91,36 +108,22 @@ public class SessionInstance implements Serializable {
     WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
-    
+
     private double dblValue = 0.0f;
     @Enumerated
     SessionNumberType sessionNumberType;
-
-
 
     @Lob
     String descreption;
     @Lob
     String comments;
-    double vatPercentage;
 
-    
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date effectiveTo;
     private boolean scanFee;
     double profitMargin;
-
-    //Matara Phrmacy Sale Autocomplete
-    @ManyToOne
-    private Vmp vmp;
-
-    @ManyToOne
-    private Machine machine;
-
-    @Transient
-    private ItemType medicineType;
 
     String creditNumbers;
     String cashNumbers;
@@ -132,21 +135,6 @@ public class SessionInstance implements Serializable {
     private ItemType itemType;
     @Enumerated(EnumType.STRING)
     private Priority priority;
-
-    private boolean hasMoreThanOneComponant;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private ReportItem reportItem;
-
-    @ManyToOne //Strength Units in VMP & AMP
-    private MeasurementUnit strengthUnit;
-    @ManyToOne
-    private MeasurementUnit baseUnit;
-    @ManyToOne
-    private MeasurementUnit issueUnit;
-    private Double issueUnitsPerPackUnit;
-    private MeasurementUnit packUnit;
-    private Double baseUnitsPerIssueUnit;
 
     @Transient
     double channelStaffFee;
@@ -214,6 +202,11 @@ public class SessionInstance implements Serializable {
     Boolean arival;
     @Transient
     boolean serviceSessionCreateForOriginatingSession = false;
+
+    private Long bookedPatientCount;
+    private Long paidPatientCount;
+    private Long completedPatientCount;
+    private Long remainingPatientCount;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -527,14 +520,6 @@ public class SessionInstance implements Serializable {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
 
-    public double getVatPercentage() {
-        return 0;
-    }
-
-    public void setVatPercentage(double vatPercentage) {
-        this.vatPercentage = vatPercentage;
-    }
-
     public String getCreditNumbers() {
         return creditNumbers;
     }
@@ -582,10 +567,6 @@ public class SessionInstance implements Serializable {
     public void setEffectiveFrom(Date effectiveFrom) {
         this.effectiveFrom = effectiveFrom;
     }
-
-   
-
-
 
     @Transient
     double hospitalFee;
@@ -744,12 +725,6 @@ public class SessionInstance implements Serializable {
         this.forDepartment = forDepartment;
     }
 
-    
-
-   
-
-   
-
     public String getName() {
         return name;
     }
@@ -862,12 +837,6 @@ public class SessionInstance implements Serializable {
         this.retireComments = retireComments;
     }
 
-   
-
-    
-
-   
-
     public String getDescreption() {
         return descreption;
     }
@@ -875,8 +844,6 @@ public class SessionInstance implements Serializable {
     public void setDescreption(String descreption) {
         this.descreption = descreption;
     }
-
-  
 
     public SessionNumberType getSessionNumberType() {
         return sessionNumberType;
@@ -934,8 +901,6 @@ public class SessionInstance implements Serializable {
         this.dblValue = dblValue;
     }
 
-   
-
     public double getProfitMargin() {
         return profitMargin;
     }
@@ -944,27 +909,12 @@ public class SessionInstance implements Serializable {
         this.profitMargin = profitMargin;
     }
 
-  
-
-  
-
-
-   
-
     public String getComments() {
         return comments;
     }
 
     public void setComments(String comments) {
         this.comments = comments;
-    }
-
-    public Vmp getVmp() {
-        return vmp;
-    }
-
-    public void setVmp(Vmp vmp) {
-        this.vmp = vmp;
     }
 
     public Date getEffectiveTo() {
@@ -981,14 +931,6 @@ public class SessionInstance implements Serializable {
 
     public void setScanFee(boolean scanFee) {
         this.scanFee = scanFee;
-    }
-
-    public Machine getMachine() {
-        return machine;
-    }
-
-    public void setMachine(Machine machine) {
-        this.machine = machine;
     }
 
     public String getReserveNumbers() {
@@ -1035,25 +977,6 @@ public class SessionInstance implements Serializable {
         this.itemType = itemType;
     }
 
-    public boolean isHasMoreThanOneComponant() {
-        return hasMoreThanOneComponant;
-    }
-
-    public void setHasMoreThanOneComponant(boolean hasMoreThanOneComponant) {
-        this.hasMoreThanOneComponant = hasMoreThanOneComponant;
-    }
-
-    public ReportItem getReportItem() {
-        if (reportItem == null) {
-            reportItem = new ReportItem();
-        }
-        return reportItem;
-    }
-
-    public void setReportItem(ReportItem reportItem) {
-        this.reportItem = reportItem;
-    }
-
     public Priority getPriority() {
         return priority;
     }
@@ -1068,54 +991,6 @@ public class SessionInstance implements Serializable {
 
     public void setTotalForForeigner(Double totalForForeigner) {
         this.totalForForeigner = totalForForeigner;
-    }
-
-    public MeasurementUnit getStrengthUnit() {
-        return strengthUnit;
-    }
-
-    public void setStrengthUnit(MeasurementUnit strengthUnit) {
-        this.strengthUnit = strengthUnit;
-    }
-
-    public Double getIssueUnitsPerPackUnit() {
-        return issueUnitsPerPackUnit;
-    }
-
-    public void setIssueUnitsPerPackUnit(Double issueUnitsPerPackUnit) {
-        this.issueUnitsPerPackUnit = issueUnitsPerPackUnit;
-    }
-
-    public MeasurementUnit getPackUnit() {
-        return packUnit;
-    }
-
-    public void setPackUnit(MeasurementUnit packUnit) {
-        this.packUnit = packUnit;
-    }
-
-    public MeasurementUnit getBaseUnit() {
-        return baseUnit;
-    }
-
-    public void setBaseUnit(MeasurementUnit baseUnit) {
-        this.baseUnit = baseUnit;
-    }
-
-    public MeasurementUnit getIssueUnit() {
-        return issueUnit;
-    }
-
-    public void setIssueUnit(MeasurementUnit issueUnit) {
-        this.issueUnit = issueUnit;
-    }
-
-    public Double getBaseUnitsPerIssueUnit() {
-        return baseUnitsPerIssueUnit;
-    }
-
-    public void setBaseUnitsPerIssueUnit(Double baseUnitsPerIssueUnit) {
-        this.baseUnitsPerIssueUnit = baseUnitsPerIssueUnit;
     }
 
     @Override
@@ -1190,14 +1065,6 @@ public class SessionInstance implements Serializable {
         this.showAppointmentTime = showAppointmentTime;
     }
 
-    public ItemType getMedicineType() {
-        return medicineType;
-    }
-
-    public void setMedicineType(ItemType medicineType) {
-        this.medicineType = medicineType;
-    }
-
     public Boolean getPrintFeesForBills() {
         return printFeesForBills;
     }
@@ -1234,5 +1101,114 @@ public class SessionInstance implements Serializable {
         return channelOnCallFee;
     }
 
+    public boolean isCurrentlyOngoing() {
+        return started && !completed;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public WebUser getStartedBy() {
+        return startedBy;
+    }
+
+    public void setStartedBy(WebUser startedBy) {
+        this.startedBy = startedBy;
+    }
+
+    public Date getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Date startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public Long getBookedPatientCount() {
+        return bookedPatientCount;
+    }
+
+    public void setBookedPatientCount(Long bookedPatientCount) {
+        this.bookedPatientCount = bookedPatientCount;
+    }
+
+    public Long getPaidPatientCount() {
+        return paidPatientCount;
+    }
+
+    public void setPaidPatientCount(Long paidPatientCount) {
+        this.paidPatientCount = paidPatientCount;
+    }
+
+    public Long getCompletedPatientCount() {
+        return completedPatientCount;
+    }
+
+    public void setCompletedPatientCount(Long completedPatientCount) {
+        this.completedPatientCount = completedPatientCount;
+    }
+
+    public Long getRemainingPatientCount() {
+        return remainingPatientCount;
+    }
+
+    public void setRemainingPatientCount(Long remainingPatientCount) {
+        this.remainingPatientCount = remainingPatientCount;
+    }
+
+    public BillSession getNextInLineBillSession() {
+        return nextInLineBillSession;
+    }
+
+    public void setNextInLineBillSession(BillSession nextInLineBillSession) {
+        this.nextInLineBillSession = nextInLineBillSession;
+    }
+
+    public BillSession getCurrentlyConsultingBillSession() {
+        return currentlyConsultingBillSession;
+    }
+
+    public void setCurrentlyConsultingBillSession(BillSession currentlyConsultingBillSession) {
+        this.currentlyConsultingBillSession = currentlyConsultingBillSession;
+    }
+
+    public BillSession getLastCompletedBillSession() {
+        return lastCompletedBillSession;
+    }
+
+    public void setLastCompletedBillSession(BillSession lastCompletedBillSession) {
+        this.lastCompletedBillSession = lastCompletedBillSession;
+    }
     
+    
+
 }

@@ -263,7 +263,7 @@ public class StoreReportsTransfer implements Serializable {
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill item(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
@@ -304,7 +304,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
+        
     }
 
     public void fillDepartmentUnitIssueByBillItemStore() {
@@ -345,7 +345,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_report_unit_issue_bill_item.xhtml)");
+        
     }
 
     public void fillFromDepartmentUnitIssueByBillStore() {
@@ -374,7 +374,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit by department(/faces/store/store_report_unit_issue_department.xhtml)");
+        
     }
 
     public ArrayList<DepartmentBillRow> getDrows() {
@@ -417,7 +417,7 @@ public class StoreReportsTransfer implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by department(summery)(/faces/store/store_report_unit_issue_department_by_departmaent.xhtm)");
+        
 
 //        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
     }
@@ -572,7 +572,7 @@ public class StoreReportsTransfer implements Serializable {
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void fillDepartmentIssueByBillItem() {
@@ -700,7 +700,7 @@ public class StoreReportsTransfer implements Serializable {
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void fillDepartmentTransfersIssueByBill() {
@@ -745,7 +745,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer issue by bill (/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
@@ -784,7 +784,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+        
     }
 
     public void createStoreIssueReport() {
@@ -962,7 +962,7 @@ public class StoreReportsTransfer implements Serializable {
         dcr.getCaregoryRows().add(cr);
         departmentCategoryRows.add(dcr);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
+        
     }
 
     public void createStoreIssueCategoryReport() {
@@ -1065,7 +1065,7 @@ public class StoreReportsTransfer implements Serializable {
         saleValue += cr.getTotal();
         caregoryRows.add(cr);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Unit Issue Category Wise Summery(/faces/store/store_report_unit_issue_bill_1.xhtml)");
+        
     }
 
     private ItemRow createItemRow(ItemRow ir, BillClassType bct, double count, double unitValue, double total) {

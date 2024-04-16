@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Reprint Sale Bill" class="mt-2" ></h:outputLabel>
+
+                            <div class="d-flex gap-2" style="float: right">
+
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="Back to Bill List"  
+                                    ajax="false" 
+                                    class="ui-button-secondary"
+                                    icon="fa-solid fa-arrow-left"
+                                    action="pharmacy_search_sale_pre_bill"
+                                    >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Bill"  
+                                    ajax="false" 
+                                    class="ui-button-warning"
+                                    action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"
+                                    actionListener="#{pharmacySaleController.resetAll()}"
+                                    icon="fa fa-plus"
+                                    >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Reprint" 
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    ajax="false" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="To Cancel"
+                                    icon="fa fa-cancel"
+                                    class="ui-button-danger"
+                                    action="pharmacy_cancel_bill_retail" 
+                                    disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                </p:commandButton>
+                            </div>
+
+                        </f:facet>
+
+                        <div class="d-flex justify-content-end gap-1">
+                            <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" />
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                        </div>
+
+                        <h:panelGroup   id="gpBillPreview"  > 
+
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" ></ph:saleBill>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

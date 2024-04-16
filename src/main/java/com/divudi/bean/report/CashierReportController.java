@@ -160,65 +160,6 @@ public class CashierReportController implements Serializable {
         return "/reportCashier/report_cashier_summery_all?faces-redirect=true";
     }
 
-    public String navigateToReportCashierSummeryAllByReciptno() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        auditEvent.setEventTrigger("navigateToReportCashierSummeryAllByReciptno()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_cashier_summery_all_by_reciptno.xhtml?faces-redirect=true";
-    }
-
-    public String navigateToReportcashierDetailedByUser() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        auditEvent.setEventTrigger("navigateToReportcashierDetailedByUser()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_cashier_detailed_by_user.xhtml?faces-redirect=true";
-    }
 
     public String navigateToCashierReport() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -255,43 +196,6 @@ public class CashierReportController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_detailed_by_user_by_reciptno.xhtml";
-    }
-
-    public String navigateToCashierSummary() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigateToCashierSummary()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_cashier_summery_by_user.xhtml?faces-redirect=true";
     }
 
     public String navigateToDayEndSummary() {
@@ -368,42 +272,6 @@ public class CashierReportController implements Serializable {
         return "/reportCashier/shift_end_summery.xhtml?faces-redirect=true";
     }
 
-    public String navigateToCashierSummaryUsingReciptNo() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigateToCashierSummaryUsingReciptNo()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_cashier_summery_by_user_by_reciptno?faces-redirect=true";
-    }
 
     public String navigateToAllCashierReportUsingReciptNo() {
         return "/reportCashier/report_cashier_summery_by_user_by_reciptno.xhtml";
@@ -1132,7 +1000,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
+        
 
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
@@ -1325,7 +1193,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
+        
 
     }
 
@@ -1507,7 +1375,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1540,7 +1408,7 @@ public class CashierReportController implements Serializable {
         }
         calCashierData();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier report(Using recipt No)(/reportCashier/report_cashier_summery_all_by_reciptno.xhtml)");
+        
     }
 
     public void calculateCashierSummeryTotals() {
@@ -1614,7 +1482,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1704,7 +1572,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+        
 
     }
 
@@ -1829,7 +1697,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1949,7 +1817,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -2025,7 +1893,7 @@ public class CashierReportController implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery without professional(/reportCashier/report_cashier_summery_all_total_only_without_pro.xhtml)");
+        
 
     }
 
@@ -2874,7 +2742,7 @@ public class CashierReportController implements Serializable {
         try {
 
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("All Cashier Summery");
+            Sheet sheet = workbook.createSheet("All Cashier Summary");
 
             Font font = workbook.createFont();
             font.setFontHeightInPoints((short) 12);

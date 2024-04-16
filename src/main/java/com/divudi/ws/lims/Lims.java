@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.InvestigationItemType;
@@ -43,6 +44,7 @@ import org.json.JSONObject;
 import com.divudi.data.LoginRequest;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.facade.BillItemFacade;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
@@ -69,6 +71,8 @@ public class Lims {
     PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     private BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
     @EJB
     WebUserFacade webUserFacade;
     @EJB
@@ -206,17 +210,22 @@ public class Lims {
         if (patientBills == null || patientBills.isEmpty()) {
             return constructErrorJson(1, "Bill Not Found. Please reenter.", billId);
         }
-        if (ptSamples == null || ptSamples.isEmpty()) {
-            return constructErrorJson(2, "Error in Sample Generation. Please check investigation settings.", billId);
-        }
-
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
-        for (PatientSample ps : ptSamples) {
-            if (uniqueIds.add(ps.getId())) { // Only proceed if the ID is unique
-                JSONObject j = constructPatientSampleJson(ps);
+        if (ptSamples != null || !ptSamples.isEmpty()) {
+            for (Bill b : patientBills) {
+                JSONObject j = constructPatientSampleJson(b);
                 if (j != null) {
                     array.put(j);
+                }
+            }
+        } else {
+            for (PatientSample ps : ptSamples) {
+                if (uniqueIds.add(ps.getId())) { // Only proceed if the ID is unique
+                    JSONObject j = constructPatientSampleJson(ps);
+                    if (j != null) {
+                        array.put(j);
+                    }
                 }
             }
         }
@@ -265,7 +274,8 @@ public class Lims {
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", ps.getIdStr() != null ? ps.getIdStr() : "");
+            jSONObject.put("barcode", ps.getPatient().getId() != null ? ps.getPatient().getId() : "");
+            
             Bill bill = ps.getBill();
             if (bill == null) {
                 return null;
@@ -303,6 +313,66 @@ public class Lims {
         tbis += " - " + temTube;
         jSONObject.put("tests", tbis);
         return jSONObject;
+    }
+
+    private JSONObject constructPatientSampleJson(Bill b) {
+        JSONObject jSONObject = new JSONObject();
+        if (b == null) {
+            return null;
+        } else {
+            Patient patient = b.getPatient();
+            if (patient == null) {
+                return null;
+            } else {
+                Person person = patient.getPerson();
+                if (person != null) {
+                    jSONObject.put("name", person.getName() != null ? person.getName() : "");
+                    jSONObject.put("age", person.getAgeAsString() != null ? person.getAgeAsString() : "");
+                    jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
+                }
+            }
+            jSONObject.put("barcode", b.getIdStr() != null ? b.getIdStr() : "");
+            Bill bill = b;
+            if (bill == null) {
+                return null;
+            } else {
+                jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
+                jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
+                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+            }
+            jSONObject.put("id", b.getIdStr() != null ? b.getIdStr() : "");
+        }
+
+        List<BillItem> bis = findBillItems(b);
+
+        String tbis = "";
+        String temTube = "";
+        if (bis == null || bis.isEmpty()) {
+            return null;
+        } else {
+            for (BillItem i : bis) {
+                tbis += i.getItem().getName() + ", ";
+            }
+        }
+        jSONObject.put("tube", temTube);
+        if (tbis.length() > 3) {
+            tbis = tbis.substring(0, tbis.length() - 2);
+        }
+        tbis += " - " + temTube;
+        jSONObject.put("tests", tbis);
+        return jSONObject;
+    }
+
+    private List<BillItem> findBillItems(Bill b) {
+        List<BillItem> bits;
+        String j = "Select bi "
+                + " from BillItem bi "
+                + " where bi.retired=:ret "
+                + " and bi.bill=:b";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("b", b);
+        return billItemFacade.findByJpql(j, m);
     }
 
     @GET
@@ -382,7 +452,6 @@ public class Lims {
             return null;
         }
 
-
         for (Bill b : bills) {
             m = new HashMap();
             m.put("can", false);
@@ -396,7 +465,6 @@ public class Lims {
                 return null;
             }
 
-
             for (PatientInvestigation ptix : pis) {
 
                 Investigation ix = ptix.getInvestigation();
@@ -404,7 +472,6 @@ public class Lims {
                 if (ix == null) {
                     continue;
                 }
-
 
                 ptix.setCollected(true);
                 ptix.setSampleCollecter(wu);
@@ -419,9 +486,7 @@ public class Lims {
                     continue;
                 }
 
-
                 for (InvestigationItem ixi : ixis) {
-
 
                     if (ixi.getIxItemType() == InvestigationItemType.Value) {
 
@@ -505,8 +570,7 @@ public class Lims {
                         m.put("ixc", ixi.getSampleComponent());
 
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
-                        
-                        
+
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);

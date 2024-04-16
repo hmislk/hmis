@@ -18,7 +18,7 @@
                 <p:spacer height="1" width="30" ></p:spacer>
                 <p:commandButton id="btnSave" 
                                  icon="fas fa-save"
-                                         class="ui-button-warning"
+                                 class="ui-button-warning"
                                  ajax="false" value="Save" 
                                  action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
             </f:facet>
@@ -117,28 +117,31 @@
 
                             <h:outputLabel value="Need area for patient registration"></h:outputLabel>
                             <p:selectBooleanButton value="#{sessionController.currentPreference.needAreaForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
-                            
+
                             <h:outputLabel value="Regex pattern for Patient Name"></h:outputLabel>
                             <p:inputText class="form-control"
                                          value="#{sessionController.currentPreference.nameRegex}" >
                             </p:inputText>
-                            
+
                             <h:outputLabel value="Regex pattern for Patient Mobile"></h:outputLabel>
                             <p:inputText class="form-control"
                                          value="#{sessionController.currentPreference.mobileRegex}" >
                             </p:inputText>
-                            
+
                             <h:outputLabel value="Regex pattern for Patient Email"></h:outputLabel>
                             <p:inputText class="form-control"
                                          value="#{sessionController.currentPreference.emailRegex}" >
                             </p:inputText>
-                            
+
                             <h:outputLabel value="Regex pattern for Patient NIC"></h:outputLabel>
                             <p:inputText class="form-control"
                                          value="#{sessionController.currentPreference.nicRegex}" >
                             </p:inputText>
-                            
-                            
+
+                            <h:outputLabel
+                                class="form-label w-100"
+                                value="Change the case of the patient name "></h:outputLabel>
+                            <p:inputText value="#{sessionController.currentPreference.changeTextCasesPatientName}"/>
 
 
 
@@ -148,14 +151,39 @@
 
                 <p:tab title="OPD" >
                     <p:panel header="OPD" class="w-100" >
-                        <h:panelGrid columns="2" styleClass="alignTop" >
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
                             <h:outputLabel value="Template for SMS on OPD Bill Settling"></h:outputLabel>
                             <h:inputTextarea value="#{sessionController.currentPreference.smsTemplateForOpdBillSetting}" ></h:inputTextarea>
+                            <h:outputLabel value="OPD Billing Can Be Done After Shift Start"></h:outputLabel>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.opdBillingAftershiftStart}" offLabel="No" onLabel="Yes" >
+                                <p:ajax process="@this" ></p:ajax>
+                            </p:selectBooleanButton>
+
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
                 
+                <p:tab title="Channelling" >
+                    <p:panel header="Channelling" class="w-100" >
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                            
 
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+
+                <p:tab title="InWard" >
+                    <p:panel header="InWard" class="w-100" >
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                            <h:outputLabel value="Admission Statement in English "></h:outputLabel>
+                            <p:inputTextarea class="w-100" style="height: 100vh" value="#{sessionController.currentPreference.inwardAddmissionStatemenetEnglish}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                            <h:outputLabel value="Admission Statement in Sinhala "></h:outputLabel>
+                            <p:inputTextarea class="w-100" style="height: 100vh" value="#{sessionController.currentPreference.inwardAddmissionStatemenetSinhala}"/>
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
 
                 <p:tab title="Miscellaneous" >
                     <p:panel header="Miscellaneous" class="w-100" >
@@ -163,35 +191,35 @@
                             <h:outputLabel 
                                 value="Long Date Format"></h:outputLabel>
                             <p:inputText class="form-control"
-                                value="#{sessionController.currentPreference.longDateFormat}" >
+                                         value="#{sessionController.currentPreference.longDateFormat}" >
                             </p:inputText>
                             <h:outputLabel 
                                 value="Short Date Format"></h:outputLabel>
                             <p:inputText  class="form-control"
-                                value="#{sessionController.currentPreference.shortDateFormat}" >
+                                          value="#{sessionController.currentPreference.shortDateFormat}" >
                             </p:inputText>
                             <h:outputLabel 
                                 value="Long Date and Time Format"></h:outputLabel>
                             <p:inputText  class="form-control"
-                                value="#{sessionController.currentPreference.longDateTimeFormat}" >
+                                          value="#{sessionController.currentPreference.longDateTimeFormat}" >
                             </p:inputText>
                             <h:outputLabel 
                                 value="Short Date and Time Format"></h:outputLabel>
                             <p:inputText  class="form-control"
-                                value="#{sessionController.currentPreference.shortDateTimeFormat}" >
+                                          value="#{sessionController.currentPreference.shortDateTimeFormat}" >
                             </p:inputText>
                             <h:outputLabel 
                                 value="Long Time Format"></h:outputLabel>
                             <p:inputText  class="form-control"
-                                value="#{sessionController.currentPreference.longTimeFormat}" >
+                                          value="#{sessionController.currentPreference.longTimeFormat}" >
                             </p:inputText>
                             <h:outputLabel 
                                 value="Short Time Format"></h:outputLabel>
                             <p:inputText  class="form-control"
-                                value="#{sessionController.currentPreference.shortTimeFormat}" >
+                                          value="#{sessionController.currentPreference.shortTimeFormat}" >
                             </p:inputText>
 
-                     
+
 
                             <h:outputLabel value="Family Membership"></h:outputLabel>
                             <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>

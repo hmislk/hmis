@@ -205,11 +205,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyBillForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -382,11 +382,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-        System.out.println("tmp1 = " + tmp);
         if (tmp == null) {
             return;
         }
-        System.out.println("tmp2 = " + tmp);
         onEdit(tmp);
     }
 
@@ -440,7 +438,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
 
         calculateBillItemForEditing(tmp);
-        
+
         calTotal();
 
     }
@@ -454,10 +452,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
 
         calculateBillItemForEditing(tmp);
-        
+
         calTotal();
 
     }
+
     public void editQty(BillItem bi) {
         if (bi == null) {
             //////System.out.println("No Bill Item to Edit Qty");
@@ -1144,7 +1143,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return true;
         }
 
-        if (!getSessionController().getLoggedPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
+        if (!getSessionController().getApplicationPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
                 return true;
@@ -1492,6 +1491,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+
+                    setZeroToQty(bi);
+                    onEditCalculation(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    return ;
+                }
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
                 if (bi.getQty() <= 0.0) {
@@ -1634,7 +1640,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         resetAll();
 
         billPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
+        
 
     }
 

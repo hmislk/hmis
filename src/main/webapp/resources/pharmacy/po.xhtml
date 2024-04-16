@@ -92,8 +92,8 @@
                             <th style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">No</th>
                             <th style="text-align: left; min-width: 400px; border: 1px solid black;">Item Name</th>
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">P. Rate</th>
-                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">QTY</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Free QTY</th>
                             <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">Total</th>
                         </tr>
                     </thead>
@@ -108,15 +108,16 @@
                                     </h:outputText>
                                 </td>
                                 <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
-                                        <f:convertNumber />
-                                    </h:outputText>
-                                </td>
-                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
                                     <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber />
                                     </h:outputText>
                                 </td>
+                                <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                        <f:convertNumber />
+                                    </h:outputText>
+                                </td>
+                                
                                 <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
                                     <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate * bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,###.00" />

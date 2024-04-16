@@ -84,8 +84,26 @@ public class DepartmentController implements Serializable {
         j = "select i from Department i where i.retired=false order by i.name";
         items = getFacade().findByJpql(j);
     }
+    
+    public List<Department> getInstitutionDepatrments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map m = new HashMap();
+            m.put("ins", ins);
+            String sql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(sql, m);
+        }
+        return deps;
+    }
 
+    @Deprecated
     public List<Department> getInsDepartments(Institution currentInstituion) {
+        // Please use public List<Department> getInstitutionDepatrments(Institution ins) {
         List<Department> currentInsDepartments = new ArrayList<>();
         if (currentInstituion == null) {
             return currentInsDepartments;
@@ -227,21 +245,7 @@ public class DepartmentController implements Serializable {
         return departments;
     }
 
-    public List<Department> getInstitutionDepatrments(Institution ins) {
-        List<Department> deps;
-        if (ins == null) {
-            deps = new ArrayList<>();
-        } else {
-            Map m = new HashMap();
-            m.put("ins", ins);
-            String sql = "Select d From Department d "
-                    + " where d.retired=false "
-                    + " and d.institution=:ins "
-                    + " order by d.name";
-            deps = getFacade().findByJpql(sql, m);
-        }
-        return deps;
-    }
+    
 
     public Department getDefaultDepatrment(Institution ins) {
         Department dep;
@@ -624,11 +628,9 @@ public class DepartmentController implements Serializable {
             DepartmentController controller = (DepartmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "departmentController");
             if (controller == null) {
-                System.out.println("controller is null");
                 return null;
             }
             if (controller.getEjbFacade() == null) {
-                System.out.println("controller is null");
                 return null;
             }
             return controller.getEjbFacade().find(getKey(value));

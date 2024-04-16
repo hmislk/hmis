@@ -781,6 +781,9 @@ public class PatientController implements Serializable {
 
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
+        if (ad.getDateOfAdmission()==null) {
+            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+        }
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
         return "/inward/inward_admission?faces-redirect=true;";
@@ -1448,6 +1451,7 @@ public class PatientController implements Serializable {
             return;
         }
         controller.setPatient(current);
+        admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }
@@ -1860,7 +1864,7 @@ public class PatientController implements Serializable {
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
     }
-    
+
     public String navigateToEmrEditPatient() {
         getCurrent();
         return "/emr/patient?faces-redirect=true;";
@@ -1945,7 +1949,7 @@ public class PatientController implements Serializable {
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findByJpql(sql, hm, 20);
-        commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
+        
         return patientList;
     }
 
@@ -2058,6 +2062,11 @@ public class PatientController implements Serializable {
 
         if (p.getPerson() == null) {
             JsfUtil.addErrorMessage("No Person. Not Saved");
+            return;
+        }
+
+        if (p.getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
 

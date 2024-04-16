@@ -1,89 +1,64 @@
-/*
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.data;
 
-/**
- *
- * @author buddhika
- */
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public enum PaymentMethod {
-    Cash,
-    Credit,
-    OnCall,
-    Staff,
-    //   @Deprecated
-    Agent,
-    Card,
-    Cheque,
-    Slip,
-    ewallet,
-    PatientDeposit,
-    OnlineSettlement,
-    MultiplePaymentMethods,
-    YouOweMe;
+    Cash("Cash", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Credit("Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES ),
+    OnCall("On Call (Credit)", PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Staff("Staff Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Staff_Welfare("Staff Welfare", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Voucher("Voucher", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Agent("Agent Payment", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Card("Credit Card", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Cheque("Cheque", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Slip("Slip Payment", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
+    ewallet("e-Wallet Payment", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
+    PatientDeposit("Patient Deposit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    PatientPoints("Patient Points", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
+    OnlineSettlement("Online Settlement", PaymentContext.ACCEPTING_PAYMENTS),
+    MultiplePaymentMethods("Multiple Payment Methods", PaymentContext.ACCEPTING_PAYMENTS),
+    YouOweMe("You Owe Me", PaymentContext.ACCEPTING_PAYMENTS);
+
+    private final String label;
+    private final List<PaymentContext> contexts;
+
+    PaymentMethod(String label, PaymentContext... contexts) {
+        this.label = label;
+        this.contexts = Arrays.asList(contexts);
+    }
 
     public String getLabel() {
-        switch (this) {
-            case Agent:
-                return "Agent Payment";
-            case Card:
-                return "Credit Card";
-            case Cash:
-                return "Cash";
-            case Cheque:
-                return "Cheque";
-            case Credit:
-                return "Credit";
-            case OnCall:
-                return "On Call (Credit)";
-            case OnlineSettlement:
-                return "Online Settlement";
-            case Slip:
-                return "Slip Payment";
-            case Staff:
-                return "Staff Payment";
-            case ewallet:
-                return "e-Wallet Payment";
-            case PatientDeposit:
-                return "Patient Deposit";
-            case MultiplePaymentMethods:
-                return "Multiple Payment Methods";
-            case YouOweMe:
-                return "You Owe Me";
-            default:
-                return this.toString();
-
-        }
+        return label;
     }
 
     public String getInHandLabel() {
         switch (this) {
-            case Agent:
-                return "Agent Payment Received";
-            case Card:
-                return "Credit Card Received";
             case Cash:
-                return "Cash in hand";
+            case Agent:
+            case Card:
             case Cheque:
-                return "Cheque Received";
             case Credit:
-                return "Credit Received";
             case OnCall:
-                return "On Call (Credit) Received";
             case OnlineSettlement:
-                return "Online Settlement Received";
             case Slip:
-                return "Slip Payment Received";
             case Staff:
-                return "Staff Payment Received";
             case ewallet:
-                return "e-Wallet Payment Received";
+                return label + " Received";
             default:
-                return this.toString();
-
+                return label;
         }
     }
 
+    public static List<PaymentMethod> getMethodsByContext(PaymentContext context) {
+        return Arrays.stream(PaymentMethod.values())
+                .filter(method -> method.contexts.contains(context))
+                .collect(Collectors.toList());
+    }
+
+    public static List<PaymentMethod> asList() {
+        return Arrays.asList(PaymentMethod.values());
+    }
 }

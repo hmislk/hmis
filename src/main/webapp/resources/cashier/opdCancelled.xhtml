@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}"  value="#{cc.attrs.data.bills}" var="b1"  rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}" var="b1"  rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel value="OPD Cancelled"/>
             </f:facet> 
@@ -73,7 +73,7 @@
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b1.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
-            <p:column headerText="Checque" style=" text-align: right" >
+            <p:column headerText="Cheque" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="Cheque"/>
                 </f:facet> 
@@ -93,9 +93,6 @@
                 <h:outputLabel rendered="#{b1.paymentMethod!='Slip'}" value="0.00"/>
             </p:column>
 
-            <p:column exportable="false">
-                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-            </p:column>
 
             <p:columnGroup type="footer">  
                 <p:row>  

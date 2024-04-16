@@ -312,8 +312,8 @@ public class InpatientClinicalDataController implements Serializable {
         if (encounter.getCurrentPatientRoom() != null) {
             encounter.getCurrentPatientRoom().getName();
         }
-        String height = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
-        String weight = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
+        String weight = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
+        String height = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
         String bmi = encounter.getBmiFormatted();
         String rr = encounter.getRespiratoryRate()+" bpm";
         String bp = encounter.getBp();
@@ -523,8 +523,8 @@ public class InpatientClinicalDataController implements Serializable {
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
@@ -990,7 +990,7 @@ public class InpatientClinicalDataController implements Serializable {
             m.put("doc", doctor);
         }
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
+        
         return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
 

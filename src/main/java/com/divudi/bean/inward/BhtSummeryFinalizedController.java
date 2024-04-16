@@ -461,7 +461,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalNet += bi.getNetValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT inward charged category report(/faces/inward/inward_report_bht_inward_charge_category.xhtml)");
+        
 
     }
 
@@ -527,7 +527,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalRoom += room;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT inward charged category report(/faces/inward/inward_report_bht_inward_charge_category.xhtml)");
+        
 
     }
 

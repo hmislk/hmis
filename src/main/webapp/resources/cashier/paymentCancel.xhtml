@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel value="PaymentsCancel" />
             </f:facet> 
@@ -52,9 +52,6 @@
                 <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
             </p:column>
 
-            <p:column exportable="false">
-                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-            </p:column>
 
             <p:columnGroup type="footer">  
                 <p:row>  

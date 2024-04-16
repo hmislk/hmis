@@ -389,9 +389,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getRegistration() {
-        if(registration==null||registration.trim().equals("")){
-            registration = "Consultant";
-        }
         return registration;
     }
 

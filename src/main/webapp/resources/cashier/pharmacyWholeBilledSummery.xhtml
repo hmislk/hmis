@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" styleClass="noBorder" value="#{cc.attrs.data.bills}"  var="bPh" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{bPh.billType}"  >
+        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}"  var="bPh" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{bPh.billType}"  >
             <f:facet name="header">
                 <h:outputLabel value="Pharmacy Whole Sale Bills"/>
             </f:facet>
@@ -89,9 +89,9 @@
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
 
-            <p:column headerText="Checque" style=" text-align: right" >
+            <p:column headerText="Cheque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Cheque'}" value="#{bPh.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>

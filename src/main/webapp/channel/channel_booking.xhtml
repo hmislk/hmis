@@ -23,7 +23,7 @@
                 }
 
                 .fullHeightListbox .ui-selectlistbox-listcontainer {
-                    height: 80% !important;
+                    height: 80vh !important;
                 }
             </style>
 
@@ -38,9 +38,10 @@
                         <div class="d-flex justify-content-center align-items-center">
                             <p:commandButton 
                                 ajax="false" 
-                                value="Add Booking" 
+                                value="To Add Booking" 
                                 icon="fas fa-plus"
                                 class="ui-button-success"
+
                                 action="#{bookingController.navigateToAddBooking()}"
                                 />
 
@@ -83,14 +84,18 @@
                                     value="#{bookingController.speciality}"
                                     class="w-100 fullHeightListbox"
                                     >
-                                    <p:ajax  
+                                    <p:ajax
+                                        event="change"
                                         process="@this" 
-                                        update="scStaff"
+                                        update="acBookings scStaff acSessions"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                    <f:selectItems value="#{doctorSpecialityController.selectedItems}"
-                                                   var="spe" 
-                                                   itemValue="#{spe}"
-                                                   itemLabel="#{spe.name}"></f:selectItems>
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{doctorSpecialityController.selectedItems}"
+                                        var="spe" 
+                                        itemValue="#{spe}"
+                                        itemLabel="#{spe.name}">
+                                    </f:selectItems>
                                 </p:selectOneListbox>
                             </div>
 
@@ -103,17 +108,20 @@
                             <p:selectOneListbox 
                                 id="scStaff"
                                 filter="true"
+                                filterMatchMode="contains"
                                 value="#{bookingController.staff}"
                                 class="w-100 fullHeightListbox"
                                 >
                                 <p:ajax  
                                     process="@this" 
-                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId}"  
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
                                     listener="#{bookingController.generateSessions}"/>
+
                                 <f:selectItems value="#{bookingController.consultants}"
                                                var="con" 
                                                itemValue="#{con}"
-                                               itemLabel="#{con.name}"></f:selectItems>
+                                               itemLabel="#{con.name}">
+                                </f:selectItems>
                             </p:selectOneListbox>
                         </div>
                     </div>
@@ -126,43 +134,56 @@
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
+
                             <f:selectItems 
                                 value="#{bookingController.sessionInstances}" 
                                 var="ses" 
                                 itemValue="#{ses}"
-                                itemLabel="#{ses.name}"/>
-                            <p:column>
+                                itemLabel="#{ses.name}">
+                            </f:selectItems>
+                            
+                            <p:column headerText="Name">
+                                <f:facet name="header" >
+                                    <h:outputText value="Name" ></h:outputText>
+                                </f:facet>
                                 <h:outputText value="#{s.name}" />
                             </p:column>
-                            <p:column style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.displayCount}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 50px!important; text-align: center;">
+                            <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{s.sessionDate}">
                                     <f:convertDateTime pattern="dd MMM"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.startingTime}">
-                                    <f:convertDateTime pattern="hh:mm"/>
+                            <p:column headerText="Start" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.startingTime}">
+                                    <f:convertDateTime pattern="hh:mm a"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.totalFee}">
+                            <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column rendered="false" headerText="Booked" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.displayCount}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value="&nbsp;"></h:outputText>
+                                <h:outputText value="(" class="text-danger"></h:outputText>
+                                <h:outputText value="#{s.transCreditBillCount}"  class="text-danger">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value=")"  class="text-danger"></h:outputText>
+                            </p:column>
+                            <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.total}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
+
                             <p:ajax 
                                 event="change" 
                                 process="@this"
-                                update="acBookings"
+                                update="acBookings acSessions"
                                 listener="#{bookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
@@ -174,6 +195,7 @@
                             id="acBookings" 
                             value="#{bookingController.selectedBillSession}" 
                             filter="true" 
+
                             var="bs" 
                             class="w-100 fullHeightListbox">
                             <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
@@ -187,7 +209,6 @@
                             </p:column>
 
                             <p:column style="width: 20px!important;">
-
                                 <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
                                 <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
                                 <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>

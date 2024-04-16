@@ -6,6 +6,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.TriggerSubscription;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.TriggerSubscriptionFacade;
+import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,9 @@ public class TriggerSubscriptionController implements Serializable {
     private SessionController sessionController;
     @EJB
     private TriggerSubscriptionFacade triggerSubscriptionFacade;
+    @EJB
+    WebUserFacade webUserFacade;
+
     private TriggerSubscription current;
     private List<TriggerSubscription> triggerSubscriptions = null;
     private List<TriggerType> triggerTypes;
@@ -44,7 +48,7 @@ public class TriggerSubscriptionController implements Serializable {
     private Department department;
     private List<Department> departments;
     private WebUser user;
-     
+
     public void addUserSubscription() {
         if (triggerType == null) {
             JsfUtil.addErrorMessage("Select Subscription");
@@ -60,9 +64,9 @@ public class TriggerSubscriptionController implements Serializable {
         }
         double newOrder = getTriggerSubscriptions().size() + 1;
         TriggerSubscription existingTS = findUserSubscriptionByOrder(newOrder);
-        
+
         Date d = new Date();
-        
+
         if (existingTS == null) {
             TriggerSubscription ts = new TriggerSubscription();
             ts.setWebUser(user);
@@ -97,6 +101,23 @@ public class TriggerSubscriptionController implements Serializable {
         m.put("u", user);
         m.put("ret", false);
         triggerSubscriptions = getTriggerSubscriptionFacade().findByJpql(jpql, m);
+    }
+
+    public List<WebUser> fillWebUsers(TriggerType tt) {
+        List<WebUser> us = new ArrayList<>();
+        if (tt == null) {
+            return us;
+        }
+        Map m = new HashMap();
+        String jpql = "SELECT i.webUser "
+                + " FROM TriggerSubscription i "
+                + " where i.triggerType=:tt "
+                + " and i.retired=:ret ";
+
+        m.put("tt", tt);
+        m.put("ret", false);
+        us= webUserFacade.findByJpql(jpql, m);
+        return us;
     }
 
     public void moveSelectedUserSubscriptionUp() {
@@ -201,7 +222,7 @@ public class TriggerSubscriptionController implements Serializable {
             getFacade().create(ts);
         }
     }
-    
+
     public void removeUserSubscription() {
         if (current != null) {
             current.setRetired(true);
@@ -214,13 +235,14 @@ public class TriggerSubscriptionController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }
     }
-     
+
     public TriggerSubscriptionController() {
     }
-    
+
     private TriggerSubscriptionFacade getFacade() {
         return triggerSubscriptionFacade;
     }
+
     public TriggerType getTriggerType() {
         return triggerType;
     }
@@ -246,7 +268,7 @@ public class TriggerSubscriptionController implements Serializable {
     }
 
     public TriggerSubscription getCurrent() {
-        if(current == null){
+        if (current == null) {
             current = new TriggerSubscription();
         }
         return current;
@@ -262,7 +284,7 @@ public class TriggerSubscriptionController implements Serializable {
     }
 
     public void setTriggerSubscriptions(List<TriggerSubscription> triggerSubscriptions) {
-        if(triggerSubscriptions == null){
+        if (triggerSubscriptions == null) {
             triggerSubscriptions = new ArrayList<>();
         }
         this.triggerSubscriptions = triggerSubscriptions;
@@ -294,16 +316,13 @@ public class TriggerSubscriptionController implements Serializable {
     }
 
     public List<TriggerType> getTriggerTypes() {
-        if(triggerTypes == null){
-            triggerTypes= Arrays.asList(TriggerType.values());
+        if (triggerTypes == null) {
+            triggerTypes = TriggerType.getAlphabeticallySortedValues();
         }
         return triggerTypes;
     }
 
-    public void setTriggerTypes(List<TriggerType> Subscription) {
-        this.triggerTypes = triggerTypes;
-    }
-    
+
     @FacesConverter(forClass = TriggerSubscription.class)
     public static class UserSubscriptionConverter implements Converter {
 
@@ -351,5 +370,5 @@ public class TriggerSubscriptionController implements Serializable {
             return Double.compare(o1.getOrderNumber(), o2.getOrderNumber());
         }
     }
-    
+
 }

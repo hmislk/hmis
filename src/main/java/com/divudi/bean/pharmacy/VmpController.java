@@ -194,14 +194,15 @@ public class VmpController implements Serializable {
     }
 
     public List<Vmp> completeVmp(String query) {
-
-        String sql;
-        if (query == null) {
-            vmpList = new ArrayList<Vmp>();
+        List<Vmp> vmpList;
+        if (query == null || query.trim().isEmpty()) {
+            vmpList = new ArrayList<>();
         } else {
-            sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            vmpList = getFacade().findByJpql(sql);
+            String jpql = "SELECT c FROM Vmp c WHERE c.retired = false AND LOWER(c.name) LIKE :query ORDER BY c.name";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("query", "%" + query.trim().toLowerCase() + "%");
+
+            vmpList = getFacade().findByJpql(jpql, parameters);
         }
         return vmpList;
     }
@@ -336,21 +337,21 @@ public class VmpController implements Serializable {
     }
 
     public List<VirtualProductIngredient> getVivs() {
-    if (getCurrent().getId() == null) {
-        return new ArrayList<VirtualProductIngredient>();
-    } else {
-        Long currentId = getCurrent().getId();
-        String jpqlQuery = "SELECT v FROM VirtualProductIngredient v WHERE v.vmp.id = :vmpId";
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("vmpId", currentId);
-        vivs = getVivFacade().findByJpql(jpqlQuery, parameters);
-
-        if (vivs == null) {
+        if (getCurrent().getId() == null) {
             return new ArrayList<VirtualProductIngredient>();
-        }
+        } else {
+            Long currentId = getCurrent().getId();
+            String jpqlQuery = "SELECT v FROM VirtualProductIngredient v WHERE v.vmp.id = :vmpId";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("vmpId", currentId);
+            vivs = getVivFacade().findByJpql(jpqlQuery, parameters);
 
-        return vivs;
-    }
+            if (vivs == null) {
+                return new ArrayList<VirtualProductIngredient>();
+            }
+
+            return vivs;
+        }
     }
 
     public String getVivsAsString(Vmp vmp) {
@@ -586,12 +587,12 @@ public class VmpController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void save() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        }else{
+        } else {
             getFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }

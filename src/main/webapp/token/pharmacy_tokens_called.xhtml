@@ -18,8 +18,8 @@
                 font-size: 2em; /* Larger font size for better visibility on TV */
             }
             .token-circle {
-                width: 150px;
-                height: 150px;
+                width: 100px;
+                height: 100px;
                 background-color: #007bff;
                 border-radius: 50%;
                 color: white;
@@ -32,12 +32,12 @@
                 font-size: 75pt;
             }
             .counter-name {
-                font-size: 3.5em;
+                font-size: 3em;
                 font-weight: bold;
                 color: #333;
             }
             .patient-name {
-                font-size: 1.2em;
+                font-size: 1em;
                 color: #555;
             }
             .token-item {
@@ -99,11 +99,11 @@
             }
 
             @keyframes scaleAnimation {
-                0% {
+                25% {
                     transform: scale(1); /* Initial scale */
                 }
                 50% {
-                    transform: scale(1.4); /* Scale to 1.5 times the original size */
+                    transform: scale(1.1); /* Scale to 1.5 times the original size */
                 }
 
             }
@@ -170,8 +170,8 @@
                         <div class="container-fluid" style="margin-top: 180px">
             
                             <ui:repeat var="token" value="#{tokenController.currentTokens}" >
-                                <div class="card shadow mb-2">
-                                    <div class="row d-flex align-items-center p-5" >
+                                <div class="card shadow mb-2 p-2">
+                                    <div class="row d-flex align-items-center" >
                                         <div class="col-3">
                                             <div>
                                                 <div class="counter-name">
@@ -213,7 +213,7 @@
             
           
 
-            <!-- Automatic Refresh Every 5 Seconds -->
+            <!-- Automatic Process Every 5 Seconds -->
             <p:poll interval="5" listener="#{tokenController.fillPharmacyTokensCalled}" update="@form" />
         </h:form>
 

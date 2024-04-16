@@ -34,12 +34,54 @@
     </h:head>
     <h:body >
         <style>
+            body {
+                background-color: var(--surface-a); /* Adjust the variable as needed */
+            }
             .no-padding-margin-border > .ui-panel-content,
             .no-padding-margin-border > .ui-panel-titlebar {
                 padding: 0 !important;
                 margin: 0 !important;
                 border: none !important;
             }
+
+            .companyWaterMark {
+                position: fixed; /* Use absolute if you're positioning inside a specific container */
+                right: 0;
+                bottom: 0;
+                z-index: 1000; /* Ensures it stays on top of other content, adjust as necessary */
+                opacity: 0.5; /* Adjust for desired transparency */
+                font-size: 12px; /* Adjust font size as needed */
+                padding: 10px;
+                text-align: left;
+            }
+
+            .deptAndUser{
+                position: fixed; /* Use absolute if you're positioning inside a specific container */
+                left:0;
+                bottom: 0;
+                z-index: 1000; /* Ensures it stays on top of other content, adjust as necessary */
+                opacity: 0.5; /* Adjust for desired transparency */
+                font-size: 12px; /* Adjust font size as needed */
+                text-align: left;
+                padding: 10px;
+            }
+
+            /* Optionally, adjust the space between the lines */
+            .companyWaterMark h4 {
+                margin: 0;
+                line-height: 1.2; /* Adjust line height for better readability */
+            }
+
+            .companyWaterMark:hover {
+                margin-right: 800px;
+                opacity: 0;
+            }
+
+            .deptAndUser:hover{
+                margin-left: 200px;
+                opacity: 0;
+            }
+
         </style>
         <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
             <h:panelGroup rendered ="#{not sessionController.logged}"  >
@@ -55,6 +97,26 @@
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
+
+                <div class="deptAndUser">
+                    <div class="d-flex align-items-center">
+                        <h5><h:outputLabel style="text-transform: uppercase" class="text-left" value="#{sessionController.loggedUser.department.name}"/></h5>
+                        <h6 class="mx-2">|</h6>
+                        <h6><h:outputLabel value="#{sessionController.loggedUser.name}"/></h6>
+                        <h6><h:outputLabel class="text-left" rendered="#{versionController.systemVersion ne null}" value="&emsp;V.#{versionController.systemVersion}"/></h6>
+                    </div>
+                </div>
+
+                <div class="companyWaterMark d-flex align-items-center">
+                    <div class="mx-2">
+                        <img src="../../resources/image/CompanyLogo/companyLogo.png" width="50px"/>
+                    </div>
+                    <div>
+                        <h6><h:outputLabel class="text-left" value="Powered by"/></h6>
+                        <h5><h:outputLabel value="CareCode Solutions"/></h5>
+                    </div>
+                </div>
+
                 <p:panel 
                     rendered="#{sessionController.department ne null}" 
                     class="m-0 p-0 no-padding-margin-border"

@@ -4,13 +4,9 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
-
                 <div class="row">
                     <div class="col-3">
                         <h:form>  
@@ -20,7 +16,16 @@
 
                                     <p:tab title="Admission Types">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Admission Types" class="w-100" action="inward_admission_type"  ></p:commandButton>
+                                            <p:commandButton ajax="false" 
+                                                             value="Admission Types" 
+                                                             class="w-100" 
+                                                             action="#{admissionTypeController.navigateToManageAdmissionTypes}"  >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false"
+                                                value="Admission Items and Fees" 
+                                                class="w-100"
+                                                action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
 
@@ -71,8 +76,8 @@
                                                 value="Uploaded Diagnosis Card Templates"
                                                 class="w-100" 
                                                 action="#{uploadController.toListDiagnosisCardUploads()}" >
-                                             </p:commandButton>
-                                            
+                                            </p:commandButton>
+
                                         </div>
                                     </p:tab>
 

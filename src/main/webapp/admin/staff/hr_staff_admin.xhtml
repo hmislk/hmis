@@ -1,0 +1,509 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html template="/resources/template/template.xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+
+    <h:body>
+
+        <ui:composition template="/admin/staff/admin_manage_staff_index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:panelGroup >
+                    <h:form  >
+                        <p:growl id="msg"/>
+                        <p:focus id="selectFocus" context="lstSelect" />
+                        <p:focus id="detailFocus" context="gpDetail" />
+
+
+
+                        <p:panel header="Manage Staff" >
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="my-2">
+                                        <p:commandButton
+                                            id="btnAdd" 
+                                            process="btnAdd"
+                                            update="gpDetail"
+                                            value="Add" 
+                                            class="ui-button-success w-25"
+                                            icon="fas fa-plus"
+                                            action="#{staffController.prepareAdd()}"  >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnDelete"
+                                            process="btnDelete"
+                                            update="lstSelect gpDetail msg"
+                                            class="ui-button-danger w-25 mx-1"
+                                            icon="fas fa-trash"
+                                            ajax="false" 
+                                            onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                        return false;" 
+                                            action="#{staffController.delete()}"
+                                            value="Delete"  >
+                                        </p:commandButton>
+                                    </div>
+                                    <p:selectOneListbox filter="true" id="lstSelect"   value="#{staffController.current}" style="height: auto;" class="w-100">
+                                        <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.name}(#{myItem.code})" ></f:selectItems>
+                                        <p:ajax event="change" process="lstSelect" update="gpDetail panelPrint" listener="#{staffController.changeStaff()}"/>                                        
+                                    </p:selectOneListbox>
+
+                                    <p:panel rendered="false" >
+                                        <h:panelGrid columns="1" >
+                                            <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
+                                            <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
+                                        </h:panelGrid>
+
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Details" ></p:outputLabel>
+                                        </f:facet>
+
+                                        <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop" >
+                                            <p:tabView >
+                                                <p:tab title="General" >
+                                                    <h:panelGrid id="tabDetails" columns="2">
+                                                        <p:outputLabel value="Title"/>
+                                                        <p:selectOneMenu class="w-100 mx-2" value="#{staffController.current.person.title}"  >
+                                                            <f:selectItem itemLabel="Select Title" />
+                                                            <f:selectItems value="#{billController.title}"/>
+                                                        </p:selectOneMenu>
+
+                                                        <p:outputLabel  value="Zone Code" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.zoneCode}"  />
+
+                                                        <p:outputLabel  value="Initials" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.initials}"  />
+
+                                                        <p:outputLabel  value="SurName" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.surName}"   />
+
+                                                        <p:outputLabel  value="Name" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.name}"   />
+
+                                                        <p:outputLabel  value="Full Name" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.fullName}"   />
+
+                                                        <p:outputLabel  value="Name with Initials" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.nameWithInitials}"  />
+
+                                                        <p:outputLabel  value="Last Name" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.person.lastName}"   />
+
+                                                        <p:outputLabel  value="NIC No" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off" value="#{staffController.current.person.nic}" />
+
+                                                        <p:outputLabel  value="Mobile" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off" value="#{staffController.current.person.mobile}" />
+
+                                                        <p:outputLabel  value="Home" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off" value="#{staffController.current.person.phone}" />
+
+                                                        <p:outputLabel  value="Email" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off" value="#{staffController.current.person.email}" />
+
+                                                        <p:outputLabel  value="Address" ></p:outputLabel>
+                                                        <p:inputTextarea class="w-100 mx-2"  value="#{staffController.current.person.address}"  />
+
+                                                        <p:outputLabel value="Birthday "/>
+                                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true" >
+                                                        </p:calendar>
+
+                                                        <p:outputLabel  value="Gender" ></p:outputLabel>
+                                                        <p:selectOneMenu class="w-100 mx-2" id="txtNewSex"  value="#{staffController.current.person.sex}" >
+                                                            <f:selectItem itemLabel="Select Gender"/>
+                                                            <f:selectItems value="#{enumController.gender}"/>
+                                                        </p:selectOneMenu>
+
+                                                        <p:outputLabel  value="Finger Print Id" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.acNo}"  />
+
+                                                        <p:outputLabel  value="Code" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.code}"  />
+
+                                                        <p:outputLabel  value="EPF" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.epfNo}"  />
+
+                                                        <p:outputLabel value="Registration" ></p:outputLabel>
+                                                        <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{staffController.current.registration}"  /> 
+
+                                                        <p:outputLabel  value="Qualification" ></p:outputLabel>
+                                                        <p:inputTextarea class="w-100 mx-2"  value="#{staffController.current.qualification}"  />        
+                                                        <p:separator/>
+                                                        <p:separator/>
+
+                                                        <p:outputLabel value="Date Joined "/>
+                                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{staffController.current.dateJoined}" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                                        </p:calendar>
+
+                                                        <p:outputLabel value="Date Resigned "/>
+                                                        <h:panelGroup >
+                                                            <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{staffController.tempRetireDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                                            </p:calendar>
+                                                            <p:outputLabel value="#{staffController.current.dateLeft}" >
+                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                                            </p:outputLabel>
+                                                        </h:panelGroup>
+                                                        <p:outputLabel value="Remove Resign " style="color: red"/>
+                                                        <p:selectBooleanCheckbox class="mx-2" value="#{staffController.removeResign}" disabled="#{!webUserController.hasPrivilege('HrRemoveResignDate')}"/>
+                                                        <p:separator/>
+                                                        <p:separator/>
+                                                        <p:outputLabel value="Resigned Without Notice"/>
+                                                        <p:selectBooleanCheckbox class="mx-2" value="#{staffController.current.withOutNotice}" >
+                                                            <f:ajax event="change" execute="@this" render="cal" listener="#{staffController.listenerWithNotice}"/>
+                                                        </p:selectBooleanCheckbox>
+
+                                                        <p:outputLabel value="Resigned With Notice Date"/>
+                                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" id="cal" value="#{staffController.current.dateWithOutNotice}" pattern="#{sessionController.applicationPreference.shortDateFormat}" disabled="#{staffController.current.withOutNotice}" />
+                                                        <p:separator/>
+                                                        <p:separator/>
+                                                        <p:outputLabel value="Date Retired "/>
+                                                        <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{staffController.current.dateRetired}" pattern="#{sessionController.applicationPreference.shortDateFormat}" disabled="#{!webUserController.hasPrivilege('HrEditRetiedDate')}" >
+                                                        </p:calendar>
+
+                                                        <p:outputLabel value="Speciality" />
+                                                        <p:selectOneMenu class="w-100 mx-2" value="#{staffController.current.speciality}" >
+                                                            <f:selectItem itemLabel="Please select a speciality"/>
+                                                            <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                        </p:selectOneMenu>
+
+                                                    </h:panelGrid> 
+                                                </p:tab>
+                                                <p:tab title="Details" rendered="#{staffController.current.id ne null}" >
+
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="Print"
+                                                        class="ui-button-info w-25" >
+                                                        <p:printer target="gpStaffForm" ></p:printer>
+                                                    </p:commandButton>
+
+                                                    <p:selectOneMenu class="w-100 mx-2" id="mnuCat" value="#{staffController.formCategory}" >
+                                                        <f:selectItem itemLabel="Select Form" ></f:selectItem>
+                                                        <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                                        <f:ajax event="change" execute="mnuCat" render="gpStaffForm" listener="#{staffController.listFormItems()}" />
+                                                    </p:selectOneMenu>
+
+                                                    <p:panel id="gpStaffForm"  >
+
+                                                        <div style="width:21cm;height: 29.7cm;  position: relative; font-size: 150%; border: none!important;margin: 0px!important;padding: 0px!important;">
+
+                                                            <ui:repeat value="#{staffController.formItems}" var="myIi" >
+                                                                <div style="#{myIi.cssStyle}; position:absolute ;">
+                                                                    <p:outputLabel rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></p:outputLabel>
+                                                                </div>
+                                                            </ui:repeat>
+
+                                                            <ui:repeat value="#{staffController.fivs}" var="myFiv" >
+                                                                <div style="#{myFiv.reportItem.cssStyle}; position:absolute ;">
+                                                                    <h:inputText id="txtValue" 
+                                                                                 rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Varchar' and myFiv.reportItem.retired eq false}"  
+                                                                                 value="#{myFiv.strValue}" 
+                                                                                 style="color: #{myFiv.reportItem.cssColor}"  >
+                                                                        <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"></f:ajax>
+                                                                    </h:inputText>
+                                                                    <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
+                                                                    <h:inputText id="txtdValue" 
+                                                                                 rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Double' and myFiv.reportItem.retired eq false}"  
+                                                                                 value="#{myFiv.doubleValue}" 
+                                                                                 style="color: #{myFiv.reportItem.cssColor}"  >
+                                                                        <f:ajax event="blur" execute="txtdValue" listener="#{staffController.updateFormItem(myFiv)}"></f:ajax>
+                                                                    </h:inputText>
+                                                                    <p:watermark for="txtdValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
+                                                                    <h:panelGroup rendered="#{myFiv.reportItem.retired ne true and myFiv.reportItem.ixItemType eq 'ItemsCatetgory'}" >
+                                                                        <h:selectOneMenu value="#{myFiv.strValue}" id="cmbRefCat" style="#{myFiv.reportItem.innerCssStyle}" >
+                                                                            <f:selectItem itemLabel="#{myFiv.reportItem.name}"></f:selectItem>
+                                                                            <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc.name}" ></f:selectItems>
+                                                                        </h:selectOneMenu>
+                                                                    </h:panelGroup>
+                                                                </div>
+                                                            </ui:repeat>
+                                                        </div>
+                                                    </p:panel>
+
+                                                </p:tab>
+                                                <p:tab title="Administartion" >
+                                                        <h:panelGrid columns="2" id="gridAdmin" >
+                                                            <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
+                                                            <p:inputText class="mx-2" style="width: 300px" autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </p:inputText>
+
+                                                            <p:outputLabel value="Utilized Welfare Value for this year" ></p:outputLabel>
+                                                            <p:outputLabel class="mx-2" style="width: 300px" value="#{staffController.current.annualWelfareUtilized}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </p:outputLabel>
+                                                            <p:separator/>
+                                                            <p:separator/>
+                                                            <p:outputLabel value="Institution" ></p:outputLabel>                                     
+                                                            <p:selectOneMenu class="mx-2" style="width: 300px" id="cmbIns" value="#{staffController.current.institution}" >
+                                                                <f:selectItem itemLabel="Please select a institution"/>
+                                                                <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                                <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
+                                                            </p:selectOneMenu>                                          
+                                                            <p:outputLabel value="Working Department" ></p:outputLabel>                                     
+                                                            <p:selectOneMenu class=" mx-2"  style="width: 300px" id="cmbDep" value="#{staffController.current.workingDepartment}">
+                                                                <f:selectItem itemLabel="Please select a Department"/>
+                                                                <f:selectItems value="#{staffController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Employee Status "/>
+                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.employeeStatus}" >
+                                                                <f:selectItem itemLabel="Please select Employee Status"/>
+                                                                <f:selectItems value="#{staffController.employeeStatuses}"/>
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Staff Category "/>
+                                                            <p:selectOneMenu class=" mx-2" style="width: 300px" value="#{staffController.current.staffCategory}">
+                                                                <f:selectItem itemLabel="Please Staff Category"/>
+                                                                <f:selectItems value="#{staffCategoryController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Staff Grade "/>
+                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.grade}">
+                                                                <f:selectItem itemLabel="Please Staff Grade"/>
+                                                                <f:selectItems value="#{gradeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Staff Designation " />
+                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.designation}" >
+                                                                <f:selectItem itemLabel="Please Staff Designation"/>
+                                                                <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                            </p:selectOneMenu>
+                                                            <h:outputText  value="Roster" ></h:outputText>
+                                                            <p:selectOneMenu class=" mx-2" style="width: 300px"  value="#{staffController.current.roster}"  >
+                                                                <f:selectItem itemLabel="Select Roster"/>
+                                                                <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                                            </p:selectOneMenu>
+
+                                                            <p:separator/>
+                                                            <p:separator/>
+
+                                                            <p:outputLabel value="Paying Method "/>
+                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.payingMethod}">
+                                                                <f:selectItem itemLabel="Please select PayingMethod"/>
+                                                                <f:selectItems value="#{staffController.payingMethod}"/>
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Salary PaymentMethod "/>
+                                                            <p:selectOneMenu class=" mx-2" style="width: 300px" value="#{staffController.current.salaryPaymentMethod}">
+                                                                <f:selectItem itemLabel="Please selectSalary Paymentmethod"/>
+                                                                <f:selectItems value="#{staffController.salaryPaymentMethods}"/>
+                                                            </p:selectOneMenu>
+                                                            <p:separator/>
+                                                            <p:separator/>                                           
+                                                            <p:outputLabel value="Bank Branch"/>                                           
+                                                            <autocomplete:completeBank_Branch class="mx-2"  value="#{staffController.current.bankBranch}"/>                                           
+                                                            <p:outputLabel  value="Account No" ></p:outputLabel>
+                                                            <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.accountNo}"  />
+                                                            <p:outputLabel  value="Memo" ></p:outputLabel>
+                                                            <p:inputTextarea class=" mx-2" style="width: 300px"  value="#{staffController.current.person.description}"    />
+                                                            <p:separator/>
+                                                            <p:separator/>
+                                                            <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
+                                                            <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
+                                                            <p:outputLabel  value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
+                                                            <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
+                                                            <p:outputLabel value="Allowed Late In Leave"/>
+                                                            <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedLateInLeave}" />
+                                                            <p:outputLabel value="Allowed Early Out Leave"/>
+                                                            <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedEarlyOutLeave}" />
+                                                        </h:panelGrid>
+                                                   
+
+                                                </p:tab>
+                                                <p:tab title="Aditional Details" >
+                                                    <p:panelGrid id="tabDetails2" columns="2" class="w-100">
+                                                        <p:outputLabel  value="Staff Id" ></p:outputLabel>
+                                                        <p:outputLabel value="#{staffController.current.id}"  />
+                                                        <p:separator/>
+                                                        <p:separator/>
+                                                        <p:outputLabel  value="Creator" ></p:outputLabel>
+                                                        <p:outputLabel value="#{staffController.current.creater.webUserPerson.name}"  />
+                                                        <p:outputLabel  value="Created At" ></p:outputLabel>
+                                                        <p:outputLabel value="#{staffController.current.createdAt}" >
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                                        </p:outputLabel>
+                                                        <p:separator/>
+                                                        <p:separator/>
+                                                    </p:panelGrid>
+                                                </p:tab>
+                                            </p:tabView>
+
+                                        </h:panelGrid>
+                                        <div class="mt-4">
+                                            <p:commandButton class="w-25 ui-button-warning"
+                                                             id="btnSave"
+                                                             value="Save" 
+                                                             process="btnSave gpDetail"
+                                                             update="lstSelect gpDetail panelPrint msg"
+                                                             action="#{staffController.saveSelected()}"  >
+                                            </p:commandButton>
+                                            <p:commandButton ajax="false" class="ui-button-info w-25 mx-1" icon="fas fa-print" value="Print" >
+                                                <p:printer target="panelPrint" ></p:printer>
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                        </p:panel>
+
+
+                        <p:panel id="panelPrint" styleClass="printOnly" >
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Employee Data" ></p:outputLabel>
+                            </f:facet>
+
+                            <f:facet name="footer" >
+                                <p:outputLabel value="Autherized by" ></p:outputLabel>
+                            </f:facet>
+
+                            <h:panelGrid id="tabDetails" columns="2">
+
+                                <p:outputLabel value="Title"/>
+                                <p:outputLabel value="#{staffController.current.person.title}"  >
+                                </p:outputLabel>
+
+                                <p:outputLabel  value="Zone Code" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.person.zoneCode}"  />
+
+                                <p:outputLabel  value="Initials" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.person.initials}"  />
+
+                                <p:outputLabel  value="SurName" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.person.surName}"   />
+
+                                <p:outputLabel  value="Name" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.person.name}"   />
+
+                                <p:outputLabel  value="Full Name" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.person.fullName}"   />
+
+                                <p:outputLabel  value="Name with Initials" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.person.nameWithInitials}"   />
+
+                                <p:outputLabel  value="NIC No" ></p:outputLabel>
+                                <p:outputLabel value="#{staffController.current.person.nic}"  />
+
+                                <p:outputLabel  value="Address" ></p:outputLabel>
+                                <p:outputLabel  value="#{staffController.current.person.address}"    />
+
+                                <p:outputLabel value="Birthday "/>
+                                <p:outputLabel value="#{staffController.current.person.dob}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                </p:outputLabel>
+
+                                <p:outputLabel  value="Gender" ></p:outputLabel>
+                                <p:outputLabel value="#{staffController.current.person.sex}" >
+                                </p:outputLabel>
+
+                                <p:outputLabel  value="Finger Print Id" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.acNo}"  />
+
+                                <p:outputLabel  value="Code" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.code}"  />
+
+                                <p:outputLabel  value="EPF" ></p:outputLabel>
+                                <p:outputLabel  value="#{staffController.current.epfNo}"  />
+
+                                <p:outputLabel value="Registration" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.registration}"  /> 
+
+                                <p:outputLabel  value="Qualification" ></p:outputLabel>
+                                <p:outputLabel  value="#{staffController.current.qualification}"  />                
+
+                                <p:outputLabel value="Date Joined "/>
+                                <p:outputLabel value="#{staffController.current.dateJoined}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Date Resigned "/>
+                                <p:outputLabel value="#{staffController.current.dateLeft}"  >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Date Retired "/>
+                                <p:outputLabel value="#{staffController.current.dateRetired}"  >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Speciality" />
+                                <p:outputLabel  value="#{staffController.current.speciality.name}" >
+                                </p:outputLabel>
+
+                                <p:separator/>
+                                <p:separator/> 
+
+                                <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
+                                <p:outputLabel  value="#{staffController.current.annualWelfareQualified}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Utilized Welfare Value for this year" ></p:outputLabel>
+                                <p:outputLabel value="#{staffController.current.annualWelfareUtilized}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                                <p:separator/>
+                                <p:separator/>
+                                <p:outputLabel value="Institution" ></p:outputLabel>                                     
+                                <p:outputLabel  value="#{staffController.current.institution.name}" >
+                                </p:outputLabel>                                          
+                                <p:outputLabel value="Working Department" ></p:outputLabel>                                     
+                                <p:outputLabel    value="#{staffController.current.workingDepartment.name}">
+                                </p:outputLabel>
+                                <p:outputLabel value="Employee Status "/>
+                                <p:outputLabel value="#{staffController.current.employeeStatus}" ></p:outputLabel>
+                                <p:outputLabel value="Staff Category "/>
+                                <p:outputLabel value="#{staffController.current.staffCategory.name}"></p:outputLabel>
+                                <p:outputLabel value="Staff Grade "/>
+                                <p:outputLabel value="#{staffController.current.grade.name}"/>
+                                <p:outputLabel value="Staff Designation " />
+                                <p:outputLabel value="#{staffController.current.designation.name}" >
+                                </p:outputLabel>
+                                <p:separator/>
+                                <p:separator/>
+
+                                <p:outputLabel value="Paying Method "/>
+                                <p:outputLabel value="#{staffController.current.payingMethod}">
+                                </p:outputLabel>
+                                <p:outputLabel value="Salary PaymentMethod "/>
+                                <p:outputLabel value="#{staffController.current.salaryPaymentMethod}">
+                                </p:outputLabel>
+                                <p:separator/>
+                                <p:separator/>                                           
+                                <p:outputLabel value="Bank Branch"/>                                           
+                                <p:outputLabel value="#{staffController.current.bankBranch.name}"/>                                           
+                                <p:outputLabel  value="Account No" ></p:outputLabel>
+                                <p:outputLabel   value="#{staffController.current.accountNo}"  />
+                                <p:separator/>
+                                <p:separator/>
+                                <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
+                                <p:outputLabel  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
+                                <p:outputLabel value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
+                                <p:outputLabel  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
+                                <p:outputLabel value="Allowed Late In Leave"/>
+                                <p:outputLabel value="#{staffController.current.allowedLateInLeave?'Yes':'No'}" />
+                                <p:outputLabel value="Allowed Early Out Leave"/>
+                                <p:outputLabel value="#{staffController.current.allowedEarlyOutLeave?'Yes':'No'}" />
+
+                            </h:panelGrid>
+
+
+                        </p:panel>
+
+                    </h:form>
+
+                </h:panelGroup>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

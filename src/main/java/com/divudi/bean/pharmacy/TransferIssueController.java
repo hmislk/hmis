@@ -152,7 +152,6 @@ public class TransferIssueController implements Serializable {
     }
 
     public void removeBillItem(BillItem billItem) {
-        System.out.println("billItem = " + billItem.getSearialNo());
         getBillItems().remove(billItem);
         int serialNo = 0;
         for (BillItem b : getBillItems()) {
@@ -307,7 +306,6 @@ public class TransferIssueController implements Serializable {
             npi.setDoe(oi.getPharmaceuticalBillItem().getDoe());
             npi.setStringValue(oi.getPharmaceuticalBillItem().getStringValue());
             System.out.println("oi.getPharmaceuticalBillItem().getQty() = " + oi.getPharmaceuticalBillItem().getQty());
-            System.out.println("oi.getPharmaceuticalBillItem().getQtyInUnit() = " + oi.getPharmaceuticalBillItem().getQtyInUnit());
             if (oi.getPharmaceuticalBillItem().getQty() != 0.0 && oi.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
                 npi.setQty(oi.getPharmaceuticalBillItem().getQty());
                 npi.setQtyInUnit(oi.getPharmaceuticalBillItem().getQtyInUnit());
@@ -345,7 +343,6 @@ public class TransferIssueController implements Serializable {
             ni.setNetRate(oi.getNetRate());
 
             
-            System.out.println("(oi.getQty() = " + (oi.getQty()));
             
             ni.setQty(oi.getQty());
 
@@ -379,7 +376,6 @@ public class TransferIssueController implements Serializable {
         } else {
             getBillFacade().edit(getIssuedBill());
         }
-        System.out.println("1 = " + getIssuedBill().getToDepartment().getName());
         for (BillItem i : getBillItems()) {
 
             i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
@@ -436,12 +432,11 @@ public class TransferIssueController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
 
             getIssuedBill().getBillItems().add(i);
-            System.out.println("2 = " + getIssuedBill().getToDepartment().getName());
         }
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
-        if (getSessionController().getLoggedPreference().isDepNumGenFromToDepartment()) {
+        if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
             getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         } else {
             getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -487,7 +482,6 @@ public class TransferIssueController implements Serializable {
         }
 
         saveBill();
-        System.out.println("1 = " + getIssuedBill().getToDepartment().getName());
         for (BillItem i : getBillItems()) {
 
             i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
@@ -544,12 +538,11 @@ public class TransferIssueController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
 
             getIssuedBill().getBillItems().add(i);
-            System.out.println("2 = " + getIssuedBill().getToDepartment().getName());
         }
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
-        if (getSessionController().getLoggedPreference().isDepNumGenFromToDepartment()) {
+        if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
             getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         } else {
             getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -588,7 +581,7 @@ public class TransferIssueController implements Serializable {
         double value = 0;
         int serialNo = 0;
 
-        if (sessionController.getLoggedPreference().isTranferNetTotalbyRetailRate()) {
+        if (sessionController.getApplicationPreference().isTranferNetTotalbyRetailRate()) {
             for (BillItem b : getIssuedBill().getBillItems()) {
                 value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
                 b.setSearialNo(serialNo++);

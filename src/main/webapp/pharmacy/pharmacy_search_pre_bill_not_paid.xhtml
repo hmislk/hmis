@@ -16,13 +16,13 @@
                         <f:facet name="header" >
 
                             <h:panelGrid columns="5" style="min-width: 100%;" >
-                                <p:commandButton ajax="false" value="Refresh" 
+                                <p:commandButton ajax="false" value="Process" 
                                                  icon="fas fa-arrows-rotate"
                                                  actionListener="#{searchController.createPreBillsNotPaid()}"/>
                                 <p:commandButton ajax="false" value="Add To Stock" action="#{searchController.addToStock}" 
                                                  icon="fas fa-plus"
                                                  class="ui-button-success"
-                                                 disabled="#{!webUserController.hasPrivilege('PharmacyReAddToStock')}"/>
+                                                 disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}"/>
                             </h:panelGrid>
 
                         </f:facet>

@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
+
+    <ui:define name="subcontent">
+        <h:form>
+            <p:panel  styleClass="noBorder summeryBorder" header="Sale Detail By Bill">
+                <h:panelGrid columns="4" class="w-100">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    </p:calendar>
+
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    </p:calendar>
+
+                    <h:outputLabel value="Department"/>
+                    <p:autoComplete value="#{pharmacySaleReportController.department}" completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    </p:autoComplete>
+
+
+                </h:panelGrid>
+
+
+
+
+                <p:spacer height="10"></p:spacer>
+                <h:panelGrid columns="3" class="mb-2">
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process" 
+                        icon="fa-solid fa-arrows-rotate"
+                        class="ui-button-warning" 
+                        action="#{pharmacySaleReportController.listPharmactRetailBills()}"/>
+                    <p:commandButton 
+                        actionListener="#{pharmacySaleReportController.createSaleReportByDateDetail()}" 
+                        ajax="false" 
+                        value="Excel"
+                        icon="fa-solid fa-file-excel"
+                        class="ui-button-success mx-2"
+                        style="float: right;" >
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Print" 
+                        icon="fa-solid fa-print"
+                        class="ui-button-info" >
+
+                    </p:commandButton>
+                </h:panelGrid>
+
+
+
+                <p:dataTable id="sum1" 
+                             value="#{pharmacySaleReportController.bills}" 
+                             var="i"
+                             paginator="true"
+                             rows="20"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="(Page {currentPage} of {totalPages}, Total {totalRecords} records)"
+                             rowsPerPageTemplate="5,10,20,50"
+                             paginatorPosition="bottom">
+
+                    <p:column headerText="Date">
+                        <h:outputText value="#{i.billDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Time">
+                        <h:outputText value="#{i.billTime}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Bill No">
+                        <h:outputText value="#{i.deptId}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{i.patient.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Total" style="text-align:right;">
+                        <h:outputText value="#{i.total}">
+                            <f:convertNumber pattern="#,##0.0" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Discount" style="text-align:right;">
+                        <h:outputText value="#{i.discount}">
+                            <f:convertNumber pattern="#,##0.0" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Net Total" style="text-align:right;">
+                        <h:outputText value="#{i.netTotal}">
+                            <f:convertNumber pattern="#,##0.0" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Comments" >
+                        <h:panelGroup rendered="#{i.billClassType='CancelledBill'}">
+                            <h:outputText value="This is a cancellation Bill"  class="text-danger">
+                            </h:outputText>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{i.billClassType='RefundBill'}">
+                            <h:outputText value="This is a return Bill"  class="text-danger">
+                            </h:outputText>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{i.cancelled}">
+                            <h:outputText value="This Bill was calcelled"  class="text-warning">
+                            </h:outputText>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{i.refunded}">
+                            <h:outputText value="This Bill was returned"  class="text-warning">
+                            </h:outputText>
+                        </h:panelGroup>
+                        
+
+
+                    </p:column>
+
+                </p:dataTable>
+
+
+
+
+            </p:panel>         
+
+
+        </h:form>
+
+    </ui:define>
+
+
+
+</ui:composition>

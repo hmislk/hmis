@@ -12,30 +12,47 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:commandButton 
-                        value="Cashier Index" 
-                        ajax="false" 
-                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" >
-                    </p:commandButton>
-                    <p:commandButton 
-                        value="Settle Receipt" 
-                        ajax="false" 
-                        action="#{financialTransactionController.settleFundTransferReceiveBill()}" >
-                    </p:commandButton>
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputText value="Fund Transfer Received Bill"/>
+                                </div>
+                                <div>
+                                    <p:commandButton 
+                                        value="Back" 
+                                        class="ui-button-secondary"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText value="From" >
+                                </h:outputText>
+                                <h:outputText style="font-weight: bold" class="mx-2" value="#{financialTransactionController.currentBill.referenceBill.fromStaff.person.nameWithTitle}" >
+                                </h:outputText>
 
-                    <p:panel header="Fund Transfer Received Bill" >
-                        <h:outputText value="From" >
-                        </h:outputText>
-                        <h:outputText class="mx-2" value="#{financialTransactionController.currentBill.referenceBill.fromStaff.person.nameWithTitle}" >
-                        </h:outputText>
+                                <h:outputText value="Value" class="mx-2" >
+                                </h:outputText>
+                                <h:outputText style="font-weight: bold" value="#{financialTransactionController.currentBill.referenceBill.total}" >
+                                </h:outputText>
+                            </div>
+                            <div class="d-flex align-items-center">
 
-                        <h:outputText value="Value" class="mx-4" >
-                        </h:outputText>
-                        <h:outputText value="#{financialTransactionController.currentBill.referenceBill.total}" >
-                        </h:outputText>
-
+                                <p:commandButton 
+                                    value="Settle Receipt" 
+                                    ajax="false" 
+                                    icon="fas fa-check"
+                                    class="mx-2 ui-button-success"
+                                    action="#{financialTransactionController.settleFundTransferReceiveBill()}" >
+                                </p:commandButton>
+                            </div>
+                        </div>
                     </p:panel>
-                    <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                    <p:dataTable class="my-2" id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
                         <p:column headerText="Payment Method" >
                             <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                         </p:column>

@@ -383,7 +383,7 @@ public class StaffBasicController implements Serializable {
         items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff paysheet component list(/faces/hr/hr_staff_paysheet_component_list.xhtml)");
+        
 
     }
 

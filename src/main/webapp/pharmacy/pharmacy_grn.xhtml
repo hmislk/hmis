@@ -24,7 +24,7 @@
                 </f:facet>
                 <h:panelGroup >
 
-                    <h:panelGrid columns="7" style="min-width: 100%;" class="my-2">
+                    <h:panelGrid columns="7" style="min-width: 100%;" class="my-2" id="grn">
                         <h:outputLabel value="Supplier"/>
 
                         <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
@@ -36,10 +36,24 @@
                                          completeMethod="#{institutionController.completeCompany}" 
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                        
                         <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                             <f:selectItem itemLabel="SelectPayment method"/>
-                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
+                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                            <p:ajax process="@this" update="grn" event="change"/>
+                            <p:ajax process="@this" update="duration" event="itemSelect" />
                         </p:selectOneMenu>
+                        <h:panelGroup rendered="#{grnController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
+                            <div class="d-flex" >
+                                <div class="ui-inputgroup mx-1 my-1">
+                                    <p:inputText  
+                                        value="#{grnController.grnBill.creditDuration}"
+                                        style="width: 10em;">
+                                    </p:inputText>
+                                    <div class="ui-inputgroup-addon">Days</div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
                     </h:panelGrid>
 
@@ -50,12 +64,8 @@
                         rowKey="#{bi.searialNo}"
                         selection="#{grnController.selectedBillItems}"
                         value="#{grnController.billItems}" 
-                        class="w-100"
-                        rows="10"
-                        paginator="true" paginatorPosition="bottom"
-                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                        rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                        class="w-100" scrollable="true"
+                        scrollHeight="350px"
                         id="itemList" 
                         editable="true">  
 
@@ -101,7 +111,7 @@
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
-                        
+
                         <p:column headerText="Ordered Free Qty" >  
                             <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
                         </p:column>  
@@ -231,22 +241,24 @@
                                             listener="#{grnController.netDiscount()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Net Total"/>
-                                <p:outputLabel id="net"  value="#{grnController.grnBill.netTotal}" >
+                                <p:outputLabel id="net"  value="#{0-grnController.grnBill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:panelGrid>
 
                             <p:panelGrid columns="2" id="ins">
                                 <p:outputLabel value="Invoice Total"/>
-                                <p:inputText id="insv"  value="#{grnController.insTotal}">
+                                <p:inputText id="insv"  value="#{grnController.insTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                     <p:ajax process="@this" update="diff" event="keyup"
                                             listener="#{grnController.calDifference()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Difference"/>
-                                <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnController.difference}" >
+                                <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnController.difference}"
+                                             style="background-color: #e6e6e6;color: #{grnController.difference > 0 ? 'green' : (grnController.difference == 0 ? 'inherit' : 'red')}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
+
 
                             </p:panelGrid>
 

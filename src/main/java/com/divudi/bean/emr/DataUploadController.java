@@ -16,6 +16,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.CreditCompanyController;
 import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
@@ -78,6 +79,8 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Doctor;
+import com.divudi.entity.inward.InwardService;
 import com.divudi.java.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -169,6 +172,8 @@ public class DataUploadController implements Serializable {
     AreaController areaController;
     @Inject
     CreditCompanyController creditCompanyController;
+    @Inject
+    DoctorController doctorController;
     
 
     @EJB
@@ -212,6 +217,8 @@ public class DataUploadController implements Serializable {
     List<Department> departmentsSaved;
     private List<Consultant> consultantsToSave;
     private List<Institution> creditCompanies;
+    
+    private List<Doctor> doctorsTosave;
 
     private boolean pollActive;
 
@@ -300,6 +307,10 @@ public class DataUploadController implements Serializable {
 
     public String navigateToUploadConsultants() {
         return "/admin/staff/upload_consultants";
+    }
+    
+    public String navigateToUploadDoctors() {
+        return "/admin/staff/upload_doctors";
     }
 
     public String toUploadPatients() {
@@ -445,6 +456,19 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
+    
+    public void uploadDoctors() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                doctorsTosave = readDoctorsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pollActive = false;
+    }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();
@@ -563,6 +587,125 @@ public class DataUploadController implements Serializable {
         }
         return cons;
     }
+    
+    
+    private List<Doctor> readDoctorsFromExcel(InputStream inputStream) throws IOException {
+        List<Doctor> docs = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemsToSave = new ArrayList<>();
+        masterItemsToSave = new ArrayList<>();
+        itemFeesToSave = new ArrayList<>();
+        categoriesSaved = new ArrayList<>();
+        institutionsSaved = new ArrayList<>();
+        departmentsSaved = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            DoctorSpeciality speciality;
+            Doctor doctor;
+            Sex sex;
+            Title title;
+
+            String code = null;
+            String name = null;
+            String titleString = "";
+
+            String registration = "";
+            String description = "";
+            String sexString = null;
+            String mobileNumber = "";
+
+            String specialityString = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+            Cell titleCell = row.getCell(1);
+            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
+                titleString = titleCell.getStringCellValue();
+            }
+
+            Cell nameCell = row.getCell(2);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+
+            }
+
+            Cell registrationCell = row.getCell(3);
+            if (registrationCell != null && registrationCell.getCellType() == CellType.STRING) {
+                registration = registrationCell.getStringCellValue();
+            }
+
+            Cell descriptionCell = row.getCell(4);
+            if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
+                description = descriptionCell.getStringCellValue();
+            }
+
+            Cell sexCell = row.getCell(5);
+            if (sexCell != null) {
+                sexString = sexCell.getStringCellValue();
+
+            }
+
+            Cell mobileCell = row.getCell(6);
+            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
+                mobileNumber = mobileCell.getStringCellValue();
+            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
+                mobileNumber = "" + mobileCell.getNumericCellValue();
+            }
+
+            Cell specialityCell = row.getCell(7);
+            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
+                specialityString = specialityCell.getStringCellValue();
+            }
+
+            if (name == null || name.trim().equals("")) {
+                continue;
+            }
+
+            if (specialityString == null || specialityString.trim().equals("")) {
+                continue;
+            }
+
+            speciality = doctorSpecialityController.findDoctorSpeciality(specialityString, true);
+
+            if (sexString != null && sexString.toLowerCase().contains("f")) {
+                sex = Sex.Female;
+            } else {
+                sex = Sex.Male;
+            }
+
+            title = Title.getTitleEnum(titleString);
+
+            doctor = doctorController.getDoctorsByName(name);
+            if (doctor == null) {
+                doctor = new Consultant();
+            }
+            doctor.getPerson().setName(name);
+            doctor.getPerson().setSex(sex);
+            doctor.getPerson().setTitle(title);
+            doctor.getPerson().setMobile(mobileNumber);
+            doctor.setCode(code);
+            doctor.setRegistration(registration);
+            doctor.setDescription(description);
+            doctor.setSpeciality(speciality);
+            docs.add(doctor);
+
+        }
+        return docs;
+    }
 
     public void saveConsultants() {
         for (Consultant con : consultantsToSave) {
@@ -570,6 +713,14 @@ public class DataUploadController implements Serializable {
         }
         JsfUtil.addErrorMessage("Saved");
         consultantsToSave = new ArrayList<>();
+    }
+    
+     public void saveDoctors() {
+        for (Doctor doc : doctorsTosave) {
+            doctorController.save(doc);
+        }
+        JsfUtil.addErrorMessage("Saved");
+        doctorsTosave = new ArrayList<>();
     }
 
     private List<Item> readOpdItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
@@ -613,7 +764,7 @@ public class DataUploadController implements Serializable {
             String departmentName = null;
             String inwardName = null;
 
-            String itemType = "Service";
+            String itemType = "Investigation";
             Double hospitalFee = 0.0;
 
             Cell insCell = row.getCell(5);
@@ -667,7 +818,7 @@ public class DataUploadController implements Serializable {
             comments = name;
             name = CommonFunctions.sanitizeStringForDatabase(name);
 
-            item = itemController.findItemByName(name, department);
+            item = itemController.findItemByName(name, code, department);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;
@@ -808,6 +959,34 @@ public class DataUploadController implements Serializable {
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
+            }else if (itemType.equals("InwardService")) {
+
+                if (masterItem == null) {
+                    masterItem = new Investigation();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setIsMasterItem(true);
+                    masterItem.setCategory(category);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    masterItemsToSave.add(masterItem);
+                }
+                InwardService iwdService = new InwardService();
+                iwdService.setName(name);
+                iwdService.setPrintName(printingName);
+                iwdService.setFullName(fullName);
+                iwdService.setCode(code);
+                iwdService.setCategory(category);
+                iwdService.setInstitution(institution);
+                iwdService.setDepartment(department);
+                iwdService.setInwardChargeType(iwct);
+                iwdService.setMasterItemReference(masterItem);
+                iwdService.setCreater(sessionController.getLoggedUser());
+                iwdService.setCreatedAt(new Date());
+                item = iwdService;
             }
 
             if (item == null) {
@@ -980,7 +1159,6 @@ public class DataUploadController implements Serializable {
     }
 
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
-        System.out.println("readCollectingCentreItemsAndFeesFromExcel");
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -998,7 +1176,6 @@ public class DataUploadController implements Serializable {
         Department runningDept = null;
         Category runningCategory = null;
 
-        System.out.println("1");
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
@@ -1079,9 +1256,7 @@ public class DataUploadController implements Serializable {
             name = CommonFunctions.sanitizeStringForDatabase(name);
             System.out.println("2 name = " + name);
 
-            System.out.println("department = " + department);
             item = itemController.findItemByName(name, code, department);
-            System.out.println("item = " + item);
             if (item != null) {
                 itemsSkipped.add(item);
                 continue;
@@ -3379,6 +3554,14 @@ public class DataUploadController implements Serializable {
 
     public void setCreditCompanies(List<Institution> creditCompanies) {
         this.creditCompanies = creditCompanies;
+    }
+
+    public List<Doctor> getDoctorsTosave() {
+        return doctorsTosave;
+    }
+
+    public void setDoctorsTosave(List<Doctor> doctorsTosave) {
+        this.doctorsTosave = doctorsTosave;
     }
     
     

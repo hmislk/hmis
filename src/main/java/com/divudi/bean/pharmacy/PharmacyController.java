@@ -154,7 +154,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> directPurchase;
     private List<Bill> bills;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
-    private int managePharamcyReportIndex;
+    private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
 
@@ -268,9 +268,67 @@ public class PharmacyController implements Serializable {
 
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
+    
+    
+    public String navigateToBinCard() {
+        return "/pharmacy/bin_card?faces-redirect=true";
+    }
+    
+    public String navigateToItemsList() {
+        return "/pharmacy/list_amps?faces-redirect=true";
+    }
+    
+    public String navigateToMedicineList() {
+        return "/pharmacy/list_medicines?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithoutDistributor() {
+        return "/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithSuppliersAndPrices() {
+        return "/pharmacy/item_supplier_prices?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithDistributor() {
+        return "/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithMultipleDistributorsItemsOnly() {
+        return "/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true";
+    }
+    
+    public String navigateToItemWithMultipleDistributors() {
+        return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
+    }
+    
+    public String navigateToReorderAnalysis() {
+        return "/pharmacy/ordering_data?faces-redirect=true";
+    }
+    
+    public String navigateToManageReorderingData() {
+        return "/pharmacy/manage_reordering_data?faces-redirect=true";
+    }
+    
+    public String navigateToReorderManagement() {
+        return "/pharmacy/reorder_management?faces-redirect=true";
+    }
+    
+    public String navigateToAllItemsTransactionSummary() {
+        return "/pharmacy/raport_all_item_transaction_summery?faces-redirect=true";
+    }
+    
+    public String navigateToItemTransactionDetails() {
+        return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
+    }
+    
     public String navigateToListPharmaceuticals() {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyAnalytics() {
+        return "/pharmacy/pharmacy_analytics?faces-redirect=true";
     }
 
     public String navigateToManagePharmaceuticals() {
@@ -324,6 +382,14 @@ public class PharmacyController implements Serializable {
         importerController.getItems();
         importerController.getCurrent();
         return "/pharmacy/pharmacy_importer?faces-redirect=true";
+    }
+    
+    public String navigateToSuppliers(){
+        return "/pharmacy/pharmacy_dealer?faces-redirect=true";
+    }
+    
+    public String navigateToItemSuppliers(){
+        return "/pharmacy/pharmacy_items_distributors?faces-redirect=true";
     }
 
     public String navigateToVmp() {
@@ -594,7 +660,7 @@ public class PharmacyController implements Serializable {
         pos = null;
         directPurchase = null;
         ampps = null;
-        
+
     }
 
     public void deleteSelectedPharmaceuticalLight() {
@@ -866,7 +932,7 @@ public class PharmacyController implements Serializable {
 
         Collections.sort(itemTransactionSummeryRows);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/All item transaction summery(/faces/pharmacy/raport_all_item_transaction_summery.xhtml)");
+        
 
     }
 
@@ -1371,7 +1437,6 @@ public class PharmacyController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyBhtPre);
         bts.add(BillType.PharmacyPre);
-        bts.add(BillType.PharmacyTransferReceive);
         return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
     }
 
@@ -1379,7 +1444,7 @@ public class PharmacyController implements Serializable {
         StringBuilder jpqlBuilder = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
-        jpqlBuilder.append("select sum(i.pharmaceuticalBillItem.qty) from BillItem i where i.retired = false");
+        jpqlBuilder.append("select sum(abs(i.pharmaceuticalBillItem.qty)) from BillItem i where i.retired = false");
 
         if (dep != null) {
             jpqlBuilder.append(" and i.bill.department = :dep");
@@ -1615,7 +1680,7 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(dayCount);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Date)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
+        
 
     }
 
@@ -1651,7 +1716,7 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(Math.abs(monthCount));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Month)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
+        
 
     }
 
@@ -2082,15 +2147,17 @@ public class PharmacyController implements Serializable {
         createDirectPurchaseTable();
         createInstitutionIssue();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/Item transaction details(/faces/pharmacy/pharmacy_item_transactions.xhtml)");
+        
     }
 
     public void createTable() {
-        createGrnTable();
-        createPoTable();
-        createDirectPurchaseTable();
+        createInstitutionSale();
+        createInstitutionWholeSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
         createInstitutionIssue();
-
+        createInstitutionTransferReceive();
     }
 
     public void createGrnTable() {

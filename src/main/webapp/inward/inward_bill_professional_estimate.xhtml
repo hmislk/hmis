@@ -25,7 +25,7 @@
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                             value="#{inwardProfessionalBillController.current.patientEncounter}" 
-                                             completeMethod="#{admissionController.completePatient}"
+                                            completeMethod="#{admissionController.completePatient}"
                                             var="apt2" 
                                             itemLabel="#{apt2.bhtNo}"
                                             itemValue="#{apt2}" 
@@ -96,7 +96,7 @@
                                     value="#{inwardProfessionalBillController.current.patient}" 
                                     target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
-                            
+
                             <p:commandButton class=" ui-button-success "
                                              style="float: right"
                                              value="New Bill" 
@@ -104,7 +104,7 @@
                                              ajax="false" 
                                              actionListener="#{inwardProfessionalBillController.makeNull()}" >
                             </p:commandButton>
-                            
+
                         </div>
                     </div>
 
@@ -200,13 +200,16 @@
                                             <h:outputLabel value="Fee At"/>
                                         </div>
                                         <div class="col-8">
-                                            <p:calendar styleClass="dateTimePicker" 
+                                            <p:datePicker styleClass="dateTimePicker" 
                                                         id="feeAt" 
                                                         value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
                                                         size="50"
-                                                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                                        showTime="true"
+                                                        showButtonBar="true"
+                                                        timeInput="true"
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                                 <f:ajax event="dateSelect"  render="feeAt"/>
-                                            </p:calendar>
+                                            </p:datePicker>
                                         </div>
                                     </div>
                                     <div class="row m-1">

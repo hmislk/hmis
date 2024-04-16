@@ -457,7 +457,7 @@ public class SurgeryBillController implements Serializable {
         JsfUtil.addSuccessMessage("Surgery Detail Added");
         bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
         resetSurgeryBillValues();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Add surgories/Save Surgery Detail(/faces/theater/inward_bill_surgery.xhtml)");
+        
         return bhtSummeryController.navigateToInpatientProfile();
     }
 

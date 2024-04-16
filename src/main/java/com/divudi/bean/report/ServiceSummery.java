@@ -157,7 +157,7 @@ public class ServiceSummery implements Serializable {
 
         staffs = getStaffFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Staff credit/Staff welfare balance(/faces/reportInstitution/report_own.xhtml)");
+        
 
     }
 
@@ -819,7 +819,7 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service OPD/Summery by service(/faces/reportInstitution/report_opd_service_summery.xhtml)");
+        
 
     }
 
@@ -842,7 +842,7 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by investigation OPD/Summery by investigation(/faces/reportInstitution/report_investigation_service_summery.xhtml)");
+        
     }
 
     List<Bill> bills;
@@ -899,7 +899,7 @@ public class ServiceSummery implements Serializable {
 
         calTotal(bills);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Staff credit/Staff welfare(/faces/reportInstitution/report_opd_pharmacy_staff_welfare.xhtml)");
+        
 
     }
 
@@ -993,7 +993,7 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            ////// // System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery(/faces/reportLab/report_opd_service_summery.xhtml)");
+        
 
     }
 
@@ -1046,7 +1046,7 @@ public class ServiceSummery implements Serializable {
             reagentFeeTotalGT += svItem.getValue4();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery by bill types(/faces/reportLab/report_opd_service_summery_by_bill_types.xhtml)");
+        
     }
 
     public void createSummaryTable(Bill bill) {
@@ -1101,7 +1101,7 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/ Summery by service - added date(/faces/reportInstitution/report_inward_service_detail_added.xhtml)");
+        
     }
 
     public void createServiceSummeryInwardAddedDate() {
@@ -1126,7 +1126,7 @@ public class ServiceSummery implements Serializable {
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/lab summery inward/summery by added date(/faces/reportLab/report_inward_service_detail_added_lab.xhtml)");
+        
 
     }
 
@@ -1147,7 +1147,7 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, true);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/ Summery by service - discharge date(/faces/reportInstitution/report_inward_service_detail_discharged.xhtml)");
+        
     }
 
     List<BillItemWithFee> serviceSummery;
@@ -1354,7 +1354,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service OPD/ Summery by service category(/faces/reportInstitution/report_opd_service_summery_by_category.xhtml)");
+        
 
     }
 
@@ -1403,7 +1403,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by investigation OPD/Summery by investigation category(/faces/reportInstitution/report_opd_investigation_summery_by_category.xhtml)");
+        
     }
 
     private void calServiceTot1(BillType billType, boolean discharged) {
@@ -1452,7 +1452,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.InwardBill, false);
         calServiceTot(BillType.InwardBill, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/Summery by service category - added date(/faces/reportInstitution/report_inward_service_summery_by_category_added.xhtml)");
+        
 
     }
 
@@ -1535,7 +1535,7 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.InwardBill, true);
         //calServiceTot(BillType.InwardBill, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/Summery by service category - discharged date(/faces/reportInstitution/report_inward_service_summery_by_category_discharged.xhtml)");
+        
 
     }
 

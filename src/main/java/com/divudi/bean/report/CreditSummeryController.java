@@ -109,7 +109,7 @@ public class CreditSummeryController implements Serializable {
         dailyCredit = null;
         //   categoryWithItem = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(/faces/reportInstitution/report_opd_daily_summery_credit_department_by_bill.xhtml)");
+        
     }
 
     public Item getItem() {
@@ -394,7 +394,7 @@ public class CreditSummeryController implements Serializable {
         opdCreditVatTotal = getFeeVatTotal();
         createVatTables();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by item(/faces/reportInstitution/report_opd_daily_summery_credit_department.xhtml)");
+        
 
     }
 
@@ -602,7 +602,7 @@ public class CreditSummeryController implements Serializable {
         }
         creditBills.removeAll(bills);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(with letter)(/faces/reportInstitution/report_opd_credit_bill_by_credit_company_with_letter.xhtml)");
+        
 
     }
 

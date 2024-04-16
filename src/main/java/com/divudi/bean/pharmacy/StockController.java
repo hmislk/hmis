@@ -136,8 +136,6 @@ public class StockController implements Serializable {
     }
 
     public void relistExpiaringStocks() {
-        System.out.println("relistExpiaringStocks");
-        System.out.println("selectedItem = " + selectedItem);
         if (selectedItem instanceof Amp) {
             Amp amp = (Amp) selectedItem;
             List<Amp> amps = new ArrayList<>();
@@ -284,6 +282,29 @@ public class StockController implements Serializable {
         }
         return 0.0;
     }
+    
+    public double findStock(Department department, List<Amp> amps) {
+        Double stock = null;
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (department == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("dep", department);
+            jpql += " where i.department=:dep "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
 
     public double findExpiaringStock(Institution institution, Item item) {
         if (item instanceof Amp) {
@@ -315,7 +336,12 @@ public class StockController implements Serializable {
         String jpql;
         Map m = new HashMap();
         Vmp tvmp = amps.get(0).getVmp();
-        int daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        int daysToMarkAsExpiaring ;
+        if(tvmp!=null){
+            daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        }else{
+            daysToMarkAsExpiaring = 30;
+        }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, daysToMarkAsExpiaring);
         Date doe = c.getTime();

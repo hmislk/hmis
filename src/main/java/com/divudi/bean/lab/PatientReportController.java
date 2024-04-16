@@ -42,6 +42,8 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.UserPreferenceFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.facade.ClinicalFindingValueFacade;
 import com.lowagie.text.DocumentException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -130,6 +132,8 @@ public class PatientReportController implements Serializable {
     SmsManagerEjb smsManager;
     @EJB
     SmsFacade smsFacade;
+    @EJB
+    ClinicalFindingValueFacade clinicalFindingValueFacade;
     //Controllers
     @Inject
     private PatientReportBean prBean;
@@ -174,6 +178,7 @@ public class PatientReportController implements Serializable {
     private String smsNumber;
     private String smsMessage;
     private boolean showBackground=false;
+    private ClinicalFindingValue clinicalFindingValue;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -761,7 +766,7 @@ public class PatientReportController implements Serializable {
             getPirivFacade().edit(priv);
 
         }
-        commonController.printReportDetails(null, null, startTime, "Calculate Lab Calculations");
+        
     }
 
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
@@ -959,7 +964,7 @@ public class PatientReportController implements Serializable {
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
-        commonController.printReportDetails(null, null, startTime, "Lab Report Save");
+        
 
         //JsfUtil.addSuccessMessage("Saved");
     }
@@ -1483,7 +1488,7 @@ public class PatientReportController implements Serializable {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (getCurrentPtIx().getBillItem().getBill().getBalance() == 0.0) {
                 if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
                     Sms e = new Sms();
@@ -1541,9 +1546,55 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
+        
+        JsfUtil.addSuccessMessage("Approved");
+        
+    }
+    
+    public void approveEmrPatientReport() {
+        Date startTime = new Date();
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to approve");
+            return;
+        }
+        if (currentPatientReport.getDataEntered() == false) {
+            JsfUtil.addErrorMessage("First Save report");
+            return;
+        }
+
+        BooleanMessage tbm = canApproveThePatientReport(currentPatientReport);
+        if (!tbm.isFlag()) {
+            JsfUtil.addErrorMessage(tbm.getMessage());
+            return;
+        }
+
+        getCurrentPtIx().setApproved(true);
+        currentPtIx.setApproveAt(Calendar.getInstance().getTime());
+        currentPtIx.setApproveUser(getSessionController().getLoggedUser());
+        currentPtIx.setApproveDepartment(getSessionController().getDepartment());
+        getPiFacade().edit(currentPtIx);
+        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setApproved(Boolean.TRUE);
+        currentPatientReport.setApproveAt(Calendar.getInstance().getTime());
+        currentPatientReport.setApproveDepartment(getSessionController().getLoggedUser().getDepartment());
+        currentPatientReport.setApproveInstitution(getSessionController().getLoggedUser().getInstitution());
+        currentPatientReport.setApproveUser(getSessionController().getLoggedUser());
+        currentPatientReport.setQrCodeContentsDetailed(generateQrCodeDetails(currentPatientReport));
+        currentPatientReport.setQrCodeContentsLink(generateQrCodeLink(currentPatientReport));
+        getFacade().edit(currentPatientReport);
+        getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
+        getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
+
+        if(clinicalFindingValue!=null){
+            getClinicalFindingValue().setPatientInvestigation(currentPtIx);
+            if(clinicalFindingValue.getId()!=null){
+                clinicalFindingValueFacade.edit(clinicalFindingValue);
+            }
+            clinicalFindingValue = null;
+        }
 
         JsfUtil.addSuccessMessage("Approved");
-        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+        
     }
 
     public void sendSmsForPatientReport() {
@@ -1586,7 +1637,7 @@ public class PatientReportController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("SMS Sent");
-//        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+//        
     }
 
     public void reverseApprovalOfPatientReport() {
@@ -1646,7 +1697,7 @@ public class PatientReportController implements Serializable {
         } catch (Exception e) {
         }
 
-        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+        
     }
 
     public void printPatientReport() {
@@ -2077,6 +2128,14 @@ public class PatientReportController implements Serializable {
 
     public void setShowBackground(boolean showBackground) {
         this.showBackground = showBackground;
+    }
+
+    public ClinicalFindingValue getClinicalFindingValue() {
+        return clinicalFindingValue;
+    }
+
+    public void setClinicalFindingValue(ClinicalFindingValue clinicalFindingValue) {
+        this.clinicalFindingValue = clinicalFindingValue;
     }
 
     @FacesConverter(forClass = PatientReport.class)

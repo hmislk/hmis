@@ -12,6 +12,12 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.AtomicBillTypeTotals;
+import static com.divudi.data.BillType.CollectingCentreBill;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.FinancialReport;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.PaymentMethodValues;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -58,29 +64,52 @@ public class FinancialTransactionController implements Serializable {
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
     private List<Payment> paymentsFromShiftSratToNow;
-    List<Payment> recievedBIllPayments;
+    private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
+    private PaymentMethodValues paymentMethodValues;
+    private AtomicBillTypeTotals atomicBillTypeTotals;
+    private FinancialReport financialReport;
 
-    private double totalOpdBillValues;
-    private double totalPharmecyBillValues;
-    private double totalShiftStart;
+    //Billed Totals
+    private double totalOpdBillValue;
+    private double totalPharmecyBillValue;
+    private double totalChannelBillValue;
+    private double totalCcBillValue;
+    private double totalProfessionalPaymentBillValue;
+
+    //Cancelled Totals
+    private double totalOpdBillCanceledValue;
+    private double totalPharmecyBillCanceledValue;
+    private double totalChannelBillCancelledValue;
+    private double totalCcBillCanceledValue;
+    private double totalProfessionalPaymentBillCancelledValue;
+
+    //Refund Totals
+    private double totalOpdBillRefundValue;
+    private double totalPharmacyBillRefundValue;
+    private double totalChannelBillRefundValue;
+    private double totalCcBillRefundValue;
+
+    //Totals
+    private double totalBillRefundValue;
+    private double totalBillCancelledValue;
+    private double totalBilledBillValue;
+
+    private double totalShiftStartValue;
     private double totalBalanceTransfer;
     private double totalTransferRecive;
+
     private double totalFunds;
     private double shiftEndTotalValue;
     private double shiftEndRefundBillValue;
     private double shiftEndCanceledBillValue;
     private double totalWithdrawals;
     private double totalDeposits;
-    private double totalBillRefunds;
-    private double totalBillCanceld;
-    private double totalBilledBillValue;
+
     private double Deductions;
-    private double aditions;
-    private double totalCCBillValues;
-    private double totalOpdBillCanceled;
-    private double totalPharmecyBillCanceled;
-    private double totalCCBillCanceled;
+    private double additions;
+
+    private int fundTransferBillsToReceiveCount;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -91,29 +120,30 @@ public class FinancialTransactionController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
-        return "/cashier/index?faces-redirect=false;";
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/index?faces-redirect=true;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
-        return "/cashier/initial_fund_bill?faces-redirect=false;";
+        return "/cashier/initial_fund_bill?faces-redirect=true;";
     }
 
     public String navigateToFundTransferBill() {
         resetClassVariables();
         prepareToAddNewFundTransferBill();
-        return "/cashier/fund_transfer_bill";
+        return "/cashier/fund_transfer_bill?faces-redirect=true";
     }
 
     public String navigateToFundDepositBill() {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
-        return "/cashier/deposit_funds";
+        return "/cashier/deposit_funds?faces-redirect=true";
     }
 
     public String navigateToCashierSummary() {
-        return "/cashier/cashier_summary";
+        return "/cashier/cashier_summary?faces-redirect=true";
     }
 
     public String navigateToReceiveNewFundTransferBill() {
@@ -127,50 +157,50 @@ public class FinancialTransactionController implements Serializable {
         }
         resetClassVariablesWithoutSelectedBill();
         prepareToAddNewFundTransferReceiveBill();
-        return "/cashier/fund_transfer_receive_bill";
+        return "/cashier/fund_transfer_receive_bill?faces-redirect=true";
     }
 
     public String navigateToReceiveFundTransferBillsForMe() {
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/fund_transfer_bills_for_me_to_receive";
+        return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
 
     private void prepareToAddNewInitialFundBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftStartFundBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
 
     private void prepareToAddNewFundTransferBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
 
     private void prepareToAddNewFundDepositBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.DepositFundBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
-        System.out.println("this = " + "prepareToAddNewFundTransferReceiveBill working start");
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferReceivedBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setReferenceBill(selectedBill);
         if (selectedBill != null) {
-            System.out.println("selectedBill id = " + selectedBill.getId());
-            System.out.println("currentBill id = " + currentBill.getId());
         }
         currentBillPayments = new ArrayList<>();
-        System.out.println("selected bill payments = " + selectedBill.getPayments().size());
         if (selectedBill.getPayments() == null || selectedBill.getPayments().isEmpty()) {
             selectedBill.setPayments(findPaymentsForBill(selectedBill));
         }
 
         for (Payment p : selectedBill.getPayments()) {
-            System.out.println("p = " + p);
             Payment np = p.copyAttributes();
             currentBillPayments.add(np);
 
@@ -253,7 +283,6 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
-        System.out.println("currentPayments = " + currentPayment.getPaidValue());
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -374,7 +403,7 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/initial_fund_bill_print";
+        return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
 
     public String settleFundTransferBill() {
@@ -401,16 +430,14 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             System.out.println("p = " + p);
-            System.out.println("p = " + p.getId());
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
-            System.out.println("p = " + p.getId());
         }
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
-        return "/cashier/fund_transfer_bill_print";
+        return "/cashier/fund_transfer_bill_print?faces-redirect=true";
     }
 
     public String settleWithdrawalFundBill() {
@@ -436,13 +463,13 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/initial_withdrawal_processing_bill_print";
+        return "/cashier/initial_withdrawal_processing_bill_print?faces-redirect=true";
     }
 
     // </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="Sample Code Block">
-// </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
+    // <editor-fold defaultstate="collapsed" desc="Sample Code Block">
+    // </editor-fold>  
+    // <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -450,12 +477,13 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill != null) {
             currentBill = new Bill();
             currentBill.setBillType(BillType.ShiftEndFundBill);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
             currentBill.setBillClassType(BillClassType.Bill);
             currentBill.setReferenceBill(nonClosedShiftStartFundBill);
         } else {
             currentBill = null;
         }
-        return "/cashier/shift_end_summery_bill";
+        return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
 
     public void fillPaymentsFromShiftStartToNow() {
@@ -475,139 +503,111 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
         currentBillPayments = paymentFacade.findByJpql(jpql, m);
-        resetTotalFundsValues();
+        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
+        atomicBillTypeTotals = new AtomicBillTypeTotals();
         for (Payment p : currentBillPayments) {
+            if (p.getBill().getBillTypeAtomic() == null) {
+                System.out.println("p = " + p);
+                System.out.println("p.getBill() = " + p.getBill());
+            }
+            atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             calculateBillValuesFromBillTypes(p);
         }
-        calculateTotalFundsFromShiftStartToNow();
+//        calculateTotalFundsFromShiftStartToNow();
+        financialReport = new FinancialReport(atomicBillTypeTotals);
     }
 
     public void calculateBillValuesFromBillTypes(Payment p) {
-        if (p.getBill().getBillType() != null) {
-            switch (p.getBill().getBillType()) {
-                case OpdBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalOpdBillCanceled += p.getPaidValue();
-                    }
-                    if (p.getBill().getReferenceBill() != null) {
-                        totalBilledBillValue += p.getPaidValue();
-                    }
-                    if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
-                        totalBilledBillValue += p.getPaidValue();
-                    }
-                    
-                    totalOpdBillValues += p.getPaidValue();
-                    break;
-                case PharmacySale:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalPharmecyBillCanceled += p.getPaidValue();
-                    }
-                    if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
-                        totalBilledBillValue += p.getPaidValue();
-                    }
-                    totalPharmecyBillValues += p.getPaidValue();
-                    break;
-                case FundTransferBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalBillCanceld += p.getPaidValue();
-                    }
-                    totalBalanceTransfer += p.getPaidValue();
-                    break;
-                case FundTransferReceivedBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalBillCanceld += p.getPaidValue();
-                    }
-                    totalTransferRecive += p.getPaidValue();
-                    break;
-                case ShiftStartFundBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalBillCanceld += p.getPaidValue();
-                    }
-                    totalShiftStart += p.getPaidValue();
-                    break;
-                case WithdrawalFundBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalBillCanceld += p.getPaidValue();
-                    }
-                    totalWithdrawals += p.getPaidValue();
-                    break;
-                case DepositFundBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalBillCanceld += p.getPaidValue();
-                    }
-                    totalDeposits += p.getPaidValue();
-                    break;
-                case CollectingCentreBill:
-                    if (p.getBill().isRefunded()) {
-                        totalBillRefunds += p.getPaidValue();
-                    }
-                    if (p.getBill().isCancelled()) {
-                        totalCCBillCanceled += p.getPaidValue();
-                    }
-                    if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
-                        totalBilledBillValue += p.getPaidValue();
-                    }
-                    totalCCBillValues += p.getPaidValue();
-                    break;
-                default:
-                    break;
-            }
+        if (p.getBill() == null) {
+            System.err.println("No Bill for the Payment = " + p);
+            return;
+        }
+        if (p.getBill().getBillType() == null) {
+            System.err.println("No Bill Type for the Payment = " + p);
+            return;
+        }
+        if (p.getBill().getBillTypeAtomic() == null) {
+            System.err.println("No Bill Type Atomic for the Payment = " + p);
+            return;
+        }
+
+        switch (p.getBill().getBillTypeAtomic().getBillCategory()) {
+            case BILL:
+                if (p.getPaidValue() != 0.0) {
+                    paymentMethodValues.addValue(p);
+                } else {
+                    System.out.println("No Paid Value for Bill = " + p);
+                    paymentMethodValues.addValue(p.getBill());
+                }
+                break;
+            case CANCELLATION:
+            case REFUND:
+                if (p.getPaidValue() != 0.0) {
+                    paymentMethodValues.deductAbsoluteValue(p);
+                } else {
+                    System.out.println("No Paid Value for Bill = " + p);
+                    paymentMethodValues.deductAbsoluteValue(p.getBill());
+                }
+                break;
+            default:
+                break;
+
         }
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        totalBillCanceld = totalOpdBillCanceled 
-                + totalCCBillCanceled 
-                + totalPharmecyBillCanceled;
-        totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
-        totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
-        totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
-        double totalBillValues = totalBilledBillValue;
+        totalBillCancelledValue = totalOpdBillCanceledValue
+                + totalCcBillCanceledValue
+                + totalPharmecyBillCanceledValue;
+        totalOpdBillValue = totalOpdBillValue;
+        totalPharmecyBillValue = totalPharmecyBillValue;
+        totalCcBillValue = totalCcBillValue;
+        double totalBillValues = totalBilledBillValue + totalTransferRecive;
 
-        aditions = totalBillValues + totalShiftStart;
-        Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds;
-        totalFunds = aditions - Deductions;
+        additions = totalBillValues + totalShiftStartValue;
+        Deductions = totalBalanceTransfer + totalDeposits + totalBillRefundValue + totalBillCancelledValue;
+        totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
 
     }
 
     public void resetTotalFundsValues() {
-        totalCCBillValues = 0.0;
-        totalOpdBillValues = 0.0;
-        totalPharmecyBillValues = 0.0;
-        totalShiftStart = 0.0;
-        totalTransferRecive = 0.0;
-        totalBalanceTransfer = 0.0;
-        totalBillCanceld = 0.0;
-        totalBillRefunds = 0.0;
-        totalDeposits = 0.0;
-        totalWithdrawals = 0.0;
+        totalOpdBillValue = 0.0;
+        totalPharmecyBillValue = 0.0;
+        totalChannelBillValue = 0.0;
+        totalCcBillValue = 0.0;
+        totalProfessionalPaymentBillValue = 0.0;
+
+        totalOpdBillCanceledValue = 0.0;
+        totalPharmecyBillCanceledValue = 0.0;
+        totalChannelBillCancelledValue = 0.0;
+        totalCcBillCanceledValue = 0.0;
+        totalProfessionalPaymentBillCancelledValue = 0.0;
+
+        totalOpdBillRefundValue = 0.0;
+        totalPharmacyBillRefundValue = 0.0;
+        totalChannelBillRefundValue = 0.0;
+        totalCcBillRefundValue = 0.0;
+
+        totalBillRefundValue = 0.0;
+        totalBillCancelledValue = 0.0;
         totalBilledBillValue = 0.0;
+
+        totalShiftStartValue = 0.0;
+        totalBalanceTransfer = 0.0;
+        totalTransferRecive = 0.0;
+
+        totalFunds = 0.0;
         shiftEndTotalValue = 0.0;
-        totalOpdBillCanceled = 0.0;
-        totalCCBillCanceled = 0.0;
-        totalPharmecyBillCanceled = 0.0;
+        shiftEndRefundBillValue = 0.0;
+        shiftEndCanceledBillValue = 0.0;
+        totalWithdrawals = 0.0;
+        totalDeposits = 0.0;
+
+        Deductions = 0.0;
+        additions = 0.0;
+
+        fundTransferBillsToReceiveCount = 0;
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
@@ -671,7 +671,7 @@ public class FinancialTransactionController implements Serializable {
 
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
-        return "/cashier/shift_end_summery_bill_print";
+        return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
 // </editor-fold>  
@@ -710,6 +710,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
+        fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
 
     }
 
@@ -749,7 +750,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
-        return "/cashier/fund_transfer_receive_bill_print";
+        return "/cashier/fund_transfer_receive_bill_print?faces-redirect=true";
     }
 
 // </editor-fold>      
@@ -809,19 +810,20 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/deposit_funds_print";
+        return "/cashier/deposit_funds_print?faces-redirect=true";
     }
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
 
     public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=false;";
+        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=true;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.WithdrawalFundBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
 
@@ -921,28 +923,28 @@ public class FinancialTransactionController implements Serializable {
         this.allBillsShiftStartToNow = allBillsShiftStartToNow;
     }
 
-    public double getTotalOpdBillValues() {
-        return totalOpdBillValues;
+    public double getTotalOpdBillValue() {
+        return totalOpdBillValue;
     }
 
-    public void setTotalOpdBillValues(double totalOpdBillValues) {
-        this.totalOpdBillValues = totalOpdBillValues;
+    public void setTotalOpdBillValue(double totalOpdBillValue) {
+        this.totalOpdBillValue = totalOpdBillValue;
     }
 
-    public double getTotalPharmecyBillValues() {
-        return totalPharmecyBillValues;
+    public double getTotalPharmecyBillValue() {
+        return totalPharmecyBillValue;
     }
 
-    public void setTotalPharmecyBillValues(double totalPharmecyBillValues) {
-        this.totalPharmecyBillValues = totalPharmecyBillValues;
+    public void setTotalPharmecyBillValue(double totalPharmecyBillValue) {
+        this.totalPharmecyBillValue = totalPharmecyBillValue;
     }
 
-    public double getTotalShiftStart() {
-        return totalShiftStart;
+    public double getTotalShiftStartValue() {
+        return totalShiftStartValue;
     }
 
-    public void setTotalShiftStart(double totalShiftStart) {
-        this.totalShiftStart = totalShiftStart;
+    public void setTotalShiftStartValue(double totalShiftStartValue) {
+        this.totalShiftStartValue = totalShiftStartValue;
     }
 
     public double getTotalBalanceTransfer() {
@@ -1009,20 +1011,20 @@ public class FinancialTransactionController implements Serializable {
         this.totalDeposits = totalDeposits;
     }
 
-    public double getTotalBillRefunds() {
-        return totalBillRefunds;
+    public double getTotalBillRefundValue() {
+        return totalBillRefundValue;
     }
 
-    public void setTotalBillRefunds(double totalBillRefunds) {
-        this.totalBillRefunds = totalBillRefunds;
+    public void setTotalBillRefundValue(double totalBillRefundValue) {
+        this.totalBillRefundValue = totalBillRefundValue;
     }
 
-    public double getTotalBillCanceld() {
-        return totalBillCanceld;
+    public double getTotalBillCancelledValue() {
+        return totalBillCancelledValue;
     }
 
-    public void setTotalBillCanceld(double totalBillCanceld) {
-        this.totalBillCanceld = totalBillCanceld;
+    public void setTotalBillCancelledValue(double totalBillCancelledValue) {
+        this.totalBillCancelledValue = totalBillCancelledValue;
     }
 
     public double getTotalBilledBillValue() {
@@ -1041,44 +1043,144 @@ public class FinancialTransactionController implements Serializable {
         this.Deductions = Deductions;
     }
 
-    public double getAditions() {
-        return aditions;
+    public double getAdditions() {
+        return additions;
     }
 
-    public void setAditions(double aditions) {
-        this.aditions = aditions;
+    public void setAdditions(double additions) {
+        this.additions = additions;
     }
 
-    public double getTotalCCBillValues() {
-        return totalCCBillValues;
+    public double getTotalCcBillValue() {
+        return totalCcBillValue;
     }
 
-    public void setTotalCCBillValues(double totalCCBillValues) {
-        this.totalCCBillValues = totalCCBillValues;
+    public void setTotalCcBillValue(double totalCcBillValue) {
+        this.totalCcBillValue = totalCcBillValue;
     }
 
-    public double getTotalOpdBillCanceled() {
-        return totalOpdBillCanceled;
+    public double getTotalOpdBillCanceledValue() {
+        return totalOpdBillCanceledValue;
     }
 
-    public void setTotalOpdBillCanceled(double totalOpdBillCanceled) {
-        this.totalOpdBillCanceled = totalOpdBillCanceled;
+    public void setTotalOpdBillCanceledValue(double totalOpdBillCanceledValue) {
+        this.totalOpdBillCanceledValue = totalOpdBillCanceledValue;
     }
 
-    public double getTotalPharmecyBillCanceled() {
-        return totalPharmecyBillCanceled;
+    public double getTotalPharmecyBillCanceledValue() {
+        return totalPharmecyBillCanceledValue;
     }
 
-    public void setTotalPharmecyBillCanceled(double totalPharmecyBillCanceled) {
-        this.totalPharmecyBillCanceled = totalPharmecyBillCanceled;
+    public void setTotalPharmecyBillCanceledValue(double totalPharmecyBillCanceledValue) {
+        this.totalPharmecyBillCanceledValue = totalPharmecyBillCanceledValue;
     }
 
-    public double getTotalCCBillCanceled() {
-        return totalCCBillCanceled;
+    public double getTotalCcBillCanceledValue() {
+        return totalCcBillCanceledValue;
     }
 
-    public void setTotalCCBillCanceled(double totalCCBillCanceled) {
-        this.totalCCBillCanceled = totalCCBillCanceled;
+    public void setTotalCcBillCanceledValue(double totalCcBillCanceledValue) {
+        this.totalCcBillCanceledValue = totalCcBillCanceledValue;
+    }
+
+    public int getFundTransferBillsToReceiveCount() {
+        return fundTransferBillsToReceiveCount;
+    }
+
+    public void setFundTransferBillsToReceiveCount(int fundTransferBillsToReceiveCount) {
+        this.fundTransferBillsToReceiveCount = fundTransferBillsToReceiveCount;
+    }
+
+    public List<Payment> getRecievedBIllPayments() {
+        return recievedBIllPayments;
+    }
+
+    public void setRecievedBIllPayments(List<Payment> recievedBIllPayments) {
+        this.recievedBIllPayments = recievedBIllPayments;
+    }
+
+    public double getTotalChannelBillValue() {
+        return totalChannelBillValue;
+    }
+
+    public void setTotalChannelBillValue(double totalChannelBillValue) {
+        this.totalChannelBillValue = totalChannelBillValue;
+    }
+
+    public double getTotalChannelBillCancelledValue() {
+        return totalChannelBillCancelledValue;
+    }
+
+    public void setTotalChannelBillCancelledValue(double totalChannelBillCancelledValue) {
+        this.totalChannelBillCancelledValue = totalChannelBillCancelledValue;
+    }
+
+    public double getTotalOpdBillRefundValue() {
+        return totalOpdBillRefundValue;
+    }
+
+    public void setTotalOpdBillRefundValue(double totalOpdBillRefundValue) {
+        this.totalOpdBillRefundValue = totalOpdBillRefundValue;
+    }
+
+    public double getTotalPharmacyBillRefundValue() {
+        return totalPharmacyBillRefundValue;
+    }
+
+    public void setTotalPharmacyBillRefundValue(double totalPharmacyBillRefundValue) {
+        this.totalPharmacyBillRefundValue = totalPharmacyBillRefundValue;
+    }
+
+    public double getTotalChannelBillRefundValue() {
+        return totalChannelBillRefundValue;
+    }
+
+    public void setTotalChannelBillRefundValue(double totalChannelBillRefundValue) {
+        this.totalChannelBillRefundValue = totalChannelBillRefundValue;
+    }
+
+    public double getTotalCcBillRefundValue() {
+        return totalCcBillRefundValue;
+    }
+
+    public void setTotalCcBillRefundValue(double totalCcBillRefundValue) {
+        this.totalCcBillRefundValue = totalCcBillRefundValue;
+    }
+
+    public double getTotalProfessionalPaymentBillValue() {
+        return totalProfessionalPaymentBillValue;
+    }
+
+    public void setTotalProfessionalPaymentBillValue(double totalProfessionalPaymentBillValue) {
+        this.totalProfessionalPaymentBillValue = totalProfessionalPaymentBillValue;
+    }
+
+    public double getTotalProfessionalPaymentBillCancelledValue() {
+        return totalProfessionalPaymentBillCancelledValue;
+    }
+
+    public void setTotalProfessionalPaymentBillCancelledValue(double totalProfessionalPaymentBillCancelledValue) {
+        this.totalProfessionalPaymentBillCancelledValue = totalProfessionalPaymentBillCancelledValue;
+    }
+
+    public PaymentMethodValues getPaymentMethodValues() {
+        return paymentMethodValues;
+    }
+
+    public AtomicBillTypeTotals getAtomicBillTypeTotals() {
+        return atomicBillTypeTotals;
+    }
+
+    public void setAtomicBillTypeTotals(AtomicBillTypeTotals atomicBillTypeTotals) {
+        this.atomicBillTypeTotals = atomicBillTypeTotals;
+    }
+
+    public FinancialReport getFinancialReport() {
+        return financialReport;
+    }
+
+    public void setFinancialReport(FinancialReport financialReport) {
+        this.financialReport = financialReport;
     }
 
 }

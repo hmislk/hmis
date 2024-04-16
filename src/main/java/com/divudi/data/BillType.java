@@ -1,4 +1,3 @@
-
 /*
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
@@ -21,6 +20,7 @@ public enum BillType {
     ChannelCreditFlow(null),
     OpdBathcBill,
     OpdBathcBillPre,
+    OpdProfessionalFeePayment,
     SurgeryBill,
     LabBill,
     CollectingCentreBill,

@@ -560,7 +560,7 @@ public class PharmacyIssueController implements Serializable {
 
         billPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Issue(/faces/pharmacy/pharmacy_issue.xhtml)");
+        
 
     }
 
@@ -807,7 +807,7 @@ public class PharmacyIssueController implements Serializable {
 
         bi.setMarginRate(calculateBillItemAdditionToPurchaseRate(bi, issueRateMargins));
         bi.setDiscount(0.0);
-        bi.setNetRate(bi.getRate() + bi.getMarginRate());
+        bi.setNetRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() + bi.getMarginRate());
     }
 
     public double calculateBillItemAdditionToPurchaseRate(BillItem bi, IssueRateMargins issueRateMargins) {

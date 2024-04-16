@@ -1139,7 +1139,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);
@@ -1752,10 +1752,8 @@ public class PharmacyBillSearch implements Serializable {
                 i.setPharmaceuticalBillItem(tmpPh);
                 getBillItemFacade().edit(i);
                 //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-
                 //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-                System.out.println("tmpPh = " + tmpPh.getBillItem().getItem().getName());
-                System.out.println("tmpPh.getStock() = " + tmpPh.getStock());
+                //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
                 getPharmacyBean().addToStock(tmpPh.getStock(), Math.abs(tmpPh.getQtyInUnit()), tmpPh, getSessionController().getDepartment());
 
                 //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());

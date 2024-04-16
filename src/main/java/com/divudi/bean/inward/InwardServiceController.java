@@ -364,23 +364,17 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> getItems() {
-        String sql = "select c from InwardService c where c.retired=false order by c.category.name,c.department.name";
-        //////// // System.out.println(sql);
-        items = getFacade().findByJpql(sql);
-
-        for (InwardService i : items) {
-
-            List<ItemFee> tmp = getFees(i);
-            for (ItemFee itf : tmp) {
-                i.setItemFee(itf);
-            }
-        }
-
         if (items == null) {
-            items = new ArrayList<InwardService>();
+            items = findInwardServices();
         }
         return items;
     }
+    
+    public List<InwardService> findInwardServices() {
+        String sql = "select c from InwardService c where c.retired=false order by c.name";
+        return getFacade().findByJpql(sql);
+    }
+    
 
     public List<InwardService> getItem() {
         String sql;

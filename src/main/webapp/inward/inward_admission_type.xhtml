@@ -38,6 +38,8 @@
                                         <p:commandButton 
                                             id="btnDelete" 
                                             icon="fa fa-trash"
+                                            process="lstSelect gpDetail @this"
+                                            update="lstSelect"
                                             class="w-25 mx-2 ui-button-danger"
                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                         return false;" 

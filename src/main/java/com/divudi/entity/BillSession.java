@@ -39,6 +39,29 @@ public class BillSession implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
+    //Completed Properties
+    private Boolean markedToCancel;
+    private Boolean markToRefund;
+    private Boolean nextInLine;
+    private Boolean currentlyConsulted;
+    private boolean completed;
+    @ManyToOne
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
+    
+    @ManyToOne
+    private WebUser markedToCancelBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date markedToCancelAt;
+    @ManyToOne
+    private WebUser markedToRefundBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date markedToRefundAt;
+    
+    
+    
+    
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -46,10 +69,7 @@ public class BillSession implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-//    String deptId;
-//    String insId;
-//    String catId;
-//    String sessionId;    
+
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -57,10 +77,11 @@ public class BillSession implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
-    @Deprecated
+    @Deprecated //Use SessionInstance instead
     ServiceSession serviceSession;
     @ManyToOne
     private SessionInstance sessionInstance;
+    @Deprecated
     @ManyToOne
     private ServiceSessionInstance serviceSessionInstance;
     @ManyToOne
@@ -84,7 +105,6 @@ public class BillSession implements Serializable {
     Date absentUnmarkedAt;
     @ManyToOne
     PatientEncounter patientEncounter;
-    ////////////////////////////
     @ManyToOne
     Bill bill;
     @OneToOne(fetch = FetchType.LAZY)
@@ -95,7 +115,6 @@ public class BillSession implements Serializable {
     @ManyToOne
     //Used in Credit Payment For BillSession
     BillSession paidBillSession;
-//    double qty;
     //Transient Only Reporting Purpose
     @Transient
     ChannelFee doctorFee;
@@ -123,14 +142,7 @@ public class BillSession implements Serializable {
         patientEncounter = billSession.getPatientEncounter();
     }
 
-//    public double getQty() {
-//        return qty;
-//    }
-//
-//    public void setQty(double qty) {
-//        this.qty = qty;
-//    }
-//    
+
     public int getSerialNo() {
         return serialNo;
     }
@@ -155,13 +167,16 @@ public class BillSession implements Serializable {
         this.category = category;
     }
 
+    @Deprecated
     public ServiceSession getServiceSession() {
+        //Use SessionInstance instead
         return serviceSession;
     }
 
     
-    
+    @Deprecated
     public void setServiceSession(ServiceSession serviceSession) {
+        //Use SessionInstance instead
         this.serviceSession = serviceSession;
     }
 
@@ -269,38 +284,7 @@ public class BillSession implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-
-//    public String getDeptId() {
-//        return deptId;
-//    }
-//
-//    public void setDeptId(String deptId) {
-//        this.deptId = deptId;
-//    }
-//
-//    public String getInsId() {
-//        return insId;
-//    }
-//
-//    public void setInsId(String insId) {
-//        this.insId = insId;
-//    }
-//
-//    public String getCatId() {
-//        return catId;
-//    }
-//
-//    public void setCatId(String catId) {
-//        this.catId = catId;
-//    }
-//
-//    public String getSessionId() {
-//        return sessionId;
-//    }
-//
-//    public void setSessionId(String sessionId) {
-//        this.sessionId = sessionId;
-//    }
+    
     public Bill getBill() {
         return bill;
     }
@@ -348,14 +332,6 @@ public class BillSession implements Serializable {
     public void setSessionTime(Date sessionTime) {
         this.sessionTime = sessionTime;
     }
-//
-//    public Boolean getPresent() {
-//        return present;
-//    }
-//
-//    public void setPresent(Boolean present) {
-//        this.present = present;
-//    }
 
     public ChannelFee getDoctorFee() {
         return doctorFee;
@@ -453,11 +429,15 @@ public class BillSession implements Serializable {
         this.paidBillSession = paidBillSession;
     }
 
+    @Deprecated
     public ServiceSessionInstance getServiceSessionInstance() {
+        // Use sessionInstance inatead
         return serviceSessionInstance;
     }
 
+    @Deprecated
     public void setServiceSessionInstance(ServiceSessionInstance serviceSessionInstance) {
+        // Use sessionInstance inatead
         this.serviceSessionInstance = serviceSessionInstance;
     }
 
@@ -468,5 +448,96 @@ public class BillSession implements Serializable {
     public void setSessionInstance(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public Boolean getMarkedToCancel() {
+        return markedToCancel;
+    }
+
+    public void setMarkedToCancel(Boolean markedToCancel) {
+        this.markedToCancel = markedToCancel;
+    }
+
+    public Boolean getMarkToRefund() {
+        return markToRefund;
+    }
+
+    public void setMarkToRefund(Boolean markToRefund) {
+        this.markToRefund = markToRefund;
+    }
+
+    public Boolean getNextInLine() {
+        return nextInLine;
+    }
+
+    public void setNextInLine(Boolean nextInLine) {
+        this.nextInLine = nextInLine;
+    }
+
+    public Boolean getCurrentlyConsulted() {
+        return currentlyConsulted;
+    }
+
+    public void setCurrentlyConsulted(Boolean currentlyConsulted) {
+        this.currentlyConsulted = currentlyConsulted;
+    }
+
+    public WebUser getMarkedToCancelBy() {
+        return markedToCancelBy;
+    }
+
+    public void setMarkedToCancelBy(WebUser markedToCancelBy) {
+        this.markedToCancelBy = markedToCancelBy;
+    }
+
+    public Date getMarkedToCancelAt() {
+        return markedToCancelAt;
+    }
+
+    public void setMarkedToCancelAt(Date markedToCancelAt) {
+        this.markedToCancelAt = markedToCancelAt;
+    }
+
+    public WebUser getMarkedToRefundBy() {
+        return markedToRefundBy;
+    }
+
+    public void setMarkedToRefundBy(WebUser markedToRefundBy) {
+        this.markedToRefundBy = markedToRefundBy;
+    }
+
+    public Date getMarkedToRefundAt() {
+        return markedToRefundAt;
+    }
+
+    public void setMarkedToRefundAt(Date markedToRefundAt) {
+        this.markedToRefundAt = markedToRefundAt;
+    }
+    
+    
+    
 
 }

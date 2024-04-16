@@ -58,11 +58,12 @@ public class Person implements Serializable {
     String email;
     String website;
     String mobile;
+    String phone;
     @Column(name = "TNAME")
     String fullName;
     @Column(name = "SNAME")
     String nameWithInitials;
-    String phone;
+
     String initials;
     String surName;
     String lastName;
@@ -138,7 +139,6 @@ public class Person implements Serializable {
 
 //    @Inject
 //    SessionController SessionController;
-
     @PostConstruct
     public void init() {
         calAgeFromDob();
@@ -281,6 +281,7 @@ public class Person implements Serializable {
             temT = "";
         }
         nameWithTitle = temT + " " + getName();
+
         return nameWithTitle;
     }
 
@@ -610,20 +611,15 @@ public class Person implements Serializable {
         this.religion = religion;
     }
 
+    @Transient
     public String getSmsNumber() {
-        if (smsNumber != null) {
-            return smsNumber;
-        }
-        if (this.getMobile() == null && this.getPhone() == null) {
-            smsNumber = "";
-        } else if (this.getPhone() != null && this.getMobile() == null) {
-            smsNumber = this.getPhone();
-        } else if (this.getMobile() != null && this.getPhone() == null) {
-            smsNumber = this.getMobile();
+        if (StringUtils.isNotBlank(mobile)) {
+            return mobile;
+        } else if (StringUtils.isNotBlank(phone)) {
+            return phone;
         } else {
-            smsNumber = this.getMobile();
+            return null;
         }
-        return smsNumber;
     }
 
     public void setSmsNumber(String smsNumber) {

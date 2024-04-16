@@ -26,7 +26,7 @@
                                     <div class="d-flex gap-2">
                                         <p:commandButton 
                                             icon=" fa fa-refresh"
-                                            value="Refresh Bill" 
+                                            value="Process Bill" 
                                             action="#" 
                                             ajax="false" />
                                         <p:commandButton 
@@ -136,7 +136,7 @@
 
                             <div class="row mt-3">
                                 <div class="col-lg-4">
-                                    <common:patient_details searchable="false" controller="#{admissionController}" class="w-100" />
+                                    <common:patient_details_for_addmission editable="true" searchable="false" controller="#{admissionController}" class="w-100" />
                                 </div>
                                 <div class="col-lg-4">
                                     <common:admission_details admission="#{admissionController.current}" class="w-100"/>

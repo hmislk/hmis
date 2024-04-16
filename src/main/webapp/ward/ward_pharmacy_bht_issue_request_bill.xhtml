@@ -23,32 +23,26 @@
                         style="width: fit-content;" >
 
                         <p:panel 
-                            header="Requesting Department" 
-                            rendered="#{pharmacyRequestForBhtController.department eq null and pharmacyRequestForBhtController.patientEncounter ne null}">                                        
-                            <h:outputLabel value="Requesting Department"/>
-                            <p:autoComplete  
-                                value="#{pharmacyRequestForBhtController.department}" 
-                                required="true"
-                                class=" col-md-3 mx-2"
-                                inputStyleClass="form-control"
-                                forceSelection="true" 
-                                disabled="#{pharmacyRequestForBhtController.department ne null}"
-                                completeMethod="#{departmentController.completeDeptPharmacy}" 
-                                var="vt" 
-                                itemLabel="#{vt.name}" 
-                                itemValue="#{vt}" >
-                                <p:ajax 
-                                    event="itemSelect" 
-                                    process="@this" 
-                                    update="@this" />
-                            </p:autoComplete>
-                            <p:commandButton ajax="false" value="Select Requesting Department" ></p:commandButton>
-                        </p:panel>                                    
-
-                        <p:panel 
-                            header="Requesting Patient Detail" 
-                            rendered="#{pharmacyRequestForBhtController.patientEncounter eq null}">                                        
+                            header="Start Pharmacy Request for Inpatients" 
+                            rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">                                        
                             <div class="d-flex gap-3">
+                                <h:outputLabel value="Requesting Department"/>
+                                <p:autoComplete  
+                                    value="#{pharmacyRequestForBhtController.department}" 
+                                    required="true"
+                                    class=" col-md-3 mx-2"
+                                    inputStyleClass="form-control"
+                                    forceSelection="true" 
+                                    disabled="#{pharmacyRequestForBhtController.department ne null}"
+                                    completeMethod="#{departmentController.completeDeptPharmacy}" 
+                                    var="vt" 
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" >
+                                    <p:ajax 
+                                        event="itemSelect" 
+                                        process="@this" 
+                                        update="@this" />
+                                </p:autoComplete>
 
                                 <h:outputLabel value="Patient Name or BHT" class="mt-2"/> 
                                 <p:autoComplete 
@@ -73,13 +67,13 @@
                                     <p:column>
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
-                                    <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
+                                    <p:ajax event="itemSelect" process="acPt2" />
                                 </p:autoComplete> 
 
                                 <p:commandButton 
                                     ajax="false"  
                                     class=""
-                                    value="Select Patient" >
+                                    value="Proceed" >
                                 </p:commandButton>
                             </div>
                         </p:panel>
@@ -235,43 +229,20 @@
                                         <p:panel header="Bill Items" id="pBis" class="mt-2">
                                             <p:dataTable id="tblBillItem" value="#{pharmacyRequestForBhtController.preBill.billItems}"
                                                          var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
-
-                                                <p:ajax event="rowEdit" listener="#{pharmacyRequestForBhtController.onEdit}"/>  
-                                                <p:ajax event="rowEditCancel" listener="#{pharmacyRequestForBhtController.onEdit}"/> 
-
-
                                                 <p:column headerText="Item" width="40%">
                                                     <h:outputLabel value="#{bi.item.name}" >
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Quantity" width="5%">
-                                                    <p:cellEditor>  
-                                                        <f:facet name="output">  
-                                                            <h:outputText value="#{bi.qty}" >
-                                                                <f:convertNumber integerOnly="true" />
-                                                            </h:outputText>
-                                                        </f:facet>  
-                                                        <f:facet name="input">  
-                                                            <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%"/>  
-                                                        </f:facet>  
-                                                    </p:cellEditor> 
+                                                    <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%">
+                                                        <p:ajax event="blur" process="@this"/>
+                                                    </p:inputText>
                                                 </p:column>
                                                 <p:column headerText="Directions" style="color: red;" width="7%">
-                                                    <p:cellEditor>  
-                                                        <f:facet name="output">  
-                                                            <h:outputText value="#{bi.descreption}" >
-                                                            </h:outputText>
-                                                        </f:facet>  
-                                                        <f:facet name="input">  
-                                                            <p:inputText placeholder="bd/tds/6 hourly" autocomplete="off" id="ipTblDis" value="#{bi.descreption}" style="width:96%"/>  
-                                                        </f:facet>  
-                                                    </p:cellEditor> 
+                                                    <p:inputText placeholder="bd/tds/6 hourly" autocomplete="off" id="ipTblDis" value="#{bi.descreption}" style="width:96%">
+                                                        <p:ajax event="blur" process="@this"/>
+                                                    </p:inputText> 
                                                 </p:column>
-
-                                                <p:column style="width:6%" headerText="Edit">  
-                                                    <p:rowEditor />  
-                                                </p:column>  
-
                                                 <p:column headerText="Remove" width="10%">
                                                     <p:commandButton 
                                                         value="Remove" 

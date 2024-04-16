@@ -130,6 +130,7 @@
                                     </h:panelGroup>
                                     <h:panelGroup id="gpSomDepartment" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                         <p:selectOneMenu id="somDepartment" value="#{itemFeeManager.itemFee.department}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
                                             <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
                                         </p:selectOneMenu>
                                     </h:panelGroup>
@@ -150,10 +151,11 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="gpLblEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
-                                        <h:outputLabel value="Doctor/Staff" ></h:outputLabel>
+                                        <h:outputLabel value="Doctor / Staff" ></h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup id="gpSomEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
                                         <p:selectOneMenu id="somEmployee" value="#{itemFeeManager.itemFee.staff}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
                                             <f:selectItems value="#{itemFeeManager.staffs}" var="staff" itemLabel="#{staff.person.nameWithTitle}" itemValue="#{staff}" ></f:selectItems>
                                         </p:selectOneMenu>
                                     </h:panelGroup>

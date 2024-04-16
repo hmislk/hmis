@@ -72,8 +72,8 @@
                             action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                             >
                             <f:setPropertyActionListener 
-                                            value="#{roomChangeController.current}" 
-                                            target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                value="#{roomChangeController.current}" 
+                                target="#{admissionController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
                     </div>
                 </f:facet>
@@ -109,11 +109,15 @@
 
 
                                         <h:outputLabel value="Change at"/>
-                                        <p:calendar id="changeAt"
+                                        <p:datePicker id="changeAt"
                                                     value="#{roomChangeController.changeAt}" 
-                                                    navigator="true" pattern="dd MMM yyyy HH:mm:ss" class="m-2" >
+                                                    pattern="dd MMM yyyy HH:mm:ss"
+                                                    class="m-2" 
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true">
                                             <f:ajax event="dateSelect"  render="changeAt"  />
-                                        </p:calendar>
+                                        </p:datePicker>
 
                                         <p:commandButton value="Change"  
                                                          action="#{roomChangeController.changeGurdianRoom()}" ajax="false"   />
