@@ -156,6 +156,21 @@ public class GrnController implements Serializable {
         if (bi != null) {
             System.out.println("updateBillItem = " + bi.getItem().getName());
             updateBillItem.setItem(bi.getItem());
+            updateBillItem.setReferanceBillItem(bi.getReferanceBillItem());
+            updateBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+            
+            double remainQty = bi.getReferanceBillItem().getPharmaceuticalBillItem().getQtyInUnit() - bi.getPharmaceuticalBillItem().getQtyInUnit();
+            double remainFreeQty = bi.getReferanceBillItem().getPharmaceuticalBillItem().getFreeQtyInUnit() - bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            
+            updateBillItem.getPharmaceuticalBillItem().setQty(remainQty);
+            updateBillItem.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
+            
+            updateBillItem.getPharmaceuticalBillItem().setFreeQty(remainFreeQty);
+            updateBillItem.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty);
+            
+            updateBillItem.setTmpQty(remainQty);
+            updateBillItem.setTmpFreeQty(remainFreeQty);
+            
             getBillItems().add(updateBillItem);
         }
         calGrossTotal();
