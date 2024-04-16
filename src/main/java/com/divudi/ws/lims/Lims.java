@@ -279,7 +279,7 @@ public class Lims {
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", ps.getPatient().getId() != null ? ps.getPatient().getId() : "");
+            jSONObject.put("barcode", ps.getIdStr() != null ? ps.getIdStr() : "");
 
             Bill bill = ps.getBill();
             if (bill == null) {
