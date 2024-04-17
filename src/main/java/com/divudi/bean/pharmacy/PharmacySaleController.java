@@ -551,10 +551,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void setQty(Double qty) {
-        if (qty != null && qty <= 0) {
-            JsfUtil.addErrorMessage("Can not enter a minus value");
-            return;
-        }
         this.qty = qty;
     }
 
@@ -1017,20 +1013,21 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quantity?";
+            errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quantity?");
             return;
         }
         if (getQty() == 0.0) {
-            errorMessage = "Quantity Zero?";
+            errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quentity Zero?");
             return;
         }
-        if (getQty() > getStock().getStock()) {
-            errorMessage = "No sufficient stocks.";
-            JsfUtil.addErrorMessage("No Sufficient Stocks?");
-            return;
-        }
+        //This was removed as multiple batches will be able to add if one batch stock is not working
+//        if (getQty() > getStock().getStock()) {
+//            errorMessage = "No sufficient stocks.";
+//            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+//            return;
+//        }
 
         if (checkItemBatch()) {
             errorMessage = "This batch is already there in the bill.";
