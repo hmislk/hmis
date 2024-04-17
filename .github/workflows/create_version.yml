@@ -48,6 +48,9 @@ jobs:
       - name: Update version file with date and merge counter
         run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > src/main/resources/VERSION.txt
 
+      - name: Update version file with date and merge counter(Simple)
+        run: echo "3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }}" > src/main/resources/version.txt
+
       - name: Update README.md
         run: |
           sed -i "s/Current Version:.*/Current Version: 3.0.0.${{ steps.current_date.outputs.date }}.${{ steps.increment_counter.outputs.counter }} (This line will be automatically updated to reflect the latest version)/" README.md
