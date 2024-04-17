@@ -404,10 +404,9 @@
                     <p:submenu label="Retail Transactions" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true"  
+                            action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"  
                             value="Sale" 
-                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
-                            actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem> 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
                         <p:menuitem  
                             ajax="false" 
                             action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"  

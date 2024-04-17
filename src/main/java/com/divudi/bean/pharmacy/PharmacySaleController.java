@@ -105,6 +105,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Inject
     PaymentSchemeController PaymentSchemeController;
+    @Inject
+    StockController stockController;
 
     @Inject
     SessionController sessionController;
@@ -614,11 +616,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return "pharmacy_bill_retail_sale_for_cashier";
     }
 
+    public String navigateToPharmacyRetailSale() {
+        resetAll();
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+    }
+
     public void resetAll() {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
-        searchController.createPreBillsNotPaid();
+//        searchController.createPreBillsNotPaid();
         billPreview = false;
     }
 
@@ -988,6 +995,81 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         clearBillItem();
         setActiveIndex(1);
+    }
+
+    public void addBillItemMultipleBatches() {
+        editingQty = null;
+        errorMessage = null;
+
+        if (billItem == null) {
+            return;
+        }
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (getStock() == null) {
+            errorMessage = "Item?";
+            JsfUtil.addErrorMessage("Item?");
+            return;
+        }
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+            return;
+        }
+        if (getQty() == null) {
+            errorMessage = "Quantity?";
+            JsfUtil.addErrorMessage("Quantity?");
+            return;
+        }
+        if (getQty() == 0.0) {
+            errorMessage = "Quantity Zero?";
+            JsfUtil.addErrorMessage("Quentity Zero?");
+            return;
+        }
+        if (getQty() > getStock().getStock()) {
+            errorMessage = "No sufficient stocks.";
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
+
+        if (checkItemBatch()) {
+            errorMessage = "This batch is already there in the bill.";
+            JsfUtil.addErrorMessage("Already added this item batch");
+            return;
+        }
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            return;
+        }
+
+        calculateAllRatesNew();
+        calTotalNew();
+        clearBillItem();
+        setActiveIndex(1);
+    }
+
+    private void addSingleStock() {
+        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setStock(stock);
+        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+        calculateBillItem();
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+        billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setBill(getPreBill());
+        billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+        getPreBill().getBillItems().add(billItem);
+        if (getUserStockContainer().getId() == null) {
+            saveUserStockContainer();
+        }
+        UserStock us = saveUserStock(billItem);
+        billItem.setTransUserStock(us);
+    }
+
+    private void addMultipleStock() {
+        Double remainingQty = Math.abs(qty) - Math.abs(getStock().getStock());
+        addSingleStock();
+        List<Stock> availableStocks = stockController.findNextAvailableStocks(getStock());
+
     }
 
     private void saveUserStockContainer() {
@@ -1496,7 +1578,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     setZeroToQty(bi);
                     onEditCalculation(bi);
                     JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
-                    return ;
+                    return;
                 }
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
@@ -1640,7 +1722,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         resetAll();
 
         billPreview = true;
-        
 
     }
 
