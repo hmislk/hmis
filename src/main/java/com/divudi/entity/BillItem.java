@@ -681,7 +681,6 @@ public class BillItem implements Serializable {
         } else {
             this.tmpFreeQty = tmpFreeQty;
         }
-
         if (getPharmaceuticalBillItem() != null) {
             getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
         }

@@ -25,7 +25,7 @@
                                     ajax="false" 
                                     class="ui-button-secondary"
                                     icon="fa-solid fa-arrow-left"
-                                    action="pharmacy_search_sale_bill"
+                                    action="pharmacy_search_sale_pre_bill"
                                     >
                                 </p:commandButton>
 
@@ -34,9 +34,9 @@
                                     value="New Bill"  
                                     ajax="false" 
                                     class="ui-button-warning"
-                                    action="pharmacy_bill_retail_sale" 
+                                    action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"
+                                    actionListener="#{pharmacySaleController.resetAll()}"
                                     icon="fa fa-plus"
-                                    actionListener="#{pharmacySaleController.resetAll()}" 
                                     >
                                 </p:commandButton>
                                 <p:commandButton 
