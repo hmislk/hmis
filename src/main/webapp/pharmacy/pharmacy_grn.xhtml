@@ -210,7 +210,8 @@
                                 class="ui-button-danger"
                                 action="#{grnController.removeItem(bi)}"/>
                             <p:commandButton 
-                                ajax="false"
+                                process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
                                 style="float: right;"
                                 icon="fas fa-plus"
                                 class="ui-button-danger mx-1"
