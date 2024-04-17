@@ -4165,12 +4165,12 @@ public class ChannelReportController implements Serializable {
     public void setSessionInstance(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
     }
-
-    public int getchannelReportMenuIndex() {
+  
+    public int getChannelReportMenuIndex() {
         return channelReportMenuIndex;
     }
 
-    public void setReportCashierIndex(int channelReportMenuIndex) {
+    public void setChannelReportMenuIndex(int channelReportMenuIndex) {
         this.channelReportMenuIndex = channelReportMenuIndex;
     }
 

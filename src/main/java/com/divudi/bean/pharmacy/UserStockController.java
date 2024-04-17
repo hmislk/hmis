@@ -54,7 +54,7 @@ public class UserStockController implements Serializable {
                 + " where us.retired=false "
                 + " and us.userStockContainer.retired=false "
                 + " and us.stock=:stk "
-                + " and us.creater!=:wb "
+//                + " and us.creater!=:wb "
                 + " and us.createdAt between :frm and :to ";
 
         Calendar cal = Calendar.getInstance();
@@ -64,7 +64,7 @@ public class UserStockController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("stk", stock);
-        hm.put("wb", webUser);
+//        hm.put("wb", webUser);
         hm.put("to", toTime);
         hm.put("frm", fromTime);
 
