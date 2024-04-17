@@ -306,9 +306,6 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/ordering_data?faces-redirect=true";
     }
     
-    public String navigateToManageReorderingData() {
-        return "/pharmacy/manage_reordering_data?faces-redirect=true";
-    }
     
     public String navigateToReorderManagement() {
         return "/pharmacy/reorder_management?faces-redirect=true";

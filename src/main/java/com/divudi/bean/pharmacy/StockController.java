@@ -179,6 +179,26 @@ public class StockController implements Serializable {
         return new ArrayList<>(stockSet);
     }
 
+    public List<Stock> findNextAvailableStocks(Stock stock) {
+        List<Stock> stockList;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select i "
+                + " from Stock i "
+                + " where i.stock >:s "
+                + " and i.department=:d "
+                + " and i.itemBatch.item=:item"
+                + " and i!=:stock"
+                + " order by i.itemBatch.dateOfExpire";
+        params.put("d", getSessionController().getLoggedUser().getDepartment());
+        double d = 0.0;
+        params.put("s", d);
+        params.put("stock", stock);
+        params.put("item", stock.getItemBatch().getItem());
+        stockList = getStockFacade().findByJpql(jpql, params, 20);
+        return stockList;
+    }
+
     public List<Stock> completeAvailableStocksStartsWith(String qry) {
         List<Stock> stockList;
         String sql;
@@ -282,7 +302,7 @@ public class StockController implements Serializable {
         }
         return 0.0;
     }
-    
+
     public double findStock(Department department, List<Amp> amps) {
         Double stock = null;
         String jpql;
@@ -336,10 +356,10 @@ public class StockController implements Serializable {
         String jpql;
         Map m = new HashMap();
         Vmp tvmp = amps.get(0).getVmp();
-        int daysToMarkAsExpiaring ;
-        if(tvmp!=null){
+        int daysToMarkAsExpiaring;
+        if (tvmp != null) {
             daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
-        }else{
+        } else {
             daysToMarkAsExpiaring = 30;
         }
         Calendar c = Calendar.getInstance();
