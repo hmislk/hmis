@@ -77,10 +77,12 @@ public class VersionController {
 
     // Getter for systemVersion (to make it accessible from XHTML)
     public String getSystemVersion() {
+         readFirstLine(); // Load first line content upon bean instantiation
         return systemVersion;
     }
 
     public String getLatestVersion() {
+        fetchLatestVersion(); // Fetch latest version upon bean instantiation
         return latestVersion;
     }
     
