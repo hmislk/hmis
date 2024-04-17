@@ -60,7 +60,7 @@ public class VersionController {
             URL url = new URL("https://raw.githubusercontent.com/hmislk/hmis/master/src/main/resources/VERSION.txt");
 
             // Open a connection to the URL
-            try (Scanner scanner = new Scanner(url.openStream(), StandardCharsets.UTF_8)) {
+            try ( Scanner scanner = new Scanner(url.openStream(), StandardCharsets.UTF_8.name())) {
                 // Read the first line which contains the latest version
                 if (scanner.hasNextLine()) {
                     latestVersion = scanner.nextLine().trim();
