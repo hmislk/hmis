@@ -28,9 +28,8 @@
 
         </h:form>-->
 
-        <div class="row" >
-            <h1>Version : <h:outputLabel value="#{versionController.systemVersion}" ></h:outputLabel></h1>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+<div class="row" >
+    <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
                 <!-- Patient Lookup -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup'}" layout="block" class="col-1 m-4">
