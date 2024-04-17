@@ -5322,14 +5322,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPreBillsNotPaid() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         bills = getBillBean().billsForTheDayNotPaid(BillType.PharmacyPre, getSessionController().getDepartment());
-
-        
-
     }
 
     public void createWholePreBillsNotPaid() {

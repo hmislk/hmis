@@ -38,7 +38,16 @@
                                         <div class="col-md-5">
 
                                             <label for="acStock">Medicines/Devices</label>
-                                            <p:autoComplete accesskey="i" id="acStock" inputStyleClass="w-100" minQueryLength="3" maxResults="10" style="width: 100%;" value="#{pharmacySaleController.stock}" completeMethod="#{stockController.completeAvailableStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}">
+                                            <p:autoComplete accesskey="i" id="acStock" 
+                                                            inputStyleClass="w-100"
+                                                            minQueryLength="3" 
+                                                            maxResults="10" 
+                                                            style="width: 100%;" 
+                                                            value="#{pharmacySaleController.stock}" 
+                                                            completeMethod="#{stockController.completeAvailableStocks}" 
+                                                            var="i" 
+                                                            itemLabel="#{i.itemBatch.item.name}" 
+                                                            itemValue="#{i}">
                                                 <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                         &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}" severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" /> 
@@ -82,7 +91,17 @@
                                             <div class="row" >
                                                 <div class="col-md-4">
                                                     <label>&nbsp;</label>
-                                                    <p:commandButton id="btnAdd" accesskey="a" icon="fa fa-plus" value="Add" styleClass="ui-button-success" action="#{pharmacySaleController.addBillItemNew()}" ajax="false" process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" />
+                                                    <p:commandButton 
+                                                        id="btnAdd" 
+                                                        accesskey="a" 
+                                                        icon="fa fa-plus" 
+                                                        value="Add" 
+                                                        styleClass="ui-button-success" 
+                                                        action="#{pharmacySaleController.addBillItemMultipleBatches()}" 
+                                                        ajax="false" 
+                                                        process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
+                                                        update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
+                                                    </p:commandButton>
 
                                                 </div>
                                                 <div class="col-md-4">

@@ -282,80 +282,85 @@ public class TransferIssueController implements Serializable {
     public void generateBillComponentsForIssueBillFromGrn(Bill grn) {
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
-        List<BillItem> bis = billController.billItemsOfBill(grn);
+        List<BillItem> grnBillItems = billController.billItemsOfBill(grn);
         getIssuedBill().setDepartment(null);
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
         getIssuedBill().setToDepartment(null);
 
-        for (BillItem oi : bis) {
-            
-            System.out.println("oi = " + oi);
-            
-            BillItem ni = new BillItem();
-
-            if (oi.getPharmaceuticalBillItem() == null) {
+        for (BillItem grnBillItem : grnBillItems) {
+            BillItem newTransferBillItem = new BillItem();
+            if (grnBillItem.getPharmaceuticalBillItem() == null) {
                 continue;
             }
+            PharmaceuticalBillItem transferIssueBillItem = new PharmaceuticalBillItem();
             
-            System.out.println("oi.getPharmaceuticalBillItem() = " + oi.getPharmaceuticalBillItem());
+            transferIssueBillItem.setItemBatch(grnBillItem.getPharmaceuticalBillItem().getItemBatch());
+            transferIssueBillItem.setStock(grnBillItem.getPharmaceuticalBillItem().getStock());
+            transferIssueBillItem.setStockHistory(grnBillItem.getPharmaceuticalBillItem().getStockHistory());
+            transferIssueBillItem.setDoe(grnBillItem.getPharmaceuticalBillItem().getDoe());
+            transferIssueBillItem.setStringValue(grnBillItem.getPharmaceuticalBillItem().getStringValue());
+            
+            
+            if (grnBillItem.getPharmaceuticalBillItem().getQty() != 0.0 && grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
+                transferIssueBillItem.setQty(grnBillItem.getPharmaceuticalBillItem().getQty());
+                transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
+            } else if (grnBillItem.getPharmaceuticalBillItem().getQty() != 0.0) {
+                transferIssueBillItem.setQty(grnBillItem.getPharmaceuticalBillItem().getQty());
+                transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQty());
+            } else if (grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
+                transferIssueBillItem.setQty(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
+                transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
+            }
+            
+            System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
 
-            PharmaceuticalBillItem npi = new PharmaceuticalBillItem();
-            npi.setItemBatch(oi.getPharmaceuticalBillItem().getItemBatch());
-            npi.setItemBatch(oi.getPharmaceuticalBillItem().getItemBatch());
-            npi.setStockHistory(oi.getPharmaceuticalBillItem().getStockHistory());
-            npi.setDoe(oi.getPharmaceuticalBillItem().getDoe());
-            npi.setStringValue(oi.getPharmaceuticalBillItem().getStringValue());
-            System.out.println("oi.getPharmaceuticalBillItem().getQty() = " + oi.getPharmaceuticalBillItem().getQty());
-            if (oi.getPharmaceuticalBillItem().getQty() != 0.0 && oi.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
-                npi.setQty(oi.getPharmaceuticalBillItem().getQty());
-                npi.setQtyInUnit(oi.getPharmaceuticalBillItem().getQtyInUnit());
-            } else if (oi.getPharmaceuticalBillItem().getQty() != 0.0) {
-                npi.setQty(oi.getPharmaceuticalBillItem().getQty());
-                npi.setQtyInUnit(oi.getPharmaceuticalBillItem().getQty());
-            } else if (oi.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
-                npi.setQty(oi.getPharmaceuticalBillItem().getQtyInUnit());
-                npi.setQtyInUnit(oi.getPharmaceuticalBillItem().getQtyInUnit());
+            if (grnBillItem.getPharmaceuticalBillItem().getFreeQty() != 0.0 && grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
+                
+                transferIssueBillItem.setQty(transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty());
+                
+                double totalQty = transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty();
+                System.out.println("totalQty = " + totalQty);
+                
+                System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
+                transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
+                
+                System.out.println("transferIssueBillItem.getQtyInUnit() = " + transferIssueBillItem.getQtyInUnit());
+                System.out.println("grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit() = " + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
+                
+                
+            
+            } else if (grnBillItem.getPharmaceuticalBillItem().getFreeQty() != 0.0) {
+                transferIssueBillItem.setQty(transferIssueBillItem.getQty()+ grnBillItem.getPharmaceuticalBillItem().getFreeQty());
+                transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQty());
+            } else if (grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
+                transferIssueBillItem.setQty(transferIssueBillItem.getQty()+ grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
+                transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
             }
 
-            if (oi.getPharmaceuticalBillItem().getFreeQty() != 0.0 && oi.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
-                npi.setFreeQty(oi.getPharmaceuticalBillItem().getFreeQty());
-                npi.setFreeQtyInUnit(oi.getPharmaceuticalBillItem().getFreeQtyInUnit());
-            } else if (oi.getPharmaceuticalBillItem().getFreeQty() != 0.0) {
-                npi.setFreeQty(oi.getPharmaceuticalBillItem().getFreeQty());
-                npi.setFreeQtyInUnit(oi.getPharmaceuticalBillItem().getFreeQty());
-            } else if (oi.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
-                npi.setFreeQty(oi.getPharmaceuticalBillItem().getFreeQtyInUnit());
-                npi.setFreeQtyInUnit(oi.getPharmaceuticalBillItem().getFreeQtyInUnit());
-            }
-           
-            
-            
-            npi.setPurchaseRate(oi.getPharmaceuticalBillItem().getPurchaseRate());
-            npi.setLastPurchaseRate(oi.getPharmaceuticalBillItem().getLastPurchaseRate());
-            npi.setRetailRate(oi.getPharmaceuticalBillItem().getRetailRate());
-            npi.setWholesaleRate(oi.getPharmaceuticalBillItem().getWholesaleRate());
-            npi.setStock(oi.getPharmaceuticalBillItem().getStock());
-            npi.setStaffStock(oi.getPharmaceuticalBillItem().getStaffStock());
-            npi.setBillItem(ni);
+            transferIssueBillItem.setPurchaseRate(grnBillItem.getPharmaceuticalBillItem().getPurchaseRate());
+            transferIssueBillItem.setLastPurchaseRate(grnBillItem.getPharmaceuticalBillItem().getLastPurchaseRate());
+            transferIssueBillItem.setRetailRate(grnBillItem.getPharmaceuticalBillItem().getRetailRate());
+            transferIssueBillItem.setWholesaleRate(grnBillItem.getPharmaceuticalBillItem().getWholesaleRate());
+            transferIssueBillItem.setStock(grnBillItem.getPharmaceuticalBillItem().getStock());
+            transferIssueBillItem.setStaffStock(grnBillItem.getPharmaceuticalBillItem().getStaffStock());
+            transferIssueBillItem.setBillItem(newTransferBillItem);
 
-            ni.setItem(oi.getItem());
-            ni.setItemId(oi.getItemId());
-            ni.setNetRate(oi.getNetRate());
+            newTransferBillItem.setItem(grnBillItem.getItem());
+            newTransferBillItem.setItemId(grnBillItem.getItemId());
+            newTransferBillItem.setNetRate(grnBillItem.getNetRate());
 
-            
-            
-            ni.setQty(oi.getQty());
+            newTransferBillItem.setQty(grnBillItem.getQty());
 
-            ni.setGrossValue(oi.getGrossValue());
-            ni.setNetValue(oi.getNetValue());
+            newTransferBillItem.setGrossValue(grnBillItem.getGrossValue());
+            newTransferBillItem.setNetValue(grnBillItem.getNetValue());
 
-            ni.setPharmaceuticalBillItem(npi);
+            newTransferBillItem.setPharmaceuticalBillItem(transferIssueBillItem);
 
-            ni.setSearialNo(getBillItems().size());
-            ni.setItem(oi.getItem());
-            ni.setReferanceBillItem(oi);
+            newTransferBillItem.setSearialNo(getBillItems().size());
+            newTransferBillItem.setItem(grnBillItem.getItem());
+            newTransferBillItem.setReferanceBillItem(grnBillItem);
 //            ni.setTmpQty(0);
-            getBillItems().add(ni);
+            getBillItems().add(newTransferBillItem);
 
         }
 
@@ -660,6 +665,27 @@ public class TransferIssueController implements Serializable {
 
     @Inject
     private PharmacyController pharmacyController;
+    
+    public void onEditDepartmentTransfer(BillItem billItem) {
+        System.out.println("billItem = " + billItem);
+        double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
+
+        System.out.println("availableStock = " + availableStock);
+
+        if (availableStock < billItem.getPharmaceuticalBillItem().getQtyInUnit()) {
+            billItem.setTmpQty(0.0);
+            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
+        }
+
+        //Check Is There Any Other User using same Stock
+        if (!userStockController.isStockAvailable(billItem.getPharmaceuticalBillItem().getStock(), billItem.getQty(), getSessionController().getLoggedUser())) {
+            billItem.setTmpQty(0.0);
+            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
+        }
+
+        userStockController.updateUserStock(billItem.getTransUserStock(), billItem.getQty());
+
+    }
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
