@@ -114,9 +114,11 @@
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
                                                    update=":expStockDetailsForm:expStockList"
-                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}">
+                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}"
+                                                   style="#{stockController.findExpiaringStock(bi.item) > 0 ? 'color: red;' : 'color: #02e05f;'}">
                                     </p:commandLink>
                                 </p:column>
+
 
 
 
@@ -135,7 +137,7 @@
                                 </p:column>
 
                             </p:dataTable> 
-                            
+
                             <div >
                                 <ph:history/>
                             </div>

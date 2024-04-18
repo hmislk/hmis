@@ -656,7 +656,7 @@
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>
                     </p:submenu>
 
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Item Search" icon="fas fa-search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" ></p:menuitem>                                  
+                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Bill Search" icon="fas fa-search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="#{pharmacyController.navigateToPharmacyAnalytics()}"  value="Pharmacy Analytics" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                 </p:submenu>
@@ -1081,6 +1081,10 @@
                         ajax="false"  
                         action="#{apiKeyController.toManageMyApiKeys()}" 
                         value="Manage My API Keys"  ></p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{versionController.navigateToAboutSoftware()}"
+                        value="About Software"  ></p:menuitem>
 
                 </p:submenu>
 

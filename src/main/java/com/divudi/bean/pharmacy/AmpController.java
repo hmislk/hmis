@@ -730,7 +730,7 @@ public class AmpController implements Serializable {
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());
-                return;
+                JsfUtil.addSuccessMessage("Taken the category from VMP");
             } else {
                 JsfUtil.addErrorMessage("No category");
                 return;
