@@ -97,7 +97,7 @@
                                                         icon="fa fa-plus" 
                                                         value="Add" 
                                                         styleClass="ui-button-success" 
-                                                        action="#{pharmacySaleController.addBillItemMultipleBatches()}" 
+                                                        action="#{pharmacySaleController.addBillItem()}" 
                                                         ajax="false" 
                                                         process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
                                                         update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >

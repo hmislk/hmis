@@ -8,6 +8,8 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
@@ -19,6 +21,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.OptionScope;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -107,6 +110,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     PaymentSchemeController PaymentSchemeController;
     @Inject
     StockController stockController;
+    @Inject
+    ConfigOptionController configOptionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
     SessionController sessionController;
@@ -551,10 +558,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void setQty(Double qty) {
-        if (qty != null && qty <= 0) {
-            JsfUtil.addErrorMessage("Can not enter a minus value");
-            return;
-        }
         this.qty = qty;
     }
 
@@ -918,7 +921,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-    public void addBillItemNew() {
+    public void addBillItem() {
+        if(configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy retail billing")){
+            addBillItemMultipleBatches();
+        }else{
+            addBillItemSingleItem();
+        }
+    }
+
+    public void addBillItemSingleItem() {
         editingQty = null;
         errorMessage = null;
 
@@ -996,7 +1007,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         clearBillItem();
         setActiveIndex(1);
     }
-
+    
     public void addBillItemMultipleBatches() {
         editingQty = null;
         errorMessage = null;
@@ -1017,30 +1028,32 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quantity?";
+            errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quantity?");
             return;
         }
         if (getQty() == 0.0) {
-            errorMessage = "Quantity Zero?";
+            errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quentity Zero?");
             return;
         }
-        if (getQty() > getStock().getStock()) {
-            errorMessage = "No sufficient stocks.";
-            JsfUtil.addErrorMessage("No Sufficient Stocks?");
-            return;
-        }
+        //This was removed as multiple batches will be able to add if one batch stock is not working
+//        if (getQty() > getStock().getStock()) {
+//            errorMessage = "No sufficient stocks.";
+//            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+//            return;
+//        }
 
-        if (checkItemBatch()) {
-            errorMessage = "This batch is already there in the bill.";
-            JsfUtil.addErrorMessage("Already added this item batch");
-            return;
-        }
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return;
-        }
+//        if (checkItemBatch()) {
+//            errorMessage = "This batch is already there in the bill.";
+//            JsfUtil.addErrorMessage("Already added this item batch");
+//            return;
+//        }
+        
+//        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+//            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+//            return;
+//        }
 
         calculateAllRatesNew();
         calTotalNew();
@@ -1742,7 +1755,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return false;
     }
 
-    public void addBillItem() {
+    public void addBillItemOld() {
         editingQty = null;
 
         if (billItem == null) {

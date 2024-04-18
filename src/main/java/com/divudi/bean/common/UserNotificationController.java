@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
@@ -19,10 +20,12 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.TriggerType;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
+import com.divudi.entity.Department;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Notification;
 import com.divudi.entity.Sms;
+import com.divudi.entity.TriggerSubscription;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.NotificationFacade;
 import com.divudi.facade.SmsFacade;
@@ -61,6 +64,8 @@ public class UserNotificationController implements Serializable {
     SmsController smsController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    TransferIssueController transferIssueController;
     @EJB
     private UserNotificationFacade ejbFacade;
     @EJB
@@ -72,15 +77,33 @@ public class UserNotificationController implements Serializable {
 
     @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
-    @Inject 
+    @Inject
     SmsManagerEjb smsManager;
+
 
     public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
     }
-    
+
     public String navigateToSentNotification() {
         return "/Notification/sent_notifications";
+    }
+    
+    public void clearCanceledRequestsNotification(){
+        fillLoggedUserNotifications();
+        if (items==null) {
+            return;
+        }
+        
+        for (UserNotification item : items) {
+            if (item.getNotification()==null) {
+                return;
+            }
+            if (item.getNotification().getBill().isCancelled()) {
+                items.remove(item);
+            }
+        }
+        
     }
 
     public void save(UserNotification userNotification) {
@@ -157,20 +180,25 @@ public class UserNotificationController implements Serializable {
         return items;
     }
 
-    public String navigateToCurrentNotificationRequest(UserNotification cu) {
-        if (cu.getNotification().getBill() == null) {
+    public String navigateToCurrentNotificationRequest(UserNotification un) {
+        Department toDepartmentFromNotification=un.getNotification().getBill().getToDepartment();
+        if (!toDepartmentFromNotification.equals(sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return "";
         }
-        Bill bill = cu.getNotification().getBill();
+        if (un.getNotification().getBill() == null) {
+            return "";
+        }
+        Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:
-                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
-                return "/ward/ward_pharmacy_bht_issue";
+                pharmacySaleBhtController.setBhtRequestBill(bill);
+                return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
 
             case PHARMACY_TRANSFER_REQUEST:
-                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
-                return "/ward/ward_pharmacy_bht_issue";
+                transferIssueController.setRequestedBill(bill);
+                return transferIssueController.navigateToPharmacyIssueForRequests();
 
             default:
                 return "";
@@ -192,12 +220,16 @@ public class UserNotificationController implements Serializable {
     }
 
     private void createUserNotificationsForMedium(Notification n) {
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(n.getTriggerType());
+        Department department = n.getBill().getToDepartment();
+        if (n.getBill() == null) {
+            return;
+        }
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), department);
+        System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {
                     String number = u.getWebUserPerson().getMobile();
-                    System.out.println("number = " + number);
                     //TODo
                 }
                 break;
@@ -206,7 +238,7 @@ public class UserNotificationController implements Serializable {
                     String number = u.getWebUserPerson().getMobile();
                     sendSmsForUserSubscriptions(number);
                 }
-                break; 
+                break;
             case SYSTEM_NOTIFICATION:
                 for (WebUser u : notificationUsers) {
                     UserNotification nun = new UserNotification();
@@ -218,28 +250,28 @@ public class UserNotificationController implements Serializable {
         }
 
     }
-    
-    public void sendSmsForUserSubscriptions(String userMobNumber){
+
+    public void sendSmsForUserSubscriptions(String userMobNumber) {
         Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(userMobNumber);
-            e.setSendingMessage(createSmsForUserNotification());
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
-            //e.setSmsType(MessageType.ChannelDoctorArrival);
-            smsFacade.create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            smsFacade.edit(e);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(userMobNumber);
+        e.setSendingMessage(createSmsForUserNotification());
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        //e.setSmsType(MessageType.ChannelDoctorArrival);
+        smsFacade.create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        smsFacade.edit(e);
     }
-    
-    public String createSmsForUserNotification(){
+
+    public String createSmsForUserNotification() {
         String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
-        if(template==null||template.isEmpty()){
-            template= "{patient_name} {appointment_time}";
+        if (template == null || template.isEmpty()) {
+            template = "{patient_name} {appointment_time}";
         }
         //TODO: Replace placeholders with actual values
         template = template.replace("{patient_name}", "")
