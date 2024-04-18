@@ -532,7 +532,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addSuccessMessage("Cancelled");
 
         }
-
+        selectedBills = null;
         return "";
     }
 

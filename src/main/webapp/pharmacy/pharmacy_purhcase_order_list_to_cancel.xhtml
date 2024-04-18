@@ -31,8 +31,6 @@
                             <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
                             <h:outputLabel value="Requsted Value"/>  
                             <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                            <h:outputLabel value="Approved Value"/>
-                            <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                             <h:outputLabel value="Max Result"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.maxResult}"/>
                             <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" value="Search Saved PO" action="#{searchController.fillOnlySavedPharmacyPo()}" ajax="false" ></p:commandButton>
@@ -45,9 +43,9 @@
                                 <div class="d-flex w-100">
                                     <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{pharmacyBillSearch.comment}" class="w-50"/>
                                     <p:commandButton ajax="false" value="Cancel Selected PO" action="#{pharmacyBillSearch.cancelPoBill()}" 
-                                                     icon="fas fa-plus"
+                                                     icon="fas fa-cancel"
                                                      style="float: right"
-                                                     class="ui-button-success mx-5"
+                                                     class="ui-button-danger mx-5"
                                                      disabled="#{!webUserController.hasPrivilege('PharmacyOrderCancellation')}">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.selectedBills}" value="#{searchController.selectedBills}"/>
                                     </p:commandButton>
@@ -82,6 +80,13 @@
                                         </h:outputLabel>
                                     </h:panelGroup>                       
                                 </p:column> 
+                                <p:column headerText="PO Number" >
+                                    <h:commandLink action="pharmacy_reprint_order_request" >
+                                        #{b.deptId}
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                    </h:commandLink>
+                                </p:column>
+
 
                                 <p:column headerText="Requested By" >
                                     <h:commandLink action="pharmacy_reprint_order_request" >
