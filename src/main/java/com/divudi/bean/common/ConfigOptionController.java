@@ -41,6 +41,9 @@ public class ConfigOptionController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     private ConfigOption option;
     private Institution institution;
@@ -128,6 +131,7 @@ public class ConfigOptionController implements Serializable {
         } else {
             optionFacade.edit(option);
         }
+        configOptionApplicationController.loadApplicationOptions();
     }
 
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {

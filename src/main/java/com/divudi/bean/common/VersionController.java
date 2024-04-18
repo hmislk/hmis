@@ -25,8 +25,8 @@ public class VersionController {
         readFirstLine(); // Load first line content upon bean instantiation
         fetchLatestVersion(); // Fetch latest version upon bean instantiation
     }
-    
-    public String navigateToAboutSoftware(){
+
+    public String navigateToAboutSoftware() {
         return "/about_software?faces-redirect=true";
     }
 
@@ -53,7 +53,7 @@ public class VersionController {
             systemVersion = null; // Default version or indicate unavailable
         }
     }
-    
+
     public void fetchLatestVersion() {
         try {
             // Create a URL object pointing to the VERSION.txt file in the GitHub repository
@@ -77,7 +77,7 @@ public class VersionController {
 
     // Getter for systemVersion (to make it accessible from XHTML)
     public String getSystemVersion() {
-         readFirstLine(); // Load first line content upon bean instantiation
+        readFirstLine(); // Load first line content upon bean instantiation
         return systemVersion;
     }
 
@@ -85,6 +85,5 @@ public class VersionController {
         fetchLatestVersion(); // Fetch latest version upon bean instantiation
         return latestVersion;
     }
-    
 
 }
