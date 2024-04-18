@@ -85,6 +85,7 @@ public class PharmacyBillSearch implements Serializable {
     private boolean printPreview = false;
     private double refundAmount;
     String txtSearch;
+    private String comment;
     Bill bill;
     PaymentMethod paymentMethod;
     PaymentScheme paymentScheme;
@@ -478,12 +479,66 @@ public class PharmacyBillSearch implements Serializable {
         bill.setTransTotalSaleValue(tmp);
 
     }
-    
-    
-    public String navigateToViewPharmacyGrn(){
+
+    private boolean errorsPresentOnPoBillCancellation() {
+        if (getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (getBill().isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+
+        return false;
+    }
+
+    public String cancelPoBill() {
+        if (getSelectedBills() == null || getSelectedBills().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select Bills");
+            return "";
+        }
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return "";
+        }
+        for (Bill selected : selectedBills) {
+            System.out.println("bill = " + selected.getId());
+            setBill(selected);
+            if (getBill() == null) {
+                JsfUtil.addErrorMessage("No bill");
+                continue;
+            }
+            if (getBill().getId() == null) {
+                JsfUtil.addErrorMessage("No Saved bill");
+                continue;
+            }
+
+            if (errorsPresentOnPoBillCancellation()) {
+                continue;
+            }
+
+            CancelledBill cancellationBill = pharmacyCreateCancelBill();
+            cancellationBill.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPurchaseBill, BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
+            cancellationBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyPurchaseBill, BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
+
+            if (cancellationBill.getId() == null) {
+                getBillFacade().create(cancellationBill);
+            }
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cancellationBill);
+            getBillFacade().edit(getBill());
+            JsfUtil.addSuccessMessage("Cancelled");
+
+        }
+
+        return "";
+    }
+
+    public String navigateToViewPharmacyGrn() {
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true;";
     }
-    
 
     public String navigateToViewPurchaseOrder() {
         if (bill == null) {
@@ -863,8 +918,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setComments(getBill().getComments());
-        cb.setPaymentMethod(paymentMethod);
+        cb.setComments(getComment());
 
         return cb;
     }
@@ -3003,6 +3057,14 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

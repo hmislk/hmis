@@ -2292,7 +2292,6 @@ public class SearchController implements Serializable {
     public void makeNull() {
         searchKeyword = null;
         bills = null;
-
     }
 
     public void createTableByBillType() {
@@ -3421,8 +3420,55 @@ public class SearchController implements Serializable {
 
     public void createNotApprovedPharmacy() {
         Date startTime = new Date();
-
         createNotApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
+
+        
+    }
+    
+    public void fillOnlySavedPharmacyPo() {
+        bills =null;
+        HashMap tmp = new HashMap();
+        String sql ;
+        sql = "Select b From BilledBill b where "
+                + " b.referenceBill is null "
+                + " and b.toInstitution.institutionType=:insTp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType= :bTp  "
+                + " and b.checkedBy is null";
+
+        sql += " order by b.createdAt desc  ";
+        
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("insTp", InstitutionType.Dealer);
+        tmp.put("bTp", BillType.PharmacyOrder);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+
+        
+    }
+    
+    public void fillOnlyFinalizedPharmacyPo() {
+        bills =null;
+        HashMap tmp = new HashMap();
+        String sql ;
+        sql = "Select b From BilledBill b where "
+                + " b.referenceBill is null "
+                + " and b.toInstitution.institutionType=:insTp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType= :bTp  "
+                + " and b.checkedBy is not null";
+
+        sql += " order by b.createdAt desc  ";
+        
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("insTp", InstitutionType.Dealer);
+        tmp.put("bTp", BillType.PharmacyOrder);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
         
     }
@@ -8477,6 +8523,17 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+    public String navigateToCancelPurchaseOrder() {
+        makeNull();
+        Calendar c1 = Calendar.getInstance();
+        c1.set(Calendar.MONTH, c1.get(Calendar.MONTH) - 2);
+        fromDate = c1.getTime();
+        Calendar c2 = Calendar.getInstance();
+        c2.set(Calendar.MONTH, c2.get(Calendar.MONTH) - 1);
+        toDate = c2.getTime();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_cancel?faces-redirect=true";
+    }
 
     public void createDocPaymentDue() {
         if (getReportKeyWord().getString().equals("0")) {
@@ -8868,6 +8925,9 @@ public class SearchController implements Serializable {
     }
 
     public List<Bill> getSelectedBills() {
+        if(selectedBills == null){
+            selectedBills = new ArrayList<>();
+        }
         return selectedBills;
     }
 
