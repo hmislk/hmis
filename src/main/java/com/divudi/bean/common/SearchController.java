@@ -6168,12 +6168,12 @@ public class SearchController implements Serializable {
     public void createTableByKeyword(BillType billType) {
         fillBills(billType, null, null);
     }
-
+    
     public void fillBills(BillType billType, Institution ins, Department dep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
-        sql = "select bill"
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
                 + " from BilledBill bill "
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -6215,11 +6215,11 @@ public class SearchController implements Serializable {
         sql += " order by bill.createdAt desc  ";
 
         temMap.put("billType", billType);
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
+        billLights = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        
     }
 
     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
@@ -6490,7 +6490,9 @@ public class SearchController implements Serializable {
         if (tb == null) {
             return null;
         }
+        //System.out.println("tb = " + tb);
         bill = tb;
+        //System.out.println("bill = " + bill);
         return "/opd/bill_reprint?faces-redirect=true";
     }
 
