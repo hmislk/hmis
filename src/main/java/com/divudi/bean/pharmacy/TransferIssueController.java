@@ -13,6 +13,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.StockQty;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -462,7 +463,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setNetTotal(calTotal());
 
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
-
+        getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
 
         //Update ReferenceBill
@@ -474,6 +475,7 @@ public class TransferIssueController implements Serializable {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         issuedBill = null;
         issuedBill = b;
+        
         notificationController.createNotification(issuedBill);
         printPreview = true;
 

@@ -90,16 +90,20 @@ public class UserNotificationController implements Serializable {
     }
     
     public void clearCanceledRequestsNotification(){
+        fillLoggedUserNotifications();
+        if (items==null) {
+            return;
+        }
         
-    }
-    
-    public void cancelRequestNotification(Notification notification){
-        if (notification != null) {
-            Bill b=notification.getBill();
-            if (b.isCancelled()) {
-                
+        for (UserNotification item : items) {
+            if (item.getNotification()==null) {
+                return;
+            }
+            if (item.getNotification().getBill().isCancelled()) {
+                items.remove(item);
             }
         }
+        
     }
 
     public void save(UserNotification userNotification) {
@@ -176,11 +180,16 @@ public class UserNotificationController implements Serializable {
         return items;
     }
 
-    public String navigateToCurrentNotificationRequest(UserNotification cu) {
-        if (cu.getNotification().getBill() == null) {
+    public String navigateToCurrentNotificationRequest(UserNotification un) {
+        Department toDepartmentFromNotification=un.getNotification().getBill().getToDepartment();
+        if (!toDepartmentFromNotification.equals(sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return "";
         }
-        Bill bill = cu.getNotification().getBill();
+        if (un.getNotification().getBill() == null) {
+            return "";
+        }
+        Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:

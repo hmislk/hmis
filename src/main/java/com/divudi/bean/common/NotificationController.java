@@ -60,8 +60,6 @@ public class NotificationController implements Serializable {
     private NotificationFacade ejbFacade;
     private Notification current;
     private List<Notification> items = null;
-    
-    
 
     public void save(Notification notification) {
         if (notification == null) {
@@ -107,14 +105,31 @@ public class NotificationController implements Serializable {
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
                 //No Notification is necessary
                 break;
+            case PHARMACY_DIRECT_ISSUE:
+                createPharmacyDirectIssueNotifications(bill);
+                break;
             default:
                 throw new AssertionError();
         }
     }
-    
+
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+    
+    private void createPharmacyDirectIssueNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_ISSUE)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setBill(bill);
@@ -152,7 +167,7 @@ public class NotificationController implements Serializable {
             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
         }
 
-        if (message == null || message=="" || message.isEmpty()) {
+        if (message == null || message == "" || message.isEmpty()) {
             message = "New Request from ";
         }
 

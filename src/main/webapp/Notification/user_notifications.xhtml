@@ -10,8 +10,16 @@
             <ui:define name="content">
                 <h:form >
                     <h:panelGroup id="userNoti" >
+                        <div class="d-flex justify-content-end align-items-center">
+                             <p:commandButton 
+                            class="m-2 ui-button-warning" 
+                            ajax="false" 
+                            icon="fas fa-trash" 
+                            value="Clear Cancelled Request" 
+                            action="#{userNotificationController.clearCanceledRequestsNotification()}"/>
+                        </div>
                         <p:repeat value="#{userNotificationController.items}" var="un">
-                            <div class="row mt-2 shadow-lg ">
+                            <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: red;' : ''}">
                                 <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER'}">
                                     <div class="col-4 bg-success p-2 ">
                                         <div class="d-flex align-items-center justify-content-between">
@@ -30,6 +38,15 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
+                                <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_DIRECT_ISSUE'}">
+                                    <div class="col-4 bg-warning p-2 ">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <h:outputText  styleClass="fa-solid fa-comments mx-4 text-white" />
+                                            <h5 class="text-white">New Notification from</h5>
+                                            <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
                                 <div class="col-8 text-black">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div >
@@ -37,6 +54,7 @@
                                             <p:outputLabel class="mx-4" value="#{un.notification.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat} / HH:mm" ></f:convertDateTime>
                                             </p:outputLabel>
+                                            <p:outputLabel class="mx-2" value="#{un.notification.bill.cancelled}"/>
                                         </div>
 
                                         <div class="d-flex align-items-center mt-2">
