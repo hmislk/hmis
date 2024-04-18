@@ -88,6 +88,19 @@ public class UserNotificationController implements Serializable {
     public String navigateToSentNotification() {
         return "/Notification/sent_notifications";
     }
+    
+    public void clearCanceledRequestsNotification(){
+        
+    }
+    
+    public void cancelRequestNotification(Notification notification){
+        if (notification != null) {
+            Bill b=notification.getBill();
+            if (b.isCancelled()) {
+                
+            }
+        }
+    }
 
     public void save(UserNotification userNotification) {
         if (userNotification == null) {
