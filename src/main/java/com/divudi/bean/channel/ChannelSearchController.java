@@ -122,8 +122,8 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-         System.out.println("getFromDate() = " + getFromDate());
-         System.out.println("getToDate() = " + getToDate());
+         //System.out.println("getFromDate() = " + getFromDate());
+         //System.out.println("getToDate() = " + getToDate());
         //// // System.out.println("txtSearch = " + txtSearch);
         //// // System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null 
