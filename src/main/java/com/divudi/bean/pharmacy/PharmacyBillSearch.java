@@ -143,6 +143,19 @@ public class PharmacyBillSearch implements Serializable {
     InwardBeanController inwardBean;
     @Inject
     PharmacySaleController pharmacySaleController;
+    
+    public String cancelInwardPharmacyRequestBill(){
+        if (bill==null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        CancelledBill cb=pharmacyCreateCancelBill();
+        cb.setBillItems(getBill().getBillItems());
+        bill.setCancelled(true);
+        bill.setCancelledBill(cb);
+        billFacade.edit(bill);
+        return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
+    }
 
     public void markAsChecked() {
         if (bill == null) {
