@@ -122,8 +122,8 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        //// // System.out.println("getFromDate() = " + getFromDate());
-        //// // System.out.println("getToDate() = " + getToDate());
+         System.out.println("getFromDate() = " + getFromDate());
+         System.out.println("getToDate() = " + getToDate());
         //// // System.out.println("txtSearch = " + txtSearch);
         //// // System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null 
@@ -179,10 +179,12 @@ public class ChannelSearchController implements Serializable {
         m.put("class", BilledBill.class);
 
         if (getFromDate() != null && getToDate() != null) {
+            System.out.println("getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP));
             searchedBillSessions = getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
             searchedBillSessions = getBillSessionFacade().findByJpql(sql, m);
         }
+        System.out.println("searchedBillSessions = " + searchedBillSessions);
 
     }
 

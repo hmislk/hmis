@@ -669,7 +669,8 @@
 
                         <p:commandButton id="btnBsSearch"
                                          class="ui-button-warning mx-2" icon="fas fa-search"
-                                         value="Search" action="#{channelSearchController.searchForBillSessions}" 
+                                         value="Search" action="#{channelSearchController.searchForBillSessions}"
+                                         ajax="false"
                                          process="txtBsSearch calFrom calTo btnBsSearch" 
                                          update="bSessionSearch">
 
