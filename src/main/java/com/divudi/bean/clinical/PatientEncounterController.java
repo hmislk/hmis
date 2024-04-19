@@ -1156,39 +1156,7 @@ public class PatientEncounterController implements Serializable {
         }
         updateOrGeneratePrescription();
     }
-    
-    public void fillProcedures(Patient patient) {
-        if (encounterProcedures == null) {
-            encounterProcedures = new ArrayList<>();
-        }
-        List<ClinicalFindingValueType> temp = new ArrayList<>();
-        temp.add(ClinicalFindingValueType.PatientProcedure);
-
-        List<ClinicalFindingValue> tmpCli = fillCurrentPatientClinicalFindingValues(patient, temp);
-        if (tmpCli == null || tmpCli.isEmpty()) {
-            JsfUtil.addErrorMessage("No Procedures found on Patient Profile");
-            return;
-        }
-
-        for (ClinicalFindingValue cli : tmpCli) {
-            if (cli == null) {
-                continue;
-            }
-
-            cli.setEncounter(current);
-            cli.setClinicalFindingValueType(ClinicalFindingValueType.VisitProcedure);
-            if (cli.getId() == null) {
-                clinicalFindingValueFacade.create(cli);
-            } else {
-                clinicalFindingValueFacade.edit(cli);
-            }
-            getEncounterFindingValues().add(cli);
-            encounterProcedures.add(cli);
-
-        }
-        updateOrGeneratePrescription();
-    }
-
+   
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
         return fillCurrentPatientClinicalFindingValues(patient, null);
     }
