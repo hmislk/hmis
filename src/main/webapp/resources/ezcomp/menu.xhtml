@@ -575,6 +575,12 @@
                             icon="fas fa-exchange-alt"
                             rendered="#{webUserController.hasPrivilege('ReturnWithoutRecipt')}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{searchController.navigateToCancelPurchaseOrder()}"  
+                            value="Multiple Purchase Order Cancellation" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" 
+                            icon="fas fa-cancel"></p:menuitem>
                     </p:submenu>
 
 
