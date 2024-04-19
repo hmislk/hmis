@@ -687,10 +687,11 @@
 
                                             </p:panel>
 
-                                            <p:panel class="w-100 m-1" >
+                                            <p:panel class="w-100 m-1" id="procedures">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-medkit"/>
                                                     <h:outputText class="mx-4" value="Procedures"/>
+                                                    <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('procedures',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillProcedures(patientController.current)}"/>
                                                 </f:facet>
                                                 <div class="row" >
                                                     <div class="col-md-9" >
