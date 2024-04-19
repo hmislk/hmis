@@ -3454,10 +3454,6 @@ public class SearchController implements Serializable {
                 + " and b.billType= :bTp ";
 
         sql += createKeySql(tmp);
-        if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
-            sql += " and  ((b.deptId) like :billNo )";
-            tmp.put("billNo", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
-        }
         sql += " order by b.createdAt desc  ";
 
         List<Bill> lst3 = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);

@@ -1035,6 +1035,21 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
+                
+                <!-- Multiple Purchase Order Cancellation -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Multiple_Purchase_Order_Cancellation'}">
+                    <h:form>
+                        <p:tooltip for="Multiple_Purchase_Order_Cancellation" value="Multiple Purchase Order Cancellation"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Multiple_Purchase_Order_Cancellation"
+                            ajax="false" 
+                            action="#{searchController.navigateToCancelPurchaseOrder()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/ban-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Multiple Purchase Order Cancellation" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
 
                 <!-- Pharmacy Issue -->
