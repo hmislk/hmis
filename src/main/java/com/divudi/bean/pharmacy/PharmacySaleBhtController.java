@@ -1015,6 +1015,10 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Quantity?");
             return;
         }
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+            return;
+        }
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
