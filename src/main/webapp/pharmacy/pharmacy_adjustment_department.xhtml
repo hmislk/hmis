@@ -26,16 +26,24 @@
                                             id="acAmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAmps}"
+                                            completeMethod="#{ampController.completeAmp}"
                                             var="amp"
                                             itemLabel="#{amp.name}"
                                             itemValue="#{amp}"
                                             value="#{pharmacyAdjustmentController.amp}"
+                                            maxResults="10"
+                                            minQueryLength="3"
                                             >
                                             <p:ajax 
                                                 process="acAmp" 
                                                 listener="#{pharmacyAdjustmentController.fillAmpStocks}"
                                                 update="tblStocks" ></p:ajax>
+                                            <p:column headerText="Item"  style="padding: 3px;" >
+                                                <h:outputText value="#{amp.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Stock" style="padding: 3px;" >
+                                                <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" ></h:outputText>
+                                            </p:column>
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Batches" ></h:outputLabel>

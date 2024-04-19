@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/forms/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+
+        <h:form  >
+            <p:growl />
+            <p:focus id="selectFocus" context="gpSelect" />
+            <p:focus id="detailFocus" context="gpDetail" />
+
+            <p:panel header="Manage Signs" >
+                <div class="row" >
+                    <div class="col-md-5" >
+                        <h:panelGrid id="gpSelect" columns="1"   class="w-100">
+                            <h:panelGrid id="gpSelectButtons" columns="3"   class="w-100">
+                                <p:commandButton id="btnAdd" 
+                                                 value="Add" 
+                                                 action="#{clinicalEntityController.prepareAdd()}"  
+                                                 class="w-100"
+                                                 update="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnDelete"
+                                    ajax="false"
+                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" 
+                                    action="#{clinicalEntityController.delete()}"  
+                                    value="Delete" 
+                                    class="w-100">
+                                </p:commandButton>
+                            </h:panelGrid>
+                            <h:panelGrid id="gpSelectText" class="w-100" >
+                                <p:selectOneListbox  id="lstSelect"   
+                                                     value="#{clinicalEntityController.current}"
+                                                     class="w-100"
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     scrollHeight="500">
+                                    <f:selectItems  value="#{clinicalEntityController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:ajax render="gpDetail" execute="lstSelect" >
+                                    </f:ajax>
+                                </p:selectOneListbox>
+                            </h:panelGrid>
+
+                        </h:panelGrid  >
+                    </div>
+                    <div class="col-md-7"  >
+
+                        <h:panelGrid id="gpDetail" columns="1" class="w-100">
+                            <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                <h:outputText id="lblName" value="Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtName" value="#{clinicalEntityController.current.name}"   class="w-100" ></p:inputText>
+                                <h:outputText id="lblCode" value="Code" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtCode" value="#{clinicalEntityController.current.code}"   class="w-100"></p:inputText>                                    
+                                <h:outputText id="lblDes" value="Description" ></h:outputText>
+                                <p:inputTextarea id="txtDes" value="#{clinicalEntityController.current.descreption}"  class="w-100" ></p:inputTextarea>
+                                <h:outputText id="lblType" value="Type" ></h:outputText>
+                                <p:selectOneMenu value="#{clinicalEntityController.current.symanticType}"
+                                                 filter="true"
+                                                 required="true"
+                                                 filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.symanticTypes}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGrid>
+                            <h:panelGrid id="gpDetailButtons" columns="2"  class="w-100">
+                                <p:commandButton id="btnSave" value="Save" 
+                                                 action="#{clinicalEntityController.saveSelected()}"  class="w-100"
+                                                 update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  
+                                                 process="gpDetail" >
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </h:panelGrid>
+
+                    </div>
+                </div>
+            </p:panel>
+
+
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

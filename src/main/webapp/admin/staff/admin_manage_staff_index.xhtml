@@ -27,7 +27,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Doctors" action="#{navigationController.navigateToAdminDoctor()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Consultant" action="#{navigationController.navigateToAdminDoctorConsultant()}"/>
-                                            <p:commandButton  class="w-100" ajax="false" value="Staff" action="../../hr/hr_staff_admin"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Staff" action="/hr/hr_staff_admin"/>
                                             <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{staffController.navigateToAdminStaffViewSignature()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToAdminStaffSignature()}"/>
                                         </div>
@@ -36,6 +36,7 @@
                                     <p:tab title="Setup">
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Upload Consultants" action="#{dataUploadController.navigateToUploadConsultants()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Upload Doctors" action="#{dataUploadController.navigateToUploadDoctors()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Connect staff to user" action="#{navigationController.navigateToAdminUserStaff()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Staff List " action="#{navigationController.navigateToStaffList()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="#{navigationController.navigateToPersonInstitution()}"/>

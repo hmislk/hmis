@@ -16,16 +16,16 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel  header="Single Casheir Summery">
+                <p:panel  header="Single Casheir Summary">
 
 
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="mx-4 w-100 my-1" inputStyleClass="w-100" id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="mx-4 w-100 my-1" inputStyleClass="w-100 my-1" id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name or User Code"/>
                         <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" completeMethod="#{webUserController.completeUser}"
@@ -45,8 +45,10 @@
                         </p:autoComplete>
 
                     </h:panelGrid>
-                    <h:panelGrid columns="5" class="my-2">
-                        <p:commandButton id="btnRefresh" ajax="false" class="ui-button-warning" icon="fas fa-refresh" value="Refresh"  action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                    <h:panelGrid columns="6" class="my-2">
+                        <p:commandButton id="btnRefresh" ajax="false" class="ui-button-warning" icon="fas fa-arrows-rotate" value="Process"  action="#{channelReportController.createAllBillList}" style="float: right;"/>
+                        <p:commandButton id="btnRefresh1" ajax="false" class="mx-1 ui-button-warning" icon="fas fa-stethoscope" value="Only Channel"  action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                        <p:commandButton id="btnRefresh2" ajax="false" class="mx-1 ui-button-warning" icon="fas fa-money-bill" value="Only Cashier"  action="#{channelReportController.createCashierBillList}" style="float: right;"/>
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-1" icon="fas fa-print">
@@ -61,7 +63,7 @@
                     <p:panel id="reportPrint">
                         <p:dataTable id="sum3" value="#{channelReportController.channelSummary}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="#{commonReport.header}  &emsp;:&emsp; #{channelReportController.webUser.webUserPerson.name}"/>
+                                <h:outputLabel value="#{commonReport.header}  &emsp;:&emsp; #{channelReportController.webUser.webUserPerson.name}" rendered="#{channelReportController.webUser ne null}"/>
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel  value="#{channelReportController.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />

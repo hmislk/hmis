@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="b1Ph"  rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="#{cc.id}" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}" var="b1Ph"  rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel value="Pharmacy Whole Sale Cancelled"/>
             </f:facet> 
@@ -78,7 +78,7 @@
             </p:column>
             <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{b1Ph.paymentMethod=='Cheque'}" value="#{b1Ph.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
@@ -94,9 +94,6 @@
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b1Ph.paymentMethod!='Slip'}" value="0.00"/>
-            </p:column>
-            <p:column exportable="false">
-                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
             </p:column>
 
             <p:columnGroup type="footer">  

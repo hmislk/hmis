@@ -12,6 +12,7 @@ import com.divudi.bean.common.*;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.SessionInstanceFacade;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -42,20 +43,16 @@ public class SessionInstanceController implements Serializable {
     private List<SessionInstance> items = null;
 
     public void save(SessionInstance pa) {
-//        if (pa == null) {
-//            return;
-//        }
-//        if (pa.getId() != null) {
-//            getFacade().edit(pa);
-//            JsfUtil.addSuccessMessage("Updated Successfully.");
-//        } else {
-//            pa.setCreatedAt(new Date());
-//            pa.setCreater(getSessionController().getLoggedUser());
-//            getFacade().create(pa);
-//            JsfUtil.addSuccessMessage("Saved Successfully");
-//        }
-//        recreateModel();
-//        getItems();
+        if (pa == null) {
+            return;
+        }
+        if (pa.getId() != null) {
+            getFacade().edit(pa);
+        } else {
+            pa.setCreatedAt(new Date());
+            pa.setCreater(sessionController.getLoggedUser());
+            getFacade().create(pa);
+        }
     }
 
     public SessionInstanceController() {

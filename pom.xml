@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-    <artifactId>ucfm</artifactId>
+    <artifactId>ucfm1</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>ucfm</name>
+    <name>ucfm1</name>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -220,7 +220,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20180813</version>
+            <version>20240303</version>
         </dependency>
 
         <!-- Flying Saucer PDF -->

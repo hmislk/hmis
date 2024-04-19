@@ -968,7 +968,6 @@ public class PastPatientEncounterController implements Serializable {
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
         Map m = new HashMap();
         m.put("p", patient);
-
         m.put("ret", false);
         String jpql;
         ClinicalFindingValue e = new ClinicalFindingValue();
@@ -1131,8 +1130,8 @@ public class PastPatientEncounterController implements Serializable {
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
@@ -1161,7 +1160,7 @@ public class PastPatientEncounterController implements Serializable {
             }
         }
 
-        String medicinesOutdoorAsString = "Rx" + "<br/>";
+        String medicinesOutdoorAsString = "";
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null) {
                 if (!cf.getPrescription().isIndoor()) {
@@ -1176,7 +1175,7 @@ public class PastPatientEncounterController implements Serializable {
             }
         }
 
-        String medicinesIndoorAsString = "Rx" + "<br/>";
+        String medicinesIndoorAsString = "";
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
                 if (cf.getPrescription().isIndoor()) {
@@ -1196,10 +1195,11 @@ public class PastPatientEncounterController implements Serializable {
             ixAsString += ix.getItemValue().getName() + "<br/>";;
         }
         
-        String paAsString = "Pa" + "<br/>";
+        String paAsString = "";
         for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
             paAsString += pa.getItemValue().getName() + "<br/>";
         }
+        
 
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {

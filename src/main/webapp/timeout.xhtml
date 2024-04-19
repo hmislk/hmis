@@ -23,11 +23,13 @@
 
 
                         <div class="d-flex justify-content-center align-items-center m-4">
-                            <p:commandButton 
+                            <p:commandButton
+                                id="login"
                                 value="Login" 
                                 action="/index" 
                                 class="btn btn-primary"
                                 ajax="false"></p:commandButton>
+                            <p:defaultCommand target="login"> </p:defaultCommand>
                         </div>
                     </div>
 

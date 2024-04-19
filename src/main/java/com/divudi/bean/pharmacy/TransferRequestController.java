@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -27,6 +28,7 @@ import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +74,8 @@ public class TransferRequestController implements Serializable {
     @Inject
     private PharmacyCalculation pharmacyBillBean;
     private boolean printPreview;
+    @Inject
+    NotificationController notificationController;
 
     public void recreate() {
         Date startTime = new Date();
@@ -285,11 +289,15 @@ public class TransferRequestController implements Serializable {
             getBill().getBillItems().add(b);
         }
 
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        
         getBillFacade().edit(getBill());
 
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
 
         printPreview = true;
+        
+        notificationController.createNotification(bill);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(/faces/theater/theater_transfer_request.xhtml)");
 

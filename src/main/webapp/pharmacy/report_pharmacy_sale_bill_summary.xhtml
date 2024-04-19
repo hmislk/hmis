@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/pharmacy/pharmacy_summery_index.xhtml"
+                template="/pharmacy/pharmacy_analytics.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -33,9 +33,9 @@
                                          value="#{billSearch.user}" ></p:autoComplete>
 
                     </h:panelGrid>
-                    
+
                     <div class="d-flex align-items-center my-2">
-                         <p:commandButton 
+                        <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
                             value="Process"
@@ -43,8 +43,8 @@
                             class="ui-button-warning" 
                             style="float: right;" 
                             actionListener="#{billSearch.processCashierPharmacySaleBillSummery}" />
-                        <p:defaultCommand target="btnRefresh"/>
-                        
+                       
+
                         <p:commandButton 
                             ajax="false" 
                             value="Excel" 
@@ -65,11 +65,54 @@
                     </div>
 
                     <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
-                        <p:column headerText="Bill Type" >
+                        <p:column headerText="Bill Type" width="18%">
                             <h:outputText value="#{bs.billType.label}" ></h:outputText>
+                            <f:facet name="footer">
+                                <h:panelGroup>
+                                    <h:outputText value="Cash Total" />
+                                    <br />
+                                    <h:outputText value="Credit Total" />
+                                    <br />
+                                    <h:outputText value="Slip Total" />
+                                    <br />
+                                    <h:outputText value="Card Total " />
+                                    <br />
+                                    <h:outputText value="Multiple Payments Total" />
+                                    <br />
+                                    <h:outputText value="Patient Deposite Total" />
+                                    <br />
+                                </h:panelGroup>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Payment Method" >
                             <h:outputText value="#{bs.paymentMethod}" ></h:outputText>
+                            <f:facet name="footer">
+                                <h:panelGroup>
+                                    <h:outputText value="#{billSearch.cashTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.creditTotal}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.slipTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.creditCardTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.multiplePaymentsTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <br />
+                                    <h:outputText value="#{billSearch.patientDepositsTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="User" >
                             <h:outputText value="#{bs.webUser.webUserPerson.name}" ></h:outputText>
@@ -81,8 +124,22 @@
                             <h:outputText value="#{bs.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
+                            
+                        </p:column>
+                        <p:column headerText="Action" >
+                             <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="View Summary"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
+                                                             actionListener="#{pharmacySaleReport.makeNull}"> 
+                                 <f:setPropertyActionListener target="#{pharmacySaleReport.fromDate}" value="#{billSearch.fromDate}"/>
+                                 <f:setPropertyActionListener target="#{pharmacySaleReport.toDate}" value="#{billSearch.toDate}"/>
+                                 <f:setPropertyActionListener target="#{pharmacySaleReport.department}" value="#{billSearch.department}"/>
+                                 <f:setPropertyActionListener target="#{pharmacySaleReport.user}" value="#{bs.webUser}"/>
+                             </p:commandButton>
                         </p:column>
                     </p:dataTable>
+
+                    <h1></h1>
                 </p:panel>
             </h:form>
         </h:panelGroup>

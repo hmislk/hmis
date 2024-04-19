@@ -56,7 +56,11 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -377,6 +381,7 @@ public class BillController implements Serializable {
         if (sb == null) {
             return;
         }
+
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
@@ -1566,6 +1571,53 @@ public class BillController implements Serializable {
         return billFeeFacade.findByJpql(jpql, m);
     }
 
+    public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
+        System.out.println("findBillFees");
+        List<BillFee> tmpFees;
+        String jpql;
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btcs.add(BillTypeAtomic.CC_BILL);
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.bill.billTime between :fromDate and :toDate "
+                + " and bf.staff=:staff "
+                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and bf.bill.billTypeAtomic in :btcs "
+                + " and bf.fee.feeType=:ft ";
+        m.put("btcs", btcs);
+        m.put("staff", staff);
+        m.put("ret", false);
+        m.put("ft", FeeType.Staff);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : tmpFees) {
+            m = new HashMap();
+            jpql = "SELECT bi FROM BillItem bi where "
+                    + " bi.retired=false"
+                    + " and bi.bill.cancelled=false "
+                    + " and type(bi.bill)=:class "
+                    + " and bi.referanceBillItem=:rbi";
+            m.put("class", RefundBill.class);
+            m.put("rbi", bf.getBillItem());
+            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        tmpFees.removeAll(removeingBillFees);
+
+        return tmpFees;
+    }
+
     public List<BillFee> billFeesOfBillItem(BillItem billItem) {
         String jpql;
         Map m = new HashMap();
@@ -1893,6 +1945,199 @@ public class BillController implements Serializable {
         } else if (billSessions == null || !billSessions.isEmpty()) {
             billSessions = new ArrayList<>();
         }
+    }
+
+    public List<BillLight> listBillsLights(
+            BillType bt,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        if (bt == null) {
+            return null;
+        }
+//        List<BillType> bts = new ArrayList<>();
+//        bts.add(bt);
+//        System.out.println("listBillsLights = ");
+//        return listBillsLights(bts, ins, dep, fd, td);
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType=:bt ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("bt", bt);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        System.out.println("sql = " + sql);
+        List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return lst;
+
+    }
+
+    public List<BillLight> listBillsLights(
+            List<BillType> billTypes,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType in :billTypes ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("billTypes", billTypes);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        System.out.println("sql = " + sql);
+        List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return lst;
+    }
+
+    public List<Bill> listBills(
+            BillType bt,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        if (bt == null) {
+            return null;
+        }
+        List<BillType> bts = new ArrayList<>();
+        bts.add(bt);
+        return listBills(bts, ins, dep, fd, td);
+
+    }
+
+    @Deprecated
+    public List<Bill> findUnpaidBillsOld(Date frmDate, Date toDate, List<BillType> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        String jpql;
+        HashMap hm;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) > :val) ";
+            hm.put("val", balanceGraterThan);
+        }
+        if (pm != null) {
+            hm.put("pm", pm);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billType in :bts";
+        }
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        String jpql;
+        HashMap hm;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) > :val) ";
+            hm.put("val", balanceGraterThan);
+        }
+        if (pm != null) {
+            hm.put("pm", pm);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billTypeAtomic in :bts";
+        }
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> listBills(
+            List<BillType> billTypes,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType in :billTypes ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("billTypes", billTypes);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        System.out.println("sql = " + sql);
+        List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return lst;
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {

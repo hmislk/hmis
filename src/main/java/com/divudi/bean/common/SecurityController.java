@@ -25,6 +25,7 @@ import java.util.Map;
 @Named
 @SessionScoped
 public class SecurityController implements Serializable {
+
     private static final SecureRandom random = new SecureRandom();
 
     private static final String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -78,7 +79,7 @@ public class SecurityController implements Serializable {
         }
         return result.toString();
     }
-    
+
     public String encryptAlphanumeric(String text, String key) {
         if (text == null || key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Text and key cannot be null or empty");
@@ -148,20 +149,40 @@ public class SecurityController implements Serializable {
         }
     }
 
-    public String hash(String word) {
+    private String password;
+    private String hashedPassword;
+    private boolean matching;
+
+    public void testPassword() {
+        System.out.println("Test Password");
+        System.out.println("password = " + password);
+        matching = matchPassword(password, hashedPassword);
+    }
+
+    public String hashAndCheck(String word) {
         try {
             BasicPasswordEncryptor en = new BasicPasswordEncryptor();
-            return en.encryptPassword(word);
+            String encryptedPassword = en.encryptPassword(word);
+            // This check will always return true for a successfully hashed password
+            boolean match = en.checkPassword(word, encryptedPassword);
+            if (match) {
+                return encryptedPassword;
+            } else {
+                return null; // This branch will likely never be executed
+            }
         } catch (Exception e) {
             return null;
         }
     }
 
     public static boolean matchPassword(String planePassword, String encryptedPassword) {
+        System.out.println("matchPassword");
+        System.out.println("planePassword = " + planePassword);
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
-        return en.checkPassword(planePassword, encryptedPassword);
+        boolean mathingAccess =en.checkPassword(planePassword, encryptedPassword);
+        return  mathingAccess;
     }
-    
+
     public static boolean matchPassword(String planePassword, String encryptedPassword, boolean fake) {
         return true;
     }
@@ -185,6 +206,30 @@ public class SecurityController implements Serializable {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getHashedPassword() {
+        return hashedPassword;
+    }
+
+    public void setHashedPassword(String hashedPassword) {
+        this.hashedPassword = hashedPassword;
+    }
+
+    public boolean isMatching() {
+        return matching;
+    }
+
+    public void setMatching(boolean matching) {
+        this.matching = matching;
     }
 
 }

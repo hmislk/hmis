@@ -159,11 +159,14 @@
                                                 </p:autoComplete>
 
                                                 <h:outputLabel value="Change At"/>                          
-                                                <p:calendar  id="changeTimeStamp" 
-                                                             value="#{roomChangeController.changeAt}"
-                                                             navigator="true" size="30" 
-                                                             pattern="dd MMM yyyy HH:mm:ss" class="m-2" >                                                               
-                                                </p:calendar>
+                                                <p:datePicker  id="changeTimeStamp" 
+                                                               value="#{roomChangeController.changeAt}"
+                                                               showTime="true"
+                                                               showButtonBar="true"
+                                                               timeInput="true"
+                                                               size="30" 
+                                                               pattern="dd MMM yyyy HH:mm:ss" class="m-2" >                                                               
+                                                </p:datePicker>
                                                 <p:commandButton  value="Change"  
                                                                   icon="fas fa-arrow-right-arrow-left"
                                                                   class="ui-button-success "
@@ -212,13 +215,13 @@
                                                 <p:column class="text-center">
                                                     <div class="d-flex">
                                                         <p:commandButton class="ui-button-info" ajax="false" icon="fas fa-edit"  title="Update"  
-                                                                     action="#{roomChangeController.update(rm)}"
-                                                                     disabled="#{rm.retired eq true}"  />
+                                                                         action="#{roomChangeController.update(rm)}"
+                                                                         disabled="#{rm.retired eq true}"  />
                                                         <p:commandButton class="ui-button-warning mx-1" ajax="false" icon="fas fa-user-slash" title="Discharge" onclick="if (!confirm('Are you sure you want to Discharge this record?'))
-                                                            return false;" action="#{roomChangeController.discharge(rm)}"/>
+                                                                    return false;" action="#{roomChangeController.discharge(rm)}"/>
                                                         <p:commandButton class="ui-button-danger" ajax="false" icon="fas fa-trash" title="Remove" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                            return false;" action="#{roomChangeController.remove(rm)}"/>
-                                                        </div>
+                                                                    return false;" action="#{roomChangeController.remove(rm)}"/>
+                                                    </div>
                                                 </p:column>                    
                                             </p:dataTable>
                                         </p:tab>

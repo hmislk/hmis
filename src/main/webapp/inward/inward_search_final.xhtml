@@ -16,25 +16,29 @@
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From"/>
-                                    <p:calendar 
+                                    <p:datePicker 
                                         id="fromDate" 
                                         value="#{searchController.fromDate}" 
-                                        navigator="false" 
+                                        showTime="true"
+                                        showButtonBar="true"  
+                                        timeInput="true" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         styleClass="dateTimePicker" 
                                         class="w-100" 
                                         inputStyleClass="form-control" >
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <h:outputLabel value="To"/>
-                                    <p:calendar 
+                                    <p:datePicker 
                                         id="toDate" 
                                         value="#{searchController.toDate}" 
-                                        navigator="false" 
+                                        showTime="true"                                            
+                                        showButtonBar="true"                                            
+                                        timeInput="true" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         styleClass="dateTimePicker" 
                                         class="w-100" 
                                         inputStyleClass="form-control" >
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <p:commandButton 

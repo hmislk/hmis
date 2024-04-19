@@ -101,11 +101,8 @@ public class StockHistoryController implements Serializable {
         }
 
         jpql += " order by s.createdAt ";
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<StockHistory> shxs = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         if (shxs != null) {
-            System.out.println("shxs = " + shxs);
         }
         return shxs;
     }

@@ -13,7 +13,7 @@
                 <h:form>
                     <p:panel id="gpBillPreview">
                         <f:facet name="header" >
-                            <h:outputLabel value="PHARMACY BILL SEARCH "/>                                 
+                            <h:outputLabel value="Pharmacy Bill Search"/>                                 
 
                         </f:facet>
                         <h:panelGrid columns="18" >
@@ -88,7 +88,7 @@
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacySale'}" >
                                 <se:sale />
                             </h:panelGroup>
-
+                            
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyAdjustment'}" >
                                 <se:adjustment />
                             </h:panelGroup>
@@ -96,13 +96,19 @@
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyWholeSale'}" >
                                 <se:pharmacy_whole_sale />
                             </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyIssue'}" >
+                                <se:pharmacy_issue />
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferReceive'}" >
+                                <se:pharmacy_transfer_recieve />
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
-
                 </h:form>
 
             </ui:define>
-
 
         </ui:composition>
 

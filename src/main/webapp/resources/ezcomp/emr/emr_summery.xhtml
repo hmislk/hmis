@@ -20,7 +20,7 @@
 
                 <p:panelGrid columns="2" >
                     <p:outputLabel value="First Registered" ></p:outputLabel>
-                    <p:outputLabel value="#{patientEncounterController.current.createdAt}">
+                    <p:outputLabel value="#{patientController.current.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                     </p:outputLabel>
                     <p:outputLabel value="Last Visit" ></p:outputLabel>
@@ -34,8 +34,10 @@
                     <p:outputLabel value="Allergies" />
                     <h:panelGroup rendered="#{patientEncounterController.patientAllergies != null and not empty patientEncounterController.patientAllergies}">
                         <ui:repeat value="#{patientEncounterController.patientAllergies}" var="allergy">
-                            <h:outputText value="#{allergy.itemValue.name}" styleClass="ui-messages-error" />
-                            <h:outputText value="#{not loop.last ? ', ' : ''}" styleClass="ui-messages-error"/>
+                            <p:tag value="#{allergy.itemValue.name}" severity="danger" class="mt-1 mx-1" style="font-size: 1.02em" />
+                            <p:tag value="#{allergy.stringValue}" severity="danger" class="mt-1 mx-1" style="font-size: 1.02em" />
+<!--                            <h:outputText value="#{allergy.itemValue.name}" styleClass="ui-messages-error" />
+                            <h:outputText value="#{not loop.last ? ', ' : ''}" styleClass="ui-messages-error"/>-->
                         </ui:repeat>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{patientEncounterController.patientAllergies == null or empty patientEncounterController.patientAllergies}">

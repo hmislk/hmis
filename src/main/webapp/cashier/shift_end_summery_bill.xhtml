@@ -76,6 +76,79 @@
                                 </div>
                             </div>
                             <div class="col-6 d-flex justify-content-end">
+
+
+                                <h:dataTable value="#{financialTransactionController.atomicBillTypeTotals.serviceTypeTotals}" var="serviceTypeTotal" styleClass="table">
+                                    <h:column>
+                                        <!-- This column will display the service type and its total -->
+                                        <f:facet name="header">Service Type / Total</f:facet>
+                                        #{serviceTypeTotal.serviceType} / #{serviceTypeTotal.totalByServiceType}
+                                    </h:column>
+                                    <h:column>
+                                        <!-- Nested ui:repeat for BillCategoryTotals within each ServiceType -->
+                                        <ui:repeat value="#{serviceTypeTotal.billCategoryTotals}" var="billCategoryTotal">
+                                            <h:dataTable value="#{billCategoryTotal.paymentMethodTotals}" var="paymentMethodTotal" styleClass="table">
+                                                <h:column>
+                                                    <!-- This column will display the bill category -->
+                                                    <f:facet name="header">Bill Category</f:facet>
+                                                        #{billCategoryTotal.billCategory}
+                                                </h:column>
+                                                <h:column>
+                                                    <!-- This column will display the payment method and its total -->
+                                                    <f:facet name="header">Payment Method / Total</f:facet>
+                                                    #{paymentMethodTotal.paymentMethod} / #{paymentMethodTotal.totalByPaymentMethod}
+                                                </h:column>
+                                            </h:dataTable>
+                                            <h:outputText value="Total for #{billCategoryTotal.billCategory}: #{billCategoryTotal.totalByBillCategory}" />
+                                            <br />
+                                        </ui:repeat>
+                                    </h:column>
+                                </h:dataTable>
+
+                                <ui:repeat value="#{financialTransactionController.atomicBillTypeTotals.serviceTypeTotals}" var="serviceTypeTotal">
+                                    <h3>#{serviceTypeTotal.serviceType} - Total: #{serviceTypeTotal.totalByServiceType}</h3>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Bill Category</th>
+                                                <th>Payment Method</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{serviceTypeTotal.billCategoryTotals}" var="billCategoryTotal">
+                                                <ui:repeat value="#{billCategoryTotal.paymentMethodTotals}" var="paymentMethodTotal" varStatus="status">
+                                                    <tr>
+                                                        <td>
+                                                            <!-- Display bill category only on the first row of each category -->
+                                                            <ui:fragment rendered="#{status.index == 0}">
+                                                                #{billCategoryTotal.billCategory}
+                                                            </ui:fragment>
+                                                        </td>
+                                                        <td>#{paymentMethodTotal.paymentMethod}</td>
+                                                        <td>#{paymentMethodTotal.totalByPaymentMethod}</td>
+                                                    </tr>
+                                                </ui:repeat>
+                                                <!-- Summary row for bill category, if needed -->
+                                                <tr>
+                                                    <td colspan="3"><strong>Total for #{billCategoryTotal.billCategory}: #{billCategoryTotal.totalByBillCategory}</strong></td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </ui:repeat>
+
+
+
+                                <p:dataTable rendered="false" value="#{financialTransactionController.paymentMethodValues.paymentMethodsWithValues}" var="pmv" >
+                                    <p:column >
+                                        <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{pmv.value}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                                
                                 <h:panelGroup id="btotals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq true}">
                                     <h:panelGrid columns="3" class="my-2">
                                         <h:outputText value="OPD BILLS"/>
@@ -221,6 +294,9 @@
                                 </div>
                             </div>
 
+
+
+
                         </h:panelGroup>
 
                         <h:panelGroup rendered="false">
@@ -281,6 +357,8 @@
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
+
+
                         </h:panelGroup>
 
 

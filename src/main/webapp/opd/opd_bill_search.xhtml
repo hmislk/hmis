@@ -213,11 +213,6 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
-<!--                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
-                                        <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                        </h:commandLink>  
-                                    </p:column>-->
                                     <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
                                         <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
@@ -252,9 +247,10 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Remarks"   >                              
-                                        <h:outputLabel value="#{bill.cancelled?'Cancelled':''}" class="#{bill.cancelled?'text-danger':''}" />
-                                        <h:outputLabel value="#{bill.refunded ?'Refunded':''}" />
+                                    <p:column headerText="Remarks"   >  
+                                        <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                        <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                        
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}" 

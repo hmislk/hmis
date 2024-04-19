@@ -227,9 +227,7 @@ public class SearchController implements Serializable {
     }
 
     public String settleBillByBarcode() {
-        System.out.println("settleBillByBarcode");
         currentBill = searchBillFromBillId(currentBillId);
-        System.out.println("currentBill = " + currentBill);
         String action;
         if (currentBill == null) {
             Token t = tokenController.findToken(currentBillId);
@@ -6357,9 +6355,9 @@ public class SearchController implements Serializable {
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-
+        
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
+        
     }
 
     public void clearOpdBillSearchData() {
@@ -6439,7 +6437,7 @@ public class SearchController implements Serializable {
 
     public String viewOPD(Bill b) {
         if (b.getBillType() == BillType.OpdBill) {
-            return "/bill_reprint";
+            return "/opd/bill_reprint?faces-redirect=true;";
         } else {
             JsfUtil.addErrorMessage("Please Search Again and View Bill");
             bills = new ArrayList<>();
@@ -6456,7 +6454,7 @@ public class SearchController implements Serializable {
             return null;
         }
         bill = tb;
-        return "/bill_reprint";
+        return "/opd/bill_reprint?faces-redirect=true";
     }
 
     public void createTableCashIn() {

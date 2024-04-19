@@ -122,7 +122,7 @@
                                         <p:commandButton 
                                             ajax="false"
                                             value="Recieve"
-                                            class="w-50 ui-button-warning"
+                                            class="w-100 ui-button-warning"
                                             action="#{grnController.navigateToResive()}" 
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
@@ -130,6 +130,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="Recieve&nbsp;All" 
+                                            rendered="false"
                                             class="w-50 ui-button-info"
                                             action="#{grnController.navigateToResiveAll()}" 
                                             disabled="#{p.cancelled}">
@@ -139,9 +140,9 @@
                                     <div class="col-md-12">
                                         <p:commandButton 
                                             ajax="false" 
-                                            class="w-100 ui-button-secondary"
+                                            class="w-100 ui-button-info"
                                             value="Recieve Wholesale" 
-                                            action="pharmacy_grn_wh" 
+                                            action="#{grnController.navigateToResiveWholesale()}" 
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
@@ -189,8 +190,9 @@
                                             <p:commandButton 
                                                 class="m-1" 
                                                 icon="fas fa-file-alt" 
-                                                title="View PO" action="#{pharmacyBillSearch.navigateToViewPurchaseOrder()}" >
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                                title="View PO" action="pharmacy_reprint_po" 
+                                                disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                             </p:commandButton>
                                         </h:panelGroup>
                                     </h:column>

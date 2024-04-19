@@ -9,6 +9,25 @@
 
     <ui:define name="content">
 
+<!--        <h:form >
+            <p:panelGrid columns="2" class="w-100" >
+                <p:outputLabel value="Password" ></p:outputLabel>
+                <p:inputText value="#{securityController.password}" class="w-100"></p:inputText>
+
+                <p:outputLabel value="Encrypted Password" ></p:outputLabel>
+                <p:inputText value="#{securityController.hashedPassword}" class="w-100" ></p:inputText>
+
+                <p:spacer></p:spacer>
+                <p:commandButton ajax="false" value="Check" action="#{securityController.testPassword}" >
+                </p:commandButton>
+                
+                
+                <p:outputLabel value="Matching" ></p:outputLabel>
+                <p:inputText value="#{securityController.matching}" class="w-100" ></p:inputText>
+            </p:panelGrid>
+
+        </h:form>-->
+
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
@@ -128,7 +147,7 @@
                         <p:commandLink 
                             id="Accept_Payments_For_OPD_Bills"
                             ajax="false"
-                            action="opd_search_pre_bill?faces-redirect=true"
+                            action="/opd/opd_search_pre_bill?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"
                             styleClass="svg-link" >
                             <p:graphicImage library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -450,7 +469,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage library="image" name="home/cart-shopping-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy - Retail Sale" />
                         </p:commandLink>
                     </h:form>
@@ -617,10 +636,10 @@
                             id="wholesale_sale"
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"  
-                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}" 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage library="image" name="home/truck-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale" />
                         </p:commandLink>
                     </h:form>
@@ -634,10 +653,10 @@
                             id="wholesale_sale_for_cashier"
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
-                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}" 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage library="image" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage library="image" name="home/sack-dollar-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale for cashier" />
                         </p:commandLink>
                     </h:form>
@@ -1449,7 +1468,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- Generate Reports -->
                 <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_generate_report'}">
                     <h:form>
@@ -1465,7 +1484,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- Summary Views -->
                 <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_summary_views'}">
                     <h:form>
@@ -1481,7 +1500,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
             </ui:repeat>
         </div>
     </ui:define>

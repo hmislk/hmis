@@ -157,13 +157,27 @@ public class MdInwardReportController implements Serializable {
         } else {
             list = fillterBill;
         }
-
         if (list != null) {
             for (Bill b : list) {
                 tmp += b.getHospitalFee();
             }
         }
-        ////// // System.out.println("tmp = " + tmp);
+        return tmp;
+    }
+    
+    public double getNetTotal() {
+        double tmp = 0.0;
+        List<Bill> list;
+        if (fillterBill == null) {
+            list = bills;
+        } else {
+            list = fillterBill;
+        }
+        if (list != null) {
+            for (Bill b : list) {
+                tmp += b.getNetTotal();
+            }
+        }  
         return tmp;
     }
 

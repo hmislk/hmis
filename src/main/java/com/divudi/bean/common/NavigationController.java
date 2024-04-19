@@ -44,6 +44,10 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/credit_company?faces-redirect=true";
     }
     
+    public String navigateToCreditCompanyUpload(){
+        return "/admin/institutions/credit_company_upload?faces-redirect=true";
+    }
+    
     public String navigateToArea(){
         return "/admin/institutions/area?faces-redirect=true";
     }

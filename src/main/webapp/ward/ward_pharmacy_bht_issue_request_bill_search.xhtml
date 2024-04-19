@@ -18,15 +18,20 @@
                 <div class="row">
                     <div class="col-2">
                         <h:outputLabel value="From Date" class="my-1"/>
-                        <p:calendar styleClass="dateTimePicker my-1" id="fromDate" value="#{searchController.fromDate}" navigator="false"
-                                    class="w-100" inputStyleClass="w-100"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                        </p:calendar>
+                        <p:datePicker styleClass="dateTimePicker my-1" id="fromDate" value="#{searchController.fromDate}" 
+                                      showTime="true"                                            
+                                      showButtonBar="true"                                            
+                                      timeInput="true"
+                                      class="w-100" inputStyleClass="w-100"
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                        </p:datePicker>
                         <h:outputLabel value="To Date" class="my-1"/>
-                        <p:calendar
-                                    class="w-100" inputStyleClass="w-100"
-                                    id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                        </p:calendar>
+                        <p:datePicker
+                            class="w-100" inputStyleClass="w-100"
+                            id="toDate" value="#{searchController.toDate}" showTime="true"                                            
+                            showButtonBar="true"                                            
+                            timeInput="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                        </p:datePicker>
                         <p:commandButton 
                             class="w-100 ui-button-warning my-1"
                             icon="fas fa-search"
@@ -49,7 +54,7 @@
                             <p:dataTable 
                                 value="#{searchController.bills}" 
                                 var="p"
-                                 rows="5"
+                                rows="5"
                                 paginator="true" paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"

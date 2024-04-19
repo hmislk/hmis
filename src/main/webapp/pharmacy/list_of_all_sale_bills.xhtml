@@ -9,7 +9,7 @@
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -277,11 +277,26 @@
                                         </p:column>
                                         <p:column headerText="Discount Scheme">                                
                                         </p:column>
-                                        <p:column headerText="Gross Value" footerText="#{billController.grosTotal}">
+                                        <p:column headerText="Gross Value" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{billController.grosTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
                                         </p:column>
-                                        <p:column headerText="Discount" footerText="#{billController.discount}">
+                                        <p:column headerText="Discount">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{billController.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{billController.netTotal}" >
+                                        <p:column  >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{billController.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
                                         </p:column>  
 
                                         <p:column headerText="Cancellations/Refunds"  

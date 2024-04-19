@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!channelStaffPaymentBillController.printPreview}" styleClass="alignTop" >
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h:outputText value="Channeling Staff Payments" />
+                                    <div class="d-flex gap-1">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            class="ui-button-secondary"
+                                            icon="fa-solid fa-arrow-left"
+                                            action="#{bookingController.navigateBackToBookings()}" 
+                                            value="Back to Channel Booking" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false"
+                                            class="ui-button-secondary"
+                                            icon="fa-solid fa-arrow-left"
+                                            action="#{bookingController.navigateToViewSessionData()}" 
+                                            value="Back to Sesion Data" >
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+
+                            </f:facet>
+                            <h:panelGrid columns="1" >
+
+                                <div class="row w-100">
+                                    <div class="col-5">
+                                        <p:panel class="mb-2 w-100">
+                                            <h:panelGrid columns="2" class="w-100">
+                                                <p:outputLabel value="Speciality" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.speciality}" />
+
+                                                <p:outputLabel value="Staff" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
+
+                                                <p:outputLabel value="Session" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.name}" />
+                                                
+                                                <p:outputLabel value="Date" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.sessionDate}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                                    </f:convertDateTime>
+                                                </p:outputLabel>
+                                                
+                                                <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                                <p:selectOneMenu 
+                                                    id="cmbPay" 
+                                                    class="w-100 mx-2" 
+                                                    value="#{channelStaffPaymentBillController.paymentMethod}" >
+                                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                                </p:selectOneMenu>
+                                                
+                                                
+                                            </h:panelGrid>
+                                            <div class="d-flex justify-content-end mt-2">
+                                                <div class="d-flex ">
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="Process" 
+                                                        icon="fa-solid fa-arrows-rotate"
+                                                        class="ui-button-warning my-1"
+                                                        action="#{channelStaffPaymentBillController.calculateSessionDueFees()}"/>
+                                                    <p:commandButton 
+                                                        ajax="false" 
+                                                        value="Clear"
+                                                        icon="fa-solid fa-eraser"
+                                                        class="ui-button-danger mx-1 my-1"
+                                                        action="#{channelStaffPaymentBillController.makenull()}"/>
+                                                </div>
+                                            </div>
+                                        </p:panel>
+                                    </div>
+                                </div>
+
+
+
+
+
+
+                                <p:dataTable 
+                                    id="tblFee" 
+                                    value="#{channelStaffPaymentBillController.dueBillFees}"
+                                    selection="#{channelStaffPaymentBillController.payingBillFees}" 
+                                    rowIndexVar="i" var="bf" rowKey="#{bf.id}"
+                                    rows="10"
+                                    paginator="true" paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                    >
+
+                                    <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
+
+                                    <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
+
+                                    <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
+
+                                    <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
+
+                                    <p:column selectionMode="multiple" ></p:column>
+
+                                    <p:column headerText="No">
+                                        <h:outputLabel value="#{i+1}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bill Id">
+                                        <h:outputLabel value="#{bf.bill.insId}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Appoinment No">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Patient">
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
+                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
+                                    </p:column>
+
+                                    <p:column headerText="Booked on" rendered="false">
+                                        <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Channel on" rendered="false">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.sessionDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+
+
+                                    <p:column headerText="Refundable" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.serviceSession.originatingSession.refundable}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+
+                                    <p:column headerText="Absent" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.absent}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Cancel" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.cancelled}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Refund" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.refunded}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Appoinment Date">
+                                        <h:outputLabel value="#{bf.bill.appointmentAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Charge" >
+                                        <h:outputLabel  value="#{bf.feeValue}" />
+                                    </p:column>
+
+                                </p:dataTable>
+
+
+
+
+
+
+                                <p:panel id="pTotals"  >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Payment Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="3" >
+                                        <h:outputLabel value="Total Due" ></h:outputLabel>
+                                        <p:spacer width="30"/>
+                                        <h:outputLabel id="lblDue" value="#{channelStaffPaymentBillController.totalDue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paying This time" ></h:outputLabel>
+                                        <p:spacer width="30"/>
+                                        <h:outputLabel id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>  
+                                    </h:panelGrid>
+                                </p:panel>
+                                <div class="w-50" >
+
+                                    <p:commandButton id="btnPay"
+                                                     value="Pay Doctor" 
+                                                     class="w-25 ui-button-success my-1"
+                                                     action="#{channelStaffPaymentBillController.settleSessionPaymentBill()}" 
+                                                     ajax="false"
+                                                     update="tblFee pTotals gpBillPreview" />
+                                </div>
+
+
+
+                            </h:panelGrid>
+
+                        </p:panel>
+                    </h:panelGroup>
+
+
+
+
+
+
+
+                </h:form>
+
+
+                <h:form>
+                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
+                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
+                        <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+
+    </h:body>
+</html>

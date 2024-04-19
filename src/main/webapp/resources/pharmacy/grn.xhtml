@@ -109,11 +109,10 @@
                 <table style="text-align: center; width: 100%; border: 2px!important;">
                     <thead style="font-size: 14px;">
                         <tr>
-                            <th style="text-align: left!important;min-width: 30%; font-weight: bold!important;">Item</th>
+                            <th style="text-align: left!important;min-width: 40%; font-weight: bold!important;">Item</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Expiry</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Ordered Qty</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
-                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Free Qty</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Value</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
@@ -129,11 +128,7 @@
                                         <f:convertDateTime pattern="d/M/yy"/>
                                     </h:outputText>
                                 </td>
-                                <td style="text-align: right;">
-                                    <h:outputText value="#{bip.referanceBillItem.pharmaceuticalBillItem.qty}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </td>
+                                
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,##0"/>

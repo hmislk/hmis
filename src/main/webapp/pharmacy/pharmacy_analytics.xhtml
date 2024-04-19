@@ -1,0 +1,302 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Pharmacy Reports" >
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{pharmacyController.managePharamcyReportIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+
+                                    <p:tab title="Financial Reports">
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left" 
+                                                         value="Cashier Report" action="#{commonReport.navigateToReportCashierDetailedByUser1()}" 
+                                                         actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Cashier Summary" action="#{commonReport.navigateToReportCashierSummaryByUser()}" 
+                                                         actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="All Cashier Report" action="#{commonReport.navigateToReportCashierSummaryAll()}" 
+                                                         actionListener="#{cashierReportController.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="All Cashier Summary " action="#{commonReport.navigateToReportCashierSummaryAllTotalOnly()}" 
+                                                         actionListener="#{cashierReportController.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Cashier Detailed Report by Department" action="#{commonReport.navigateToReportCashierDetailedByDepartment()}" 
+                                                         actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Pharmacy Sale Summery"
+                                                         action="#{commonReport.navigateToPharmacySaleSummery()}" 
+                                                         actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Pharmacy Sale Summery Date"
+                                                         action="#{commonReport.navigateToPharmacySaleSummeryByDate()}" 
+                                                         actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="All Department Sale Summary " 
+                                                         action="#{commonReport.navigateToPharmacyReportSummary()}"/>                                    
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Sale Summary - By Bill Type"
+                                                         action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
+                                                         actionListener="#{pharmacySaleReport.makeNull}"/>   
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Sale Summary - By Payment Method "
+                                                         action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethod()}" 
+                                                         actionListener="#{pharmacySaleReport.makeNull}"/>   
+                                        <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                         value="Sale Summary - By Payment Method (By Bill) "
+                                                         action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethodByBill}" 
+                                                         actionListener="#{pharmacySaleReport.makeNull}"/>
+                                    </p:tab>
+
+
+                                    <p:tab title="Stock Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" value="Stock Report by Batch" action="pharmacy_report_department_stock_by_batch?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Stock Report by Batch(To Export)" action="pharmacy_report_department?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Stock Report by Item" action="pharmacy_report_department_stock_by_item?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Stock Report by Product" action="pharmacy_report_department_stock_by_product?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Stock Report of Single Product" action="pharmacy_report_department_stock_by_single_product?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Supplier Stock Report" action="pharmacy_report_supplier_stock_by_batch?faces-redirect=true" ajax="false" ></p:commandButton>       
+                                            <p:commandButton class="w-100" value="Suppliers Stock Summery" action="pharmacy_report_all_supplier_stock?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Category Stock Report" action="pharmacy_report_category_stock_by_batch?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Category Stock Summary" action="pharmacy_report_category_stock_by_category?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="All Staff Stock" action="pharmacy_report_all_staff_stock_by_batch?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="After Stock Taking Report" action="pharmacy_report_after_stock_taking?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" ></p:commandButton>                            
+
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Item Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                value="Bin Card" 
+                                                action="/pharmacy/bin_card?faces-redirect=true" 
+                                                ajax="false" ></p:commandButton>                            
+
+                                            <p:commandButton class="w-100" value="Items List" action="/pharmacy/list_amps?faces-redirect=true" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Medicine List" action="/pharmacy/list_medicines?faces-redirect=true" actionListener="#{ampController.createMedicineList()}" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Items Summary" action="/pharmacy/pharmacy_report_amp_by_name?faces-redirect=true" ajax="false" ></p:commandButton>           
+                                            <p:commandButton class="w-100" value="Items With Out Distributor" action="/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Items With Suppliers and Prices" action="/pharmacy/item_supplier_prices?faces-redirect=true"  ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Items With Distributor" action="/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Items With Multiple Distributor(Items Only)" action="/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Item With Multiple Distributor" action="/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Reorder Analysis" action="/pharmacy/ordering_data?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Manage Reordering Data" action="/pharmacy/manage_reordering_data?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Reorder Management" action="#{reorderController.navigateReorderManagement()}" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="All Items Transaction Summery" action="/pharmacy/raport_all_item_transaction_summery?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Item Transaction Details" action="/pharmacy/pharmacy_item_transactions?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Movement Report Stock By Date" action="#{pharmacySaleReport.navigatePharmacyReportCategoryViceMovement()}" />
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Movement Report Stock By Date - By Batch" action="#{pharmacySaleReport.navigatePharmacyReportCategoryViceMovementItemBach()}" />
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy All Report" action="#{pharmacySaleReport.navigatePharmacyReportSummaryAll()}" />
+                                        </div>
+                                    </p:tab>
+
+
+                                    <p:tab title="OPD Sale Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" value="Sale Report" action="sale_report?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Prescription Report" action="report_prescreption?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Institution Item Movement" action="pharmacy_report_institution_movement?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Fast Moving" action="pharmacy_report_department_fast_moving?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Slow Moving" action="pharmacy_report_department_slow_moving?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Non Moving" action="pharmacy_report_department_non_moving?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Prescription Summery" action="#{reportController.navigateToPrescriptionSummaryReport()}" actionListener="#{reportController.makeNull()}" ajax="false" ></p:commandButton>   
+                                            <p:commandButton class="w-100" value="Presciption List" action="#{reportController.navigateToPrescriptionList()}" actionListener="#{reportController.makeNull()}" ajax="false" ></p:commandButton>   
+                                            <p:commandButton class="w-100" value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Retail Sale Bill List" 
+                                                             action="#{pharmacySaleReport.navigateToReportPharmacyRetailSaleBillList()}"
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Sale Detail - By Bill " 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}"
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Sale Detail - By Bill Items" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByBillItems()}"
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Sale Detail - By Discount Scheme"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme()}" 
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Sale Summary By Discount Scheme Summary"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme1()}" 
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false"  style="text-align: left"
+                                                             value="Sale Detail - By Payment Method"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentMethod()}" 
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy Sale Report" action="#{pharmacySaleReport.navigatePharmacyBillReport()}" />
+
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="wholesale Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy Whole Sale Report" action="#{pharmacySaleReport.navigatePharmacyWholeBillReport()}" />
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy WholeSale Credit Bills" action="#{pharmacySaleReport.navigatePharmacyReportCredit}" />
+
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Inpatient Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="BHT Issue - By Bill" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueBill()}" 
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="BHT Issue - By Bill Item"
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueBillItem()}" 
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="BHT Issue - By Item" 
+                                                             action="#{pharmacySaleReport.navigateReportBhtIssueByItem()}"/>
+                                            <p:commandButton class="w-100" ajax="false"  style="text-align: left"
+                                                             value="BHT Issue - Staff " 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportStaffIssueBill()}" />
+                                            <p:commandButton class="w-100" ajax="false"  style="text-align: left"
+                                                             value="BHT Issue With Margin Report " 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueItemWithMargin()}" />
+
+                                        </div>
+                                    </p:tab>
+
+
+                                    <p:tab title="Procurement Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false" ></p:commandButton> 
+                                            <p:commandButton class="w-100" value="Purchase Orders Not Approved" action="pharmacy_transfer_issued_list_not_approve_report?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Item - wise Purchase/Good Receive" action="/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Purcharse Bill with Supplier" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="GRN Summary" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="GRN Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="GRN Bill Item Report" action="#{pharmacySaleReport.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="GRN Registry" action="#{pharmacySaleReport.navigatePharmacyReportGrnRegistory()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left" value="GRN Return List" action="#{pharmacySaleReport.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Order Summary" action="#{commonReport.navigateToPharmacyPurchaseOrderReportDetail()}" actionListener="#{commonReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Bills by Department" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseBillByDepartment()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Summary (Credit / Cash )" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase &amp; GRN Summary (Credit / Cash )" action="#{pharmacySaleReport.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Summary By Supplier (Credit / Cash)" action="#{pharmacySaleReport.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Purchase Bill Item" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportPurchaseBillItem()}" />
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="GRN Payment Summary" action="#{pharmacySaleReport.navigatePharmacyReportGrnPaymentDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="GRN Payment Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportGrnPaymentDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Pharmacy Return Without Traising" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetail1()}" />
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Disbursement Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Transfer Receive By Bill Item" action="pharmacy_report_transfer_receive_bill_item_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Transfer Issue by Bill" action="pharmacy_report_transfer_issue_bill_1?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Transfer Receive by Bill" action="pharmacy_report_transfer_receive_bill?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Transfer Issue by Bill(Summery)" action="pharmacy_report_transfer_issue_bill_summery?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" value="Transfer Receive by Bill(Summery)" action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" ></p:commandButton>
+                                            <p:commandButton class="w-100" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Transfer Report Summary" action="#{commonReport.navigateToPharmacyTransferReportSummary()}" actionListener="#{commonReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Transfer Issue Summary Report By Date" action="#{pharmacySaleReport.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Transfer Receive Vs BHT Issue Quntity Totals By Item" action="#{pharmacySaleReport.navigatePharmacyReportTransferRecieveItemCount}" />
+
+
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Adjustment Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" value="Item-vice adjustments" 
+                                                             action="pharmacy_report_adjustment_bill_item?faces-redirect=true" ajax="false" ></p:commandButton>                            
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Disposal Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Unit Issue by bill" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitIssueBill()}" 
+                                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Unit Issue by Department" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitIssueDepartmentByDepartment}" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Unit Issue by Item (Batch)" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem()}"/>
+
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Unit Issue by Item" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem1()}"/>
+
+                                        </div>
+                                    </p:tab>
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+
+                            </ui:insert>
+                        </div>
+                    </div>
+
+
+                </p:panel>
+
+            </ui:define>
+
+
+
+        </ui:composition>
+    </h:body>
+</html>

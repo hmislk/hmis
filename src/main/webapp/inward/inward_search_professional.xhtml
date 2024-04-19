@@ -16,23 +16,27 @@
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control"
-                                                required="true" requiredMessage="Missing From Date"
-                                                maxdate="#{sessionController.currentDate}"
-                                                >
+                                    <p:datePicker id="fromDate" value="#{searchController.fromDate}" showTime="true"
+                                                  showButtonBar="true"
+                                                  timeInput="true" 
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                  styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control"
+                                                  required="true" requiredMessage="Missing From Date"
+                                                  maxdate="#{sessionController.currentDate}"
+                                                  >
 
-                                    </p:calendar>
+                                    </p:datePicker>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" 
-                                                required="true" requiredMessage="Missing to Date"
-                                                maxdate="#{sessionController.currentDate}"
-                                                >
+                                    <p:datePicker id="toDate" value="#{searchController.toDate}" showTime="true"
+                                                  showButtonBar="true"
+                                                  timeInput="true"
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                  styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" 
+                                                  required="true" requiredMessage="Missing to Date"
+                                                  maxdate="#{sessionController.currentDate}"
+                                                  >
 
-                                    </p:calendar>
+                                    </p:datePicker>>
                                     <p:spacer height="10" width="5" ></p:spacer>
                                     <p:commandButton ajax="false" 
                                                      action="#{searchController.createInwardProBills()}" 

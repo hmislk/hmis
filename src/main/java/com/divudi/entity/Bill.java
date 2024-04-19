@@ -6,6 +6,7 @@ package com.divudi.entity;
 
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
@@ -122,6 +123,8 @@ public class Bill implements Serializable {
     @Enumerated(EnumType.STRING)
     BillType billType;
     @Enumerated(EnumType.STRING)
+    private BillTypeAtomic billTypeAtomic;
+    @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
     @ManyToOne(fetch = FetchType.LAZY)
     BillItem singleBillItem;
@@ -149,6 +152,7 @@ public class Bill implements Serializable {
 
     double billTotal;
     double paidAmount;
+    private double refundAmount;
     double balance;
     double serviceCharge;
     Double tax = 0.0;
@@ -206,6 +210,7 @@ public class Bill implements Serializable {
     String insId;
     String catId;
     String sessionId;
+    @Deprecated
     String bookingId;
     String invoiceNumber;
     @Transient
@@ -905,7 +910,6 @@ public class Bill implements Serializable {
     }
 
     public double getBalance() {
-
         return balance;
     }
 
@@ -1073,7 +1077,6 @@ public class Bill implements Serializable {
     }
 
     public Institution getToInstitution() {
-        System.out.println("toInstitution = " + toInstitution);
         return toInstitution;
     }
 
@@ -1544,10 +1547,12 @@ public class Bill implements Serializable {
         this.billedBill = billedBill;
     }
 
+    @Deprecated
     public String getBookingId() {
         return bookingId;
     }
 
+    @Deprecated
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }
@@ -2092,5 +2097,23 @@ public class Bill implements Serializable {
     public void setCreditDuration(int creditDuration) {
         this.creditDuration = creditDuration;
     }
+
+    public double getRefundAmount() {
+        return refundAmount;
+    }
+
+    public void setRefundAmount(double refundAmount) {
+        this.refundAmount = refundAmount;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+    
+    
 
 }

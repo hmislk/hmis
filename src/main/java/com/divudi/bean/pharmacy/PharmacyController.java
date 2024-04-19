@@ -154,7 +154,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> directPurchase;
     private List<Bill> bills;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
-    private int managePharamcyReportIndex;
+    private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
 
@@ -273,6 +273,10 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/items?faces-redirect=true";
     }
 
+    public String navigateToPharmacyAnalytics() {
+        return "/pharmacy/pharmacy_analytics?faces-redirect=true";
+    }
+
     public String navigateToManagePharmaceuticals() {
         return "/pharmacy/admin/index?faces-redirect=true";
     }
@@ -294,6 +298,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAmp() {
+        ampController.setItems(null);
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
@@ -593,7 +598,7 @@ public class PharmacyController implements Serializable {
         pos = null;
         directPurchase = null;
         ampps = null;
-        
+
     }
 
     public void deleteSelectedPharmaceuticalLight() {
@@ -1370,7 +1375,6 @@ public class PharmacyController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.PharmacyBhtPre);
         bts.add(BillType.PharmacyPre);
-        bts.add(BillType.PharmacyTransferReceive);
         return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
     }
 
@@ -1378,7 +1382,7 @@ public class PharmacyController implements Serializable {
         StringBuilder jpqlBuilder = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
-        jpqlBuilder.append("select sum(i.pharmaceuticalBillItem.qty) from BillItem i where i.retired = false");
+        jpqlBuilder.append("select sum(abs(i.pharmaceuticalBillItem.qty)) from BillItem i where i.retired = false");
 
         if (dep != null) {
             jpqlBuilder.append(" and i.bill.department = :dep");

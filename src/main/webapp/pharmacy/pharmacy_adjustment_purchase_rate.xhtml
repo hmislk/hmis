@@ -31,16 +31,27 @@
                                             id="acAmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAmps}"
+                                            completeMethod="#{ampController.completeAmp}"
                                             var="amp"
                                             itemLabel="#{amp.name}"
                                             itemValue="#{amp}"
+                                            maxResults="10"
+                                            minQueryLength="3"
                                             value="#{pharmacyAdjustmentController.amp}"
                                             >
                                             <p:ajax 
                                                 process="acAmp" 
                                                 listener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                                update="tblStocks" ></p:ajax>
+                                                update="tblStocks" >
+                                            </p:ajax>
+                                            <p:column headerText="Item"  style="padding: 3px;" >
+                                                <h:outputText value="#{amp.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Stock" style="padding: 3px; text-align: right; padding-right: 10px;">
+                                                <h:outputText value="#{stockController.departmentItemStock(sessionController.getLoggedUser().getDepartment(),amp)}" >
+                                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Batches" ></h:outputLabel>
@@ -53,14 +64,6 @@
                                             rowKey="#{i.id}"
                                             selection="#{pharmacyAdjustmentController.stock}">
                                             <p:column 
-                                                headerText="Rate" 
-                                                sortBy="#{i.itemBatch.retailsaleRate}"
-                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column 
                                                 sortBy="#{i.stock}"
                                                 headerText="Purchase Rate" 
                                                 styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -68,6 +71,16 @@
                                                     <f:convertNumber pattern="#,###.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
+
+                                            <p:column 
+                                                headerText="Rate" 
+                                                sortBy="#{i.itemBatch.retailsaleRate}"
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+
                                             <p:column
                                                 headerText="Expiry" 
                                                 sortBy="#{i.itemBatch.dateOfExpire}"
@@ -196,11 +209,11 @@
                                 <p:printer target="print"/>
                             </p:commandButton>
                         </div>
-                        
+
                         <h:panelGroup id="print">
                             <ph:adjustmentBill_purchase_price  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
                         </h:panelGroup>
-                        
+
                     </p:panel>
 
                 </h:form>

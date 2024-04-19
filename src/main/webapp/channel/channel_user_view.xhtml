@@ -13,6 +13,13 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <p:outputLabel value="Nurse View"/>    
                         <div class="d-flex gap-1">
+                            <p:commandButton
+                                ajax="false"
+                                value="Refresh"
+                                icon="fas fa-refresh"
+                                class="ui-button-warning mx-1"
+                                action="#{channelReportController.fillDoctorView()}">
+                            </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
                                 class="ui-button-secondary"
@@ -43,26 +50,35 @@
                     </p:commandButton>
 
                 </div>
-                <p:dataTable style="font-size: 8pt" id="userView" value="#{channelReportController.billSessionsDoctor}" var="bs" sortBy="#{bs.bill.billClass}">
+                <p:dataTable id="userView" value="#{channelReportController.doctorViewSessions}" var="bs" sortBy="#{bs.bill.billClass}">
                     <f:facet name="header">
-                        <div class="d-flex gap-2">
-                            <p:outputLabel value="Consultant"/>
-                            <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/>
+                        <div style="text-align: center;">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br/>
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.address}" />
+                            <br/>
+                            <p:outputLabel value="User View" style="font-size: 22px; font-weight: 700;" />
                         </div>
-                        <div class="d-flex gap-2">
-                            <p:outputLabel value="Date"/>
-                            <h:outputLabel value="#{channelReportController.serviceSession.sessionAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                            </h:outputLabel>
-                        </div>
-                        <div>
-                            <p:outputLabel value="Session Name"/>
-                            <h:outputLabel value="#{channelReportController.serviceSession.name}" />
 
+                        <div class="d-flex gap-2">
+                            <p:outputLabel value="Consultant : "/>
+                            <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}"/>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <p:outputLabel value="Session Name : "/>
+                            <h:outputLabel value="#{bookingController.selectedSessionInstance.name}" />
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <p:outputLabel value="Date : "/>
+                            <h:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                <f:convertDateTime pattern="dd-MM-yyyy"/>
+                            </h:outputLabel>
                         </div>
 
                     </f:facet>
-                    <p:column headerText="No">#{bs.serialNo}</p:column>               
+                    <p:column headerText="No">#{bs.serialNo}</p:column>
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Fee">
                         <h:outputLabel value="#{bs.doctorFee.billedFee.feeValue}"/>

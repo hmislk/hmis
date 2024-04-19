@@ -136,6 +136,8 @@ public class BhtSummeryController implements Serializable {
     private DischargeController dischargeController;
     @Inject
     BillController billController;
+    @Inject
+    RoomChangeController roomChangeController;
     ////////////////////////    
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -1363,6 +1365,11 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setDateOfDischarge(date);
         getDischargeController().setCurrent((Admission) getPatientEncounter());
         getDischargeController().discharge();
+        
+        if (getPatientEncounter().isDischarged()) {
+            getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());
+            roomChangeController.discharge(getPatientEncounter().getCurrentPatientRoom());
+        }
 
         if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
             getPatientEncounter().getCurrentPatientRoom().setDischargedAt(getPatientEncounter().getDateOfDischarge());

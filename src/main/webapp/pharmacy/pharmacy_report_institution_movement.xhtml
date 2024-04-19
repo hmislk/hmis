@@ -8,7 +8,7 @@
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -17,7 +17,7 @@
 
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Item Distributor" ></h:outputLabel>
-                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{itemController.instituion}">
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeSuppliers}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{itemController.institution}">
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
@@ -26,8 +26,8 @@
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{pharmacyController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" value="Average By Date" actionListener="#{pharmacyController.averageByDate()}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Average By Month" actionListener="#{pharmacyController.averageByMonth()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning" ajax="false" value="Average By Date" actionListener="#{pharmacyController.averageByDate()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning mx-2" ajax="false" value="Average By Month" actionListener="#{pharmacyController.averageByMonth()}" ></p:commandButton>
                         </h:panelGrid>
 
                         <p:dataGrid value="#{pharmacyController.stockAverages}" var="sA" columns="1">

@@ -1,34 +1,21 @@
 package com.divudi.entity;
 
 import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
-import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.lab.Priority;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.java.CommonFunctions;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -37,6 +24,7 @@ import javax.persistence.Transient;
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Entity
+@Deprecated
 public class ServiceSessionInstance implements Serializable {
 
     private static final long serialVersionUID = 1L;

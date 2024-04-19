@@ -180,7 +180,6 @@ public class PatientPortalController {
             m.put("sd", selectedConsultant);
             // m.put("wd", 10);
             channelSessions = serviceSessionFacade.findByJpql(sql, m);
-            System.out.println("channelSessions = " + channelSessions.size());
         }
 
     }
@@ -202,11 +201,9 @@ public class PatientPortalController {
 //    }
 
     public void fillSessionInstance() {
-        System.out.println("working");
         if (channelSessions != null) {
             sessionInstances = new ArrayList<>();
             sessionStartingDate = new Date();
-            System.out.println("selectedConsultant = " + selectedConsultant.getName());
             String jpql = "select i "
                     + " from SessionInstance i "
                     + " where i.originatingSession.staff=:os "
@@ -217,7 +214,6 @@ public class PatientPortalController {
             m.put("os", selectedConsultant);
 
             sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
-            System.out.println("sessionInstances = " + sessionInstances.size());
         }
     }
 
@@ -237,7 +233,6 @@ public class PatientPortalController {
             otpBuilder.append(numbers.charAt(index));
         }
         otp = otpBuilder.toString();
-        System.out.println("otp = " + otp);
     }
 
     public void sendOtp() {
@@ -277,7 +272,6 @@ public class PatientPortalController {
             j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
             m.put("pp", PatientphoneNumberLong);
             searchedPatients = patientFacade.findByJpql(j, m);
-            System.out.println("searchedPatients = " + searchedPatients.size());
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
                 selectPatient = false;
@@ -291,14 +285,12 @@ public class PatientPortalController {
     }
 
     public void otpVerification() {
-        System.out.println("patientEnteredOtp = " + patientEnteredOtp);
         List<Sms> smss = new ArrayList<>();
         String j;
         Map m = new HashMap();
         j = "select s from Sms s where s.otp=:oc";
         m.put("oc", patientEnteredOtp);
         smss = smsFacade.findByJpql(j, m);
-        System.out.println("smss = " + smss.size());
         if (smss.isEmpty() || smss.size() > 1) {
             JsfUtil.addErrorMessage("Enter correct authentication code");
             return;
@@ -309,13 +301,12 @@ public class PatientPortalController {
     }
 
     public void addBooking() {
-        System.out.println("this = " + patient.getPerson().getName());
         bookingController.setPatient(patient);
         bookingController.setPaymentMethod(PaymentMethod.Credit);
         bookingController.setStaff(selectedConsultant);
         bookingController.setSelectedSessionInstance(selectedSessionInstance);
         bookingController.setSelectedServiceSession(selectedChannelSession);
-        bookingController.add();
+        bookingController.addNormalChannelBooking();
         bookingController.sendSmsAfterBooking();
         bookingCompleted = true;
         

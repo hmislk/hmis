@@ -88,7 +88,7 @@
                             <tr>
                                 <td>I</td>
                                 <td>Item Type</td>
-                                <td>Optional. Default is Investigation. Other options include Service.</td>
+                                <td>Optional. Default is Investigation. Other options include Service, InwardService .</td>
                             </tr>
                             <tr>
                                 <td>J</td>
@@ -104,16 +104,33 @@
         </div>
 
 
+        <div class="row" >
+            <div class="col-6" >
+                <h1>Uploaded Items</h1>
+                <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item" >
+                    <p:column >
+                        #{item.name}
+                    </p:column>
+                    <p:column >
+                        #{item.total}
+                    </p:column>
 
-        <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item" >
-            <p:column >
-                #{item.name}
-            </p:column>
-            <p:column >
-                #{item.total}
-            </p:column>
+                </p:dataTable>
+            </div>
+            <div class="col-6" >
+                <h1>Skipped Items</h1>
+                <p:dataTable id="tbl2" value="#{dataUploadController.itemsSkipped}" var="item" >
+                    <p:column >
+                        #{item.name}
+                    </p:column>
+                    <p:column >
+                        #{item.total}
+                    </p:column>
 
-        </p:dataTable>
+                </p:dataTable>
+            </div>
+        </div>
+
 
 
 

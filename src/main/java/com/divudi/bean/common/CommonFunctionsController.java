@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -23,7 +25,37 @@ import java.time.temporal.ChronoUnit;
 @Named(value = "commonFunctionsController")
 @ApplicationScoped
 public class CommonFunctionsController {
-    
+
+    public String changeTextCases(String nm, String tc) {
+        if (tc == null) {
+            return nm;
+        }
+        switch (tc.toUpperCase()) {
+            case "UPPERCASE":
+                return nm.toUpperCase();
+            case "LOWERCASE":
+                return nm.toLowerCase();
+            case "CAPITALIZE":
+                return capitalizeFirstLetter(nm);
+            default:
+                return nm;
+        }
+    }
+
+    public String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+
+        StringBuilder result = new StringBuilder();
+        String[] words = str.split("\\s");
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(" ");
+            }
+        }
+        return result.toString().trim();
+    }
 
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();

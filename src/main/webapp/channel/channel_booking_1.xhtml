@@ -329,7 +329,7 @@
                                         <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
                                             <f:convertNumber  pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                        <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                        <h:outputLabel id="ballance3" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                         <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ;">
                                             <f:convertNumber  pattern="#,##0.00"/>
                                         </h:outputLabel>
@@ -939,7 +939,7 @@
                                     <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance5" value=" Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance6" value="#{channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="settleBallance3" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <p:commandButton id="setBtn"  value="Settle Credit"
                                                      process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"

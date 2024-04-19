@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
@@ -62,6 +63,17 @@ public class DoctorController implements Serializable {
     String selectText = "";
     List<Doctor> doctors;
     Speciality speciality;
+
+    public Doctor getDoctorsByName(String name) {
+        String jpql = "select d "
+                + " from Doctor d "
+                + " where d.retired=:ret "
+                + " and d.person.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
 
     public List<Doctor> listDoctors(Speciality speciality) {
         List<Doctor> suggestions;
@@ -232,6 +244,33 @@ public class DoctorController implements Serializable {
         return Title.values();
     }
 
+    public void save(Doctor doc) {
+        if (doc == null) {
+            return;
+        }
+        if (doc.getPerson() == null) {
+            return;
+        }
+        if (doc.getPerson().getName().trim().equals("")) {
+            return;
+        }
+        if (doc.getSpeciality() == null) {
+            return;
+        }
+        if (doc.getPerson().getId() == null || doc.getPerson().getId() == 0) {
+            getPersonFacade().create(doc.getPerson());
+        } else {
+            getPersonFacade().edit(doc.getPerson());
+        }
+        if (doc.getId() != null && doc.getId() > 0) {
+            getFacade().edit(doc);
+        } else {
+            doc.setCreatedAt(new Date());
+            doc.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(doc);
+        }
+    }
+
     public void saveSelected() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to save");
@@ -341,6 +380,23 @@ public class DoctorController implements Serializable {
         this.speciality = speciality;
     }
 
+    public Doctor findDoctor(Long id) {
+        return getFacade().find(id);
+    }
+
+    public Doctor findDoctor(Person person) {
+        String jpql = "select d "
+                + " from Staff d "
+                + " where d.person = :person "
+                + " and d.retired = :ret";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("person", person);
+        m.put("ret", false);
+
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     /**
      *
      */
@@ -379,7 +435,7 @@ public class DoctorController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Doctor.class.getName());
             }
         }
     }

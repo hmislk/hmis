@@ -23,6 +23,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.AdjustmentBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -86,6 +87,7 @@ public class PharmacyAdjustmentController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     ItemBatchFacade itemBatchFacade;
+    
 
 /////////////////////////
 //    Item selectedAlternative;
@@ -311,6 +313,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         if (billItem.getPharmaceuticalBillItem() == null) {
             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+            
             pbi.setBillItem(billItem);
             billItem.setPharmaceuticalBillItem(pbi);
         }
@@ -1093,6 +1096,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         saveDeptStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
+
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));

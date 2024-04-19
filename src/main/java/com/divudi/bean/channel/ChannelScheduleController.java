@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.FeeChangeType;
@@ -25,6 +26,14 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.DoctorSpeciality;
+import com.divudi.entity.Item;
+import com.divudi.entity.ServiceSessionInstance;
+import com.divudi.entity.channel.SessionInstance;
+import com.divudi.entity.lab.ItemForItem;
+import com.divudi.facade.DoctorSpecialityFacade;
+import com.divudi.facade.ServiceSessionInstanceFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,6 +55,7 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class ChannelScheduleController implements Serializable {
 //SheduleController
+
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -58,10 +68,20 @@ public class ChannelScheduleController implements Serializable {
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    DoctorSpecialityFacade doctorSpecialityFacade;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
     @Inject
     private SessionController sessionController;
-    private Speciality speciality;
+    @Inject
+    ItemForItemController itemForItemController;
+
+    private DoctorSpeciality speciality;
     ServiceSession current;
+    private Item additionalItemToAdd;
+    private ItemForItem additionalItemToRemove;
+    private List<ItemForItem> additionalItemsAddedForCurrentSession;
     private Staff currentStaff;
     private List<ServiceSession> filteredValue;
     List<SessionNumberGenerator> lstSessionNumberGenerator;
@@ -86,11 +106,24 @@ public class ChannelScheduleController implements Serializable {
     @EJB
     ItemFeeFacade itemFeeFacade;
 
-    
-    public String navigateToChannelSchedule(){
+    public String navigateToChannelSchedule() {
         return "/channel/channel_shedule?faces-redirect=true";
     }
-    
+
+    public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
+        List<DoctorSpeciality> lst;
+        String jpql = "Select d "
+                + " from DoctorSpeciality d "
+                + " where d.retired=:ret "
+                + " and d.name like :na "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("na", "%" + qry + "%");
+        m.put("ret", false);
+        lst = getFacade().findByJpql(jpql, m);
+        return lst;
+    }
+
     public void fillFees() {
         String sql;
         Map m = new HashMap();
@@ -101,6 +134,7 @@ public class ChannelScheduleController implements Serializable {
                 + " order by f.id";
         m.put("ses", current);
         itemFees = itemFeeFacade.findByJpql(sql, m);
+        additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
     }
 
     public ItemFee createStaffFee() {
@@ -125,7 +159,7 @@ public class ChannelScheduleController implements Serializable {
         hos.setInstitution(getCurrent().getInstitution());
         if (getCurrent().getDepartment() != null) {
             hos.setDepartment(getCurrent().getDepartment());
-        }else{
+        } else {
             hos.setDepartment(getSessionController().getDepartment());
         }
         hos.setServiceSession(current);
@@ -179,6 +213,9 @@ public class ChannelScheduleController implements Serializable {
         currentStaff = null;
         filteredValue = null;
         itemFees = null;
+        additionalItemToAdd = null;
+        additionalItemToRemove = null;
+        additionalItemsAddedForCurrentSession = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -229,6 +266,73 @@ public class ChannelScheduleController implements Serializable {
         return suggestions;
     }
 
+    public void removeAdditionalItems() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Session Selected yet");
+            return;
+        }
+        if (additionalItemToRemove == null) {
+            JsfUtil.addErrorMessage("No Item Selected to add");
+            return;
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Session Not Yet Saved");
+            return;
+        }
+        if (getAdditionalItemsAddedForCurrentSession() == null || getAdditionalItemsAddedForCurrentSession().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items List");
+            return;
+        }
+        additionalItemToRemove.setRetired(true);
+        additionalItemToRemove.setRetiredAt(new Date());
+        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
+        itemForItemController.saveSelected();
+        getAdditionalItemsAddedForCurrentSession().remove(additionalItemToRemove);
+        additionalItemToRemove = null;
+        JsfUtil.addSuccessMessage("Removed");
+    }
+
+    public void addAdditionalItems() {
+        System.out.println("addAdditionalItems");
+        System.out.println("current = " + current);
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Session Selected yet");
+            return;
+        }
+        System.out.println("current.getId() = " + current.getId());
+        if (current.getId() == null) {
+            saveSelected();
+        }
+        System.out.println("additionalItemToAdd = " + additionalItemToAdd);
+        if (additionalItemToAdd == null) {
+            JsfUtil.addErrorMessage("No Item Selected to add");
+            return;
+        }
+        System.out.println("additionalItemsAddedForCurrentSession = " + additionalItemsAddedForCurrentSession);
+        if (getAdditionalItemsAddedForCurrentSession() == null) {
+            JsfUtil.addErrorMessage("No Items List");
+            return;
+        }
+        ItemForItem aii = itemForItemController.findItemForItem(current, additionalItemToAdd);
+        System.out.println("1 aii = " + aii);
+        if (aii != null) {
+            JsfUtil.addErrorMessage("Item is already added");
+            return;
+        } else {
+            aii = itemForItemController.addItemForItem(current, additionalItemToAdd);
+        }
+        System.out.println("2 aii = " + aii);
+        if (aii == null) {
+            JsfUtil.addErrorMessage("Error in adding");
+            return;
+        }
+        System.out.println("3 aii = " + aii);
+        getAdditionalItemsAddedForCurrentSession().add(aii);
+        additionalItemToAdd = null;
+        System.out.println("getAdditionalItemsAddedForCurrentSession = " + getAdditionalItemsAddedForCurrentSession());
+        JsfUtil.addSuccessMessage("Added");
+    }
+
     public List<SessionNumberGenerator> getLstSessionNumberGenerator() {
         return lstSessionNumberGenerator;
     }
@@ -240,14 +344,12 @@ public class ChannelScheduleController implements Serializable {
     public ChannelScheduleController() {
     }
 
-    public Speciality getSpeciality() {
+    public DoctorSpeciality getSpeciality() {
         return speciality;
     }
 
-    public void setSpeciality(Speciality speciality) {
-        currentStaff = null;
+    public void setSpeciality(DoctorSpeciality speciality) {
         this.speciality = speciality;
-
     }
 
     public StaffFacade getStaffFacade() {
@@ -332,6 +434,9 @@ public class ChannelScheduleController implements Serializable {
 
     public void prepareAdd() {
         current = null;
+        additionalItemToAdd = null;
+        additionalItemToRemove = null;
+        additionalItemsAddedForCurrentSession = null;
         itemFees = null;
         createFees();
     }
@@ -499,7 +604,6 @@ public class ChannelScheduleController implements Serializable {
             current.setSessionNumberGenerator(ss);
         }
 
-        
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -514,8 +618,8 @@ public class ChannelScheduleController implements Serializable {
         saveFees(getCurrent());
 
         getCurrent().setTotal(calTot());
-        getCurrent().setTotalFfee(calFTot());
-        
+        getCurrent().setTotalForForeigner(calFTot());
+
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
         prepareAdd();
@@ -523,9 +627,7 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void updateCreatedServicesesions(ServiceSession ss) {
-        for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
-            System.out.println("i.getName() = " + i.getName());
-
+        for (SessionInstance i : fetchCreatedSessionsInstances(ss)) {
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
             i.setDepartment(ss.getDepartment());
@@ -535,7 +637,6 @@ public class ChannelScheduleController implements Serializable {
             i.setDuration(ss.getDuration());
             i.setRoomNo(ss.getRoomNo());
             i.setAfterSession(ss.getAfterSession());
-            i.setBeforeSession(ss.getBeforeSession());
             i.setDisplayCount(ss.getDisplayCount());
             i.setDisplayPercent(ss.getDisplayPercent());
             i.setRefundable(ss.isRefundable());
@@ -546,8 +647,11 @@ public class ChannelScheduleController implements Serializable {
             i.setReserveName(ss.getReserveName());
             i.setMaxTableRows(ss.getMaxTableRows());
             i.setSessionWeekday(ss.getSessionWeekday());
-
-            getFacade().edit(i);
+            if (i.getId() == null) {
+                sessionInstanceFacade.create(i);
+            } else {
+                sessionInstanceFacade.edit(i);
+            }
         }
     }
 
@@ -565,6 +669,22 @@ public class ChannelScheduleController implements Serializable {
         m.put("class", ServiceSession.class);
         m.put("sd", CommonFunctions.getStartOfDay());
         items = getFacade().findByJpql(sql, m);
+        return items;
+    }
+
+    public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
+        List<SessionInstance> items;
+        String sql;
+        HashMap m = new HashMap();
+        sql = "Select s From SessionInstance s "
+                + " where s.retired=false "
+                + " and s.originatingSession=:ss"
+                + " and s.sessionDate>=:sd "
+                + " order by s.sessionWeekday,s.startingTime ";
+        m.put("ss", ss);
+        m.put("sd", CommonFunctions.getStartOfDay());
+        items = sessionInstanceFacade.findByJpql(sql, m);
+        SessionInstance s = new SessionInstance();
         return items;
     }
 
@@ -677,8 +797,6 @@ public class ChannelScheduleController implements Serializable {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {
                         System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
-                        System.out.println("c.getFee().getName() = " + c.getFee().getName());
-                        System.out.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());
@@ -800,8 +918,6 @@ public class ChannelScheduleController implements Serializable {
         this.feeChanges = feeChanges;
     }
 
-    
-
     public FeeChangeFacade getFeeChangeFacade() {
         return feeChangeFacade;
     }
@@ -824,6 +940,33 @@ public class ChannelScheduleController implements Serializable {
 
     public void setFeeChangeStaff(boolean feeChangeStaff) {
         this.feeChangeStaff = feeChangeStaff;
+    }
+
+    public Item getAdditionalItemToAdd() {
+        return additionalItemToAdd;
+    }
+
+    public void setAdditionalItemToAdd(Item additionalItemToAdd) {
+        this.additionalItemToAdd = additionalItemToAdd;
+    }
+
+    public List<ItemForItem> getAdditionalItemsAddedForCurrentSession() {
+        if (additionalItemsAddedForCurrentSession == null) {
+            additionalItemsAddedForCurrentSession = new ArrayList<>();
+        }
+        return additionalItemsAddedForCurrentSession;
+    }
+
+    public void setAdditionalItemsAddedForCurrentSession(List<ItemForItem> additionalItemsAddedForCurrentSession) {
+        this.additionalItemsAddedForCurrentSession = additionalItemsAddedForCurrentSession;
+    }
+
+    public ItemForItem getAdditionalItemToRemove() {
+        return additionalItemToRemove;
+    }
+
+    public void setAdditionalItemToRemove(ItemForItem additionalItemToRemove) {
+        this.additionalItemToRemove = additionalItemToRemove;
     }
 
 }

@@ -69,6 +69,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -815,6 +816,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private void saveBatchBill() {
         PreBill tmp = new PreBill();
         tmp.setBillType(BillType.OpdBathcBillPre);
+        tmp.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         tmp.setBillClassType(BillClassType.PreBill);
         tmp.setPatient(getPatient());
         tmp.setInstitution(getSessionController().getInstitution());
@@ -903,6 +905,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private PreBill saveBill(Department bt, PreBill updatingPreBill) {
         updatingPreBill.setBillType(BillType.OpdPreBill);
+        updatingPreBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         updatingPreBill.setDepartment(getSessionController().getDepartment());
         updatingPreBill.setInstitution(getSessionController().getInstitution());
         updatingPreBill.setToDepartment(bt);
@@ -1083,7 +1086,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getPatient());
-        return "/opd/opd_pre_bill";
+        return "/opd/opd_pre_bill?faces-redirect=true";
 
     }
 

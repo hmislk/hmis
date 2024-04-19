@@ -93,20 +93,13 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> completeSpeciality(String qry) {
-        //   ////System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
         lst = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        //   ////System.out.println("lst = " + lst);
         return lst;
     }
 
     public List<DoctorSpeciality> getSelectedItems() {
-        if (selectText == null || selectText.trim().equals("")) {
-            selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false order by c.name");
-        } else {
-            selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        }
-
+        selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false order by c.name");
         return selectedItems;
     }
 
@@ -244,7 +237,7 @@ public class DoctorSpecialityController implements Serializable {
         m.put("ret", false);
         m.put("name", name);
         DoctorSpeciality ds = getFacade().findFirstByJpql(j, m);
-        if(ds==null && createNewIfNotExists){
+        if (ds == null && createNewIfNotExists) {
             ds = new DoctorSpeciality();
             ds.setName(name);
             ds.setCreatedAt(new Date());
@@ -301,7 +294,7 @@ public class DoctorSpecialityController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorSpecialityController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + DoctorSpeciality.class.getName());
             }
         }
     }

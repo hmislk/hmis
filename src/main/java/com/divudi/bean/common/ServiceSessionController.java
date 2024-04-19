@@ -216,7 +216,6 @@ public class ServiceSessionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            System.out.println("getAsObject - value = " + value);
             if (value == null || value.length() == 0) {
                 return null;
             }

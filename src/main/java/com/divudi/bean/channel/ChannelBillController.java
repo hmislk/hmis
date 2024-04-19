@@ -58,6 +58,10 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.entity.Payment;
+import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +84,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class ChannelBillController implements Serializable {
 
+    @EJB
+    PaymentFacade paymentFacade;
+    
     private BillSession billSession;
     private String patientTabId = "tabNewPt";
     private Patient newPatient;
@@ -198,6 +205,21 @@ public class ChannelBillController implements Serializable {
         return bs;
 
     }
+    
+    public void settleCreditWithCash(){
+        settlePaymentMethod = PaymentMethod.Cash;
+        settleCredit();
+    }
+    
+    public void settleCreditWithCard(){
+        settlePaymentMethod = PaymentMethod.Card;
+        settleCredit();
+    }
+    
+    public void settleCreditWithCredit(){
+        settlePaymentMethod = PaymentMethod.Credit;
+        settleCredit();
+    }
 
     public void settleCredit() {
         if (errorCheckForSettle()) {
@@ -205,11 +227,10 @@ public class ChannelBillController implements Serializable {
         }
 
         Bill b = savePaidBill();
-
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
-
         BillSession bs = savePaidBillSession(b, bi);
+        
         getBillSession().setPaidBillSession(bs);
         getBillSessionFacade().edit(bs);
         getBillSessionFacade().edit(getBillSession());
@@ -222,25 +243,98 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-//        System.err.println("*** Channel Credit Bill Settled ***");
-//        //System.out.println("bs = " + bs);
-//        //System.out.println("getBillSession() = " + getBillSession().getName());
-//        //System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
-//        //System.out.println("getBillSession().getBill().getPaidBill() = " + getBillSession().getBill().getPaidBill());
-//        //System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession().getName());
-//        //System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
-//        System.err.println("*** Channel Credit Bill Settled ***");
-//        editBillSession(b, bi);
-        JsfUtil.addSuccessMessage("Channel Booking Added");
+        
+        createPayment(b, paymentMethod);
+        
+        JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
+    }
+    
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
 
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+            p.setPaidValue(bill.getNetTotal());
+
+            switch (pm) {
+                case Card:
+                    p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(getPaymentMethodData().getCheque().getDate());
+                    p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
+            ps.add(p);
+        }
+        return ps;
     }
 
-//
-//    private void deductBallance() {
-//        double tmp = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
-//        getBillSession().getBill().getFromInstitution().setBallance(getBillSession().getBill().getFromInstitution().getBallance() - tmp);
-//        getInstitutionFacade().edit(getBillSession().getBill().getFromInstitution());
-//    }
+
+
     private Bill savePaidBill() {
         Bill temp = new BilledBill();
         temp.copy(getBillSession().getBill());
@@ -250,13 +344,11 @@ public class ChannelBillController implements Serializable {
         temp.setPaymentMethod(settlePaymentMethod);
         temp.setReferenceBill(getBillSession().getBill());
         temp.setBillType(BillType.ChannelPaid);
-        String insId = generateBillNumberInsId(temp);
-        temp.setInsId(insId);
+        temp.setBillTypeAtomic(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
         String deptId = generateBillNumberDeptId(temp);
+        temp.setInsId(deptId);
         temp.setDeptId(deptId);
-//        temp.setInsId(getBillSession().getBill().getInsId());
-        temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
-
+        temp.setBookingId(deptId);
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
         temp.setBillDate(new Date());
@@ -532,7 +624,6 @@ public class ChannelBillController implements Serializable {
     List<BillFee> listBillFees;
 
     public void createBillfees(SelectEvent event) {
-        System.out.println("event = " + event);
         BillSession bs = ((BillSession) event.getObject());
         String sql;
         HashMap hm = new HashMap();
@@ -588,7 +679,6 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckCancelling() {
-        System.out.println("errorCheckCancelling");
         if (getBillSession() == null) {
             return true;
         }
@@ -717,12 +807,10 @@ public class ChannelBillController implements Serializable {
             JsfUtil.addErrorMessage("Already Refunded");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill().isCancelled() = " + getBillSession().getPaidBillSession().getBill().isCancelled());
         if (getBillSession().getPaidBillSession().getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
             return;
         }
-        System.out.println("getComment() = " + getComment());
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
@@ -734,7 +822,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
-        System.out.println("cancel");
         if (errorCheckCancelling()) {
             return;
         }
@@ -1424,9 +1511,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         System.out.println("Printing bill completed");
         printingBill = getBillFacade().find(printingBill.getId());
-        System.out.println("printing bill retrieved");
         bookingController.fillBillSessions();
-        System.out.println("bill sessions filled ");
         bookingController.generateSessions();
         sendSmsAfterBooking();
         settleSucessFully = true;

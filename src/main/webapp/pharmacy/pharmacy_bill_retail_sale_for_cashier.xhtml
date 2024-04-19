@@ -58,10 +58,11 @@
                                         >
                                     </p:commandButton>
 
+
                                 </div>
-
-
+                                <i class="fas fa-cash-register rounded-circle shadow-lg" style="position: absolute; left: 67%; transform: translateX(-50%); font-size: 60px; padding: 20px; background-color: #A9CCE3; color: purple;"></i>
                             </div>
+
                         </f:facet>
 
                         <div class="row">
@@ -182,17 +183,30 @@
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Bill Items" class="mx-4"></h:outputText>
+                                        <p:commandButton 
+                                            value="Remove Selected" class="ui-button-danger" style="float: right" 
+                                            action="#{pharmacySaleController.removeSelectedBillItems()}"
+                                            process="@this tblBillItem :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
+                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('det',view).clientId} :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"/>                          
                                     </f:facet>
 
                                     <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
-                                                 var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
+                                                 scrollable="true" scrollHeight="300"
+                                                 style="padding: 0;"
+                                                 rowKey="#{bi.searialNo}"
+                                                 var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100"
+                                                 selection="#{pharmacySaleController.selectedBillItems}">
 
-                                        <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
-                                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
+                                        <p:column selectionMode="multiple" style="width: 2%;"></p:column>
 
+                                        <p:column headerText="No" style="width: 4%; padding: 0;" >
+                                            <h:outputLabel id="no" value="#{s+1}." >
+                                                <f:convertNumber pattern="#,##0" />
+                                            </h:outputLabel>
+                                        </p:column>
 
-                                        <p:column headerText="Item" width="30%">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                        <p:column headerText="Item" width="29%">
+                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                             <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
 
                                             <p:dialog id="panDoc" header="Item Details" style="text-align: center;" widgetVar="dlg" resizable="false" modal="true" class="w-50">
@@ -250,53 +264,42 @@
                                                         </div>
                                                     </div>
                                                 </h:panelGroup>
+
                                             </p:dialog>
                                         </p:column>
 
-                                        <p:column headerText="Qty" style="width: 3%;">
-                                            <p:cellEditor>  
-                                                <f:facet name="output">  
-                                                    <h:outputText value="#{bi.qty}" >
-                                                        <f:convertNumber integerOnly="true" />
-                                                    </h:outputText>
-                                                </f:facet>  
-                                                <f:facet name="input">  
-                                                    <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%"/>  
-                                                </f:facet>  
-                                            </p:cellEditor> 
-                                        </p:column>
-
-                                        <p:column headerText="Rate" style="width: 7%">
+                                        <p:column headerText="Rate" style="width: 10%">
                                             <h:outputLabel id="rate" value="#{bi.rate}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-
-                                        <p:column headerText="Value" style="width: 7%">
+                                        <p:column headerText="Value" style="width: 10%">
                                             <h:outputLabel value="#{bi.grossValue}" id="gros">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:column>
-
-                                        <p:column headerText="Expiry" style="width: 7%;" >
+                                        <p:column headerText="Expiry" style="width: 14%">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                            </h:outputLabel> 
-                                        </p:column>
-
-                                        <p:column style="width:6%">  
-                                            <div class="d-flex gap-2">
-                                                <p:rowEditor />  
-                                                <p:commandButton 
-                                                    title="Remove"
-                                                    icon="fas fa-trash" 
-                                                    action="#{pharmacySaleController.removeBillItem(bi)}" 
-                                                    ajax="false" 
-                                                    class="ui-button-danger">
-                                                </p:commandButton>
-                                            </div>
+                                            </h:outputLabel>
 
                                         </p:column>
+                                        <p:column headerText="Qty" style="width: 9%">
+
+                                            <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%">
+                                                <p:ajax event="keyup" process="ipTblQty" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{pharmacySaleController.quantityInTableChangeEvent(bi)}"/>
+                                            </p:inputText>  
+
+
+                                        </p:column>
+
+                                        <p:column style="width:4%"> 
+                                            <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
+
+                                            </p:commandButton>
+                                        </p:column> 
+
+
                                     </p:dataTable>
 
                                 </p:panel> 
@@ -642,7 +645,7 @@
                         </div>
 
 
-                        <h:panelGroup   id="TokenPreview" class="m-2">
+                        <h:panelGroup  rendered="#{pharmacySaleController.printBill ne null}"  id="TokenPreview" class="m-2">
                             <phi:saleBillToken id="saleBillToken" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
                         </h:panelGroup>
 

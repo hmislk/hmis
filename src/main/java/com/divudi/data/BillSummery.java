@@ -6,6 +6,7 @@
 package com.divudi.data;
 
 import com.divudi.entity.WebUser;
+import java.util.Date;
 
 /**
  *
@@ -23,6 +24,7 @@ public class BillSummery {
     WebUser webUser;
     private Long key;
     private BillClassType billClassType;
+    private Date date;
 
     public BillSummery() {
     }
@@ -58,6 +60,13 @@ public class BillSummery {
         this.billType = billType;
         this.billClassType = billClassType;
         this.webUser = webUser;
+    }
+    
+     public BillSummery(Date date,Double netTotal, Long count) {
+        this.date=date;
+        this.netTotal = netTotal;
+        this.count = count;
+        
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -138,6 +147,14 @@ public class BillSummery {
 
     public void setBillClassType(BillClassType billClassType) {
         this.billClassType = billClassType;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
 }

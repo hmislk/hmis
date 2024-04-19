@@ -15,22 +15,28 @@
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar
+                                <p:datePicker
                                     value="#{searchController.fromDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
 
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar 
+                                <p:datePicker 
                                     value="#{searchController.toDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
 
                                 <p:commandButton ajax="false" 
                                                  action="#{searchController.createInwardServiceTable()}" 
@@ -123,7 +129,7 @@
 
 
 
-                 
+
 
                     </p:panel>
                 </h:form>

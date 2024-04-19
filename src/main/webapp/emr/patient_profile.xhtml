@@ -60,7 +60,7 @@
                                                 <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
                                             </p:commandButton>
                                             <p:commandButton
-                                                value="Pharmecy Billing"
+                                                value="Pharmacy Billing"
                                                 action="#{patientController.navigateToPharamecyBilling()}"
                                                 ajax="false"
                                                 icon="fa fa-money-bill"
@@ -172,7 +172,7 @@
                                                                                id="btnDeleteDx"
                                                                                process="btnDeleteDx"
                                                                                update="tblDxx"
-                                                                               onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                               onclick="if (!confirm('Are you sure you want to delete this Diagnosis?'))
                                                                                            return false;"
 
                                                                                action="#{patientEncounterController.removePatientDiagnosis()}"
@@ -375,6 +375,8 @@
                                                             >
                                                             <p:column headerText="Medicine">
                                                                 <h:outputText value="#{allergy.itemValue.name}"/>
+                                                                <h:outputText value="#{allergy.lobValue}"/>
+                                                                <h:outputText value="#{allergy.stringValue}"/>
                                                                 <p:commandLink 
                                                                     value="X" 
                                                                     class="text-danger" 
@@ -391,9 +393,6 @@
                                                                         />
                                                                 </p:commandLink>
 
-                                                            </p:column>
-                                                            <p:column headerText="Details">
-                                                                <h:outputText value="#{allergy.stringValue}"/>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </div>

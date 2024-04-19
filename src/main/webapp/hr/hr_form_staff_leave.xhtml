@@ -34,7 +34,7 @@
                             <h:panelGrid columns="3">
                                 <h:outputLabel value="Leave Entitle || "/>
                                 <h:outputLabel value="Leave Utilized || "/>
-                                <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="Balance"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
@@ -162,7 +162,7 @@
                                 <p:column headerText="Comment">
                                     <p:outputLabel value="#{l.comments}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Creater">
+                                <p:column headerText="Creator">
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>

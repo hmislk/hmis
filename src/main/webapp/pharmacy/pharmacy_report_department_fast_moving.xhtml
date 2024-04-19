@@ -8,79 +8,77 @@
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Fast Moving Items" >
+                    <p:panel header="Fast Moving Items" class="w-100">
 
                         <f:facet name="header" >
                             Fast-moving items
                         </f:facet>
-                        
-                        <h:panelGrid columns="2" class="my-2" >
+
+                        <h:panelGrid columns="2" class="my-2 w-100">
                             <h:outputLabel value="Department" ></h:outputLabel>
-                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
-                                                var="dept" itemLabel="#{dept.name}" 
-                                                itemValue="#{dept}" forceSelection="true" 
-                                                value="#{reportsTransfer.department}"  >
-                                </p:autoComplete>
+                            <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
+                                            var="dept" itemLabel="#{dept.name}" 
+                                            itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.department}"  >
+                            </p:autoComplete>
                             <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <p:selectCheckboxMenu  class="w-100 mx-4" value="#{reportsTransfer.billTypes}" label="Bill Types"  >
-                                    <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
-                                </p:selectCheckboxMenu>
+                            <p:selectCheckboxMenu  class="w-100 mx-2" value="#{reportsTransfer.billTypes}" label="Bill Types"  >
+                                <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
+                            </p:selectCheckboxMenu>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
+                            <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                           <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{reportsTransfer.fillFastMoving()}" ></p:commandButton>
-                         </h:panelGrid>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{reportsTransfer.fillFastMoving()}" ></p:commandButton>
+                        </h:panelGrid>
 
-                        <p:tabView dynamic="true" >
+                        <p:tabView dynamic="true" class="w-100">
 
-                            <p:tab title="By Value" >
+                            <p:tab title="By Value" class="w-100">
 
-                                <p:panel id="gpBillPreview">
+                                <p:panel id="gpBillPreview" class="w-100">
                                     <f:facet name="header" class="nonPrintBlock" >
-                                        <h:panelGrid columns="2" style="float: right" >
-                                            <!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
-                                                                                            <p:printer target="tblVals" ></p:printer>
-                                                                                        </p:commandButton>-->
-                                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
-                                                <p:dataExporter  target="tblVals" type="xls" fileName="fast_by_val"></p:dataExporter>
-                                            </p:commandButton>
-                                        </h:panelGrid>
+
+                                        <h:outputLabel value="#{reportsTransfer.department.name} - Fast Moving Items by Value"/>
+                                        <p:commandButton value="Print" ajax="false" class="ui-button-info mx-1" icon="fas fa-print" style="float: right">
+                                            <p:printer target="tblVals" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" style="float: right">
+                                            <p:dataExporter  target="tblVals" type="xls" fileName="fast_by_val"></p:dataExporter>
+                                        </p:commandButton>
+
                                     </f:facet>
 
                                     <p:dataTable id="tblVals"  value="#{reportsTransfer.movementRecords}" var="i"
                                                  paginator="true" paginatorAlwaysVisible="true" paginatorPosition="bottom"
                                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="10,30,50"
+                                                 class="w-100"
                                                  rows="50"
                                                  >
 
-                                        <f:facet name="header">
-                                            <h:outputLabel value="#{reportsTransfer.department.name} - Fast Moving Items by Value"/>
-                                        </f:facet>
-
-                                        <p:column headerText="Code" style="width: 70px;" sortBy="#{i.item.code}" filterBy="#{i.item.code}">
+                                        <p:column headerText="Code" style="width: 10%" sortBy="#{i.item.code}" filterBy="#{i.item.code}">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Code"/>
                                             </f:facet>
                                             <h:outputLabel value="#{i.item.code}" ></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Item"  sortBy="#{i.item.name}" filterBy="#{i.item.name}" >
+                                        <p:column headerText="Item"  style="width: 40%" sortBy="#{i.item.name}" filterBy="#{i.item.name}" >
                                             <f:facet name="header">
                                                 <h:outputLabel value="Item"/>
                                             </f:facet>
                                             <h:outputLabel value="#{i.item.name}" ></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Quentity" style="text-align: right; padding: 5px;">
+                                        <p:column headerText="Quatity" style="text-align: right; width: 10%;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Quantity"/>
                                             </f:facet>
@@ -89,7 +87,7 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Cost Value" style="text-align: right;">
+                                        <p:column headerText="Cost Value" style="text-align: right; width: 10%">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Cost Value"/>
                                             </f:facet>
@@ -98,7 +96,7 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Sale Value" style="text-align: right;">
+                                        <p:column headerText="Sale Value" style="text-align: right; width: 10%">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Sale Value"/>
                                             </f:facet>
@@ -107,7 +105,7 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Value of QOH" style="text-align: right;">
+                                        <p:column headerText="Value of QOH" style="text-align: right; width: 10%">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Value of QOH"/>
                                             </f:facet>
@@ -116,7 +114,7 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="QOH" style="text-align: right;">
+                                        <p:column headerText="QOH" style="text-align: right; width: 10%">
                                             <f:facet name="header">
                                                 <h:outputLabel value="QOH"/>
                                             </f:facet>
@@ -177,60 +175,59 @@
 
                             </p:tab>
 
-                            <p:tab title="By Quentity" >
+                            <p:tab title="By Quantity" class="w-100">
 
                                 <p:panel id="gpBillPreviewQty">
                                     <f:facet name="header" >
-                                        <h:panelGrid columns="2" style="float: right" >
-                                            <!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
-                                                                                            <p:printer target="tblQtys" ></p:printer>
-                                                                                        </p:commandButton>-->
-                                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
-                                                <p:dataExporter  target="tblQtys" type="xls" fileName="fast"></p:dataExporter>
-                                            </p:commandButton>
-                                        </h:panelGrid>
+                                        <h:outputLabel value="#{reportsTransfer.department.name} - Fast Moving Items by Quentity"/>  
+                                        <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" style="float: right" class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="tblQtys" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" style="float: right">
+                                            <p:dataExporter  target="tblQtys" type="xls" fileName="fast"></p:dataExporter>
+                                        </p:commandButton>
+
                                     </f:facet>
 
 
                                     <p:dataTable id="tblQtys"  value="#{reportsTransfer.movementRecordsQty}" var="i" 
+                                                 class="w-100"
                                                  paginator="true" paginatorAlwaysVisible="true" paginatorPosition="bottom"
                                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="10,30,50"
                                                  rows="50"
                                                  >
-                                        <f:facet name="header">
-                                            <h:outputLabel value="#{reportsTransfer.department.name} - Fast Moving Items by Quentity"/>  
-                                        </f:facet>
-                                        <p:column headerText="Code" style="width: 70px;" sortBy="#{i.item.code}" filterBy="#{i.item.code}" >
+                   
+                                        <p:column headerText="Code" style="width: 10%;" sortBy="#{i.item.code}" filterBy="#{i.item.code}" >
                                             <h:outputLabel value="#{i.item.code}" ></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Item"  sortBy="#{i.item.name}" filterBy="#{i.item.name}" >
+                                        <p:column headerText="Item"  sortBy="#{i.item.name}" filterBy="#{i.item.name}" style="width: 40%;">
                                             <h:outputLabel value="#{i.item.name}" ></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Quentity" style="text-align: right; padding: 5px;">
+                                        <p:column headerText="Quantity" style="text-align: right; width: 10%;">
                                             <h:outputLabel value="#{i.qty}"  >
                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Cost Value" style="text-align: right;">
+                                        <p:column headerText="Cost Value" style="text-align: right; width: 10%;">
                                             <h:outputLabel value="#{i.purchaseValue}"  >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Sale Value" style="text-align: right;">
+                                        <p:column headerText="Sale Value" style="text-align: right; width: 10%;">
                                             <h:outputLabel value="#{i.retailsaleValue}"  >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Value of QOH" style="text-align: right;">
+                                        <p:column headerText="Value of QOH" style="text-align: right; width: 10%;">
                                             <h:outputLabel value="#{i.stockQty}"  >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="QOH" style="text-align: right;">
+                                        <p:column headerText="QOH" style="text-align: right; width: 10%;">
                                             <h:outputLabel value="#{i.stockOnHand}"  >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>

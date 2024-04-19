@@ -222,7 +222,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public Token findPharmacyTokens(Bill bill) {
         if (bill == null) {
-            return null;
+            return new Token();
         }
         String j = "Select t "
                 + " from Token t"
@@ -243,8 +243,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " where t.id=:id";
         Map<String, Object> m = new HashMap<>();
         m.put("id", id);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         Token st = tokenFacade.findFirstByJpql(j, m);
         return st;
     }

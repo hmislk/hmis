@@ -1,0 +1,254 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+
+
+    <ui:define name="content">
+        <style>
+            @keyframes blink {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            .blink {
+                animation: blink 1s infinite;
+            }
+
+        </style>
+
+        <h:form id="form">
+
+
+
+            <div class="row">
+
+
+                <div class="col-12" >
+                    
+                    <ui:repeat var="s" 
+                               id="tblSessions"
+                               value="#{bookingController.sessionInstances}" >
+
+
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center ">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                                    <h:outputText class="mx-4" value="Todays Session"/>
+                                </div>
+
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <!-- List Completed Button -->
+                                    <p:commandButton ajax="false" 
+                                                     value="List Completed" 
+                                                     icon="fa fa-check" 
+                                                     styleClass="ui-button-success mx-1" 
+                                                     action="#{bookingController.listTodaysCompletedSesionInstances()}" />
+
+                                    <!-- View Ongoing Session Data Button -->
+                                    <p:commandButton ajax="false" 
+                                                     value="List Ongoing"
+                                                     icon="fa fa-sync-alt" 
+                                                     styleClass="ui-button-info mx-1" 
+                                                     action="#{bookingController.listTodaysOngoingSesionInstances()}" />
+
+                                    <!-- List Pending Button -->
+                                    <p:commandButton ajax="false" 
+                                                     value="List Pending"
+                                                     icon="fa fa-hourglass-start" 
+                                                     styleClass="ui-button-warning mx-1" 
+                                                     action="#{bookingController.listTodaysPendingSesionInstances()}" />
+
+                                    <!-- List All Button -->
+                                    <p:commandButton ajax="false" 
+                                                     value="List All"
+                                                     icon="fa fa-list" 
+                                                     styleClass="ui-button-primary mx-1" 
+                                                     action="#{bookingController.listTodaysAllSesionInstances()}" />
+
+                                </div>
+
+                            </div>
+
+                        </f:facet>
+
+                        <div class="card mt-1">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-2">
+                                        <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 18pt"/><br/>
+                                        <h:outputText value="#{s.sessionDate}"  style="font-size: 1.2em;">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                        <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-4 ">
+                                        <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/><br/>
+                                        <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
+                                    </div>
+                                    <div class="col-2">
+                                        <div>
+                                            <div>
+                                                <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
+                                                    <span style="font-size: 24pt;">
+                                                        <span class="text-success">
+                                                            <span class="blink">&#x25CF;</span>
+                                                            <h:outputText value="#{s.completedPatientCount}" style="vertical-align: super;">
+                                                                <f:convertNumber pattern="#,##0"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                        /
+                                                        <span class="text-primary" style="font-size: smaller;"> <!-- Smaller font for "out of" count -->
+                                                            <h:outputText value="#{s.paidPatientCount}">
+                                                                <f:convertNumber pattern="#,##0"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                    </span>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
+                                                <svg width="200" height="100" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                                                    <defs>
+                                                        <clipPath id="roundedCorners">
+                                                            <rect x="0" y="0" width="200" height="100" rx="15" ry="15"/>
+                                                        </clipPath>
+                                                    </defs>
+                                                    <g clip-path="url(#roundedCorners)">
+                                                        <path d="M 0,0 L 200,0 0,100 Z" fill="#28a745"/>
+                                                        <path d="M 200,0 L 0,100 200,100 Z" fill="#ffc107"/>
+                                                    </g>
+                                                    <text x="30%" y="30" fill="white" font-size="22" font-weight="bold" text-anchor="middle">#{s.paidPatientCount}</text>
+                                                    <text x="30%" y="50" fill="white" font-size="12" text-anchor="middle">Paid</text>
+                                                    <text x="70%" y="70" fill="black" font-size="22" font-weight="bold" text-anchor="middle">#{s.bookedPatientCount}</text>
+                                                    <text x="70%" y="90" fill="black" font-size="12" text-anchor="middle">Booked</text>
+                                                </svg>
+                                            </h:panelGroup>
+                                            <h:panelGroup class="mx-2">
+                                                <p:commandButton value="Manage" icon="fa fa-check-circle" iconPos="right"
+                                                                 styleClass="ui-button-success" ajax="false"
+                                                                 action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                                 rendered="#{s.completed}">
+                                                    <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                                </p:commandButton>
+
+                                                <!-- Button for Pending Sessions -->
+                                                <p:commandButton value="Manage" icon="fa fa-hourglass-half" iconPos="right"
+                                                                 styleClass="ui-button-warning" ajax="false"
+                                                                 action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                                 rendered="#{not s.completed and not s.started}">
+                                                    <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                                </p:commandButton>
+
+                                                <!-- Button for Ongoing Sessions -->
+                                                <p:commandButton value="Manage" icon="fa fa-play-circle" iconPos="right"
+                                                                 styleClass="ui-button-info" ajax="false"
+                                                                 action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                                 rendered="#{s.started and not s.completed}">
+                                                    <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                                </p:commandButton>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+<!--                        <p:panel header="#{s.name}" style="height: 200px">
+                            <f:facet name="header">
+                                <h:panelGroup layout="block" class="w-100 d-flex justify-content-between">
+                                    <h:panelGroup>
+                                        <div class="row w-100">
+                                            <div class="col-2">
+                                                <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 18pt"/>
+                                            </div>
+                                            <div class="col-3">
+                                                <h:outputText value="#{s.sessionDate}"  style="font-size: 1.2em;">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                                <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 1.2em;">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                </h:outputText>
+                                            </div>
+
+                                        </div>
+
+                                    </h:panelGroup>
+                                     Button for Completed Sessions 
+                                    
+                                     Button for Ongoing Sessions 
+                                                                        <p:commandButton value="Display" icon="fa fa-play-circle" iconPos="right"
+                                                                                         styleClass="ui-button-info" ajax="false"
+                                                                                         action="#{bookingController.navigateToDisplatSessionQueueAtConsultantRoom()}"
+                                                                                         rendered="#{s.started and not s.completed}">
+                                                                            <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                                                        </p:commandButton>
+                                </h:panelGroup>
+                            </f:facet>
+
+
+
+
+
+                            <div class="row w-100">
+                                <div class="col-5">
+                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 1.5em;"/><br/>
+                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 1em;"/>
+                                </div>
+                                <div class="col-2">
+                                    <div class="w-25">
+
+                                        <h:panelGrid columns="2" class="w-100">
+
+
+                                            <h:outputLabel value="Max" />
+                                            <h:panelGroup class="mx-2">
+                                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                                    <f:convertNumber pattern="00"/>
+                                                </h:outputText>
+                                                <h:outputText value="Not Limited" rendered="#{s.maxNo eq 0}">
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                            <h:outputLabel value="Fee" />
+                                            <h:outputText class="mx-2" value="#{s.originatingSession.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+
+                                </div>
+                            </div>
+                        </p:panel>-->
+                    </ui:repeat>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

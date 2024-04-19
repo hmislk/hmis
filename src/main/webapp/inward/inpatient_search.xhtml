@@ -15,23 +15,28 @@
                 <h:form id="form">
                     <p:panel header="Admissions" style="height: 100vh" >
                         <div class="row">
-                            <div class="col-2">
+                            <div class="col-3">
                                 <p:outputLabel value="From Date"></p:outputLabel>
-                                <p:calendar
+                                <p:datePicker
                                     value="#{admissionController.fromDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
                                 <p:outputLabel value="To Date"></p:outputLabel>
-                                <p:calendar 
+                                <p:datePicker 
                                     class="w-100"
+                                    showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
                                     inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
 
                                 <p:commandButton 
                                     ajax="false"
@@ -86,7 +91,9 @@
                                 <p:selectOneMenu 
                                     class="w-100"
                                     value="#{admissionController.admissionStatusForSearch}" >
-                                    <f:selectItems value="#{enumController.admissionStatuses}" var="status" itemValue="#{status}" itemLabel="#{status}" />
+                                    <f:selectItems value="#{enumController.admissionStatuses}"
+                                                   var="status"
+                                                   itemValue="#{status}" itemLabel="#{status.label}" />
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Institution"></p:outputLabel>
@@ -108,7 +115,7 @@
 
 
                             </div>
-                            <div class="col-10">
+                            <div class="col-9">
                                 <div class="p-1" >
                                     <p:dataTable id="tblBills" 
                                                  value="#{admissionController.items}" 

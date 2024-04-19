@@ -28,6 +28,8 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.UserNotification;
+import com.divudi.facade.UserNotificationFacade;
 import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -71,6 +73,8 @@ public class WebUserController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private WebUserDashboardFacade webUserDashboardFacade;
+    @EJB
+    UserNotificationFacade userNotificationFacade;
     /**
      * Controllers
      */
@@ -90,6 +94,8 @@ public class WebUserController implements Serializable {
     UserIconController userIconController;
     @Inject
     TriggerSubscriptionController triggerSubscriptionController;
+    @Inject
+    UserNotificationController userNotificationController;
     /**
      * Class Variables
      */
@@ -124,12 +130,13 @@ public class WebUserController implements Serializable {
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
     private int manageDiscountIndex;
-
     private int manageUsersIndex;
-
     private List<Department> departmentsOfSelectedUsersInstitution;
-    
+
     boolean testRun = false;
+
+    private List<UserNotification> userNotifications;
+    private int userNotificationCount;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -262,7 +269,7 @@ public class WebUserController implements Serializable {
 
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
-        if(testRun){
+        if (testRun) {
             return true;
         }
         if (getSessionController().getLoggedUser() == null) {
@@ -405,6 +412,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToAddNewUser() {
         setCurrent(new WebUser());
+        getCurrent().setActivated(true);
         Person p = new Person();
         getCurrent().setWebUserPerson(p);
         setSpeciality(null);
@@ -499,7 +507,7 @@ public class WebUserController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(sessionController.loggedUser);
         getCurrent().setName((getCurrent().getName()));
-        getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
+        getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
         if (createOnlyUser) {
             JsfUtil.addSuccessMessage("Add New User Only");
@@ -788,7 +796,7 @@ public class WebUserController implements Serializable {
         userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_icons";
     }
-    
+
     public String navigateToManageUserSubscriptions() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -827,7 +835,7 @@ public class WebUserController implements Serializable {
         listWebUserDashboards();
         return "/admin_manage_dashboards";
     }
-    
+
     public String toManageUserPreferences() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -902,8 +910,10 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return "";
         }
-
-        current.setWebUserPassword(getSecurityController().hash(newPassword));
+        String hashedPassword;
+        hashedPassword = getSecurityController().hashAndCheck(newPassword);
+        System.out.println("hashedPassword = " + hashedPassword);
+        current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
         JsfUtil.addSuccessMessage("Password changed");
         return navigateToListUsers();
@@ -1071,5 +1081,24 @@ public class WebUserController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + WebUserController.class.getName());
             }
         }
+    }
+
+    public List<UserNotification> getUserNotifications() {
+        return userNotifications;
+    }
+
+    public void setUserNotifications(List<UserNotification> userNotifications) {
+        this.userNotifications = userNotifications;
+    }
+
+    public int getUserNotificationCount() {
+        if (userNotificationController.fillLoggedUserNotifications() != null) {
+            userNotificationCount = userNotificationController.fillLoggedUserNotifications().size();
+        }
+        return userNotificationCount;
+    }
+
+    public void setUserNotificationCount(int userNotificationCount) {
+        this.userNotificationCount = userNotificationCount;
     }
 }

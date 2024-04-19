@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template_without_menu.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+
+
+
+    <ui:define name="content">
+
+        <style>
+            .circle {
+                width: 80px; /* Set the width of the circle */
+                height: 80px; /* Set the height of the circle */
+                background-color: #1f7a1f; /* Set the background color of the circle */
+                color: white; /* Set the text color */
+                border-radius: 50%; /* Make the element a circle by setting border-radius to 50% */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 1.2em; /* Font size */
+                font-weight: bold; /* Font weight */
+                text-align: center; /* Text alignment */
+            }
+
+        </style>
+
+        <body >
+            <h:form id="form">
+                <div class="row">
+                    <div class="col-12" >
+
+                        <nav class="navbar navbar-dark bg-dark">
+
+                            <div class="d-flex justify-content-between align-items-center w-100 ">
+                                <div>
+                                    <h3 class="text-white p-1">#{sessionController.institution.name}</h3>
+                                </div>
+                                <div class="mx-2">
+                                    <div class="text-white">
+                                    <span id="date"></span>
+                                    <span id="time"></span>
+                                </div>
+                                </div>
+                                
+                            </div>
+
+                        </nav>
+
+                        <h:panelGroup >
+                            <p:imageSwitch effect="wipe" widgetVar="switcher"
+                                           id="manuelSwitcher"
+                                           slideshowAuto="true">
+
+                            </p:imageSwitch>
+                            <p:poll interval="5" 
+                                    listener="#{bookingController.loadSessionInstance()}"
+                                    update="tblSessions" />
+                            <p:dataGrid
+                                id="tblSessions"
+                                var="s" 
+                                value="#{bookingController.sessionInstances}" 
+                                columns="5" 
+                                layout="grid" 
+                                emptyMessage="No Sessions for Today"
+                                styleClass="ui-datagrid-responsive">
+
+                                <h:panelGroup  style="font-size: 12pt" >
+                                    <div class="card w-100" style="border: 2px solid black">
+                                        <div class="card-body">
+                                            <div>
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold;"/><br></br>
+                                                <h:outputText value="(#{s.staff.speciality.name})" style="font-size: 1em;font-weight: bold;text-align: right"/>
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="text-center">
+                                                    <div style="box-sizing: border-box;width: 70px;height: 70px;border-radius: 10px;border: 2px solid #721c24">
+                                                        <h:outputText value="Room" style="font-weight: bold;text-align: right;color:  #990000"/><br/>
+                                                        <h2><h:outputText value="#{s.roomNo}" style="font-weight: bold;text-align: right;color:  #990000"/></h2>
+                                                    </div>
+                                                </div>
+                                                <div class="circle">
+                                                    <h:outputText value="#{s.completedPatientCount}" style="font-size: 3em;font-weight: bold;text-align: right"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </p:dataGrid>
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </h:form>
+            <script>
+                function updateTime() {
+                    const now = new Date();
+                    const dateElement = document.getElementById('date');
+                    const timeElement = document.getElementById('time');
+
+                    const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+                    dateElement.textContent = now.toLocaleDateString('en-US', options);
+
+                    const timeString = now.toLocaleTimeString('en-US');
+                    timeElement.textContent = timeString;
+
+                    dateElement.style.display = 'inline'; // Show date
+                    timeElement.style.display = 'inline'; // Show time
+                }
+
+                // Update time every second
+                setInterval(updateTime, 1000);
+
+                // Hide date and time initially
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.getElementById('date').style.display = 'none';
+                    document.getElementById('time').style.display = 'none';
+                });
+            </script>
+        </body>
+    </ui:define>
+</ui:composition>

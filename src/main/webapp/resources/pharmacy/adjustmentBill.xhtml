@@ -18,7 +18,7 @@
 
 
             <div class="headingBill">
-                <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <h:outputLabel value="Stock Adjustment Note" style="text-decoration: underline;"/>                           
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
@@ -52,7 +52,7 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-                    <p:column style="width: 60px;text-align: right!important;" >
+                    <p:column rendered="false" style="width: 60px;text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
@@ -70,10 +70,19 @@
                         </h:outputLabel>
                     </p:column>                  
 
+                    <p:column style="text-align: right!important;"> 
+                        <f:facet name="header">                           
+                            <h:outputLabel value="Changed Qty" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>                  
+
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" />
+                            <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.stockHistory.stockQty}">
                             <f:convertNumber integerOnly="true"/>

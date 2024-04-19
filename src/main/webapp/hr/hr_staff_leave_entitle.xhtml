@@ -28,7 +28,7 @@
                             <h:panelGrid columns="3">
                                 <h:outputLabel value="Leave Entitle || "/>
                                 <h:outputLabel value="Leave Utilized || "/>
-                                <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="Balance"/>
                                 <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle}"/>
                                 <h:outputLabel value="#{staffLeaveEntitleController.leaved}"/>
                                 <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle - staffLeaveEntitleController.leaved}"/>
@@ -214,9 +214,9 @@
                                 </f:facet>
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Creater">
+                            <p:column headerText="Creator">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Creater"  />
+                                    <h:outputLabel value="Creator"  />
                                 </f:facet>
                                 <p:outputLabel value="#{add.creater.webUserPerson.name}"></p:outputLabel>
                             </p:column> 

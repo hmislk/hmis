@@ -18,7 +18,7 @@
 
 
             <div class="headingBill">
-                <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <h:outputLabel value=" Retail Sale Rate Adjustment Note" style="text-decoration: underline;"/>
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
@@ -58,16 +58,25 @@
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Before Retail Price" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Before Retail Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}" >
                              <f:convertNumber pattern="#00.00"/>
                         </h:outputLabel>
-                    </p:column>                  
+                    </p:column>
+
+                    <p:column style="text-align: right!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Rate Difference" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate - bip.pharmaceuticalBillItem.retailRate}">
+                            <f:convertNumber pattern="#00.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Retail Price" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Retail Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
                             <f:convertNumber pattern="#00.00"/>
