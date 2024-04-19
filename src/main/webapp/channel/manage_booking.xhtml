@@ -655,7 +655,7 @@
                     </p:tab>
 
 
-                    <p:tab title="Search">
+                    <p:tab title="Search" rendered="false">
 
                         <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" pattern="dd MMMM yyyy" >   
                             <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
