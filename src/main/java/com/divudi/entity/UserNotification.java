@@ -44,6 +44,7 @@ public class UserNotification implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private Department toDepartment;
 
 
     public Long getId() {
@@ -152,5 +153,14 @@ public class UserNotification implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+    
     
 }

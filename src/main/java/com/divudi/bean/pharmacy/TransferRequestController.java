@@ -288,15 +288,10 @@ public class TransferRequestController implements Serializable {
 
             getBill().getBillItems().add(b);
         }
-
         getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        
         getBillFacade().edit(getBill());
-
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
-
         printPreview = true;
-        
         notificationController.createNotification(bill);
 
         

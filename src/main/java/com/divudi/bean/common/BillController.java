@@ -2527,6 +2527,18 @@ public class BillController implements Serializable {
         List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return lst;
     }
+    
+    public Bill findBillbyID( Long id){
+        if (id == null) {
+            return null;
+        }
+        Bill tb = getBillFacade().find(id);
+        if (tb == null) {
+            return null;
+        }
+        //System.out.println("tb = " + tb);
+        return tb;
+    }
 
     public ServiceSessionFunctions getServiceSessionBean() {
         return serviceSessionBean;
