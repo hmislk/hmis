@@ -436,6 +436,17 @@ public class SaleReturnController implements Serializable {
         }
 
     }
+    
+    public void fillReturningQty(){
+        if(billItems == null || billItems.isEmpty()){
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+        for(BillItem bi:billItems){
+            bi.setQty(bi.getPharmaceuticalBillItem().getQty());
+            onEdit(bi);
+        }
+    }
 
     private void calTotal() {
         double grossTotal = 0.0;

@@ -1949,7 +1949,7 @@ public class PatientController implements Serializable {
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findByJpql(sql, hm, 20);
-        commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
+        
         return patientList;
     }
 

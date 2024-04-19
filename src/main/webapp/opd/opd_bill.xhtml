@@ -34,7 +34,7 @@
                                 </p:commandButton>
                             </div>
                         </f:facet>
-                        <p:focus id="focusIx" for="acIx" />
+                        
 
                         <!--                        <div class="row" >
                                                     <div class="col-md-12 text-center p-1" >
@@ -43,7 +43,8 @@
                                                 </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
-                                <common:patient_details  
+                                
+                                <common:patient_details 
                                     editable="true"
                                     controller="#{opdBillController}"/>
                                 <p:panel 
@@ -54,7 +55,7 @@
                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row" >
-                                        <p:focus context="acIx"/>
+                                        
                                         <div class="col-md-10" >
                                             <p:watermark for="acIx" value="Enter first few letters of the service or item to add" ></p:watermark>
                                             <p:selectOneListbox 
@@ -111,7 +112,7 @@
                                                              class="w-100 mx-1 ui-button-success"
                                                              action="#{opdBillController.addToBill()}"  
                                                              process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty">
+                                                             update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty">
                                             </p:commandButton>
                                         </div>
                                     </div>

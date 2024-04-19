@@ -40,7 +40,10 @@
                                      
                                 </f:facet>
                                 
-                                <p:column headerText="Staff" >
+                                <p:column headerText="Staff" 
+                                          sortBy="#{i.staff.person.name}"
+                                          filterBy="#{i.staff.person.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Staff"/>
                                     </f:facet>

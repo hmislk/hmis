@@ -843,7 +843,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Investigation counts by institution and collecting centers(/faces/reportLab/ix_count_by_institution_and_collecting_centre.xhtml)");
+        
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {

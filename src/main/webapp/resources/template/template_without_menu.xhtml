@@ -91,15 +91,9 @@
             </h:panelGroup>
             <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
 
-                <div class="deptAndUser">
-                    <div class="d-flex align-items-center">
-                        <h5><h:outputLabel style="text-transform: uppercase" class="text-left" value="#{sessionController.loggedUser.department.name}"/></h5>
-                        <h6 class="mx-2">|</h6>
-                        <h6><h:outputLabel value="#{sessionController.loggedUser.name}"/></h6>
-                    </div>
-                </div>
+                
 
-                <div class="companyWaterMark d-flex align-items-center">
+<!--                <div class="companyWaterMark d-flex align-items-center">
                     <div class="mx-2">
                         <img src="../../resources/image/CompanyLogo/companyLogo.png" width="50px"/>
                     </div>
@@ -107,9 +101,9 @@
                         <h6><h:outputLabel class="text-left" value="Powered by"/></h6>
                         <h5><h:outputLabel value="CareCode Solutions"/></h5>
                     </div>
-                </div>
+                </div>-->
 
-                <p:panel 
+                <h:panelGroup
                     rendered="#{sessionController.department ne null}" 
                     class="m-0 p-0 no-padding-margin-border"
                     style=" padding: 0 !important;
@@ -119,7 +113,7 @@
                     <ui:insert name="content" class="m-0 p-0 borderless" >
 
                     </ui:insert>
-                </p:panel>
+                </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">
                 <ez:select_department class="w-100"/>

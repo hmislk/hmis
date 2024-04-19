@@ -26,25 +26,36 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.MessageType;
+import com.divudi.data.SmsSentResponse;
+import com.divudi.ejb.SmsManagerEjb;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSessionInstance;
+import com.divudi.entity.Sms;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.lab.ItemForItem;
+import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.facade.ServiceSessionInstanceFacade;
 import com.divudi.facade.SessionInstanceFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.annotation.FacesConfig;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.Session;
 import javax.persistence.TemporalType;
 
 /**
@@ -72,10 +83,23 @@ public class ChannelScheduleController implements Serializable {
     DoctorSpecialityFacade doctorSpecialityFacade;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    BillSessionFacade billSessionFacade; 
+    @EJB
+    SmsFacade smsFacade;
+    @EJB
+    SmsManagerEjb smsManager;
+   
+    
     @Inject
     private SessionController sessionController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    SessionInstanceController sessionInstanceController;
+    @Inject
+    BookingController bookingController;
+    
 
     private DoctorSpeciality speciality;
     ServiceSession current;
@@ -91,6 +115,9 @@ public class ChannelScheduleController implements Serializable {
     List<FeeChange> feeChanges;
     List<FeeChange> feeChangesList;
     boolean feeChangeStaff;
+    private List<SessionInstance> sessionInstances;
+    private SessionInstance currentSessionInstance;
+    List<BillSession> billSessions;
 
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
@@ -108,6 +135,68 @@ public class ChannelScheduleController implements Serializable {
 
     public String navigateToChannelSchedule() {
         return "/channel/channel_shedule?faces-redirect=true";
+    }
+    
+    public String navigateToChannelScheduleManagement() {
+        return "/channel/session_instance_management?faces-redirect=true";
+    }
+    
+    public void fillBillSessions() {
+     
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit
+        };
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", currentSessionInstance);
+        billSessions = billSessionFacade.findByJpql(sql, hh);
+    }
+
+    
+     public void sendSmsOnChannelDoctorArrival() {
+         String smsTemplateForchannelBooking=sessionController.getApplicationPreference().getSmsTemplateForChannelBooking();
+         fillBillSessions();
+        if (billSessions == null || billSessions.isEmpty()) {
+            return;
+        }
+        for (BillSession bs : billSessions) {
+            if (bs.getBill() == null) {
+                System.err.println("No Billl for Bill Session");
+                continue;
+            }
+            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+                continue;
+            }
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(bs.getBill());
+            e.setReceipientNumber(bs.getBill().getPatient().getPerson().getSmsNumber());
+            e.setSendingMessage(bookingController.createSmsForChannelBooking(bs.getBill(), smsTemplateForchannelBooking));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setPending(false);
+            e.setSmsType(MessageType.ChannelDoctorArrival);
+            smsFacade.create(e);
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
+            smsFacade.edit(e);
+        }
+        JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
 
     public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
@@ -440,7 +529,14 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         createFees();
     }
-
+    
+    public void saveNewSessioninstance(){
+        currentSessionInstance.setOriginatingSession(current);
+        sessionInstanceController.save(currentSessionInstance);
+        JsfUtil.addSuccessMessage("Saved successfully");
+    }
+    
+    
     public void prepareAddFeeChange() {
         prepareAdd();
         createChangeFees();
@@ -670,6 +766,11 @@ public class ChannelScheduleController implements Serializable {
         m.put("sd", CommonFunctions.getStartOfDay());
         items = getFacade().findByJpql(sql, m);
         return items;
+    }
+    
+    public void fillSessionInstance(){
+        sessionInstances=fetchCreatedSessionsInstances(current);
+        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
@@ -967,6 +1068,22 @@ public class ChannelScheduleController implements Serializable {
 
     public void setAdditionalItemToRemove(ItemForItem additionalItemToRemove) {
         this.additionalItemToRemove = additionalItemToRemove;
+    }
+
+    public List<SessionInstance> getSessionInstances() {
+        return sessionInstances;
+    }
+
+    public void setSessionInstances(List<SessionInstance> sessionInstances) {
+        this.sessionInstances = sessionInstances;
+    }
+
+    public SessionInstance getCurrentSessionInstance() {
+        return currentSessionInstance;
+    }
+
+    public void setCurrentSessionInstance(SessionInstance currentSessionInstance) {
+        this.currentSessionInstance = currentSessionInstance;
     }
 
 }

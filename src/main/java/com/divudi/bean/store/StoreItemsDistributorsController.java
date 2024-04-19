@@ -268,7 +268,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         searchItems = getFacade().findByJpql(sql, tmp);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Administration/Check entered data/Item Distributor(/faces/store/store_item_by_distributor.xhtml)");
+        
 
     }
 

@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/opd/token/index.xhtml">
+            <ui:define name="subcontent">
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:outputLabel value="OPD Token" ></h:outputLabel>
+                    </f:facet>
+                    <div class="row w-100">
+                        <div class="col-8">
+                            <common:patient_details  
+                                editable="true"
+                                controller="#{opdTokenController}"/>
+                        </div>
+                        <div class="col-4">
+                            <p:panel header="Doctor Details">
+                                <p:selectOneListbox value="#{opdTokenController.staff}">
+                                        <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
+                                        <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" 
+                                                       itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:selectOneListbox>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                    <f:facet name="footer" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:outputLabel value="Counter" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" value="#{opdTokenController.counter}" >
+                                <f:selectItem itemLabel="Any" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{sessionController.loggableSubDepartments}" 
+                                    var="c" 
+                                    itemLabel="#{c.name}" 
+                                    itemValue="#{c}" >
+                                </f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:commandButton
+                                class="ui-button-success"
+                                icon="fas fa-plus"
+                                value="Create Token" 
+                                ajax="false" 
+                                action="#{opdTokenController.settleOpdToken()}" >
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+                </p:panel>
+
+                <p:panel>
+                    <f:facet name="header">
+                        <i class="fas fa-barcode-scan mt-2"/>
+                        <p:outputLabel value="Bill Scanner" class="mx-2 mt-2"></p:outputLabel>
+                    </f:facet>
+                    <h:form>
+
+
+
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="w-25" >
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <img src="https://media.tenor.com/8E3SIU76kHgAAAAM/barcode-scan.gif"/>
+                                </div>
+                                <div>
+                                    <p:inputText 
+                                        id="billID"
+                                        class="w-100"
+                                        value="#{searchController.currentBillId}"
+                                        placeholder="Enter Bill ID or Click here to Scan"
+                                        >
+                                    </p:inputText>
+                                    <p:defaultCommand target="btnAddbill" />
+                                </div>
+                                <div >
+                                    <p:commandButton
+                                        id="btnAddbill"
+                                        style="float: right;"
+                                        value="Search For Settle"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning w-100 my-1"
+                                        ajax="false"
+                                        action="#{searchController.settleBillByBarcode}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </h:form>
+                </p:panel>
+
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

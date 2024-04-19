@@ -40,6 +40,8 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                 <h:outputLabel value="Patient Name"/>   
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="Patient Phone Number"/>   
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientPhone}" class="w-100"/>
                                 <h:outputLabel value="Department Name"/> 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" class="w-100"/>
                                 <h:outputLabel value="Total"/>
@@ -72,10 +74,7 @@
                                         </h:outputLabel>
 
                                     </f:facet>
-                                    <p:column headerText="No" style="width: 2em;" styleClass="alignTop">
-                                        <h:outputLabel value="#{i+1}"/>
-                                    </p:column>
-
+                                    
 <!--                                    <p:column headerText="View">
                                         <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
                                                          action="pharmacy_reprint_bill_sale">

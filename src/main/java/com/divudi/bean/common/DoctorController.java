@@ -115,7 +115,7 @@ public class DoctorController implements Serializable {
         temSql = "SELECT d FROM Doctor d where d.retired=false ";
         doctors = getFacade().findByJpql(temSql);
 
-        commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
+        
 
     }
 

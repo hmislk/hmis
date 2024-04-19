@@ -28,6 +28,7 @@
                                     <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel  value="Speciality" ></h:outputLabel>
                                         <p:autoComplete 
+                                            onfocus="this.select()" 
                                             inputStyleClass="w-100"
                                             class="mx-2 w-100" 
                                             value="#{channelScheduleController.speciality}" 
@@ -45,7 +46,7 @@
 
                                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                                         <p:autoComplete inputStyleClass="w-100" class="mx-2 w-100"  forceSelection="true" value="#{channelScheduleController.currentStaff}" 
-                                                        id="scStaff" placeholder="Doctor"
+                                                        id="scStaff" placeholder="Doctor" onfocus="this.select()" 
                                                         completeMethod="#{channelScheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                         >   
                                             <p:ajax event="itemSelect" process="scStaff" update="lstSelect gpDetail" />
@@ -166,17 +167,18 @@
                                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                                 </p:selectOneMenu>
                                                 <p:outputLabel value="Start Time"/>                        
-                                                <p:calendar class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.startingTime}" 
-                                                            navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
+                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.startingTime}" 
+                                                            pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
                                                             timeZone="Asia/Colombo">                            
-                                                </p:calendar>
+                                                </p:datePicker>
+                                                
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:calendar class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.endingTime}"
-                                                            navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.endingTime}"
+                                                             pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
                                                             timeOnly="true"
                                                             timeZone="Asia/Colombo">                            
-                                                </p:calendar>
+                                                </p:datePicker>
 
                                                 <p:outputLabel value="Max Number"/>
                                                 <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.maxNo}"/>

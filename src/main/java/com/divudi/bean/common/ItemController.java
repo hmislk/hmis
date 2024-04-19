@@ -1735,7 +1735,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeOpdItemsByNamesAndCode(String query) {
-        if (sessionController.getLoggedPreference().isInstitutionRestrictedBilling()) {
+        if (sessionController.getApplicationPreference().isInstitutionRestrictedBilling()) {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, true);
         } else {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, false);
@@ -2175,6 +2175,8 @@ public class ItemController implements Serializable {
      */
     private void recreateModel() {
         items = null;
+        allItems = null;
+        itemApplicationController.setItems(null);
     }
 
     /**
@@ -2189,6 +2191,13 @@ public class ItemController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+    }
+    
+    public void saveSelectedWithItemLight() {
+        saveSelected(getCurrent());
+        JsfUtil.addSuccessMessage("Saved");
+        recreateModel();
+        getAllItems();
     }
 
     public void saveSelected(Item item) {
@@ -2207,7 +2216,6 @@ public class ItemController implements Serializable {
      *
      */
     public void delete() {
-
         if (getCurrent() != null) {
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
@@ -2218,11 +2226,24 @@ public class ItemController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        allItems = null;
         getAllItems();
         getItems();
         current = null;
-        getCurrent();
+    }
+
+    public void deleteWithItemLight() {
+        if(getCurrent()==null){
+            JsfUtil.addSuccessMessage("No such item");
+            return;
+        }
+        getCurrent().setRetired(true);
+        getCurrent().setRetiredAt(new Date());
+        getCurrent().setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(getCurrent());
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+        recreateModel();
+        getAllItems();
+        selectedItemLight=null;
     }
 
     public Institution getInstitution() {
@@ -2429,8 +2450,12 @@ public class ItemController implements Serializable {
             String temSql;
             HashMap h = new HashMap();
             temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false ";
-            h.put("t1", Investigation.class);
-            h.put("t2", Service.class);
+            h
+                    .put("t1", Investigation.class
+                    );
+            h
+                    .put("t2", Service.class
+                    );
 
             if (institution != null) {
                 temSql += " and i.institution=:ins ";
@@ -2654,6 +2679,7 @@ public class ItemController implements Serializable {
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
+
     }
 
     @FacesConverter("itemLightConverter")

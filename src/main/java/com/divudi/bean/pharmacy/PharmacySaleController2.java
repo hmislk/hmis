@@ -978,7 +978,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             return true;
         }
 
-        if (!getSessionController().getLoggedPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
+        if (!getSessionController().getApplicationPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
                 return true;
@@ -1318,7 +1318,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 
         editingQty = null;
 
-        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
+        if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 JsfUtil.addErrorMessage("Please select Payment Scheme");
                 return;
@@ -1337,6 +1337,13 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+
+                    setZeroToQty(bi);
+                    onEditCalculation(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    return ;
+                }
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
                 if (bi.getQty() <= 0.0) {
@@ -1479,7 +1486,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         resetAll();
 
         billPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
+        
 
     }
 

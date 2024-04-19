@@ -24,7 +24,7 @@
                 </f:facet>
                 <h:panelGroup >
 
-                    <h:panelGrid columns="7" style="min-width: 100%;" class="my-2">
+                    <h:panelGrid columns="7" style="min-width: 100%;" class="my-2" id="grn">
                         <h:outputLabel value="Supplier"/>
 
                         <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
@@ -36,10 +36,24 @@
                                          completeMethod="#{institutionController.completeCompany}" 
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                        
                         <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                             <f:selectItem itemLabel="SelectPayment method"/>
-                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
+                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                            <p:ajax process="@this" update="grn" event="change"/>
+                            <p:ajax process="@this" update="duration" event="itemSelect" />
                         </p:selectOneMenu>
+                        <h:panelGroup rendered="#{grnController.grnBill.paymentMethod eq 'Credit'}" id="duration" >
+                            <div class="d-flex" >
+                                <div class="ui-inputgroup mx-1 my-1">
+                                    <p:inputText  
+                                        value="#{grnController.grnBill.creditDuration}"
+                                        style="width: 10em;">
+                                    </p:inputText>
+                                    <div class="ui-inputgroup-addon">Days</div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
                     </h:panelGrid>
 
@@ -89,11 +103,12 @@
 
                         <p:column headerText="Receiving Qty"  >
                             <p:cellEditor>  
+                                
                                 <f:facet name="output">  
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
                                 </f:facet>                        
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
+                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" onfocus="this.select()"/>
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
@@ -108,7 +123,7 @@
                                     <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQtyInUnit}"/>
                                 </f:facet>                      
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" />
+                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" onfocus="this.select()"/>
                                 </f:facet>
                             </p:cellEditor>                        
                         </p:column> 
@@ -140,7 +155,7 @@
                                     </h:panelGroup>
                                 </f:facet>  
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  onfocus="this.select()"> 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </f:facet>
@@ -178,7 +193,7 @@
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}" onfocus="this.select()">  
                                     </p:inputText>
                                 </f:facet>
                             </p:cellEditor>
@@ -196,7 +211,8 @@
                                 class="ui-button-danger"
                                 action="#{grnController.removeItem(bi)}"/>
                             <p:commandButton 
-                                ajax="false"
+                                process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
                                 style="float: right;"
                                 icon="fas fa-plus"
                                 class="ui-button-danger mx-1"
@@ -222,8 +238,8 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                                 <p:outputLabel value="Discount"/>
-                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
-                                    <p:ajax process="@this" update="net ins" event="keyup"
+                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" onfocus="this.select()">
+                                    <p:ajax process="@this" update="net ins diff" event="keyup"
                                             listener="#{grnController.netDiscount()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Net Total"/>
@@ -234,7 +250,7 @@
 
                             <p:panelGrid columns="2" id="ins">
                                 <p:outputLabel value="Invoice Total"/>
-                                <p:inputText id="insv"  value="#{grnController.insTotal}" >
+                                <p:inputText id="insv"  value="#{grnController.insTotal}" onfocus="this.select()">
                                     <f:convertNumber pattern="#,##0.00" />
                                     <p:ajax process="@this" update="diff" event="keyup"
                                             listener="#{grnController.calDifference()}"/>

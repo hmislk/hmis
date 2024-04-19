@@ -29,8 +29,10 @@
                         placeholder="Department"
                         value="#{userIconController.department}" 
                         class="w-100"
+                        required="true"
+                        requiredMessage="Select a department"
                         filter="true">
-                        <f:selectItem itemLabel="All" ></f:selectItem>
+                        <f:selectItem itemLabel="Select" ></f:selectItem>
                         <f:selectItems 
                             value="#{userIconController.departments}"
                             var="d"

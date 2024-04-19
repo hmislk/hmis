@@ -141,6 +141,7 @@
                                 itemValue="#{ses}"
                                 itemLabel="#{ses.name}">
                             </f:selectItems>
+                            
                             <p:column headerText="Name">
                                 <f:facet name="header" >
                                     <h:outputText value="Name" ></h:outputText>
@@ -218,8 +219,8 @@
                             </p:column>
 
                             <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
                             </p:column>
 
                             <p:column style="width: 5px!important;">

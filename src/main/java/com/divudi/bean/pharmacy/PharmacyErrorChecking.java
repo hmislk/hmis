@@ -79,7 +79,7 @@ public class PharmacyErrorChecking implements Serializable {
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/error detection(/faces/pharmacy/pharmacy_error_checking.xhtml)");
+        
     }
 
     public void processBinCardItems() {
@@ -90,7 +90,7 @@ public class PharmacyErrorChecking implements Serializable {
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/error detection(/faces/pharmacy/pharmacy_error_checking.xhtml)");
+        
     }
 
     public void processBinCard() {
@@ -106,7 +106,7 @@ public class PharmacyErrorChecking implements Serializable {
 
         billItems = getEjb().allBillItemsByDateOnlyStock(item, department, fromDate, toDate);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/ error detection by date(/faces/pharmacy/pharmacy_error_checking_date.xhtml)");
+        
     }
 
     public void listPharmacyMovementNew() {

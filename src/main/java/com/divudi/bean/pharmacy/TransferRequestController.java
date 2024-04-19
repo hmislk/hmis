@@ -88,7 +88,7 @@ public class TransferRequestController implements Serializable {
         billItems = null;
         printPreview = false;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(New Bill)(/faces/theater/theater_transfer_request.xhtml)");
+        
 
     }
 
@@ -288,18 +288,13 @@ public class TransferRequestController implements Serializable {
 
             getBill().getBillItems().add(b);
         }
-
         getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        
         getBillFacade().edit(getBill());
-
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
-
         printPreview = true;
-        
         notificationController.createNotification(bill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(/faces/theater/theater_transfer_request.xhtml)");
+        
 
     }
 

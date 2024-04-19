@@ -662,7 +662,7 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Setup/report samples(/faces/lab/report_samples.xhtml)");
+        
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -874,7 +874,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -930,7 +930,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -981,7 +981,7 @@ public class InvestigationController implements Serializable {
 
     public Boolean isListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
-            if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+            if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
             } else {
                 listMasterItemsOnly = false;
@@ -992,7 +992,7 @@ public class InvestigationController implements Serializable {
 
     public Boolean getListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
-            if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+            if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
             } else {
                 listMasterItemsOnly = false;
@@ -1041,7 +1041,7 @@ public class InvestigationController implements Serializable {
             sql += " and (c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
-        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
+        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
             if (institution != null) {
                 sql += " and c.institution=:ins ";
                 m.put("ins", institution);
@@ -1081,7 +1081,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public void unDeleteSelectedItems() {
@@ -1103,7 +1103,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public void markSelectedActive() {
@@ -1124,7 +1124,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
 
     }
 
@@ -1146,7 +1146,7 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public Institution getInstitution() {
@@ -1172,7 +1172,7 @@ public class InvestigationController implements Serializable {
     }
 
 //    public List<Investigation> completeDepartmentItem(String qry) {
-//        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+//        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
 //            String sql;
 //            Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");
@@ -1194,7 +1194,7 @@ public class InvestigationController implements Serializable {
 //        }
 //    }
     public List<Investigation> completeDepartmentItem(String qry) {
-        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
             String sql;
             Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");
@@ -1438,7 +1438,7 @@ public class InvestigationController implements Serializable {
             investigationWithInvestigationItemses.add(items);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administration/Setup/report dynamic labels(/faces/lab/report_dynamic_lables.xhtml)");
+        
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1719,7 +1719,7 @@ public class InvestigationController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation with fee (/faces/dataAdmin/report_entered_data.xhtml)");
+        
     }
 
     public class ItemWithFee {

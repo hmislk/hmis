@@ -312,6 +312,7 @@ public class CashTransactionBean {
         this.billFacade = billFacade;
     }
 
+    @Deprecated
     public WebUser saveBillCashInTransaction(Bill bill, WebUser webUser) {
 //        if (bill == null) {
 //            return null;
@@ -334,6 +335,7 @@ public class CashTransactionBean {
         return webUser;
     }
 
+    @Deprecated
     public WebUser saveBillCashOutTransaction(Bill bill, WebUser webUser) {
 //        CashTransaction cashTransaction = setCashTransactionValue(new CashTransaction(), bill);
 //        saveCashOutTransaction(cashTransaction, bill, webUser);

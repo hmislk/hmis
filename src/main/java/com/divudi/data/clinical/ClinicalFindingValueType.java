@@ -15,6 +15,7 @@ public enum ClinicalFindingValueType {
     PatientMedicine,
     PatientImage,
     PatientDiagnosticImage,
+    PatientProcedure,
     VisitDiagnosis,
     VisitMedicine,
     VisitHistory,

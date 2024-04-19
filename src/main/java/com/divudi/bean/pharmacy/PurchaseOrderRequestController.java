@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -27,6 +28,7 @@ import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.OptionScope;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,10 +50,6 @@ import javax.inject.Named;
 @SessionScoped
 public class PurchaseOrderRequestController implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -66,6 +64,14 @@ public class PurchaseOrderRequestController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
+
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    CommonController commonController;
+    @Inject
+    ConfigOptionController optionController;
+
     private Bill currentBill;
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
@@ -101,7 +107,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public String navigateToCreateNewPurchaseOrder() {
+        System.out.println("navigateToCreateNewPurchaseOrder");
         resetBillValues();
+        getCurrentBill();
         return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
     }
 
@@ -388,7 +396,7 @@ public class PurchaseOrderRequestController implements Serializable {
 //
 //        resetBillValues();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+        
 
     }
 
@@ -420,7 +428,7 @@ public class PurchaseOrderRequestController implements Serializable {
         finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+        
     }
 
     public void calTotal() {
@@ -482,7 +490,10 @@ public class PurchaseOrderRequestController implements Serializable {
         if (currentBill == null) {
             currentBill = new BilledBill();
             currentBill.setBillType(BillType.PharmacyOrder);
-            currentBill.setPaymentMethod(PaymentMethod.Credit);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
+            PaymentMethod pm = optionController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method", PaymentMethod.class, OptionScope.APPLICATION, null, null, null); 
+            System.out.println("pm = " + pm);
+            currentBill.setPaymentMethod(pm);
         }
         return currentBill;
     }

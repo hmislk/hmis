@@ -121,6 +121,7 @@ public class GrnController implements Serializable {
         printPreview = false;
         billItems = null;
         difference = 0;
+        insTotal = 0;
         createGrn();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
@@ -150,12 +151,57 @@ public class GrnController implements Serializable {
         calGrossTotal();
     }
 
-    public void duplicateItem(BillItem bi) {
-        BillItem updateBillItem = new BillItem();
-        if (bi != null) {
-            System.out.println("updateBillItem = " + bi.getItem().getName());
-            updateBillItem.setItem(bi.getItem());
-            getBillItems().add(updateBillItem);
+    public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem){
+        List<BillItem> tmpBillItems = new ArrayList<>();
+        for (BillItem i : getBillItems()){
+            if(i.getReferanceBillItem()==referenceBillItem){
+                System.out.println("i = " + i.getPharmaceuticalBillItem().getQty());
+                tmpBillItems.add(i);
+            }
+        }
+        return tmpBillItems;
+    }
+    
+    public void duplicateItem(BillItem originalBillItemToDuplicate) {
+        BillItem newBillItemCreatedByDuplication = new BillItem();
+        double totalQuantityOfBillItemsRefernceToOriginalItem = 0.0;
+        double totalFreeQuantityOfBillItemsRefernceToOriginalItem = 0.0;
+        
+        double remainFreeQty = 0.0;
+        double remainQty = 0.0;
+        if (originalBillItemToDuplicate != null) {
+            PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
+            newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
+            newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
+            System.out.println("updateBillItem = " + originalBillItemToDuplicate.getItem().getName());
+            newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
+            newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
+            newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
+            
+            List<BillItem> tmpBillItems = findAllBillItemsRefernceToOriginalItem(originalBillItemToDuplicate.getReferanceBillItem());
+           
+            for(BillItem bi:tmpBillItems){
+                totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
+                System.out.println("totalQuantityOfBillItemsRefernceToOriginalItem = " + totalQuantityOfBillItemsRefernceToOriginalItem);
+                totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            }
+            System.out.println("originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() = " + originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
+            remainQty = originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
+            System.out.println("remainQty = " + remainQty);
+            remainFreeQty = originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
+            
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
+            
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQty(remainFreeQty);
+            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty);
+            
+            newBillItemCreatedByDuplication.setTmpQty(remainQty);
+            newBillItemCreatedByDuplication.setTmpFreeQty(remainFreeQty);
+            
+            newBillItemCreatedByDuplication.setPreviousRecieveQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
+            newBillItemCreatedByDuplication.setPreviousRecieveFreeQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit());
+            getBillItems().add(newBillItemCreatedByDuplication);
         }
         calGrossTotal();
     }
@@ -222,10 +268,6 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        if (insTotal < 1.0) {
-            JsfUtil.addErrorMessage("Fill the invoice Total");
-            return;
-        }
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
@@ -561,13 +603,16 @@ public class GrnController implements Serializable {
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
+                
+                bi.setPreviousRecieveQtyInUnit((double) tmpQty);
+                bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
 
                 ph.setQty(tmpQty);
                 ph.setQtyInUnit((double) tmpQty);
 
                 ph.setFreeQtyInUnit((double) tmpFreeQty);
                 ph.setFreeQty((double) tmpFreeQty);
-
+                
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
 
@@ -576,6 +621,7 @@ public class GrnController implements Serializable {
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
                 bi.setPharmaceuticalBillItem(ph);
+                
 
                 getBillItems().add(bi);
                 //  getBillItems().r
@@ -667,21 +713,22 @@ public class GrnController implements Serializable {
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
-        double remainsFreeQuantity = getPharmacyCalculation().getRemainingFreeQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
 //        System.err.println("2 " + tmp.getQty());
 //        System.err.println("3 " + tmp.getPharmaceuticalBillItem().getQty());
 //        System.err.println("4 " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
+//System.out.println("remains = " + remains);
+//        System.out.println("tmp.getPharmaceuticalBillItem().getQtyInUnit() = " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
             JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
         }
-
-        if (remainsFreeQuantity < tmp.getPharmaceuticalBillItem().getFreeQtyInUnit()) {
-            tmp.setTmpFreeQty(remainsFreeQuantity);
-            JsfUtil.addErrorMessage("You cant Change Free Qty than Remaining free qty");
-        }
+//        System.out.println("tmp.getPreviousRecieveQtyInUnit() = " + tmp.getPreviousRecieveQtyInUnit());
+//        if(tmp.getPreviousRecieveQtyInUnit() < tmp.getPharmaceuticalBillItem().getQtyInUnit()){
+//            tmp.setTmpQty(tmp.getPreviousRecieveQtyInUnit());
+//            JsfUtil.addErrorMessage("You cant Order Qty than Remaining qty to recieve");
+//        }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(getRetailPrice(tmp.getPharmaceuticalBillItem().getBillItem()));
@@ -724,7 +771,7 @@ public class GrnController implements Serializable {
 //
 //        return suggessions;
 //    }
-    private void calGrossTotal() {
+    public void calGrossTotal() {
         double tmp = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
@@ -745,12 +792,9 @@ public class GrnController implements Serializable {
         //getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
         double grossTotal = 0.0;
         if (getGrnBill().getDiscount() > 0) {
-            grossTotal = getGrnBill().getTotal() + getGrnBill().getDiscount();
-            ////// // System.out.println("gross" + grossTotal);
-            ////// // System.out.println("net1" + getBill().getNetTotal());
-            getGrnBill().setNetTotal(grossTotal);
-            ////// // System.out.println("net2" + getBill().getNetTotal());
+            ChangeDiscountLitener();
         }
+        calDifference();
     }
 
     public void saveBillFee(BillItem bi, Payment p) {

@@ -189,10 +189,9 @@
                                                             style="float: right;"
                                                             icon="fa fa-plus" 
                                                             class="ui-button-success"
-                                                            action="#{pharmacySaleBhtController.addBillItem}" 
-                                                            process="@this acStock txtQty" 
-                                                            update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem tabI txtQty"  >
-                                                        </p:commandButton>
+                                                            action="#{pharmacySaleBhtController.addBillItem}"
+                                                            ajax="false">
+                                                            </p:commandButton>
                                                     </div>
 
                                                     <p:focus id="focusQty" for="txtQty" ></p:focus>

@@ -351,7 +351,7 @@ public class BillBhtController implements Serializable {
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
     }
@@ -493,7 +493,7 @@ public class BillBhtController implements Serializable {
         paymentMethod = null;
         settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Services & Items/Add Services(/faces/inward/inward_bill_service.xhtml)");
+        
     }
 
     public void settleBillSurgery() {
@@ -523,7 +523,7 @@ public class BillBhtController implements Serializable {
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Service/Add service(/faces/theater/inward_bill_surgery_service.xhtml)");
+        
     }
 
     @EJB
@@ -671,7 +671,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (!getSessionController().getLoggedPreference().isInwardAddServiceBillTimeCheck()) {
+        if (!getSessionController().getApplicationPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
                 if (getCurrentBillItem().getBillTime() == null) {
                     JsfUtil.addErrorMessage("Please set Time To This Investigation");

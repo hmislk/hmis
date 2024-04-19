@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/resources/template/template_without_menu.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -116,7 +116,7 @@
                         </p:selectOneListbox>
                     </div>
 
-                    <div class="col-4" >
+                    <div class="col-3" >
                         <h:panelGrid columns="1">
                             <p:commandButton 
                                 id="btnCallNextToCurrent"
@@ -151,24 +151,66 @@
 
                     </div>
 
-                    <div class="col-4" >
-                        <p:panel>
-                            <h:panelGrid columns="2" id="panelSessionDetails" style="font-size: 18pt">
+                    <div class="col-5 " >
+                        <h:panelGroup id="panelSessionDetails">
+                            <div class="row w-100">
+                                <div class="col-3 ">
+                                    <h:panelGrid columns="1">
+                                        <h:outputText style="font-size: 20pt;font-weight: bold" value="Selected" ></h:outputText>
+                                        <h:outputText style="font-size: 20pt;font-weight: bold;text-align: center" 
+                                                      rendered="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo eq null}"
+                                                      value="00"> 
+                                        </h:outputText>
+                                        <h:outputText style="font-size: 20pt;font-weight: bold;text-align: center"
+                                                      value="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo}" >
+                                            <f:convertNumber pattern="#,##00"/>
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-3">
+                                    <h:panelGrid columns="1">
+                                        <h:outputText style="font-size: 20pt;font-weight: bold"  value="Next " ></h:outputText>
+                                        <h:outputText style="font-size: 20pt;font-weight: bold;text-align: center" 
+                                                      rendered="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo eq null}"
+                                                      value="00"> 
+                                        </h:outputText>
+                                        <h:outputText style="font-size: 20pt;font-weight: bold;text-align: center" 
+                                                      value="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo}" >
+                                            <f:convertNumber pattern="#,##00"/>
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-3">
+                                    <h:panelGrid columns="1">
+                                        <h:outputText style="font-size: 20pt;font-weight: bold"  value="Current" ></h:outputText>
+                                        <h:outputText style="font-size: 20pt;font-weight: bold;text-align: center" 
+                                                      rendered="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}"
+                                                      value="00"> 
+                                        </h:outputText>
+                                        <h:outputText 
+                                            style="font-size: 20pt;font-weight: bold;text-align: center"
+                                            value="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" >
+                                            <f:convertNumber pattern="#,##00"/>
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-3">
+                                    <h:panelGrid columns="1">
+                                        <h:outputText style="font-size: 20pt;font-weight: bold"  value=" Completed" ></h:outputText>
+                                        <h:outputText style="font-size: 20pt;font-weight: bold;text-align: center" 
+                                                      rendered="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo eq null}"
+                                                      value="00"> 
+                                        </h:outputText>
+                                        <h:outputText
+                                            style="font-size: 20pt;font-weight: bold;text-align: center"
+                                            value="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo}" >
+                                            <f:convertNumber pattern="#,##00"/>
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
-                                <h:outputText value="Selected" ></h:outputText>
-                                <h:outputText value="#{bookingController.selectedBillSession.bill.singleBillSession.serialNo}" ></h:outputText>
-
-                                <h:outputText value="Next in Line" ></h:outputText>
-                                <h:outputText value="#{bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo}" ></h:outputText>
-
-                                <h:outputText value="Current" ></h:outputText>
-                                <h:outputText value="#{bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo}" ></h:outputText>
-
-                                <h:outputText value="Last Completed" ></h:outputText>
-                                <h:outputText value="#{bookingController.selectedSessionInstance.lastCompletedBillSession.bill.singleBillSession.serialNo}" ></h:outputText>
-
-                            </h:panelGrid>
-                        </p:panel>
                     </div>
                 </div>
 

@@ -68,6 +68,8 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.Token;
+import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -135,6 +137,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private SmsFacade SmsFacade;
     @EJB
     private SmsManagerEjb smsManagerEjb;
+    @EJB
+    TokenFacade tokenFacade;
 
     /**
      * Controllers
@@ -173,6 +177,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     WorkingTimeController workingTimeController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    
+    @Inject
+    OpdTokenController opdTokenController;
+            
     /**
      * Class Variables
      */
@@ -264,8 +272,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     List<BillSession> billSessions;
 
     private boolean duplicatePrint;
-
-    
+    private Token token;
 
     /**
      *
@@ -362,7 +369,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 searchKeyword,
                 getFromDate(),
                 getToDate());
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+        
     }
 
     @Deprecated
@@ -1021,7 +1028,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+        
     }
 
     public void onLineSettleBills() {
@@ -1055,7 +1062,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+        
     }
 
     public void getPharmacySaleBills() {
@@ -1103,7 +1110,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Bill Lists/List of pharmacy bill(/faces/pharmacy/list_of_all_sale_bills.xhtml)");
+        
     }
 
     public Double getGrosTotal() {
@@ -1125,7 +1132,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy wholesale report/Pharmacy wholeale credit bills(/faces/pharmacy_wholesale/pharmacy_report_credit.xhtml)");
+        
     }
 
     public void getPharmacyBills() {
@@ -1138,7 +1145,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+        
     }
 
     public void getPharmacyBillsBilled() {
@@ -1151,7 +1158,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+        
     }
 
     public void getPharmacyWholeBills() {
@@ -1164,7 +1171,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml)");
+        
     }
 
     public BillEjb getBillEjb() {
@@ -1398,7 +1405,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                     tmp.add(e);
                 }
             }
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
             }
             getBillFacade().edit(myBill);
@@ -1444,7 +1451,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                     tmp.add(e);
                 }
             }
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
             }
             getBillFacade().edit(myBill);
@@ -1486,7 +1493,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 }
 
                 // Handling partial payments if allowed
-                if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+                if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                     myBill.setCashPaid(cashPaid);
                 }
 
@@ -1602,6 +1609,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             getPatientFacade().edit(getPatient());
         }
+        if (getToken() != null) {
+            getToken().setBill(getBatchBill());
+            tokenFacade.edit(getToken());
+            markToken(getBatchBill());
+        }
 
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
@@ -1609,9 +1621,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         duplicatePrint = false;
         return true;
     }
+    
+    public void markToken(Bill b) {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(b);
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        opdTokenController.saveToken(t);
+    }
+
 
     public boolean checkBillValues(Bill b) {
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             return false;
         }
 
@@ -1686,6 +1712,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 BillType.OpdBathcBill,
                 BillClassType.BilledBill));
         newBatchBill.setGrantTotal(total);
+        newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
         newBatchBill.setBillTime(new Date());
         newBatchBill.setBillTotal(netTotal);
@@ -1702,7 +1729,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
 
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -1724,8 +1751,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         newBatchBill.setCashBalance(reminingCashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(newBatchBill, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
     }
 
     @Inject
@@ -1744,7 +1769,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
         tmp.copy(billedBill);
@@ -1823,6 +1848,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment(), newBill.getCategory(), newBill.getFromStaff()));
                 break;
         }
+        
+        
 
         if (newBill.getId() == null) {
             getFacade().create(newBill);
@@ -2018,7 +2045,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
-       
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -2119,7 +2145,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return true;
         }
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
                 return true;
@@ -2337,6 +2363,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
+        token = null;
     }
 
     private void clearBillValuesForMember() {
@@ -2473,12 +2500,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         setNetPlusVat(getVat() + getNetTotal());
 
         if (getSessionController() != null) {
-            if (getSessionController().getLoggedPreference() != null) {
+            if (getSessionController().getApplicationPreference() != null) {
 
             }
         }
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////// // System.out.println("cashPaid = " + cashPaid);
             ////// // System.out.println("billNet = " + billNet);
             if (cashPaid >= (billNet + billVat)) {
@@ -2628,6 +2655,37 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
+            return "/opd/opd_bill?faces-redirect=true";
+        }
+    }
+    
+    public String navigateToNewOpdBillFromToken() {
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                paymentMethodData = null;
+                paymentScheme = null;
+                paymentMethod = PaymentMethod.Cash;
+                collectingCentreBillController.setCollectingCentre(null);
+                if (getToken() != null) {
+                    System.out.println("token = " + token);
+                    setPatient(token.getPatient());
+                }
+                return "/opd/opd_bill?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            paymentMethodData = null;
+            paymentScheme = null;
+            paymentMethod = PaymentMethod.Cash;
+            collectingCentreBillController.setCollectingCentre(null);
+            if (getToken() != null) {
+                System.out.println("token = " + token);
+                setPatient(token.getPatient());
+            }
             return "/opd/opd_bill?faces-redirect=true";
         }
     }
@@ -2815,7 +2873,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
@@ -3608,6 +3666,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.duplicatePrint = duplicatePrint;
     }
 
-    
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
 
 }

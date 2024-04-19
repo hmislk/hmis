@@ -26,7 +26,7 @@
                                     <h:outputLabel value="Receving Samples and Printing Worksheets" />
                                 </div>                      
                                 <div class="d-flex justify-content-end w-100">
-                                    <p:commandButton class="mx-2" ajax="false" value="Refresh" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets() }"   ></p:commandButton>
+                                    <p:commandButton class="mx-2" ajax="false" value="Process" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets() }"   ></p:commandButton>
                                     <p:commandButton value="Print Worksheets"  >
                                         <f:ajax execute="@this" listener="#{patientInvestigationController.markSelectedAsReceived}" />
                                         <p:printer  target="pPrintWorksheet" />

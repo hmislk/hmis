@@ -1458,7 +1458,7 @@ public class BhtSummeryController implements Serializable {
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Interim Bill/Inprint(/faces/inward/inward_bill_intrim.xhtml)");
+        
 
         return "inward_bill_intrim_print";
     }
@@ -1558,7 +1558,7 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         updateTotal();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Interim Bill/Tosettle(/faces/inward/inward_bill_intrim.xhtml)");
+        
 
         return "inward_bill_final";
 
@@ -1714,7 +1714,7 @@ public class BhtSummeryController implements Serializable {
             date = null;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Interim Bill(/faces/inward/inward_bill_intrim.xhtml)");
+        
     }
 
     public void createTablesWithEstimatedProfessionalFees() {
@@ -1750,7 +1750,7 @@ public class BhtSummeryController implements Serializable {
             date = null;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Estimated Professional Fees/Refresh(/faces/inward/inward_bill_intrim.xhtml)");
+        
 
     }
 
@@ -1958,7 +1958,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        if (!sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (!sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             double mo = p.getCurrentMoCharge();
             double calculated = getCharge(p, mo) + p.getAddedMoCharge();
             p.setCalculatedMoCharge(calculated);

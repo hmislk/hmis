@@ -27,7 +27,7 @@
                                     <f:selectItem itemLabel="select Type" />
                                     <f:selectItems value="#{enumController.smsType}" />
                                 </p:selectOneMenu>
-                                <h:outputLabel value="Summery"/>
+                                <h:outputLabel value="Summary"/>
                                 <p:selectBooleanCheckbox value="#{smsController.reportKeyWord.additionalDetails}" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                                  action="#{smsController.createSmsTable()}"/>

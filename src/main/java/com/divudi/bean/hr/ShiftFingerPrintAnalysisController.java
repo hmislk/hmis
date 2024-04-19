@@ -544,7 +544,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Analys attendence(Fill)(/faces/hr/hr_shift_table_finger_print.xhtml)");
+        
     }
 
     public void createShiftTableByStaff() {
@@ -614,7 +614,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Analys attendence by staff(Fill New)(/faces/hr/hr_shift_table_finger_print_by_staff.xhtml)");
+        
     }
 
     private List<Form> fetchAdditionalForm(StaffShift staffShift) {
@@ -825,7 +825,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Analys attendence(Fill Additional Only)(/faces/hr/hr_shift_table_finger_print.xhtml or /faces/hr/hr_shift_table_finger_print_by_staff.xhtml)");
+        
     }
 
     public void createShiftTableAdditionalByStaff() {

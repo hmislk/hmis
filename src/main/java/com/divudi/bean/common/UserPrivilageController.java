@@ -19,6 +19,8 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
+import com.divudi.entity.WebUserRolePrivilege;
+import com.divudi.facade.WebUserRolePrivilegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,12 +54,16 @@ public class UserPrivilageController implements Serializable {
     @EJB
     private WebUserPrivilegeFacade ejbFacade;
     @EJB
+    private WebUserRolePrivilegeFacade facede;
+    @EJB
     DepartmentFacade departmentFacade;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private List<WebUserPrivilege> selectedItems;
     private List<WebUserPrivilege> currentWebUserPrivileges;
+    private List<WebUserRolePrivilege> selectedRoleItems;
+    private List<WebUserRolePrivilege> currentWebUserRolePrivileges;
     private WebUser currentWebUser;
     private WebUserRole webUserRole;
     private TreeNode[] selectedNodes;
@@ -345,11 +351,11 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode clinicalsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinicals"), allNode);
         TreeNode clinicalDataNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Clinical, "Clinical Data"), clinicalsNode);
-        TreeNode patientSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientSummery, "Patient Summery"), clinicalsNode);
+        TreeNode patientSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientSummery, "Patient Summary"), clinicalsNode);
         TreeNode patientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDetails, "Patient Details"), clinicalsNode);
         TreeNode patientPhotoNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPhoto, "Patient Photo"), clinicalsNode);
         TreeNode visitDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitDetail, "Visit Details"), clinicalsNode);
-        TreeNode visitSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitSummery, "Visit Summery"), clinicalsNode);
+        TreeNode visitSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitSummery, "Visit Summary"), clinicalsNode);
         TreeNode historyNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalHistory, "History"), clinicalsNode);
         TreeNode clinicaladministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalAdministration, "Administration"), clinicalsNode);
         TreeNode clinicalPatientDeleteNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDelete, "Clinical Patient Delete"), clinicalsNode);
@@ -487,6 +493,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyReturnItemsOnly = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsOnly, "Pharmacy Return Items Only"), retailTransaction);
         TreeNode PharmacyReturnItemsAndPayments = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsAndPayments, "Pharmacy Return Items And Payments"), retailTransaction);
         TreeNode PharmacySearchReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchReturnBill, "Pharmacy Search ReturnBill"), retailTransaction);
+        TreeNode PharmacySaleCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleCancel, "Pharmacy Sale Bill Cancel"), retailTransaction);
         TreeNode PharmacyAddToStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAddToStock, "Pharmacy Add To Stock"), retailTransaction);
 
         TreeNode PharmacyWholeSaleTransAction = new DefaultTreeNode("Pharmacy Wholesale Transaction", pharmacyNode);
@@ -529,7 +536,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyGoodRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.GoodsRecipt, "Pharmacy Good Recipt"), ProcumentNode);
         TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), ProcumentNode);
         TreeNode pharmacyReturnWithoutRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnWithoutRecipt, "Pharmacy Return WIthout Recipt"), ProcumentNode);
-
+        TreeNode pharmacyOrderCancellation = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Pharmacy Order Cancellation"), ProcumentNode);
+        
         TreeNode DealerPayment = new DefaultTreeNode("Pharmacy Dealer Payment", pharmacyNode);
         TreeNode PharmacyDealerPaymentMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerPaymentMenue, "Pharmacy Dealer Payment Menue"), DealerPayment);
         TreeNode PharmacyDealerDueSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerDueSearch, "Pharmacy Dealer Due Search"), DealerPayment);
@@ -560,7 +568,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode PharmacyItemSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemSearch, "Item Search"), pharmacyNode);
         TreeNode PharmacyGenarateReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGenarateReports, "Genarate Reports"), pharmacyNode);
-        TreeNode PharmacySummaryViews = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummaryViews, "Summery Views"), pharmacyNode);
+        TreeNode PharmacySummaryViews = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummaryViews, "Summary Views"), pharmacyNode);
         return root;
     }
 
@@ -597,6 +605,70 @@ public class UserPrivilageController implements Serializable {
             phs.add(ph);
         }
         return phs;
+    }
+    
+    public List<PrivilegeHolder> createRolePrivilegeHolders(List<WebUserRolePrivilege> ps) {
+        List<PrivilegeHolder> phs = new ArrayList<>();
+        if (ps == null) {
+            return phs;
+        }
+
+        for (WebUserRolePrivilege tmpWup : ps) {
+            PrivilegeHolder ph = new PrivilegeHolder();
+            ph.setPrivilege(tmpWup.getPrivilege());
+            ph.setName(tmpWup.getPrivilege().getLabel());
+            phs.add(ph);
+        }
+        return phs;
+    }
+    
+    
+    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
+        currentWebUser = u;
+        department = dept;
+        List<PrivilegeHolder> selectedPrivileges = selected;
+        for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
+            wup.setRetired(true);
+
+        }
+        getFacade().batchEdit(getCurrentWebUserPrivileges());
+        if (selectedPrivileges == null) {
+            return;
+        }
+
+        List<WebUserPrivilege> newWups = new ArrayList<>();
+        List<WebUserPrivilege> oldWups = new ArrayList<>();
+        
+         for (PrivilegeHolder ph : selectedPrivileges) {
+            if (ph.getPrivilege() == null) {
+                continue;
+            }
+            String jpql = "select w"
+                    + " from WebUserPrivilege w "
+                    + " where w.department=:dep "
+                    + " and w.webUser=:wu "
+                    + " and w.privilege=:p";
+            Map m = new HashMap();
+            m.put("dep", department);
+            m.put("wu", currentWebUser);
+            m.put("p", ph.getPrivilege());
+            WebUserPrivilege wup = getFacade().findFirstByJpql(jpql, m);
+            if (wup == null) {
+                wup = new WebUserPrivilege();
+                wup.setDepartment(department);
+                wup.setWebUser(currentWebUser);
+                wup.setPrivilege(ph.getPrivilege());
+                newWups.add(wup);
+            } else {
+                wup.setRetired(false);
+                oldWups.add(wup);
+            }
+        }
+        getFacade().batchCreate(newWups);
+        getFacade().batchEdit(oldWups);
+        
+        fillUserPrivileges();
+        JsfUtil.addSuccessMessage("Updated");
     }
 
     public void saveWebUserPrivileges() {
@@ -648,32 +720,32 @@ public class UserPrivilageController implements Serializable {
     public void saveWebUserRolePrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
-        for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
+        for (WebUserRolePrivilege wup : getCurrentWebUserRolePrivileges()) {
             wup.setRetired(true);
         }
 
-        getFacade().batchEdit(getCurrentWebUserPrivileges());
+        getRoleFacede().batchEdit(getCurrentWebUserRolePrivileges());
         if (selectedPrivileges == null) {
             return;
         }
 
-        List<WebUserPrivilege> newWups = new ArrayList<>();
-        List<WebUserPrivilege> oldWups = new ArrayList<>();
+        List<WebUserRolePrivilege> newWups = new ArrayList<>();
+        List<WebUserRolePrivilege> oldWups = new ArrayList<>();
 
         for (PrivilegeHolder ph : selectedPrivileges) {
             if (ph.getPrivilege() == null) {
                 continue;
             }
             String jpql = "select w"
-                    + " from WebUserPrivilege w "
+                    + " from WebUserRolePrivilege w "
                     + " where w.webUserRole=:wu "
                     + " and w.privilege=:p";
             Map m = new HashMap();
             m.put("wu", webUserRole);
             m.put("p", ph.getPrivilege());
-            WebUserPrivilege wup = getFacade().findFirstByJpql(jpql, m);
+            WebUserRolePrivilege wup = getRoleFacede().findFirstByJpql(jpql, m);
             if (wup == null) {
-                wup = new WebUserPrivilege();
+                wup = new WebUserRolePrivilege();
                 wup.setWebUserRole(webUserRole);
                 wup.setPrivilege(ph.getPrivilege());
                 newWups.add(wup);
@@ -682,8 +754,8 @@ public class UserPrivilageController implements Serializable {
                 oldWups.add(wup);
             }
         }
-        getFacade().batchCreate(newWups);
-        getFacade().batchEdit(oldWups);
+        getRoleFacede().batchCreate(newWups);
+        getRoleFacede().batchEdit(oldWups);
         fillUserRolePrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
@@ -768,21 +840,26 @@ public class UserPrivilageController implements Serializable {
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
+    
+     public void fillUserRolePrivileges(WebUserRole u) {
+         webUserRole = u;
+         fillUserRolePrivileges();
+     }
 
     public void fillUserRolePrivileges() {
-        List<WebUserPrivilege> wups;
+        List<WebUserRolePrivilege> wups;
         if (webUserRole == null) {
             JsfUtil.addErrorMessage("User Role?");
         }
         String j = "SELECT i "
-                + " FROM WebUserPrivilege i "
+                + " FROM WebUserRolePrivilege i "
                 + " where i.webUserRole=:wu "
                 + " and i.retired=:ret ";
         Map m = new HashMap();
         m.put("wu", webUserRole);
         m.put("ret", false);
-        currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
-        currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
+        currentWebUserRolePrivileges = getRoleFacede().findByJpql(j, m);
+        currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
@@ -817,6 +894,14 @@ public class UserPrivilageController implements Serializable {
 
     public void setSelectedItems(List<WebUserPrivilege> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+    
+    public List<WebUserRolePrivilege> getSelectedRoleItems() {
+        return selectedRoleItems;
+    }
+
+    public void setSelectedRoleItems(List<WebUserRolePrivilege> selectedRoleItems) {
+        this.selectedRoleItems = selectedRoleItems;
     }
 
     public TreeNode getRootTreeNode() {
@@ -869,6 +954,18 @@ public class UserPrivilageController implements Serializable {
     public void setCurrentWebUserPrivileges(List<WebUserPrivilege> currentWebUserPrivileges) {
         this.currentWebUserPrivileges = currentWebUserPrivileges;
     }
+    
+    public List<WebUserRolePrivilege> getCurrentWebUserRolePrivileges() {
+        if (currentWebUserRolePrivileges == null) {
+            currentWebUserRolePrivileges = new ArrayList<>();
+        }
+        return currentWebUserRolePrivileges;
+    }
+
+    public void setCurrentWebUserRolePrivileges(List<WebUserRolePrivilege> currentWebUserRolePrivileges) {
+        this.currentWebUserRolePrivileges = currentWebUserRolePrivileges;
+    }
+    
 
     public List<Department> getDepartments() {
         return departments;
@@ -885,6 +982,16 @@ public class UserPrivilageController implements Serializable {
     public void setWebUserRole(WebUserRole webUserRole) {
         this.webUserRole = webUserRole;
     }
+
+    public WebUserRolePrivilegeFacade getRoleFacede() {
+        return facede;
+    }
+
+    public void setRoleFacede(WebUserRolePrivilegeFacade facede) {
+        this.facede = facede;
+    }
+    
+    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Converters">

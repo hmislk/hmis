@@ -135,7 +135,7 @@ public class SalaryCycleController implements Serializable {
                 + " order by c.id desc";
         salaryCycles = getFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
     }
 
     double brVal = 0.0;
@@ -806,7 +806,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff Payrol(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollNew() {
@@ -816,7 +816,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff Payrol(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollSelectedStaff() {
@@ -826,7 +826,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false, staffController.getSelectedList());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff over time(/faces/hr/hr_staff_salary_1.xhtml)");
+        
     }
 
     public void fillStaffPayRollDepartmentWise() {
@@ -840,7 +840,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(false, fetchSalaryRosters());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol by roster(/faces/hr/hr_report_staff_payroll_roster.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlocked() {
@@ -850,7 +850,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol(By department)(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlockedNew() {
@@ -860,7 +860,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol(By department)(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlockedSelectedStaff() {
@@ -870,7 +870,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true, staffController.getSelectedList());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff payrol (selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlockedDepartmentWise() {
@@ -884,7 +884,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(true, fetchSalaryRosters());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol by roster(/faces/hr/hr_report_staff_payroll_roster.xhtml)");
+        
     }
 
     public void fillStaffPayRoll(boolean blocked) {
@@ -1728,7 +1728,7 @@ public class SalaryCycleController implements Serializable {
         staffSalary = staffSalaryFacade.findByJpql(jpql, m);
         allStaffSalaryTotal(staffSalary);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/(/faces/hr/hr_shift_table.xhtml)");
+        
     }
 
     public List<Department> fetchSalaryDepartment() {
@@ -1989,7 +1989,7 @@ public class SalaryCycleController implements Serializable {
         }
         allStaffSalaryByDepartmentTotal(salaryByDepartments);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/All staff salary summery(By department)(/faces/hr/hr_report_staff_salary_by_department.xhtml");
+        
     }
 
     public Object[] fillStaffSalaryByDepartment(Department d) {

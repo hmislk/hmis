@@ -29,6 +29,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
@@ -127,6 +128,7 @@ public class OpdPreSettleController implements Serializable {
     double netTotal;
     double balance;
     Double editingQty;
+    private Token token;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -319,6 +321,7 @@ public class OpdPreSettleController implements Serializable {
     }
     
     private void saveSaleBillItems() {
+        System.out.println("getPreBill().getBillItems() = " + getPreBill().getBillItems().size());
         for (BillItem tbi : getPreBill().getBillItems()) {
             BillItem newBil = new BillItem();
             newBil.copy(tbi);
@@ -591,7 +594,7 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public boolean errorCheck() {
-        if (cashPaid == 0.0 && getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (cashPaid == 0.0 && getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             JsfUtil.addErrorMessage("Please Enter Correct Amount");
             return true;
         }
@@ -671,7 +674,7 @@ public class OpdPreSettleController implements Serializable {
                 continue;
             }
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 for (BillItem bi : b.getBillItems()) {
 
                     String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
@@ -766,7 +769,7 @@ public class OpdPreSettleController implements Serializable {
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(paymentMethod);
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             if (cashPaid < getBilledBill().getBalance()) {
                 p.setPaidValue(cashPaid);
             } else {
@@ -847,7 +850,7 @@ public class OpdPreSettleController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
@@ -884,9 +887,10 @@ public class OpdPreSettleController implements Serializable {
         JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
 
-    public Payment createPayment(Bill bill, PaymentMethod pm) {
+    public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1109,6 +1113,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
     }
     
     

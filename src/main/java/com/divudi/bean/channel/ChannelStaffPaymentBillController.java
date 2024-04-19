@@ -7,6 +7,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
@@ -235,7 +236,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         Map m = new HashMap();
 
         if (getSpeciality() != null) {
-            if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getApplicationPreference().isShowOnlyMarkedDoctors()) {
 
                 sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                         + " and pi.type=:typ "
@@ -409,7 +410,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
+        
 
     }
 
@@ -462,7 +463,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("class", BilledBill.class);
         List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
+        
     }
 
     public void calculateDueFeesAgency() {
@@ -502,7 +503,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("bt", BillType.ChannelAgent);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Pay agent(/faces/channel/channel_payment_bill_search.xhtml)");
+        
 
     }
 
@@ -636,6 +637,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.ChannelProPayment);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
@@ -661,6 +663,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.ChannelAgencyCommission);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());

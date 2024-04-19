@@ -13,6 +13,7 @@ import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -159,7 +160,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         fillDocPayingBillFee(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill item)(/faces/inward/report_doctor_payment.xhtml)");
+        
 
     }
 
@@ -233,7 +234,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         fillDocPayingBill(false);
         fillDocPayingBillCancel(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill)(/faces/inward/report_doctor_payment_by_bill.xhtml)");
+        
     }
 
     public void fillDocPayingBillByDischargeDate() {
@@ -242,7 +243,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         fillDocPayingBill(true);
         fillDocPayingBillCancel(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment summery(/faces/inward/report_doctor_payment_by_bill.xhtml)");
+        
     }
 
     public void fillDocPayingBill(boolean dischargeDate) {
@@ -1037,6 +1038,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.PaymentBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -1477,7 +1479,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public List<BillItem> getDocPayDischarged() {
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Discharged/Not discharged Doctor payment summery/Doctor Payments For Discharged patients(/faces/inward/inward_professional_payment_discharged_or_notdischarged.xhtml)");
+        
         return docPayDischarged;
 
     }

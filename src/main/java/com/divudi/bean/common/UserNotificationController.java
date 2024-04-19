@@ -10,16 +10,25 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
+import com.divudi.data.MessageType;
+import com.divudi.data.OptionScope;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.TriggerType;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
+import com.divudi.entity.Department;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Notification;
+import com.divudi.entity.Sms;
+import com.divudi.entity.TriggerSubscription;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.NotificationFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.UserNotificationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,18 +62,48 @@ public class UserNotificationController implements Serializable {
     TriggerSubscriptionController triggerSubscriptionController;
     @Inject
     SmsController smsController;
+    @Inject
+    ConfigOptionController configOptionController;
+    @Inject
+    TransferIssueController transferIssueController;
     @EJB
     private UserNotificationFacade ejbFacade;
     @EJB
     NotificationFacade notificationFacade;
+    @EJB
+    SmsFacade smsFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
 
     @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject
+    SmsManagerEjb smsManager;
 
-    public String navigateToUserNotification() {
+
+    public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
+    }
+
+    public String navigateToSentNotification() {
+        return "/Notification/sent_notifications";
+    }
+    
+    public void clearCanceledRequestsNotification(){
+        fillLoggedUserNotifications();
+        if (items==null) {
+            return;
+        }
+        
+        for (UserNotification item : items) {
+            if (item.getNotification()==null) {
+                return;
+            }
+            if (item.getNotification().getBill().isCancelled()) {
+                items.remove(item);
+            }
+        }
+        
     }
 
     public void save(UserNotification userNotification) {
@@ -103,9 +142,9 @@ public class UserNotificationController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    public void userNotificationRequestComplete(){
-        if (current==null) {
+
+    public void userNotificationRequestComplete() {
+        if (current == null) {
             JsfUtil.addErrorMessage("User Notification Error !");
             return;
         }
@@ -141,20 +180,25 @@ public class UserNotificationController implements Serializable {
         return items;
     }
 
-    public String navigateCurrentNotificationReuest(UserNotification cu) {
-        if (cu.getNotification().getBill() == null) {
+    public String navigateToCurrentNotificationRequest(UserNotification un) {
+        Department toDepartmentFromNotification=un.getNotification().getBill().getToDepartment();
+        if (!toDepartmentFromNotification.equals(sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return "";
         }
-        Bill bill = cu.getNotification().getBill();
+        if (un.getNotification().getBill() == null) {
+            return "";
+        }
+        Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
             case PHARMACY_ORDER:
-                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
-                return "/ward/ward_pharmacy_bht_issue";
-                
+                pharmacySaleBhtController.setBhtRequestBill(bill);
+                return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
+
             case PHARMACY_TRANSFER_REQUEST:
-                pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(bill);
-                return "/ward/ward_pharmacy_bht_issue";
+                transferIssueController.setRequestedBill(bill);
+                return transferIssueController.navigateToPharmacyIssueForRequests();
 
             default:
                 return "";
@@ -172,67 +216,74 @@ public class UserNotificationController implements Serializable {
         if (notification.getBill().getBillTypeAtomic() == null) {
             return;
         }
-        BillTypeAtomic bt = notification.getBill().getBillTypeAtomic();
-        switch (bt) {
-            case PHARMACY_TRANSFER_REQUEST:
-                createUserNotificationsForPharmacyTransferRequest(notification);
-                break;
+        createUserNotificationsForMedium(notification);
+    }
 
-            case PHARMACY_ORDER:
-                createUserNotificationsForPharmacyReuestForBht(notification);
+    private void createUserNotificationsForMedium(Notification n) {
+        Department department = n.getBill().getToDepartment();
+        if (n.getBill() == null) {
+            return;
+        }
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), department);
+        System.out.println("notificationUsers = " + notificationUsers.size());
+        switch (n.getTriggerType().getMedium()) {
+            case EMAIL:
+                for (WebUser u : notificationUsers) {
+                    String number = u.getWebUserPerson().getMobile();
+                    //TODo
+                }
                 break;
-            default:
+            case SMS:
+                for (WebUser u : notificationUsers) {
+                    String number = u.getWebUserPerson().getMobile();
+                    sendSmsForUserSubscriptions(number);
+                }
+                break;
+            case SYSTEM_NOTIFICATION:
+                for (WebUser u : notificationUsers) {
+                    UserNotification nun = new UserNotification();
+                    nun.setNotification(n);
+                    nun.setWebUser(u);
+                    getFacade().create(nun);
+                }
+                break;
         }
 
     }
 
-    private void createUserNotificationsForPharmacyTransferRequest(Notification n) {
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
-        List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
-        List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
-        for (WebUser u : smsUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
-        }
-        for (WebUser u : emailUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
-        }
-        for (WebUser u : notificationUsers) {
-            UserNotification nun = new UserNotification();
-            nun.setNotification(n);
-            nun.setWebUser(u);
-            getFacade().create(nun);
-        }
+    public void sendSmsForUserSubscriptions(String userMobNumber) {
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(userMobNumber);
+        e.setSendingMessage(createSmsForUserNotification());
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        //e.setSmsType(MessageType.ChannelDoctorArrival);
+        smsFacade.create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        smsFacade.edit(e);
     }
 
-    private void createUserNotificationsForPharmacyReuestForBht(Notification n) {
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request);
-        List<WebUser> emailUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Email);
-        List<WebUser> smsUsers = triggerSubscriptionController.fillWebUsers(TriggerType.Order_Request_Sms);
-        for (WebUser u : smsUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
+    public String createSmsForUserNotification() {
+        String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.isEmpty()) {
+            template = "{patient_name} {appointment_time}";
         }
-        for (WebUser u : emailUsers) {
-            String number = u.getWebUserPerson().getMobile();
-            System.out.println("number = " + number);
-            //TODo
-        }
-        System.out.println("user notification = " + notificationUsers.size());
-        for (WebUser u : notificationUsers) {
-            UserNotification nun = new UserNotification();
-            nun.setNotification(n);
-            nun.setWebUser(u);
-            nun.setCreatedAt(new Date());
-            nun.setCreater(sessionController.getLoggedUser());
-            System.out.println("user notification = " + nun.getNotification().getMessage());
-            createAllertMessage(n);
-            getFacade().create(nun);
-        }
+        //TODO: Replace placeholders with actual values
+        template = template.replace("{patient_name}", "")
+                .replace("{doctor}", "")
+                .replace("{appointment_time}", "")
+                .replace("{appointment_date}", "")
+                .replace("{serial_no}", "")
+                .replace("{doc}", "")
+                .replace("{time}", "")
+                .replace("{date}", "")
+                .replace("{No}", "");
+        return "";
     }
 
     public void createAllertMessage(Notification n) {

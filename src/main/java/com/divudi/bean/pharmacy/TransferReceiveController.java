@@ -230,7 +230,7 @@ public class TransferReceiveController implements Serializable {
         double value = 0;
         int serialNo = 0;
 
-        if (sessionController.getLoggedPreference().isTranferNetTotalbyRetailRate()) {
+        if (sessionController.getApplicationPreference().isTranferNetTotalbyRetailRate()) {
             for (BillItem b : getBillItems()) {
                 value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
                 b.setSearialNo(serialNo++);

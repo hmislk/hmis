@@ -72,11 +72,11 @@
                                 </f:facet>
                                 <h:outputLabel value="#{sv.category.name}" />
                             </p:column>
-                            <p:column headerText="Sub Category" style="font-weight:normal ;color: black;text-align: left;">
+                            <p:column headerText="Chargers" style="font-weight:normal ;color: black;text-align: left;">
                                 <f:facet name="header" >
                                     <h:outputText value="sub Category" />
                                 </f:facet>
-                                <h:outputLabel value="#{sv.category.parentCategory.name}" rendered="#{sv.category ne null}" />
+                                <h:outputLabel value="#{sv.total}"  />
                             </p:column>
                             <p:column headerText="Instiution" filterBy="#{sv.institution.name}" filterMatchMode="contains"
                                       style="font-weight:normal ;color: black;text-align: left;">
@@ -109,7 +109,7 @@
 
                             <p:column headerText="Service Date Created"
                                       style="font-weight:normal ;color: black;text-align: left;"
-                                      sortBy="#{sv.createdAt}">
+                                      sortBy="#{sv.createdAt}" filterBy="#{sv.createdAt}" filterMatchMode="contains" >
 
                                 <h:outputLabel value="#{sv.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" 

@@ -177,6 +177,7 @@ public class PastPatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> encounterPrescreptions;
     private List<ClinicalFindingValue> encounterFindingValues;
     private List<ClinicalFindingValue> encounterPlanOfActions;
+    private List<ClinicalFindingValue> encounterInvestigationResults;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -546,7 +547,7 @@ public class PastPatientEncounterController implements Serializable {
             m.put("doc", doctor);
         }
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
+        
         return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
 
@@ -1037,6 +1038,45 @@ public class PastPatientEncounterController implements Serializable {
         return vs;
     }
 
+    public List<ClinicalFindingValue> fillPastPatientDiagnosisHistory(PatientEncounter encounter) {
+        List<ClinicalFindingValue> vs;
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts", ClinicalFindingValueType.VisitDiagnosis);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+
+        sql += " order by e.orderNo";
+        vs = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (vs == null) {
+            vs = new ArrayList<>();
+        }
+
+        return vs;
+    }
+
+    public List<ClinicalFindingValue> fillPastPatientMedicineHistory(PatientEncounter encounter) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("p", encounter);
+        m.put("ret", false);
+        m.put("ts", ClinicalFindingValueType.VisitMedicine);
+        String sql;
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter = :p "
+                + " and e.retired = :ret "
+                + " and e.clinicalFindingValueType = :ts ";
+
+        sql += " order by e.orderNo";
+
+        return clinicalFindingValueFacade.findByJpql(sql, m);
+    }
+    
     public String navigateToOldOpdVisitFromSearch() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing");
@@ -1108,6 +1148,8 @@ public class PastPatientEncounterController implements Serializable {
         encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
         encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
+        encounterPlanOfActions = fillPlanOfAction(encounter);
+        encounterInvestigationResults = fillEncounterInvestigationResults(encounter);
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1139,6 +1181,9 @@ public class PastPatientEncounterController implements Serializable {
         String rr = e.getRespiratoryRate()+" bpm";
         String pfr = e.getPfr()+"";
         String saturation = e.getSaturation()+"";
+        if (comments == null) {
+            comments = "";
+        }
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1192,7 +1237,7 @@ public class PastPatientEncounterController implements Serializable {
 
         String ixAsString = "Ix" + "<br/>";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName() + "<br/>";;
+            ixAsString += ix.getItemValue().getName() + "<br/>";
         }
         
         String paAsString = "";
@@ -2546,6 +2591,12 @@ public class PastPatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitProcedure);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
+    
+    private List<ClinicalFindingValue> fillEncounterInvestigationResults(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigationResult);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
 
     private List<ClinicalFindingValue> fillEncounterDiagnoses(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
@@ -2582,6 +2633,13 @@ public class PastPatientEncounterController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
+    
+    private List<ClinicalFindingValue> fillPlanOfAction(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.PlanOfAction);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
 
     public ClinicalFindingValue getEncounterDiagnosticImage() {
         return encounterDiagnosticImage;
@@ -2848,6 +2906,14 @@ public class PastPatientEncounterController implements Serializable {
 
     public void setEncounterPlanOfActions(List<ClinicalFindingValue> encounterPlanOfActions) {
         this.encounterPlanOfActions = encounterPlanOfActions;
+    }
+
+    public List<ClinicalFindingValue> getEncounterInvestigationResults() {
+        return encounterInvestigationResults;
+    }
+
+    public void setEncounterInvestigationResults(List<ClinicalFindingValue> encounterInvestigationResults) {
+        this.encounterInvestigationResults = encounterInvestigationResults;
     }
 
     

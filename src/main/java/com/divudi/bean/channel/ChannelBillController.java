@@ -399,7 +399,7 @@ public class ChannelBillController implements Serializable {
             if (getBillSession().getBill().getFromInstitution() != null
                     && getBillSession().getBill().getFromInstitution().getBallance()
                     - getBillSession().getBill().getTotal() < -getBillSession().getBill().getFromInstitution().getAllowedCredit()) {
-                JsfUtil.addErrorMessage("Agency Ballance is Not Enough");
+                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
             }
         }
@@ -1370,8 +1370,8 @@ public class ChannelBillController implements Serializable {
             }
 
             if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
-                errorText = "Agency Ballance is Not Enough";
-                JsfUtil.addErrorMessage("Agency Ballance is Not Enough");
+                errorText = "Agency Balance is Not Enough";
+                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
             }
             if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
@@ -1444,8 +1444,8 @@ public class ChannelBillController implements Serializable {
             }
 
             if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
-                errorText = "Agency Ballance is Not Enough";
-                JsfUtil.addErrorMessage("Agency Ballance is Not Enough");
+                errorText = "Agency Balance is Not Enough";
+                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
             }
 
@@ -1613,8 +1613,8 @@ public class ChannelBillController implements Serializable {
     public void loadUserPreferances() {
         UserPreference pf = null;
         //System.out.println("pf = " + pf);
-        if (getSessionController().getLoggedPreference() != null) {
-            pf = getSessionController().getLoggedPreference();
+        if (getSessionController().getApplicationPreference() != null) {
+            pf = getSessionController().getApplicationPreference();
         } else if (getSessionController().getUserPreference() != null) {
             pf = getSessionController().getUserPreference();
         } else {

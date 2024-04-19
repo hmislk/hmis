@@ -75,119 +75,6 @@
                                     </h:panelGrid>
                                 </div>
                             </div>
-                            <div class="col-6 d-flex justify-content-end">
-
-
-                                <h:dataTable value="#{financialTransactionController.atomicBillTypeTotals.serviceTypeTotals}" var="serviceTypeTotal" styleClass="table">
-                                    <h:column>
-                                        <!-- This column will display the service type and its total -->
-                                        <f:facet name="header">Service Type / Total</f:facet>
-                                        #{serviceTypeTotal.serviceType} / #{serviceTypeTotal.totalByServiceType}
-                                    </h:column>
-                                    <h:column>
-                                        <!-- Nested ui:repeat for BillCategoryTotals within each ServiceType -->
-                                        <ui:repeat value="#{serviceTypeTotal.billCategoryTotals}" var="billCategoryTotal">
-                                            <h:dataTable value="#{billCategoryTotal.paymentMethodTotals}" var="paymentMethodTotal" styleClass="table">
-                                                <h:column>
-                                                    <!-- This column will display the bill category -->
-                                                    <f:facet name="header">Bill Category</f:facet>
-                                                        #{billCategoryTotal.billCategory}
-                                                </h:column>
-                                                <h:column>
-                                                    <!-- This column will display the payment method and its total -->
-                                                    <f:facet name="header">Payment Method / Total</f:facet>
-                                                    #{paymentMethodTotal.paymentMethod} / #{paymentMethodTotal.totalByPaymentMethod}
-                                                </h:column>
-                                            </h:dataTable>
-                                            <h:outputText value="Total for #{billCategoryTotal.billCategory}: #{billCategoryTotal.totalByBillCategory}" />
-                                            <br />
-                                        </ui:repeat>
-                                    </h:column>
-                                </h:dataTable>
-
-                                <ui:repeat value="#{financialTransactionController.atomicBillTypeTotals.serviceTypeTotals}" var="serviceTypeTotal">
-                                    <h3>#{serviceTypeTotal.serviceType} - Total: #{serviceTypeTotal.totalByServiceType}</h3>
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Bill Category</th>
-                                                <th>Payment Method</th>
-                                                <th>Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <ui:repeat value="#{serviceTypeTotal.billCategoryTotals}" var="billCategoryTotal">
-                                                <ui:repeat value="#{billCategoryTotal.paymentMethodTotals}" var="paymentMethodTotal" varStatus="status">
-                                                    <tr>
-                                                        <td>
-                                                            <!-- Display bill category only on the first row of each category -->
-                                                            <ui:fragment rendered="#{status.index == 0}">
-                                                                #{billCategoryTotal.billCategory}
-                                                            </ui:fragment>
-                                                        </td>
-                                                        <td>#{paymentMethodTotal.paymentMethod}</td>
-                                                        <td>#{paymentMethodTotal.totalByPaymentMethod}</td>
-                                                    </tr>
-                                                </ui:repeat>
-                                                <!-- Summary row for bill category, if needed -->
-                                                <tr>
-                                                    <td colspan="3"><strong>Total for #{billCategoryTotal.billCategory}: #{billCategoryTotal.totalByBillCategory}</strong></td>
-                                                </tr>
-                                            </ui:repeat>
-                                        </tbody>
-                                    </table>
-                                </ui:repeat>
-
-
-
-                                <p:dataTable rendered="false" value="#{financialTransactionController.paymentMethodValues.paymentMethodsWithValues}" var="pmv" >
-                                    <p:column >
-                                        <h:outputText value="#{pmv.paymentMethod.label}" ></h:outputText>
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputText value="#{pmv.value}" ></h:outputText>
-                                    </p:column>
-                                </p:dataTable>
-                                
-                                <h:panelGroup id="btotals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq true}">
-                                    <h:panelGrid columns="3" class="my-2">
-                                        <h:outputText value="OPD BILLS"/>
-                                        <div style="background-color: #cce5ff;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText style="text-align: right" value="#{financialTransactionController.totalOpdBillValues}"/>
-
-                                        <h:outputText value="PHARMECY BILLS"/>
-                                        <div style="background-color: #e6ccff;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText class="text-right" value="#{financialTransactionController.totalPharmecyBillValues}"/>
-
-                                        <h:outputText value="SHIFT START"/>
-                                        <div style="background-color: #ffd9e6;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText class="text-right" value="#{financialTransactionController.totalShiftStart}"/>
-
-                                        <h:outputText value="SHIFT BALANCE TRANSFER"/>
-                                        <div style="background-color: #ccffcc;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText class="text-right" value="- #{financialTransactionController.totalBalanceTransfer}"/>
-
-                                        <h:outputText value="FUND TRANSFER RECIVED"/>
-                                        <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText class="text-right" value="#{financialTransactionController.totalTransferRecive}"/>
-
-                                        <h:outputText value="TOTAL FUNDS" style="font-weight: bold"/>
-                                        <div style="width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <p:outputLabel 
-                                            style="font-weight: bold"
-                                            class="text-right"
-                                            value="#{financialTransactionController.totalFunds}" >
-                                        </p:outputLabel>
-                                    </h:panelGrid>
-                                </h:panelGroup>
-
-                            </div>
                         </div>
 
                         <p:panel header="Add Funds" class="my-1 mb-4" >
@@ -201,7 +88,7 @@
                                         icon="fa fa-plus"
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals btotals cmdPayment paymentDetails"
+                                        update="tblPayments totals cmdPayment paymentDetails"
                                         action="#{financialTransactionController.addPaymentToShiftEndFundBill()}" >
                                     </p:commandButton>
                                 </div>
@@ -279,27 +166,84 @@
 
                         </p:panel>
 
-                        <h:panelGroup id="totals" rendered="false" style="font-weight: bold;font-size: 14pt" class="mt-4">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h:outputText value="Funds List" ></h:outputText>
-                                </div>
-                                <div class="d-flex">
-                                    <h:outputText value=" Total Funds : " ></h:outputText>
-                                    <p:outputLabel 
+                        <h:panelGroup id="totals" rendered="true" styleClass="mt-4">
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>In</th>
+                                        <th>Out</th>
+                                        <th>Net Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Cash</td>
+                                        <td>#{financialTransactionController.financialReport.collectedCash}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedCash}</td>
+                                        <td>#{financialTransactionController.financialReport.netCashTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Card</td>
+                                        <td>#{financialTransactionController.financialReport.collectedCreditCard}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedCreditCard}</td>
+                                        <td>#{financialTransactionController.financialReport.netCreditCardTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Voucher</td>
+                                        <td>#{financialTransactionController.financialReport.collectedVoucher}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedVoucher}</td>
+                                        <td>#{financialTransactionController.financialReport.netVoucherTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Other</td>
+                                        <td>#{financialTransactionController.financialReport.collectedOtherNonCredit}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedOtherNonCredit}</td>
+                                        <td>#{financialTransactionController.financialReport.netOtherNonCreditTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Float My-Safe</td>
+                                        <td>#{financialTransactionController.financialReport.floatMySafe}</td>
+                                        <td></td> <!-- Assuming no refunded column for My-Safe -->
+                                        <td>#{financialTransactionController.financialReport.floatMySafe}</td> <!-- Assuming My-Safe equals net for floats -->
+                                    </tr>
 
-                                        class="mx-2"
-                                        value="#{financialTransactionController.totalFunds}" >
-                                    </p:outputLabel>
-                                </div>
-                            </div>
+                                    <tr>
+                                        <td>Float Collected Handovers</td>
+                                        <td>#{financialTransactionController.financialReport.floatCollected}</td>
+                                        <td>#{financialTransactionController.financialReport.collectionHandover}</td> <!-- Assuming no refunded column for floats -->
+                                        <td>#{financialTransactionController.financialReport.floatCollected}</td> <!-- Assuming collected equals net for floats -->
+                                    </tr>
+                                    <tr>
+                                        <td>Bank Transaction</td>
+                                        <td>#{financialTransactionController.financialReport.bankWithdrawals}</td>
+                                        <td>#{financialTransactionController.financialReport.bankDeposits}</td> <!-- Assuming no refunded column for bank withdrawals -->
+                                        <td>#{financialTransactionController.financialReport.bankWithdrawals}</td> <!-- Assuming withdrawals equals net -->
+                                    </tr>
 
-
-
-
+                                    <tr>
+                                        <td>Cash Given Out (Transfer Out)</td>
+                                        <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td>
+                                        <td></td> <!-- Assuming no refunded column for cash given out -->
+                                        <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td> <!-- Assuming cash given out equals net -->
+                                    </tr>
+                                    <tr>
+                                        <td>Short Excess</td>
+                                        <td>#{financialTransactionController.financialReport.shortExcess}</td>
+                                        <td></td> <!-- Assuming no refunded column for short/excess -->
+                                        <td>#{financialTransactionController.financialReport.shortExcess}</td> <!-- Assuming short/excess equals net -->
+                                    </tr>
+                                    <tr class="table-primary"> <!-- Use a different class for the total row for emphasis -->
+                                        <td>Total</td>
+                                        <td colspan="2"></td>
+                                        <td>#{financialTransactionController.financialReport.total}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="false">
+
+                        <h:panelGroup rendered="true">
                             <p:dataTable 
                                 id="tblPayments" 
                                 value="#{financialTransactionController.currentBillPayments}" 
@@ -308,32 +252,29 @@
                                 paginatorPosition="bottom"
 
                                 >
+                                <p:column headerText="ID" >
+                                    <h:outputText value="#{bp.id}" ></h:outputText>
+                                </p:column>
                                 <p:column headerText="Payment Method" >
                                     <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: #ffcccc;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: #ccffcc;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'OpdBill' ? 'background-color: #cce5ff;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: #ffd9e6;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: #ffffcc;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'ShiftEndFundBill' ? 'background-color: #cce0ff;color: #333333' : ''};
-                                          #{bp.bill.billType eq 'PharmacySale' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                          font-size: 15pt;font-weight:bold ">
+                                <p:column headerText="Bill ID" >
+                                    <h:outputText value="#{bp.bill.insId}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type" >
+                                    <h:outputText value="#{bp.bill.billType}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billTypeAtomic}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billClass}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Value" >
                                     <h:outputText value="#{bp.paidValue}" />
                                 </p:column>
 
-                                <p:column headerText="Details" >
-                                    Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
-                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                    Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
-                                        Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                                        Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
-                                        Bank Name : <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                                    </h:panelGroup><br/>
-                                </p:column>
+
                                 <p:column headerText="Action" >
                                     <p:commandButton 
                                         class="ui-button-success"
@@ -342,18 +283,6 @@
                                         action="#{billSearch.navigateToViewOpdBill}"
                                         >
                                         <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        class="ui-button-danger mx-1"
-                                        icon=" fa-solid fa-trash"
-                                        id="btnRemove"
-                                        value="Remove" 
-                                        action="#{financialTransactionController.removePayment}" 
-                                        process="btnRemove tblPayments"
-                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}
-                                        :#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('btotals',view).clientId}"
-                                        >
-                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>

@@ -7,14 +7,14 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/pharmacy"
                 xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier">
 
 
     <ui:define name="subcontent">
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel  header="Pharmay Sale Bill Summery">
+                <p:panel  header="Pharmay Sale Bill Summary">
                     <h:panelGrid columns="4" class="w-100">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{billSearch.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -35,6 +35,7 @@
                     </h:panelGrid>
 
                     <div class="d-flex align-items-center my-2">
+
                         <p:commandButton 
                             id="btnRefresh" 
                             ajax="false" 
@@ -43,7 +44,7 @@
                             class="ui-button-warning" 
                             style="float: right;" 
                             actionListener="#{billSearch.processCashierPharmacySaleBillSummery}" />
-                       
+
 
                         <p:commandButton 
                             ajax="false" 
@@ -51,7 +52,7 @@
                             icon="fa-solid fa-file-excel"
                             class="ui-button-success mx-2" 
                             style="float: right;" >
-                            <p:dataExporter target="tbl" fileName="Pharmay Sale Bill Summery.xlsx" type="xlsx" ></p:dataExporter>
+                            <p:dataExporter target="tbl" fileName="Pharmay Sale Bill Summary.xlsx" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
 
                         <p:commandButton 
@@ -60,86 +61,100 @@
                             style="float: right;" 
                             icon="fa-solid fa-print"
                             class="ui-button-info " >
-                            <p:printer target="tbl"  />
+                            <p:printer target="gpBillPreview"  />
                         </p:commandButton>
+                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                            <f:selectItem itemLabel="Please Select Paper Type" />
+                            <f:selectItems value="#{enumController.paperTypes}" />
+                        </p:selectOneMenu>
+                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                     </div>
 
-                    <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
-                        <p:column headerText="Bill Type" width="18%">
-                            <h:outputText value="#{bs.billType.label}" ></h:outputText>
-                            <f:facet name="footer">
-                                <h:panelGroup>
-                                    <h:outputText value="Cash Total" />
-                                    <br />
-                                    <h:outputText value="Credit Total" />
-                                    <br />
-                                    <h:outputText value="Slip Total" />
-                                    <br />
-                                    <h:outputText value="Card Total " />
-                                    <br />
-                                    <h:outputText value="Multiple Payments Total" />
-                                    <br />
-                                    <h:outputText value="Patient Deposite Total" />
-                                    <br />
-                                </h:panelGroup>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bs.paymentMethod}" ></h:outputText>
-                            <f:facet name="footer">
-                                <h:panelGroup>
-                                    <h:outputText value="#{billSearch.cashTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputText>
-                                    <br />
-                                    <h:outputText value="#{billSearch.creditTotal}">
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputText>
-                                    <br />
-                                    <h:outputText value="#{billSearch.slipTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputText>
-                                    <br />
-                                    <h:outputText value="#{billSearch.creditCardTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputText>
-                                    <br />
-                                    <h:outputText value="#{billSearch.multiplePaymentsTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputText>
-                                    <br />
-                                    <h:outputText value="#{billSearch.patientDepositsTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputText>
-                                </h:panelGroup>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="User" >
-                            <h:outputText value="#{bs.webUser.webUserPerson.name}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Count" >
-                            <h:outputText value="#{bs.count}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Bill Total" >
-                            <h:outputText value="#{bs.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputText>
-                            
-                        </p:column>
-                        <p:column headerText="Action" >
-                             <p:commandButton class="w-100 ui-button-warning" ajax="false"
-                                                             value="View Summary"
-                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
-                                                             actionListener="#{pharmacySaleReport.makeNull}"> 
-                                 <f:setPropertyActionListener target="#{pharmacySaleReport.fromDate}" value="#{billSearch.fromDate}"/>
-                                 <f:setPropertyActionListener target="#{pharmacySaleReport.toDate}" value="#{billSearch.toDate}"/>
-                                 <f:setPropertyActionListener target="#{pharmacySaleReport.department}" value="#{billSearch.department}"/>
-                                 <f:setPropertyActionListener target="#{pharmacySaleReport.user}" value="#{bs.webUser}"/>
-                             </p:commandButton>
-                        </p:column>
-                    </p:dataTable>
+                    <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                            <prints:pharmacySaleBillSummaryPos billSearch="#{billSearch}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
 
-                    <h1></h1>
+                            <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
+                                <p:column headerText="Bill Type" width="18%">
+                                    <h:outputText value="#{bs.billType.label}" ></h:outputText>
+                                    <f:facet name="footer">
+                                        <h:panelGroup>
+                                            <h:outputText value="Cash Total" />
+                                            <br />
+                                            <h:outputText value="Credit Total" />
+                                            <br />
+                                            <h:outputText value="Slip Total" />
+                                            <br />
+                                            <h:outputText value="Card Total " />
+                                            <br />
+                                            <h:outputText value="Multiple Payments Total" />
+                                            <br />
+                                            <h:outputText value="Patient Deposite Total" />
+                                            <br />
+                                        </h:panelGroup>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="#{bs.paymentMethod}" ></h:outputText>
+                                    <f:facet name="footer">
+                                        <h:panelGroup>
+                                            <h:outputText value="#{billSearch.cashTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <br />
+                                            <h:outputText value="#{billSearch.creditTotal}">
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <br />
+                                            <h:outputText value="#{billSearch.slipTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <br />
+                                            <h:outputText value="#{billSearch.creditCardTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <br />
+                                            <h:outputText value="#{billSearch.multiplePaymentsTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <br />
+                                            <h:outputText value="#{billSearch.patientDepositsTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="User" >
+                                    <h:outputText value="#{bs.webUser.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Count" >
+                                    <h:outputText value="#{bs.count}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Total" >
+                                    <h:outputText value="#{bs.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+
+                                </p:column>
+                                <p:column headerText="Action" exportable="false">
+                                    <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                     value="View Summary"
+                                                     action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
+                                                     actionListener="#{pharmacySaleReportController.makeNull}"> 
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.fromDate}" value="#{billSearch.fromDate}"/>
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.toDate}" value="#{billSearch.toDate}"/>
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.department}" value="#{billSearch.department}"/>
+                                        <f:setPropertyActionListener target="#{pharmacySaleReportController.user}" value="#{bs.webUser}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+
                 </p:panel>
             </h:form>
         </h:panelGroup>

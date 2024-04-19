@@ -15,6 +15,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.AtomicBillTypeTotals;
 import static com.divudi.data.BillType.CollectingCentreBill;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.FinancialReport;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
 import javax.inject.Named;
@@ -67,6 +68,7 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> allBillsShiftStartToNow;
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotals;
+    private FinancialReport financialReport;
 
     //Billed Totals
     private double totalOpdBillValue;
@@ -188,7 +190,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferReceivedBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
-        
+
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setReferenceBill(selectedBill);
         if (selectedBill != null) {
@@ -501,14 +503,18 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
         currentBillPayments = paymentFacade.findByJpql(jpql, m);
-//        resetTotalFundsValues();
         paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotals = new AtomicBillTypeTotals();
         for (Payment p : currentBillPayments) {
-            atomicBillTypeTotals.addRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            if (p.getBill().getBillTypeAtomic() == null) {
+                System.out.println("p = " + p);
+                System.out.println("p.getBill() = " + p.getBill());
+            }
+            atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             calculateBillValuesFromBillTypes(p);
         }
-        calculateTotalFundsFromShiftStartToNow();
+//        calculateTotalFundsFromShiftStartToNow();
+        financialReport = new FinancialReport(atomicBillTypeTotals);
     }
 
     public void calculateBillValuesFromBillTypes(Payment p) {
@@ -1168,7 +1174,13 @@ public class FinancialTransactionController implements Serializable {
     public void setAtomicBillTypeTotals(AtomicBillTypeTotals atomicBillTypeTotals) {
         this.atomicBillTypeTotals = atomicBillTypeTotals;
     }
-    
-    
+
+    public FinancialReport getFinancialReport() {
+        return financialReport;
+    }
+
+    public void setFinancialReport(FinancialReport financialReport) {
+        this.financialReport = financialReport;
+    }
 
 }

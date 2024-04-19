@@ -59,14 +59,28 @@
                                         </p:column>
                                     </p:row>
                                 </f:facet>
+                                
                                 <p:row >
+                                    <p:column >
+                                        <p:outputLabel value="Item" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <p:selectOneMenu id="lstItems" value="#{bookingController.itemToAddToBooking}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{bookingController.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                            <p:ajax event="change" process="lstItems" update="lblSessionTotal gpFeeTotal" listener="#{bookingController.fillFees}" ></p:ajax>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row >
+                                    
                                     <p:column >
                                         <p:outputLabel value="Amount"/>
                                     </p:column>
                                     <p:column >
                                         <h:panelGroup class="mx-2" id="lblSessionTotal">
                                             <p:outputLabel
-                                                value="#{bookingController.selectedSessionInstance.originatingSession.totalForForeigner}"
+                                                value="#{bookingController.feeTotalForSelectedBill}"
                                                 rendered="#{bookingController.foriegn}">
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:outputLabel>
@@ -377,14 +391,14 @@
                                 </p:row>
                                 <p:row>
                                     <p:column><p:outputLabel value="Total Fee" /></p:column>
-                                    <p:column>
-                                        <h:panelGroup>
-                                            <p:outputLabel rendered="#{!bookingController.foriegn}"
-                                                           value="#{bookingController.selectedSessionInstance.originatingSession.total}">
+                                    <p:column >
+                                        <h:panelGroup id="gpFeeTotal">
+                                            <p:outputLabel  rendered="#{!bookingController.foriegn}"
+                                                           value="#{bookingController.feeTotalForSelectedBill}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                             <p:outputLabel rendered="#{bookingController.foriegn}"
-                                                           value="#{bookingController.selectedSessionInstance.originatingSession.totalForForeigner}">
+                                                           value="#{bookingController.feeTotalForSelectedBill}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </h:panelGroup>

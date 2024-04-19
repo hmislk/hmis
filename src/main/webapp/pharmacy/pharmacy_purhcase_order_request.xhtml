@@ -114,9 +114,11 @@
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
                                                    update=":expStockDetailsForm:expStockList"
-                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}">
+                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}"
+                                                   style="#{stockController.findExpiaringStock(bi.item) > 0 ? 'color: red;' : 'color: #02e05f;'}">
                                     </p:commandLink>
                                 </p:column>
+
 
 
 
@@ -170,7 +172,7 @@
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                     <f:selectItem itemLabel="Select Payment method"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForPo}">
+                                    <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
                                     </f:selectItems>
                                     <p:ajax process="@this" update="po" event="change"/>
                                     <p:ajax process="@this" update="duration" event="itemSelect" />
