@@ -771,7 +771,7 @@ public class GrnController implements Serializable {
 //
 //        return suggessions;
 //    }
-    private void calGrossTotal() {
+    public void calGrossTotal() {
         double tmp = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
@@ -792,12 +792,9 @@ public class GrnController implements Serializable {
         //getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
         double grossTotal = 0.0;
         if (getGrnBill().getDiscount() > 0) {
-            grossTotal = getGrnBill().getTotal() + getGrnBill().getDiscount();
-            ////// // System.out.println("gross" + grossTotal);
-            ////// // System.out.println("net1" + getBill().getNetTotal());
-            getGrnBill().setNetTotal(grossTotal);
-            ////// // System.out.println("net2" + getBill().getNetTotal());
+            ChangeDiscountLitener();
         }
+        calDifference();
     }
 
     public void saveBillFee(BillItem bi, Payment p) {
