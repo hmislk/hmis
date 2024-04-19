@@ -118,7 +118,7 @@
                                 </p:inputText>
                             </p:column>  
                             <p:column headerText="Free Qty" styleClass="averageNumericColumn" >                         
-                                <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%">
+                                <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%" onfocus="this.select()">
                                     <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
@@ -126,7 +126,7 @@
                             </p:column> 
                             <p:column headerText="Purchse Price"  styleClass="averageNumericColumn" >  
                                 <h:panelGroup id="price">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">   
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" onfocus="this.select()">   
                                         <f:convertNumber pattern="#00.00"/>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />

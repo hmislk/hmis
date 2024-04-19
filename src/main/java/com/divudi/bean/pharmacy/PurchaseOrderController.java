@@ -223,6 +223,16 @@ public class PurchaseOrderController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
+            
+            double qty = 0.0;
+            qty = i.getTmpQty() + i.getPharmaceuticalBillItem().getFreeQty();
+            if (qty <= 0.0) {
+                i.setRetired(true);
+                i.setRetirer(sessionController.getLoggedUser());
+                i.setRetiredAt(new Date());
+                i.setRetireComments("Retired at Approving PO");
+
+            }
 
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);

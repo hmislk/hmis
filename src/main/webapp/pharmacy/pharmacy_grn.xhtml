@@ -108,7 +108,7 @@
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
                                 </f:facet>                        
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
+                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" onfocus="this.select()"/>
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
@@ -123,7 +123,7 @@
                                     <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQtyInUnit}"/>
                                 </f:facet>                      
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" />
+                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" onfocus="this.select()"/>
                                 </f:facet>
                             </p:cellEditor>                        
                         </p:column> 
@@ -155,7 +155,7 @@
                                     </h:panelGroup>
                                 </f:facet>  
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  onfocus="this.select()"> 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </f:facet>
@@ -193,7 +193,7 @@
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}" onfocus="this.select()">  
                                     </p:inputText>
                                 </f:facet>
                             </p:cellEditor>
@@ -238,8 +238,8 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                                 <p:outputLabel value="Discount"/>
-                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
-                                    <p:ajax process="@this" update="net ins" event="keyup"
+                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" onfocus="this.select()">
+                                    <p:ajax process="@this" update="net ins diff" event="keyup"
                                             listener="#{grnController.netDiscount()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Net Total"/>
@@ -250,7 +250,7 @@
 
                             <p:panelGrid columns="2" id="ins">
                                 <p:outputLabel value="Invoice Total"/>
-                                <p:inputText id="insv"  value="#{grnController.insTotal}" >
+                                <p:inputText id="insv"  value="#{grnController.insTotal}" onfocus="this.select()">
                                     <f:convertNumber pattern="#,##0.00" />
                                     <p:ajax process="@this" update="diff" event="keyup"
                                             listener="#{grnController.calDifference()}"/>
