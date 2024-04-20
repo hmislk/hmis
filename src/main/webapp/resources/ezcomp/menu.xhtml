@@ -386,7 +386,11 @@
                     </p:submenu>
 
 
-                    <p:menuitem ajax="false" action="/lab/sample?faces-redirect=true" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        action="#{patientInvestigationController.navigateToSampleManagement()}"
+                        value="Sampling" 
+                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution?faces-redirect=true" value="Reports/Search By Logged Institution" rendered="#{false and webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>

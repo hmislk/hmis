@@ -50,6 +50,7 @@ import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
+import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,8 +73,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -89,7 +90,6 @@ public class PatientInvestigationController implements Serializable {
     PatientReportFacade prFacade;
     @EJB
     InvestigationItemFacade investigationItemFacade;
-   
     CommonFunctions commonFunctions;
     @EJB
     private InvestigationFacade investFacade;
@@ -128,8 +128,8 @@ public class PatientInvestigationController implements Serializable {
     private ItemForItemController itemForItemController;
     @Inject
     private SmsController smsController;
-    
-
+    @Inject
+    private Lims lims;
     /**
      * Class Variables
      */
@@ -144,6 +144,7 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientInvestigation> lstToEnterData = null;
     private List<PatientReport> lstToApprove = null;
     private List<PatientReport> lstToPrint = null;
+    private List<PatientInvestigation> lstForSampleManagement = null;
     String selectText = "";
     private Department department;
     @Temporal(TemporalType.TIME)
@@ -181,6 +182,38 @@ public class PatientInvestigationController implements Serializable {
 
     private List<PatientReportItemValue> patientReportItemValues;
 
+    private List<String> sampleTubeLabels;
+
+    public String navigateToPrintBarcodeFromMenu() {
+        return "/lab/sample_barcode_printing";
+    }
+
+    public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
+        System.out.println("navigateToPrintBarcodesFromSampellingPage");
+        System.out.println("ptIx = " + ptIx);
+        if (ptIx == null ) {
+            JsfUtil.addErrorMessage("Patient Investigation is NOT selected");
+            return null;
+        }
+        if(ptIx.getBillItem()==null){
+            JsfUtil.addErrorMessage("No Bill Item");
+            return null;
+        }
+        if(ptIx.getBillItem().getBill()==null){
+            JsfUtil.addErrorMessage("No Bill");
+            return null;
+        }
+        if(ptIx.getBillItem().getBill().getIdStr()==null){
+            JsfUtil.addErrorMessage("No Bill id sTRING");
+            return null;
+        }
+        
+        inputBillId = ptIx.getBillItem().getBill().getIdStr();
+        System.out.println("inputBillId = " + inputBillId);
+        prepareSampleCollection();
+        return "/lab/sample_barcode_printing";
+    }
+
     public void fillPatientReportItemValues() {
         String j = "select v from PatientReportItemValue v "
                 + "where v.patientReport.approved=:app "
@@ -193,7 +226,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("rt", InvestigationReportType.General);
         if (false) {
             PatientReportItemValue v = new PatientReportItemValue();
-            if (v.getPatientReport().getPatientInvestigation().getInvestigation().getReportType() 
+            if (v.getPatientReport().getPatientInvestigation().getInvestigation().getReportType()
                     == InvestigationReportType.General) {
 
             }
@@ -436,7 +469,6 @@ public class PatientInvestigationController implements Serializable {
         SysMexOld sysMex = new SysMexOld();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
-        
         if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
             SysMexAdf1 m1 = new SysMexAdf1();
             m1.setInputStringBytesSpaceSeperated(msg);
@@ -929,11 +961,11 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         Bill bill = current.getBillItem().getBill();
-        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getSmsNumber()== null) {
+        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getSmsNumber() == null) {
             JsfUtil.addErrorMessage("System Error");
             return;
         }
-        
+
         Sms s = new Sms();
         s.setPending(false);
         s.setBill(bill);
@@ -942,7 +974,7 @@ public class PatientInvestigationController implements Serializable {
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
         s.setPatientInvestigation(current);
-       
+
         s.setReceipientNumber(bill.getPatient().getPerson().getSmsNumber());
 
         String messageBody = "Dear Sir/Madam, "
@@ -953,17 +985,16 @@ public class PatientInvestigationController implements Serializable {
         s.setSentSuccessfully(true);
         s.setSmsType(MessageType.LabReport);
         getSmsFacade().create(s);
-        
+
         UserPreference ap = sessionController.getApplicationPreference();
 
-      
         SmsSentResponse sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
 
         if (sent.isSentSuccefully()) {
             s.setSentSuccessfully(true);
             s.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(s);
-            
+
             getCurrent().getBillItem().getBill().setSmsed(true);
             getCurrent().getBillItem().getBill().setSmsedAt(new Date());
             getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
@@ -1085,9 +1116,9 @@ public class PatientInvestigationController implements Serializable {
         return lstToReceiveSearch;
     }
 
-    public void toCollectSample() {
+    public String navigateToSampleManagement() {
         prepareToSample();
-
+        return "/lab/sample_management?faces-redirect=true";
     }
 
     public void prepareToSample() {
@@ -1147,7 +1178,6 @@ public class PatientInvestigationController implements Serializable {
                 + "^FO30,20,^ADN,18,10^FD#{footer}^FS\r\n" // was 10
                 + "^XZ\r\n";
 
-
         String ptLabel = "";
         Bill tb;
         tb = patientSamples.get(0).getBill();
@@ -1192,14 +1222,11 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void prepareSampleCollection() {
-        Long billId = stringToLong(inputBillId);
-        List<Bill> temBills;
-        if (billId != null) {
-            temBills = prepareSampleCollectionByBillId(billId);
-        } else {
-            temBills = prepareSampleCollectionByBillNumber(inputBillId);
-        }
-        prepareSampleCollectionByBills(temBills);
+        System.out.println("prepareSampleCollection");
+        System.out.println("inputBillId = " + inputBillId);
+        String barcodeJson = lims.generateSamplesForInternalUse(inputBillId, sessionController.getLoggedUser());
+        sampleTubeLabels = new ArrayList<>();
+        sampleTubeLabels.add(barcodeJson);
     }
 
     public Long stringToLong(String input) {
@@ -1210,6 +1237,7 @@ public class PatientInvestigationController implements Serializable {
         }
     }
 
+    @Deprecated
     public List<Bill> prepareSampleCollectionByBillId(Long bill) {
         Bill b = getBillFacade().find(bill);
         List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
@@ -1220,6 +1248,7 @@ public class PatientInvestigationController implements Serializable {
         return bs;
     }
 
+    @Deprecated
     public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
         String j = "Select b from Bill b where b.insId=:id";
         Map m = new HashMap();
@@ -1244,6 +1273,7 @@ public class PatientInvestigationController implements Serializable {
         }
     }
 
+    @Deprecated
     public void prepareSampleCollectionByBills(List<Bill> bills) {
         String j = "";
         Map m;
@@ -1454,7 +1484,6 @@ public class PatientInvestigationController implements Serializable {
 //        //////System.out.println("Sql is " + temSql);
         toReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
-        
     }
 
     public void markYetToReceiveOnes() {
@@ -1702,8 +1731,6 @@ public class PatientInvestigationController implements Serializable {
         }
         return patientSamples;
     }
-    
-    
 
     public void setPatientSamples(List<PatientSample> patientSamples) {
         this.patientSamples = patientSamples;
@@ -1857,6 +1884,30 @@ public class PatientInvestigationController implements Serializable {
         this.activeIndexOfManageInvestigation = activeIndexOfManageInvestigation;
     }
 
+    public List<String> getSampleTubeLabels() {
+        return sampleTubeLabels;
+    }
+
+    public void setSampleTubeLabels(List<String> sampleTubeLabels) {
+        this.sampleTubeLabels = sampleTubeLabels;
+    }
+
+    public Lims getLims() {
+        return lims;
+    }
+
+    public void setLims(Lims lims) {
+        this.lims = lims;
+    }
+
+    public List<PatientInvestigation> getLstForSampleManagement() {
+        return lstForSampleManagement;
+    }
+
+    public void setLstForSampleManagement(List<PatientInvestigation> lstForSampleManagement) {
+        this.lstForSampleManagement = lstForSampleManagement;
+    }
+
     /**
      *
      */
@@ -1916,5 +1967,6 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
     
 }

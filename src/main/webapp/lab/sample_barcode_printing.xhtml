@@ -19,8 +19,8 @@
                                 value="To Sampling" 
                                 ajax="false"  
                                 style="float: right;"
-                                action="/lab/sample" 
-                                actionListener="#{patientInvestigationController.toCollectSample()}">
+                                action="/lab/sample_management" 
+                                actionListener="#{patientInvestigationController.navigateToSampleManagement()}">
                             </p:commandButton>
                         </f:facet>
                         <div class="d-flex justify-content-end gap-2">
@@ -36,6 +36,12 @@
                         </div>
                         
                     </p:panel>
+                    
+                    
+                    <ui:repeat value="#{patientInvestigationController.sampleTubeLabels}" var="label" >
+                        <h:outputText escape="false" value="#{label}" ></h:outputText>
+                    </ui:repeat>
+                    
 
                     <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" >
 
