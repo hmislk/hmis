@@ -19,7 +19,7 @@
                             action="#{userNotificationController.clearCanceledRequestsNotification()}"/>
                         </div>
                         <p:repeat value="#{userNotificationController.items}" var="un">
-                            <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: red;' : ''}">
+                            <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
                                 <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER'}">
                                     <div class="col-4 bg-success p-2 ">
                                         <div class="d-flex align-items-center justify-content-between">

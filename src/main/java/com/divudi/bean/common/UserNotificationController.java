@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -80,7 +81,6 @@ public class UserNotificationController implements Serializable {
     @Inject
     SmsManagerEjb smsManager;
 
-
     public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
     }
@@ -88,22 +88,19 @@ public class UserNotificationController implements Serializable {
     public String navigateToSentNotification() {
         return "/Notification/sent_notifications";
     }
-    
-    public void clearCanceledRequestsNotification(){
+
+    public void clearCanceledRequestsNotification() {
+        if (items == null) {
+            return ;
+        }
+        for(UserNotification un : items){
+            if (un.getNotification().getBill().isCancelled()) {
+                un.setRetired(true);
+                un.setRetiredAt(new Date());
+                getFacade().edit(un);
+            }
+        }
         fillLoggedUserNotifications();
-        if (items==null) {
-            return;
-        }
-        
-        for (UserNotification item : items) {
-            if (item.getNotification()==null) {
-                return;
-            }
-            if (item.getNotification().getBill().isCancelled()) {
-                items.remove(item);
-            }
-        }
-        
     }
 
     public void save(UserNotification userNotification) {
@@ -170,17 +167,19 @@ public class UserNotificationController implements Serializable {
                 + " from UserNotification un "
                 + " where un.seen=:seen "
                 + " and un.webUser=:wu "
-                + " and un.notification.completed=:com";
+                + " and un.notification.completed=:com"
+                + " and un.retired=:ret";
         Map m = new HashMap();
         m.put("seen", false);
         m.put("com", false);
+        m.put("ret", false);
         m.put("wu", sessionController.getLoggedUser());
         items = getFacade().findByJpql(jpql, m);
         return items;
     }
 
     public String navigateToCurrentNotificationRequest(UserNotification un) {
-        Department toDepartmentFromNotification=un.getNotification().getBill().getToDepartment();
+        Department toDepartmentFromNotification = un.getNotification().getBill().getToDepartment();
         if (!toDepartmentFromNotification.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return "";
