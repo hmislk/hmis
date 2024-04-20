@@ -44,8 +44,8 @@
 
             <div class="d-flex justify-content-center">
                 <b>
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                        <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:40px !important; width: 70px; height: 70px; font-weight: bold; border: 1px solid black; color: red; border-radius: 50px; text-align: center; text-align-last: center; margin-top: 10px;" ></h:outputLabel>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" varStatus="loop" >
+                        <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:40px !important; width: 70px; height: 70px; font-weight: bold; border: 1px solid black; color: red; border-radius: 50px; text-align: center; text-align-last: center; margin-top: 10px;" rendered="#{loop.index == 0}"></h:outputLabel>
                     </ui:repeat>
                 </b>
             </div> 
