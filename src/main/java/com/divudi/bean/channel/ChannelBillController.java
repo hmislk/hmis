@@ -797,7 +797,6 @@ public class ChannelBillController implements Serializable {
             JsfUtil.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
         if (getBillSession().getPaidBillSession().getBill() == null) {
             JsfUtil.addErrorMessage("No Paid Paid Bill Session");
             return;
@@ -1506,7 +1505,6 @@ public class ChannelBillController implements Serializable {
         }
         System.out.println("Error check completed");
         savePatient();
-        System.out.println("Saving patient completed");
         printingBill = saveBilledBill();
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();

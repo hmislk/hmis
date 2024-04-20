@@ -351,7 +351,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
-        System.out.println("addedItemFees = " + addedItemFees);
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
         }
@@ -2199,7 +2198,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             if (iteratingBillFee.getFee() == null) {
                 continue;
             }
-            System.out.println("iteratingBillFee.getFeeGrossValue() = " + iteratingBillFee.getFeeGrossValue());
 
             
             calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
@@ -2302,7 +2300,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //            return null;
 //        }
 //        bill.setInsId(insId);
-        System.out.println("generate insId started = " + new Date());
 //        String insId = generateBillNumberInsId(bill);
 //
 //        if (insId.equals("")) {

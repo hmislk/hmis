@@ -328,7 +328,6 @@ public class TransferIssueController implements Serializable {
                 System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 
-                System.out.println("transferIssueBillItem.getQtyInUnit() = " + transferIssueBillItem.getQtyInUnit());
                 
                 
             
@@ -670,7 +669,6 @@ public class TransferIssueController implements Serializable {
     private PharmacyController pharmacyController;
     
     public void onEditDepartmentTransfer(BillItem billItem) {
-        System.out.println("billItem = " + billItem);
         double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
 
 

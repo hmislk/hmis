@@ -1386,7 +1386,6 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                     billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
-                    System.out.println("sq = " + sq.getStock());
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
 
                     billItem.setItem(sq.getStock().getItemBatch().getItem());

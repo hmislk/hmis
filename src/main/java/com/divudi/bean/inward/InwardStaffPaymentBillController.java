@@ -979,7 +979,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void calculateTotalPay() {
-        System.out.println("calculateTotalPay");
         totalPaying = 0;
         for (BillFee f : payingBillFees) {
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());

@@ -766,7 +766,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void settleBill() {
-        System.out.println("errorCheck() = " + errorCheck());
         if (errorCheck()) {
             return;
         }

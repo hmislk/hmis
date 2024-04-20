@@ -204,7 +204,6 @@ public class Lims {
         WebUser requestSendingUser = findRequestSendingUser(username, password);
         System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
-        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
         // Check if necessary data is present
         if (requestSendingUser == null) {
@@ -320,7 +319,6 @@ public class Lims {
 
     private JSONObject constructPatientSampleJson(Bill bill) {
         System.out.println("constructPatientSampleJson");
-        System.out.println("b = " + bill);
         JSONObject jSONObject = new JSONObject();
         if (bill == null) {
             return null;
@@ -620,7 +618,6 @@ public class Lims {
     }
 
     public List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
-        System.out.println("strBillId = " + strBillId);
         Long billId = stringToLong(strBillId);
         List<Bill> temBills;
         if (billId != null) {
@@ -657,7 +654,6 @@ public class Lims {
     }
 
     public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
-        System.out.println("prepareSampleCollectionByBillNumber");
         String j = "Select b from Bill b where b.insId=:id order by b.id desc";
         Map m = new HashMap();
         m.put("id", insId);
@@ -682,14 +678,12 @@ public class Lims {
         Map m = new HashMap();
         m.put("bb", batchBill);
         System.out.println("m = " + m);
-        System.out.println("j = " + j);
         List<Bill> tbs = billFacade.findByJpql(j, m);
         return tbs;
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {
         System.out.println("getPatientSamplesForBillId");
-        System.out.println("temBills = " + temBills);
         List<PatientSample> pss = prepareSampleCollectionByBillsForRequestss(temBills, wu);
         return pss;
     }

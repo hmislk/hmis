@@ -414,7 +414,6 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Error in adding");
             return;
         }
-        System.out.println("3 aii = " + aii);
         getAdditionalItemsAddedForCurrentSession().add(aii);
         additionalItemToAdd = null;
         JsfUtil.addSuccessMessage("Added");

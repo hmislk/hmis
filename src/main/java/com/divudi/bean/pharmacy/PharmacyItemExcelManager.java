@@ -1432,7 +1432,6 @@ public class PharmacyItemExcelManager implements Serializable {
 
                 cell = sheet.getCell(stockQtyCol, i);
                 temStr = cell.getContents();
-                System.out.println("temStr = " + "temStr");
                 try {
                     stockQty = Double.valueOf(temStr);
                 } catch (NumberFormatException e) {

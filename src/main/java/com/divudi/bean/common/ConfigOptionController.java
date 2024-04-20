@@ -177,7 +177,6 @@ public class ConfigOptionController implements Serializable {
 
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         System.out.println("getEnumValue");
-        System.out.println("option = " + option);
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
         }
@@ -189,7 +188,6 @@ public class ConfigOptionController implements Serializable {
 
     public <E extends Enum<E>> E getEnumValueByKey(String key, Class<E> enumClass, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
-        System.out.println("option = " + option);
 
         if (option == null || option.getValueType() != OptionValueType.ENUM || !option.getEnumType().equals(enumClass.getName())) {
             option = new ConfigOption();
@@ -201,7 +199,6 @@ public class ConfigOptionController implements Serializable {
             option.setDepartment(department);
             option.setWebUser(webUser);
             option.setValueType(OptionValueType.ENUM);
-            System.out.println("option.getEnumValue() = " + option.getEnumValue());
             option.setEnumType(enumClass.getName());
             optionFacade.create(option); // Persist the new ConfigOption entity
 

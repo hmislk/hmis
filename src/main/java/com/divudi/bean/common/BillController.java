@@ -1808,7 +1808,6 @@ public class BillController implements Serializable {
     }
 
     public void cancelSingleBillWhenCancellingOpdBatchBill(Bill originalBill, Bill cancellationBatchBill) {
-        System.out.println("cancellationBatchBill = " + cancellationBatchBill);
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -1960,7 +1959,6 @@ public class BillController implements Serializable {
     }
 
     private List<BillItem> createBillItemsForOpdBatchBillCancellation(Bill originalBill, Bill cancellationBill) {
-        System.out.println("cancellationBill = " + cancellationBill);
         List<BillItem> list = new ArrayList<>();
         for (BillItem originalBillItem : originalBill.getBillItems()) {
             BillItem newBillItem = new BillItem();

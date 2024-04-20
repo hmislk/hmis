@@ -108,7 +108,6 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setDepartment(null);
             option.setWebUser(null);
             option.setValueType(OptionValueType.ENUM);
-            System.out.println("option.getEnumValue() = " + option.getEnumValue());
             option.setEnumType(enumClass.getName());
             optionFacade.create(option); // Persist the new ConfigOption entity
             loadApplicationOptions();

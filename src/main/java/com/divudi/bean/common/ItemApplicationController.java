@@ -114,7 +114,6 @@ public class ItemApplicationController {
     }
 
     private List<ItemLight> fillPackages() {
-        System.out.println("fillPackages");
         String jpql = "SELECT new com.divudi.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "

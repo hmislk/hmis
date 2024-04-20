@@ -1792,7 +1792,6 @@ public class PharmacyBillSearch implements Serializable {
                 i.setCreater(getSessionController().getLoggedUser());
                 //   i.getBillItem().setQty(i.getPharmaceuticalBillItem().getQty());
                 double value = i.getNetRate() * i.getQty();
-                System.out.println("value = " + value);
                 i.setGrossValue(0 - value);
                 i.setNetValue(0 - value);
 

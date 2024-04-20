@@ -1252,7 +1252,6 @@ public class DataUploadController implements Serializable {
             }
 
             comments = name;
-            System.out.println("1 name = " + name);
             name = CommonFunctions.sanitizeStringForDatabase(name);
 
             item = itemController.findItemByName(name, code, department);

@@ -183,7 +183,6 @@ public class GrnController implements Serializable {
                 totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
                 totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
             }
-            System.out.println("originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() = " + originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
             remainQty = originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
             remainFreeQty = originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
             

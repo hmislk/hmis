@@ -611,7 +611,6 @@ public class PharmacyBean {
             JsfUtil.addErrorMessage("Not supported yet");
             return new ArrayList<>();
         }
-        System.out.println("m = " + m);
         List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
@@ -721,7 +720,6 @@ public class PharmacyBean {
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
-        System.out.println("d = " + d);
         if (phItem == null) {
             return;
         }
