@@ -193,7 +193,6 @@ public class Lims {
 
         // Validation
         System.out.println("generateSamplesFromBill");
-        System.out.println("billId = " + billId);
         String validationError = validateInput(billId, username, password);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);

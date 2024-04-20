@@ -782,7 +782,6 @@ public class ChannelBillController implements Serializable {
 
     public void cancelCreditPaidBill() {
         System.out.println("cancelCreditPaidBill");
-        System.out.println("getBillSession() = " + getBillSession());
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;

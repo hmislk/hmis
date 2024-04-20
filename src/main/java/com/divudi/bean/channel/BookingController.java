@@ -341,7 +341,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         m.put("ses", selectedSessionInstance.getOriginatingSession());
 
         sessionFees = itemFeeFacade.findByJpql(sql, m);
-        System.out.println("sessionFees = " + sessionFees);
         m = new HashMap();
         sql = "Select f from ItemFee f "
                 + " where f.retired=false "
