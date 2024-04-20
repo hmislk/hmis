@@ -1,6 +1,7 @@
 /build/
 /dist/
 /target/
+/src/main/resources/version.txt
 /src/main/resources/VERSION.txt
 /src/main/webapp/WEB-INF/glassfish-resources.xml
 /faces-config.NavData
