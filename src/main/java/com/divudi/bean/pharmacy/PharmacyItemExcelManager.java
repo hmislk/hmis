@@ -1350,7 +1350,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
-                System.out.println("strBarCode = " + strBarcode);
 
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
@@ -1358,7 +1357,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());

@@ -381,7 +381,6 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void addAdditionalItems() {
-        System.out.println("addAdditionalItems");
         if (current == null) {
             JsfUtil.addErrorMessage("No Session Selected yet");
             return;
