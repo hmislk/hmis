@@ -1385,14 +1385,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (amp == null) {
                     continue;
                 }
-                System.out.println("amp = " + amp.getName());
                 //Ampp
                 ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
                 getAmpFacade().edit(amp);
                 //Code
