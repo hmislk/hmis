@@ -19,8 +19,8 @@
                                 value="To Sampling" 
                                 ajax="false"  
                                 style="float: right;"
-                                action="/lab/sample" 
-                                actionListener="#{patientInvestigationController.toCollectSample()}">
+                                action="/lab/sample_management" 
+                                actionListener="#{patientInvestigationController.navigateToSampleManagement()}">
                             </p:commandButton>
                         </f:facet>
                         <div class="d-flex justify-content-end gap-2">
@@ -36,25 +36,12 @@
                         </div>
                         
                     </p:panel>
-
-                    <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" >
-
-                        <p:column headerText="Sample" >
-                            <p:outputLabel value="#{ps.sample.name}" ></p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Tube" >
-                            <p:outputLabel value="#{ps.tube.name}" ></p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Machine" >
-                            <p:outputLabel value="#{ps.machine.name}" ></p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Tests" >
-                            #{patientInvestigationController.testComponantsForPatientSample(ps)}
-                            <ui:repeat value="#{patientInvestigationController.testComponantsForPatientSample(ps)}" var="test" >
-                                <p:outputLabel value="#{test}" ></p:outputLabel>
-                            </ui:repeat>
-                        </p:column>
-                    </p:dataTable>
+                    
+                    
+                    <ui:repeat value="#{patientInvestigationController.sampleTubeLabels}" var="label" >
+                        <h:outputText escape="false" value="#{label}" ></h:outputText>
+                    </ui:repeat>
+                    
 
                     <p:commandButton value="Print" ajax="false"  >
                         <p:printer target="print" ></p:printer>
