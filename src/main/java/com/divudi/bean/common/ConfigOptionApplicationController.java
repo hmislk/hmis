@@ -9,28 +9,21 @@ import com.divudi.entity.ConfigOption;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.ConfigOptionFacade;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Named
-@SessionScoped
+@ApplicationScoped
 public class ConfigOptionApplicationController implements Serializable {
 
     @EJB
@@ -108,14 +101,11 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setDepartment(null);
             option.setWebUser(null);
             option.setValueType(OptionValueType.ENUM);
-            System.out.println("option.getEnumValue() = " + option.getEnumValue());
             option.setEnumType(enumClass.getName());
-            System.out.println("enumClass.getName() = " + enumClass.getName());
             optionFacade.create(option); // Persist the new ConfigOption entity
             loadApplicationOptions();
         }
 
-        System.out.println("1 option = " + option);
         return getEnumValue(option, enumClass);
     }
 
@@ -137,7 +127,6 @@ public class ConfigOptionApplicationController implements Serializable {
         try {
             return Double.parseDouble(option.getEnumValue());
         } catch (NumberFormatException e) {
-            System.out.println("Failed to parse option value as double: " + e.getMessage());
             return null;
         }
     }
@@ -214,9 +203,8 @@ public class ConfigOptionApplicationController implements Serializable {
             // Attempt to convert the option's value to a Long
             return Long.parseLong(option.getOptionValue());
         } catch (NumberFormatException e) {
-            // Log or handle the case where the value cannot be parsed into a Long
-            System.out.println("Failed to parse option value as Long: " + e.getMessage());
-            return null;
+// Log or handle the case where the value cannot be parsed into a Long
+                        return null;
         }
     }
 

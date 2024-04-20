@@ -299,7 +299,6 @@ public class DataAdministrationController {
     }
 
     public void checkMissingFields() {
-        System.out.println("checkMissingFields");
         suggestedSql = "";
         List<EntityFieldError> entityFieldErrors = new ArrayList<>();
 

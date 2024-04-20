@@ -758,7 +758,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             if (getToken() != null) {
                 getToken().setBill(b);
                 tokenFacade.edit(getToken());
-                System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
                 markToken(b);
             }
 
@@ -786,7 +785,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void markToken(Bill b) {
         Token t = getToken();
-        System.out.println("getToken().getIdStr()  2   = " + getToken().getIdStr());
         if (t == null) {
             return;
         }
