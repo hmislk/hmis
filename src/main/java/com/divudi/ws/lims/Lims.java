@@ -193,8 +193,66 @@ public class Lims {
         return processSamplesFromBill(billId, username, password);
     }
 
+    @GET
+    @Path("/samples1/{billId}/{username}/{password}")
+    @Produces("application/json")
+    public String generateSamplesFromBill1(
+            @PathParam("billId") String billId,
+            @PathParam("username") String username,
+            @PathParam("password") String password) {
+
+        // Validation
+        System.out.println("generateSamplesFromBill");
+        System.out.println("billId = " + billId);
+        String validationError = validateInput(billId, username, password);
+        System.out.println("validationError = " + validationError);
+        if (validationError != null) {
+            return constructErrorJson(1, validationError, billId);
+        }
+
+        // Fetch necessary data
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
+        List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
+        System.out.println("patientBills = " + patientBills);
+        List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
+        System.out.println("ptSamples = " + ptSamples);
+        // Check if necessary data is present
+        if (requestSendingUser == null) {
+            return constructErrorJson(1, "Username / password mismatch.", billId);
+        }
+        if (patientBills == null || patientBills.isEmpty()) {
+            return constructErrorJson(1, "Bill Not Found. Please reenter.", billId);
+        }
+        Set<Long> uniqueIds = new HashSet<>();
+        JSONArray array = new JSONArray();
+        if (ptSamples == null || ptSamples.isEmpty()) {
+            for (Bill b : patientBills) {
+                JSONObject j = constructPatientSampleJson(b);
+                System.out.println("j = " + j);
+                if (j != null) {
+                    array.put(j);
+                }
+            }
+        } else {
+            for (PatientSample ps : ptSamples) {
+                if (uniqueIds.add(ps.getId())) { // Only proceed if the ID is unique
+                    JSONObject j = constructPatientSampleJson(ps);
+                    if (j != null) {
+                        array.put(j);
+                    }
+                }
+            }
+        }
+
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("Barcodes", array);
+        String js = jSONObjectOut.toString();
+        return js;
+    }
+
     public String processSamplesFromBill(String billId, WebUser requestSendingUser) {
-        System.out.println("Processing generateSamplesFromBill");
+        System.out.println("Processing generateSamplesFromBill for User");
         System.out.println("billId = " + billId);
 
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
@@ -207,11 +265,24 @@ public class Lims {
         System.out.println("ptSamples = " + ptSamples);
 
         JSONArray array = new JSONArray();
-        for (Bill b : patientBills) {
-            JSONObject j = constructPatientSampleJson(b);
-            System.out.println("j = " + j);
-            if (j != null) {
-                array.put(j);
+        Set<Long> uniqueIds = new HashSet<>();
+
+        if (ptSamples != null && !ptSamples.isEmpty()) {
+            for (PatientSample ps : ptSamples) {
+                if (uniqueIds.add(ps.getId())) {
+                    JSONObject j = constructPatientSampleJson(ps);
+                    if (j != null) {
+                        array.put(j);
+                    }
+                }
+            }
+        } else {
+            for (Bill b : patientBills) {
+                JSONObject j = constructPatientSampleJson(b);
+                System.out.println("j = " + j);
+                if (j != null) {
+                    array.put(j);
+                }
             }
         }
 
