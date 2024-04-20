@@ -16,7 +16,18 @@
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
                 <h:form>        
-                    <p:panel header="Sample" >
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel class="mt-2" value="Sample"/>
+                            <p:commandButton
+                                style="float: right;"
+                                class="ui-button-warning"
+                                icon="fa fa-barcode"
+                                value="To Barcode Printing" 
+                                ajax="false" 
+                                action="sampling" >
+                            </p:commandButton>
+                        </f:facet>
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel class="mx-2" value="From Date"/>
@@ -57,13 +68,6 @@
                                     value="List Collected"   >
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    class="w-100" 
-                                    value="Barcode Printing" 
-                                    ajax="false" 
-                                    action="sampling" >
-                                </p:commandButton>
-
                                 <p:defaultCommand target="btnRefresh"/>
 
                             </div>
@@ -92,7 +96,7 @@
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="10,25,50"
                                         >
-                                        <p:column headerText="ID" width="120" sortBy="#{smpIx.id}" filterBy="#{smpIx.id}" filterMatchMode="contains">
+                                        <p:column headerText="Sampale ID" width="120" sortBy="#{smpIx.id}" filterBy="#{smpIx.id}" filterMatchMode="contains">
                                             <p:outputLabel value="#{smpIx.id}" />
                                         </p:column>
                                         <p:column headerText="Bill No" width="100">
@@ -143,66 +147,83 @@
                                                 itemValue="#{ix}" 
                                                 class="w-100 mt-1"
                                                 inputStyleClass="form-control"
-                                                size="30"  >
+                                                size="20" >
                                             </p:autoComplete>
-
-
-
                                         </p:column>
+
+
                                         <p:column headerText="Actions">
-
-
-                                            <h:panelGrid columns="3" >
-                                                <p:commandButton  disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   
-                                                                  id="btnSample" value="Collect" action="#{patientInvestigationController.markAsSampled()}" 
-                                                                  process="chkSampledOutside calSampledDate btnSample" update="@all"
-                                                                  >
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton  
+                                                    disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   
+                                                    id="btnSample" 
+                                                    value="Collect" 
+                                                    action="#{patientInvestigationController.markAsSampled()}" 
+                                                    process="chkSampledOutside calSampledDate btnSample" 
+                                                    update="@all"
+                                                    >
                                                     <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                 </p:commandButton>
-                                                <p:commandButton  disabled="#{!smpIx.collected or smpIx.billItem.transRefund}"   id="btnSampleRevert" value="Revert" 
-                                                                  action="#{patientInvestigationController.revertMarkedSample()}" 
-                                                                  process="chkSampledOutside calSampledDate btnSampleRevert" update="@all">
+                                                <p:commandButton  
+                                                    disabled="#{!smpIx.collected or smpIx.billItem.transRefund}"   
+                                                    id="btnSampleRevert" value="Revert" 
+                                                    action="#{patientInvestigationController.revertMarkedSample()}" 
+                                                    process="chkSampledOutside calSampledDate btnSampleRevert" 
+                                                    update="@all">
                                                     <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                 </p:commandButton>
-                                                <p:commandButton    id="btnPrint" value="Print" 
-                                                                    ajax="false">
-                                                    <p:printer target="stickerPrint" ></p:printer>
+                                                <p:commandButton 
+                                                    value="To Print BarCode" 
+                                                    type="button"
+                                                    process="@this" 
+                                                    update="bar"
+                                                    onclick="PF('barcode').show();" >
                                                 </p:commandButton>
-
-                                            </h:panelGrid>
-                                            <div class="printBlock">
-                                                <h:panelGroup id="stickerPrint" >
-                                                    <div class="stickerLabel" style="height:98%; width: 98%;border: 1px solid red;">
-                                                        <div style="width: 100%;">
-                                                            <p:barcode cache="false" value="#{smpIx.patient.phn}" type="code128" style="width: 100%; height: 80%;" ></p:barcode>
-                                                        </div>
-                                                        <div>
-                                                            <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}" style="font-size: 8pt;" ></h:outputLabel>
-                                                        </div>
-                                                        <div>
-                                                            <ui:repeat value="#{smpIx.billItem.bill.billItems}" var="billc" >
-                                                                |
-                                                                <h:outputLabel value="#{billc.item.name}" style="font-size: 8pt;" ></h:outputLabel>
-                                                                |
-                                                            </ui:repeat>
-                                                        </div>
-                                                    </div>
-                                                </h:panelGroup>
                                             </div>
+                                            <p:dialog id="bar" header="View BarCode" widgetVar="barcode" modal="true" height="350" width="480" cache="false" >
+                                                <div class="d-flex justify-content-end">
+                                                    <p:commandButton    
+                                                        id="btnPrint" 
+                                                        value="Print" 
+                                                        icon="fa fa-print"
+                                                        style="float: right;"
+                                                        class="mb-2 ui-button-info"
+                                                        ajax="false">
+                                                        <p:printer target="stickerPrint" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+
+                                                <div class="printBlock">
+                                                    <h:panelGroup id="stickerPrint" >
+                                                        <div class="stickerLabel" style="height:98%; width: 98%;border: 1px solid red;">
+                                                            <div style="width: 100%;">
+                                                                <p:barcode cache="false" value="#{smpIx.patient.phn}" type="code128" style="width: 100%; height: 80%;" ></p:barcode>
+                                                            </div>
+                                                            <div>
+                                                                <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}" style="font-size: 8pt;" ></h:outputLabel>
+                                                            </div>
+                                                            <div>
+                                                                <ui:repeat value="#{smpIx.billItem.bill.billItems}" var="billc" >
+                                                                    |
+                                                                    <h:outputLabel value="#{billc.item.name}" style="font-size: 8pt;" ></h:outputLabel>
+                                                                    |
+                                                                </ui:repeat>
+                                                            </div>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </p:dialog>
                                         </p:column>
+
+
                                     </p:dataTable>
 
                                 </h:panelGroup>
                             </div>
-
                         </div>
-
                     </p:panel>
                 </h:form>
             </h:panelGroup>
-
         </ui:define>
-
     </ui:composition>
-
 </html>
