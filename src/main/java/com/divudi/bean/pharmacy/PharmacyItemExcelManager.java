@@ -1467,7 +1467,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
 
                 getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
-                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setItem(amp) = " + getPharmacyPurchaseController().getCurrentBillItem().getItem());
                 getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);

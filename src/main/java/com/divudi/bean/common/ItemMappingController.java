@@ -347,7 +347,6 @@ public class ItemMappingController implements Serializable {
 
     public List<ItemLight> fillItemLightByDepartment(Department dept) {
         System.out.println("fillItemLightByDepartment");
-        System.out.println("dept = " + dept);
         List<ItemLight> results;
         String jpql = "SELECT new com.divudi.data.ItemLight("
                 + "im.item.id, "

@@ -505,7 +505,6 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
         for (Bill selected : selectedBills) {
-            System.out.println("bill = " + selected.getId());
             setBill(selected);
             if (getBill() == null) {
                 JsfUtil.addErrorMessage("No bill");
@@ -1796,7 +1795,6 @@ public class PharmacyBillSearch implements Serializable {
                 System.out.println("value = " + value);
                 i.setGrossValue(0 - value);
                 i.setNetValue(0 - value);
-                System.out.println("i.getNet = " + i.getNetValue());
 
                 PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
                 i.setPharmaceuticalBillItem(null);

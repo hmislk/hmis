@@ -317,7 +317,6 @@ public class TransferIssueController implements Serializable {
                 transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
             }
             
-            System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
 
             if (grnBillItem.getPharmaceuticalBillItem().getFreeQty() != 0.0 && grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
                 
@@ -330,7 +329,6 @@ public class TransferIssueController implements Serializable {
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 
                 System.out.println("transferIssueBillItem.getQtyInUnit() = " + transferIssueBillItem.getQtyInUnit());
-                System.out.println("grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit() = " + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 
                 
             
@@ -675,7 +673,6 @@ public class TransferIssueController implements Serializable {
         System.out.println("billItem = " + billItem);
         double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
 
-        System.out.println("availableStock = " + availableStock);
 
         if (availableStock < billItem.getPharmaceuticalBillItem().getQtyInUnit()) {
             billItem.setTmpQty(0.0);

@@ -132,7 +132,6 @@ public class ItemApplicationController {
                 + "ORDER BY i.name";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
-        System.out.println("parameters = " + parameters);
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         return lst;
     }

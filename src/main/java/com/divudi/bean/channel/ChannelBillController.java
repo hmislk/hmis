@@ -802,7 +802,6 @@ public class ChannelBillController implements Serializable {
             JsfUtil.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill().isRefunded() = " + getBillSession().getPaidBillSession().getBill().isRefunded());
         if (getBillSession().getPaidBillSession().getBill().isRefunded()) {
             JsfUtil.addErrorMessage("Already Refunded");
             return;
@@ -1509,7 +1508,6 @@ public class ChannelBillController implements Serializable {
         savePatient();
         System.out.println("Saving patient completed");
         printingBill = saveBilledBill();
-        System.out.println("Printing bill completed");
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessions();

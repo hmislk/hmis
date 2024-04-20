@@ -933,7 +933,6 @@ public class WebUserController implements Serializable {
         }
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
-        System.out.println("hashedPassword = " + hashedPassword);
         current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
         JsfUtil.addSuccessMessage("Password changed");

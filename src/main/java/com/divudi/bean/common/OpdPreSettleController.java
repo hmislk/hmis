@@ -321,7 +321,6 @@ public class OpdPreSettleController implements Serializable {
     }
     
     private void saveSaleBillItems() {
-        System.out.println("getPreBill().getBillItems() = " + getPreBill().getBillItems().size());
         for (BillItem tbi : getPreBill().getBillItems()) {
             BillItem newBil = new BillItem();
             newBil.copy(tbi);
@@ -787,7 +786,6 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
-        System.out.println("p.getBill().getCashPaid() = " + p.getBill().getCashPaid());
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());

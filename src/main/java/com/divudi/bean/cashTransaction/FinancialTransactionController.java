@@ -429,7 +429,6 @@ public class FinancialTransactionController implements Serializable {
 
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
-            System.out.println("p = " + p);
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
@@ -508,7 +507,6 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : currentBillPayments) {
             if (p.getBill().getBillTypeAtomic() == null) {
                 System.out.println("p = " + p);
-                System.out.println("p.getBill() = " + p.getBill());
             }
             atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             calculateBillValuesFromBillTypes(p);
@@ -519,15 +517,12 @@ public class FinancialTransactionController implements Serializable {
 
     public void calculateBillValuesFromBillTypes(Payment p) {
         if (p.getBill() == null) {
-            System.err.println("No Bill for the Payment = " + p);
             return;
         }
         if (p.getBill().getBillType() == null) {
-            System.err.println("No Bill Type for the Payment = " + p);
             return;
         }
         if (p.getBill().getBillTypeAtomic() == null) {
-            System.err.println("No Bill Type Atomic for the Payment = " + p);
             return;
         }
 
@@ -536,7 +531,6 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getPaidValue() != 0.0) {
                     paymentMethodValues.addValue(p);
                 } else {
-                    System.out.println("No Paid Value for Bill = " + p);
                     paymentMethodValues.addValue(p.getBill());
                 }
                 break;
@@ -545,7 +539,6 @@ public class FinancialTransactionController implements Serializable {
                 if (p.getPaidValue() != 0.0) {
                     paymentMethodValues.deductAbsoluteValue(p);
                 } else {
-                    System.out.println("No Paid Value for Bill = " + p);
                     paymentMethodValues.deductAbsoluteValue(p.getBill());
                 }
                 break;

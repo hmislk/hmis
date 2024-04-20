@@ -463,7 +463,6 @@ public class PharmacyPurchaseController implements Serializable {
             saveBillFee(i, p);
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
-            System.out.println("tmpPh.getQtyInUnit() = " + tmpPh.getQtyInUnit());
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());

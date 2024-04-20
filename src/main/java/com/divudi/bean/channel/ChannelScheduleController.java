@@ -174,7 +174,6 @@ public class ChannelScheduleController implements Serializable {
         }
         for (BillSession bs : billSessions) {
             if (bs.getBill() == null) {
-                System.err.println("No Billl for Bill Session");
                 continue;
             }
             if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
@@ -418,7 +417,6 @@ public class ChannelScheduleController implements Serializable {
         System.out.println("3 aii = " + aii);
         getAdditionalItemsAddedForCurrentSession().add(aii);
         additionalItemToAdd = null;
-        System.out.println("getAdditionalItemsAddedForCurrentSession = " + getAdditionalItemsAddedForCurrentSession());
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -770,7 +768,6 @@ public class ChannelScheduleController implements Serializable {
     
     public void fillSessionInstance(){
         sessionInstances=fetchCreatedSessionsInstances(current);
-        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
@@ -897,7 +894,6 @@ public class ChannelScheduleController implements Serializable {
                             && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {
-                        System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());

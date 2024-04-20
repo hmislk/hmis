@@ -1510,7 +1510,6 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
-        System.out.println("refunding1 = " + refundingBill.getCashPaid());
         boolean billValueInversionIsSuccess = invertBillValuesAndCalculate(refundingBill);
         if (!billValueInversionIsSuccess) {
             JsfUtil.addErrorMessage("Error in Bill Value Inversion");
@@ -2817,7 +2816,6 @@ public class BillSearch implements Serializable {
 
             }
             refundingBill.getBillItems().add(nbi);
-            System.out.println("3 nbi.getBillFees() = " + nbi.getBillFees());
             refundingItems.add(nbi);
 
         }
