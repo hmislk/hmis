@@ -391,7 +391,6 @@ public class ChannelScheduleController implements Serializable {
         if (current.getId() == null) {
             saveSelected();
         }
-        System.out.println("additionalItemToAdd = " + additionalItemToAdd);
         if (additionalItemToAdd == null) {
             JsfUtil.addErrorMessage("No Item Selected to add");
             return;

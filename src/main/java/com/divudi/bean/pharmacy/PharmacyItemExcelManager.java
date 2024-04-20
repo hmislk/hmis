@@ -1394,7 +1394,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 strCode = cell.getContents();
                 System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
-                System.out.println("Code = " + amp.getCode());
                 getAmpFacade().edit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);

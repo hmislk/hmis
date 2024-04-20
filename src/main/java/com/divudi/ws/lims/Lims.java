@@ -191,9 +191,8 @@ public class Lims {
             @PathParam("username") String username,
             @PathParam("password") String password) {
 
-        // Validation
-        System.out.println("generateSamplesFromBill");
-        String validationError = validateInput(billId, username, password);
+// Validation
+                String validationError = validateInput(billId, username, password);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }

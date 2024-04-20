@@ -1182,7 +1182,6 @@ public class DataUploadController implements Serializable {
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            System.out.println("row = " + row);
 
             Category category;
             Institution institution;

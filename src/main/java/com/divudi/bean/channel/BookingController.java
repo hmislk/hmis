@@ -322,7 +322,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillFees() {
-        System.out.println("fillFees");
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
         addedItemFees = new ArrayList<>();

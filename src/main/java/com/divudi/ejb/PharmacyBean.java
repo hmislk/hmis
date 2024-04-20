@@ -578,7 +578,6 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-        System.out.println("getStockByQty");
         if (qty <= 0) {
             return new ArrayList<>();
         }
