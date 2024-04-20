@@ -1425,7 +1425,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(importerCol, i);
                 strImporter = cell.getContents();
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
-                System.out.println("importerCol = " + "importerCol");
                 amp.setManufacturer(importer);
                 //
                 String temStr;

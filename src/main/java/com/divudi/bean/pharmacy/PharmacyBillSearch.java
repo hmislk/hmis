@@ -1782,7 +1782,6 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
             for (BillItem i : getBill().getBillItems()) {
-                System.out.println("i = " + i.getItem().getName());
                 i.getPharmaceuticalBillItem().setQty((double) (double) i.getQty());
                 if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                     continue;

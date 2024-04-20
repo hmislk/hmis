@@ -172,7 +172,6 @@ public class GrnController implements Serializable {
             PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
             newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
-            System.out.println("updateBillItem = " + originalBillItemToDuplicate.getItem().getName());
             newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
             newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
             newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);

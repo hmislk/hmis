@@ -325,7 +325,6 @@ public class TransferIssueController implements Serializable {
                 double totalQty = transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty();
                 System.out.println("totalQty = " + totalQty);
                 
-                System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 
                 

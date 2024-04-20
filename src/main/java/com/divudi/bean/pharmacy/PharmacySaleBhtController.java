@@ -1371,7 +1371,6 @@ public class PharmacySaleBhtController implements Serializable {
             if (stockQtys != null && !stockQtys.isEmpty()) {
 
                 for (StockQty sq : stockQtys) {
-                    System.out.println("sq = " + sq);
                     if (sq.getQty() == 0) {
                         continue;
                     }

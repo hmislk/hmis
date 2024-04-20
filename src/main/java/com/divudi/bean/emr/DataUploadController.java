@@ -1230,7 +1230,6 @@ public class DataUploadController implements Serializable {
             if (departmentName == null || departmentName.trim().equals("")) {
                 departmentName = institutionName;
             }
-            System.out.println("departmentName = " + departmentName);
             if (runningDept == null) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
                 runningDept = department;

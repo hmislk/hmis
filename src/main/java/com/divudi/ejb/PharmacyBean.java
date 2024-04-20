@@ -581,7 +581,6 @@ public class PharmacyBean {
         System.out.println("getStockByQty");
         System.out.println("department = " + department);
         System.out.println("qty = " + qty);
-        System.out.println("item = " + item);
         if (qty <= 0) {
             return new ArrayList<>();
         }

@@ -409,7 +409,6 @@ public class ChannelScheduleController implements Serializable {
         } else {
             aii = itemForItemController.addItemForItem(current, additionalItemToAdd);
         }
-        System.out.println("2 aii = " + aii);
         if (aii == null) {
             JsfUtil.addErrorMessage("Error in adding");
             return;

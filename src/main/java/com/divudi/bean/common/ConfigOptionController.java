@@ -176,7 +176,6 @@ public class ConfigOptionController implements Serializable {
     }
 
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
-        System.out.println("getEnumValue");
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
         }

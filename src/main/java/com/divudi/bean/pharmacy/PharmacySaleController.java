@@ -997,7 +997,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
-        System.out.println("getQty() = " + getQty());
         if (getQty() == null) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Quantity?");
@@ -1086,7 +1085,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
 //            return;
 //        }
-        System.out.println("getQty() = " + getQty());
         if (getQty() == null) {
             errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quantity?");

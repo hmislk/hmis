@@ -202,7 +202,6 @@ public class Lims {
 
         // Fetch necessary data
         WebUser requestSendingUser = findRequestSendingUser(username, password);
-        System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
         // Check if necessary data is present
@@ -318,7 +317,6 @@ public class Lims {
     }
 
     private JSONObject constructPatientSampleJson(Bill bill) {
-        System.out.println("constructPatientSampleJson");
         JSONObject jSONObject = new JSONObject();
         if (bill == null) {
             return null;
@@ -677,13 +675,11 @@ public class Lims {
                 + " and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        System.out.println("m = " + m);
         List<Bill> tbs = billFacade.findByJpql(j, m);
         return tbs;
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {
-        System.out.println("getPatientSamplesForBillId");
         List<PatientSample> pss = prepareSampleCollectionByBillsForRequestss(temBills, wu);
         return pss;
     }
