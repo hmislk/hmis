@@ -25,6 +25,7 @@
                                 class="ui-button-warning"
                                 actionListener="#{pharmacyBillSearch.makeNull()}" 
                                 value="Requested List"/>
+
                             <p:commandButton 
                                 value="Reprint" 
                                 icon="fas fa-print"
@@ -33,6 +34,25 @@
                                 ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+
+                            <p:commandButton 
+                                disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                class="ui-button-danger mx-1"
+                                style="float: right;"
+                                icon="fas fa-cancel"
+                                value="Cancel Request" 
+                                onclick="PF('confirmationDialog').show();"
+                                >
+                            </p:commandButton>
+
+                            <p:dialog  header="Confirmation" widgetVar="confirmationDialog" modal="true" >
+                                <p>Are you sure you want to cancel the request?</p>
+                                <p:inputText class="w-100" required="true" value="#{pharmacyBillSearch.comment}" placeholder="Comment"/>
+                                <div class="d-flex mt-2">
+                                    <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{pharmacyBillSearch.cancelPharmacyTransferRequestBill()}" onclick="PF('confirmationDialog').hide();" />
+                                <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                                </div>
+                            </p:dialog>
                         </f:facet>
 
                         <div class="row" >

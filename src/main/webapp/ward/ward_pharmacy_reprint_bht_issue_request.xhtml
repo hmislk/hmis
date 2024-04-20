@@ -37,9 +37,11 @@
 
                     <p:dialog header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
                         <p>Are you sure you want to cancel the request?</p>
-                        <p:inputText value="#{pharmacyBillSearch.comment}" placeholder="Comment"/>
-                        <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{pharmacyBillSearch.cancelInwardPharmacyRequestBill()}" onclick="PF('confirmationDialog').hide();" />
-                        <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                        <p:inputText class="w-100" required="true" value="#{pharmacyBillSearch.comment}" placeholder="Comment"/>
+                        <div class="d-flex mt-2 ">
+                            <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{pharmacyBillSearch.cancelInwardPharmacyRequestBill()}" onclick="PF('confirmationDialog').hide();" />
+                            <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                        </div>
                     </p:dialog>
 
                 </f:facet>
