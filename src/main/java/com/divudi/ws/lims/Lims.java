@@ -195,7 +195,6 @@ public class Lims {
         System.out.println("generateSamplesFromBill");
         System.out.println("billId = " + billId);
         String validationError = validateInput(billId, username, password);
-        System.out.println("validationError = " + validationError);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }
@@ -668,7 +667,6 @@ public class Lims {
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        System.out.println("validBillsOfBatchBill");
         String j = "Select b "
                 + " from Bill b "
                 + " where b.backwardReferenceBill=:bb "

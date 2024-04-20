@@ -787,7 +787,6 @@ public class ChannelBillController implements Serializable {
             JsfUtil.addErrorMessage("No BillSession");
             return;
         }
-        System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
         if (getBillSession().getBill() == null) {
             JsfUtil.addErrorMessage("No Bill To Cancel");
             return;
@@ -1496,7 +1495,6 @@ public class ChannelBillController implements Serializable {
 //
 //    }
     public void add() {
-        System.out.println("add");
         errorText = "";
         if (errorCheck()) {
             settleSucessFully = false;

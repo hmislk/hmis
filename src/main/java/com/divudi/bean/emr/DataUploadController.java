@@ -1222,7 +1222,6 @@ public class DataUploadController implements Serializable {
                 institutionsSaved.add(institution);
                 runningIns = institution;
             }
-            System.out.println("runningIns = " + runningIns);
             Cell deptCell = row.getCell(6);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();

@@ -348,7 +348,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 + " and f.item=:item "
                 + " order by f.id";
         m.put("item", itemToAddToBooking);
-        System.out.println("m = " + m);
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
