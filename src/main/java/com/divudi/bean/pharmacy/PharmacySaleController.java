@@ -1000,6 +1000,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
+        System.out.println("getQty() = " + getQty());
         if (getQty() == null) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Quantity?");
@@ -1032,6 +1033,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return addedQty;
         }
         addedQty = qty;
+        System.out.println("qty = " + qty);
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
@@ -1053,13 +1055,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         billItem.setTransUserStock(us);
         clearBillItem();
         getBillItem();
+        System.out.println("addedQty = " + addedQty);
         return addedQty;
     }
 
     public void addBillItemMultipleBatches() {
         editingQty = null;
         errorMessage = null;
-       
 
         if (billItem == null) {
             return;
@@ -1072,11 +1074,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense?");
             return;
         }
-         Stock userSelectedStock = stock;
+        Stock userSelectedStock = stock;
 //        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
 //            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
 //            return;
 //        }
+        System.out.println("getQty() = " + getQty());
         if (getQty() == null) {
             errorMessage = "Please enter a Quantity";
             JsfUtil.addErrorMessage("Quantity?");
@@ -1092,6 +1095,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         double addedQty = 0.0;
         double remainingQty = getQty();
 
+        System.out.println("getQty = " + getQty());
+        System.out.println("getStock().getStock() = " + getStock().getStock());
         if (getQty() <= getStock().getStock()) {
             double thisTimeAddingQty = addBillItemSingleItem();
             if (thisTimeAddingQty >= requestedQty) {
@@ -1111,7 +1116,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        System.out.println("stock = " + userSelectedStock);
 //        System.out.println("stock item batch = " + userSelectedStock.getItemBatch());
 //        System.out.println("stock item batch item= " + userSelectedStock.getItemBatch().getItem());
-
         List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
         for (Stock s : availableStocks) {
             stock = s;

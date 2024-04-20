@@ -512,7 +512,13 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                         <h:outputLabel  value="Tendered" ></h:outputLabel>
-                                                        <p:inputText class="mx-4 my-1" autocomplete="off" accesskey="t" id="paid" value="#{pharmacySaleController.cashPaid}" >
+                                                        <p:inputText 
+                                                            class="mx-4 my-1"
+                                                            autocomplete="off" 
+                                                            accesskey="t" 
+                                                            id="paid"
+                                                            value="#{pharmacySaleController.cashPaid}"
+                                                            onfocus="this.select()">
                                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
                                                         </p:inputText>
                                                         <h:outputLabel  value="Balance" ></h:outputLabel>
