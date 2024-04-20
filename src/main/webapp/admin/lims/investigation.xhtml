@@ -81,14 +81,14 @@
 
                                     <h:outputText value="Container" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbTube"  value="#{investigationController.current.investigationTube}" >
+                                    <p:selectOneMenu class="form-control" id="cmbTube"  value="#{investigationController.current.investigationTube}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="Please select a Tube"/>
                                         <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Analyzer" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbmac"   value="#{investigationController.current.machine}" >
+                                    <p:selectOneMenu class="form-control" id="cmbmac" value="#{investigationController.current.machine}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="Please select a Machine"/>
                                         <f:selectItems value="#{machineController.items}" var="m" itemLabel="#{m.name}" itemValue="#{m}" />
                                     </p:selectOneMenu>
@@ -132,7 +132,7 @@
 
                                     <h:outputText value="Inward Category" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbInward" value="#{investigationController.current.inwardChargeType}" >
+                                    <p:selectOneMenu class="form-control" id="cmbInward" value="#{investigationController.current.inwardChargeType}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="Please select Charge"/>
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                     </p:selectOneMenu>
@@ -210,7 +210,6 @@
                                     </p:selectBooleanCheckbox>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:autoComplete 
-
                                         converter="ixcon"
                                         disabled="#{!investigationController.reportedAs}"
                                         widgetVar="aIx2" 
@@ -238,7 +237,7 @@
 
                                     <h:outputText value="Institution" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbIns"    value="#{investigationController.current.institution}" >
+                                    <p:selectOneMenu class="form-control" id="cmbIns"    value="#{investigationController.current.institution}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="Please select a Institution"/>
                                         <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                         <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
@@ -246,7 +245,7 @@
 
                                     <h:outputText value="Department" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbDep"  value="#{investigationController.current.department}" >
+                                    <p:selectOneMenu class="form-control" id="cmbDep"  value="#{investigationController.current.department}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="Please select a Department"/>
                                         <f:selectItems value="#{investigationController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
