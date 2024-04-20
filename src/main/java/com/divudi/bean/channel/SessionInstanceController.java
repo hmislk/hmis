@@ -48,12 +48,10 @@ public class SessionInstanceController implements Serializable {
         }
         if (pa.getId() != null) {
             getFacade().edit(pa);
-            System.out.println("Edited");
         } else {
             pa.setCreatedAt(new Date());
             pa.setCreater(sessionController.getLoggedUser());
             getFacade().create(pa);
-            System.out.println("saved");
         }
     }
 

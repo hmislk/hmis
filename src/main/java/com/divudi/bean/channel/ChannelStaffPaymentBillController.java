@@ -696,25 +696,21 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            System.out.println("currentStaff = " + currentStaff);
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
 
         if (checkBillFeeValue()) {
-            System.out.println("checkBillFeeValue = " + checkBillFeeValue());
             JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
 
         performCalculations();
         if (totalPaying == 0) {
-            System.out.println("totalPaying = " + totalPaying);
             JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            System.out.println("paymentMethod = " + paymentMethod);
             JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
@@ -728,19 +724,16 @@ public class ChannelStaffPaymentBillController implements Serializable {
             return true;
         }
         if (checkBillFeeValue()) {
-            System.out.println("checkBillFeeValue = " + checkBillFeeValue());
             JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
 
         performCalculations();
         if (totalPaying == 0) {
-            System.out.println("totalPaying = " + totalPaying);
             JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            System.out.println("paymentMethod = " + paymentMethod);
             JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
@@ -773,7 +766,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void settleBill() {
-        System.out.println("errorCheck() = " + errorCheck());
         if (errorCheck()) {
             return;
         }
@@ -782,7 +774,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         current = b;
         getBillFacade().create(b);
         saveBillItemsAndFees(b);
-        System.out.println("sessionController.getDepartmentPreference().isDocterPaymentSMS() = " + sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment());
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment()) {
             sendSmsAfterDocPayment();
         }
@@ -838,7 +829,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(current.getStaff().getPerson().getPhone());
-        System.out.println("DocPaymentSms = " + generateDoctorPaymentSms(current));
         e.setSendingMessage(generateDoctorPaymentSms(current));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());

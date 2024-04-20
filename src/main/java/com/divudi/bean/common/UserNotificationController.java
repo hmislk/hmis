@@ -153,7 +153,6 @@ public class UserNotificationController implements Serializable {
     }
 
     public void removeUserNotification(UserNotification un) {
-        System.out.println("items = " + items.size());
         un.setSeen(true);
         getFacade().edit(un);
         fillLoggedUserNotifications();
@@ -224,7 +223,6 @@ public class UserNotificationController implements Serializable {
             return;
         }
         List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), department);
-        System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {

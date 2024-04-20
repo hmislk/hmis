@@ -342,7 +342,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<ItemLight> fillOpdItems() {
-        System.out.println("fillOpdItems");
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
@@ -2669,7 +2668,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 paymentMethod = PaymentMethod.Cash;
                 collectingCentreBillController.setCollectingCentre(null);
                 if (getToken() != null) {
-                    System.out.println("token = " + token);
                     setPatient(token.getPatient());
                 }
                 return "/opd/opd_bill?faces-redirect=true";
@@ -2683,7 +2681,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             paymentMethod = PaymentMethod.Cash;
             collectingCentreBillController.setCollectingCentre(null);
             if (getToken() != null) {
-                System.out.println("token = " + token);
                 setPatient(token.getPatient());
             }
             return "/opd/opd_bill?faces-redirect=true";

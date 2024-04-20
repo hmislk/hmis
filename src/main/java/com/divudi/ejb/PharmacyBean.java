@@ -445,7 +445,6 @@ public class PharmacyBean {
     }
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
-        System.out.println("qty = " + qty);
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
@@ -579,10 +578,6 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-        System.out.println("getStockByQty");
-        System.out.println("department = " + department);
-        System.out.println("qty = " + qty);
-        System.out.println("item = " + item);
         if (qty <= 0) {
             return new ArrayList<>();
         }
@@ -612,8 +607,6 @@ public class PharmacyBean {
             JsfUtil.addErrorMessage("Not supported yet");
             return new ArrayList<>();
         }
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
@@ -723,8 +716,6 @@ public class PharmacyBean {
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
-        System.out.println("d = " + d);
-        System.out.println("stock = " + stock);
         if (phItem == null) {
             return;
         }
