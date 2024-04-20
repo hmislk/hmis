@@ -9,28 +9,21 @@ import com.divudi.entity.ConfigOption;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.ConfigOptionFacade;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Named
-@SessionScoped
+@ApplicationScoped
 public class ConfigOptionApplicationController implements Serializable {
 
     @EJB
