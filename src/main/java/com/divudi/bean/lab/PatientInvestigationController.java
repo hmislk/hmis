@@ -2,6 +2,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SmsController;
@@ -70,6 +71,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -130,6 +133,8 @@ public class PatientInvestigationController implements Serializable {
     private SmsController smsController;
     @Inject
     private Lims lims;
+    @Inject
+    ConfigOptionApplicationController congConfigOptionApplicationController;
     /**
      * Class Variables
      */
@@ -189,25 +194,23 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
-        System.out.println("navigateToPrintBarcodesFromSampellingPage");
-        System.out.println("ptIx = " + ptIx);
-        if (ptIx == null ) {
+        if (ptIx == null) {
             JsfUtil.addErrorMessage("Patient Investigation is NOT selected");
             return null;
         }
-        if(ptIx.getBillItem()==null){
+        if (ptIx.getBillItem() == null) {
             JsfUtil.addErrorMessage("No Bill Item");
             return null;
         }
-        if(ptIx.getBillItem().getBill()==null){
+        if (ptIx.getBillItem().getBill() == null) {
             JsfUtil.addErrorMessage("No Bill");
             return null;
         }
-        if(ptIx.getBillItem().getBill().getIdStr()==null){
+        if (ptIx.getBillItem().getBill().getIdStr() == null) {
             JsfUtil.addErrorMessage("No Bill id sTRING");
             return null;
         }
-        
+
         inputBillId = ptIx.getBillItem().getBill().getIdStr();
         System.out.println("inputBillId = " + inputBillId);
         prepareSampleCollection();
@@ -1131,6 +1134,15 @@ public class PatientInvestigationController implements Serializable {
         checkRefundBillItems(lstToSamle);
     }
 
+    public void listPatientInvestigationAwaitingSamplling() {
+        String temSql;
+        Map temMap = new HashMap();
+        temSql = "SELECT i FROM PatientInvestigation i where i.retired=false  and i.collected = false and i.billItem.bill.billDate between :fromDate and :toDate";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        lstForSampleManagement = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
+    }
+
     public void listPatientSamples() {
         String jpql = "select ps from PatientSample ps"
                 + " where ps.sampleInstitution=:ins "
@@ -1222,11 +1234,50 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void prepareSampleCollection() {
-        System.out.println("prepareSampleCollection");
-        System.out.println("inputBillId = " + inputBillId);
-        String barcodeJson = lims.generateSamplesForInternalUse(inputBillId, sessionController.getLoggedUser());
-        sampleTubeLabels = new ArrayList<>();
-        sampleTubeLabels.add(barcodeJson);
+        try {
+            String barcodeJson = lims.generateSamplesForInternalUse(inputBillId, sessionController.getLoggedUser());
+            // Parse the string into a JSON object
+            JSONObject root = new JSONObject(barcodeJson);
+
+            // Get the "Barcodes" JSON array from the JSON object
+            JSONArray barcodes = root.getJSONArray("Barcodes");
+            String defaultTemplate = "<div style='width: 200px; padding: 10px; border: 1px solid #000; font-family: Arial, sans-serif; font-size: 12px;'>"
+                    + "<div style='margin: 2px 0;'>Name: " + "{name}"
+                    + ", Date: " + "{name}"
+                    + ", Gender: " + "{sex}"
+                    + ", Age: " + "{sex}" + "</div>"
+                    + "<div style='font-family: \"Libre Barcode 128\", cursive; font-size: 24px; margin: 5px 0;'>" + "{barcode}" + "</div>"
+                    + "<div style='margin: 2px 0;'>Tests: " + "{tests}"
+                    + ", Ins ID: " + "{insId}"
+                    + ", Dept ID: " + "{deptId}" + "</div>"
+                    + "</div>";
+            String template = congConfigOptionApplicationController.getLongTextValueByKey("Template for Sample Tube Sticker Printing", defaultTemplate);
+            sampleTubeLabels = new ArrayList<>();
+            for (int i = 0; i < barcodes.length(); i++) {
+                // Get each object in the array and convert it to a string
+                JSONObject singleBarcode = barcodes.getJSONObject(i);
+                sampleTubeLabels.add(createLabelsFromJsonAndTemplate(template, singleBarcode));
+            }
+        } catch (Exception e) {
+            System.err.println("Error processing barcode JSON: " + e.getMessage());
+            // Handle the exception appropriately
+        }
+    }
+
+    public String createLabelsFromJsonAndTemplate(String template, JSONObject singleBarcode) {
+        // Assuming template string contains placeholders like {name}, {barcode}, etc.
+        // You need to replace these placeholders with actual values from the JSON object
+        String label = template
+                .replace("{name}", singleBarcode.optString("name", "N/A")) // Use 'optString' to handle missing keys
+                .replace("{billDate}", singleBarcode.optString("billDate", "N/A"))
+                .replace("{sex}", singleBarcode.optString("sex", "N/A"))
+                .replace("{age}", singleBarcode.optString("age", "N/A"))
+                .replace("{barcode}", singleBarcode.optString("barcode", "N/A"))
+                .replace("{tests}", singleBarcode.optString("tests", "N/A"))
+                .replace("{insId}", singleBarcode.optString("insid", "N/A")) // Assumed JSON key as 'insid'
+                .replace("{deptId}", singleBarcode.optString("deptid", "N/A"));
+
+        return label;
     }
 
     public Long stringToLong(String input) {
@@ -1440,6 +1491,15 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("fromDate", getFromDate());
         lstToSamle = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
+    }
+
+    public void listPatientInvestigationsWhereSamplingCompleting() {
+        String temSql;
+        Map temMap = new HashMap();
+        temSql = "SELECT i FROM PatientInvestigation i where i.retired=false  and i.collected = true and i.billItem.bill.billDate between :fromDate and :toDate";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        lstForSampleManagement = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
     }
 
     public void checkRefundBillItems(List<PatientInvestigation> pis) {
@@ -1967,6 +2027,4 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
-    
-    
 }

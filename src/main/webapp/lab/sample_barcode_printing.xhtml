@@ -43,25 +43,6 @@
                     </ui:repeat>
                     
 
-                    <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" >
-
-                        <p:column headerText="Sample" >
-                            <p:outputLabel value="#{ps.sample.name}" ></p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Tube" >
-                            <p:outputLabel value="#{ps.tube.name}" ></p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Machine" >
-                            <p:outputLabel value="#{ps.machine.name}" ></p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Tests" >
-                            #{patientInvestigationController.testComponantsForPatientSample(ps)}
-                            <ui:repeat value="#{patientInvestigationController.testComponantsForPatientSample(ps)}" var="test" >
-                                <p:outputLabel value="#{test}" ></p:outputLabel>
-                            </ui:repeat>
-                        </p:column>
-                    </p:dataTable>
-
                     <p:commandButton value="Print" ajax="false"  >
                         <p:printer target="print" ></p:printer>
                     </p:commandButton>

@@ -160,6 +160,21 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
+    
+    public String getLongTextValueByKey(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setValueType(OptionValueType.LONG_TEXT);
+            option.setOptionValue(defaultValue); 
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        return option.getOptionValue();
+    }
 
     public String getShortTextValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
