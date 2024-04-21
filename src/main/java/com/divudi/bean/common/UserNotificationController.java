@@ -9,7 +9,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.bean.pharmacy.PurchaseOrderController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
@@ -67,6 +69,10 @@ public class UserNotificationController implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     TransferIssueController transferIssueController;
+    @Inject
+    PurchaseOrderController purchaseOrderController;
+    @Inject
+    PharmacyBillSearch pharmacyBillSearch;
     @EJB
     private UserNotificationFacade ejbFacade;
     @EJB
@@ -91,9 +97,9 @@ public class UserNotificationController implements Serializable {
 
     public void clearCanceledRequestsNotification() {
         if (items == null) {
-            return ;
+            return;
         }
-        for(UserNotification un : items){
+        for (UserNotification un : items) {
             if (un.getNotification().getBill().isCancelled()) {
                 un.setRetired(true);
                 un.setRetiredAt(new Date());
@@ -153,8 +159,7 @@ public class UserNotificationController implements Serializable {
     }
 
     public void removeUserNotification(UserNotification un) {
-        System.out.println("items = " + items.size());
-        un.setSeen(true);
+        un.setRetired(true);
         getFacade().edit(un);
         fillLoggedUserNotifications();
     }
@@ -180,8 +185,27 @@ public class UserNotificationController implements Serializable {
     }
 
     public String navigateToCurrentNotificationRequest(UserNotification un) {
-        Department toDepartmentFromNotification = un.getNotification().getBill().getToDepartment();
-        if (!toDepartmentFromNotification.equals(sessionController.getLoggedUser().getDepartment())) {
+        Department todept = null;
+        Notification n = un.getNotification();
+        switch (n.getBill().getBillType()) {
+            case PharmacyOrder:
+                todept = n.getBill().getFromDepartment();
+                break;
+            case PharmacyDirectIssue:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyTransferRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case InwardPharmacyRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyOrderApprove:
+                todept = n.getBill().getFromDepartment();
+                break;
+        }
+
+        if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return "";
         }
@@ -191,13 +215,24 @@ public class UserNotificationController implements Serializable {
         Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
-            case PHARMACY_ORDER:
+            case INWARD_PHARMACY_REQUEST:
                 pharmacySaleBhtController.setBhtRequestBill(bill);
                 return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
 
             case PHARMACY_TRANSFER_REQUEST:
                 transferIssueController.setRequestedBill(bill);
                 return transferIssueController.navigateToPharmacyIssueForRequests();
+
+            case PHARMACY_ORDER:
+                purchaseOrderController.setRequestedBill(bill);
+                return purchaseOrderController.navigateToPurchaseOrderApproval();
+
+            case PHARMACY_ORDER_APPROVAL:
+                pharmacyBillSearch.setBill(bill);
+                return "/pharmacy/pharmacy_reprint_po";
+            case PHARMACY_DIRECT_ISSUE:
+                pharmacyBillSearch.setBill(bill);
+                return "/pharmacy/pharmacy_reprint_po";
 
             default:
                 return "";
@@ -219,11 +254,33 @@ public class UserNotificationController implements Serializable {
     }
 
     private void createUserNotificationsForMedium(Notification n) {
-        Department department = n.getBill().getToDepartment();
+        Department todept = null;
+        if (n == null) {
+            return;
+        }
+
+        switch (n.getBill().getBillType()) {
+            case PharmacyOrder:
+                todept = n.getBill().getFromDepartment();
+                break;
+            case PharmacyDirectIssue:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyTransferRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case InwardPharmacyRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyOrderApprove:
+                todept = n.getBill().getFromDepartment();
+                break;
+        }
+
         if (n.getBill() == null) {
             return;
         }
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), department);
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
         System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:

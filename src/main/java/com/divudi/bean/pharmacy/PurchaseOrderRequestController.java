@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.BillClassType;
@@ -81,6 +82,9 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     PharmacyCalculation pharmacyBillBean;
     private PaymentMethodData paymentMethodData;
+    
+    @Inject
+    NotificationController notificationController;
 
     public void removeSelected() {
         if (selectedBillItems == null) {
@@ -245,8 +249,8 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-
         getBillFacade().edit(getCurrentBill());
+        notificationController.createNotification(getCurrentBill());
 
     }
 

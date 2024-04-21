@@ -144,6 +144,10 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     PharmacySaleController pharmacySaleController;
     
+    public String navigatePharmacyReprintPo(){
+        return "pharmacy_reprint_po?faces-redirect=true";
+    }
+    
     public String cancelInwardPharmacyRequestBill(){
         if (bill==null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
