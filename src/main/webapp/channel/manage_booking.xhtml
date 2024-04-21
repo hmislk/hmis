@@ -639,17 +639,9 @@
                         title="Change Number"
                         id="changeNumber" 
                         rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
-                        <p:panelGrid columns="2" >
-                            <p:panel header="Current Patient for This Booking" >
-                                <ezcommon:patient patient="#{bookingController.selectedBillSession.bill.patient}" ></ezcommon:patient>
-                            </p:panel>
-                        </p:panelGrid>
+                        
                         <h:panelGrid columns="2">
-                            <h:outputLabel value="Title"/>
-                            <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
-                                <f:selectItems value="#{billController.title}"/>
-                            </p:selectOneMenu>
-                            <p:outputLabel value="Name"/>
+                           
                             <p:inputText autocomplete="off" 
                                          readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}"
                                          value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
