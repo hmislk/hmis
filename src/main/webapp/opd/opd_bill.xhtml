@@ -34,7 +34,7 @@
                                 </p:commandButton>
                             </div>
                         </f:facet>
-                        
+
 
                         <!--                        <div class="row" >
                                                     <div class="col-md-12 text-center p-1" >
@@ -43,7 +43,7 @@
                                                 </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
-                                
+
                                 <common:patient_details 
                                     editable="true"
                                     controller="#{opdBillController}"/>
@@ -55,7 +55,7 @@
                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row" >
-                                        
+
                                         <div class="col-md-10" >
                                             <p:watermark for="acIx" value="Enter first few letters of the service or item to add" ></p:watermark>
                                             <p:selectOneListbox 
@@ -66,7 +66,10 @@
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
                                                 value="#{opdBillController.itemLight}" 
-                                                var="ix">
+                                                var="ix"
+                                                caseSensitive="false"
+                                                hideNoSelectionOption="true"
+                                                >
                                                 <f:selectItems 
                                                     value="#{opdBillController.opdItems}"
                                                     var="item" 
@@ -94,9 +97,6 @@
                                                 </p:column>
 
                                             </p:selectOneListbox>
-
-
-
                                         </div>
                                         <div class="col-md-2" >
                                             <h:panelGrid id="txtQty">
@@ -106,14 +106,16 @@
                                                     value="#{opdBillController.currentBillItem.qty}" >
                                                 </p:inputText>
                                             </h:panelGrid>
-                                            <p:commandButton id="btnAddIx" 
-                                                             value="Add" 
-                                                             icon="fa fa-plus"
-                                                             class="w-100 mx-1 ui-button-success"
-                                                             action="#{opdBillController.addToBill()}"  
-                                                             process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty">
+                                            <p:commandButton 
+                                                id="btnAddIx" 
+                                                value="Add" 
+                                                icon="fa fa-plus"
+                                                class="w-100 mx-1 ui-button-success"
+                                                action="#{opdBillController.addToBill()}"  
+                                                process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
+                                            <p:focus id="focusLstIx" for="acIx" ></p:focus>
                                         </div>
                                     </div>
                                     <div class="row" >
