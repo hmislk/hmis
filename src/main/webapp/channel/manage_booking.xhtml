@@ -639,9 +639,9 @@
                         title="Change Number"
                         id="changeNumber" 
                         rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
-                        
+
                         <h:panelGrid columns="2">
-                           
+
                             <p:inputText autocomplete="off" 
                                          readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}"
                                          value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
@@ -655,20 +655,27 @@
                             <p:outputLabel value="Serial No"/>
                             <p:inputText autocomplete="off" value="#{bookingController.serealNo}">                                        
                             </p:inputText>
-                            <p:outputLabel value="Mark As Absent"/>
-                            <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
-                            </p:selectBooleanCheckbox>
+
 
                             <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
                                              disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                         or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
-                                             disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                         or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                                         or bookingController.selectedBillSession.bill.refunded==true}" />
+
+
+
+
 
                         </h:panelGrid>
 
 
+
+                    </p:tab>
+
+                    <p:tab title="Status" >
+                        <p:outputLabel value="Mark As Present / Absent"/>
+                        <p:selectBooleanButton onLabel="Absent" offLabel="Absent"  value="#{bookingController.selectedBillSession.absent}" >
+                            <p:ajax process="@this" listener="#{bookingController.updateSelectedBillSessionPatient()}" ></p:ajax>
+                        </p:selectBooleanButton>
 
                     </p:tab>
 
