@@ -1313,16 +1313,17 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return true;
         }
 
-        if (!getSessionController().getApplicationPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
-            if (cashPaid == 0.0) {
-                JsfUtil.addErrorMessage("Please enter the paid amount");
-                return true;
+        if (configOptionApplicationController.getBooleanValueByKey("Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
+            if (paymentMethod == PaymentMethod.Cash) {
+                if (cashPaid == 0.0) {
+                    JsfUtil.addErrorMessage("Please enter the paid amount");
+                    return true;
+                }
+                if (cashPaid < getPreBill().getNetTotal()) {
+                    JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                    return true;
+                }
             }
-            if (cashPaid < getPreBill().getNetTotal()) {
-                JsfUtil.addErrorMessage("Please select tendered amount correctly");
-                return true;
-            }
-
         }
 
         return false;

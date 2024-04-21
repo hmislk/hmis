@@ -74,7 +74,7 @@
 
                                     <h:outputText value="Sample" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
-                                    <p:selectOneMenu class="form-control" id="cmbSample"  value="#{investigationController.current.sample}" >
+                                    <p:selectOneMenu class="form-control" id="cmbSample"  value="#{investigationController.current.sample}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="Please select a Sample"/>
                                         <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                                     </p:selectOneMenu>
@@ -145,13 +145,7 @@
                                         offLabel="This is NOT a master item."
                                         value="#{itemController.current.isMasterItem}" 
                                         >
-                                        <p:ajax process="chkMasterItem" update="tmpMi" ></p:ajax>
                                     </p:selectBooleanButton>
-
-                                    <p:spacer ></p:spacer>
-                                    <p:spacer ></p:spacer>
-                                    <p:outputLabel id="tmpMi" value="#{itemController.current.isMasterItem}" ></p:outputLabel>
-
 
                                     <h:outputText value="Has a Report Format" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
@@ -159,12 +153,7 @@
                                         id="chkHasReport" 
                                         itemLabel="Has a Report Format" 
                                         value="#{itemController.current.hasReportFormat}" >
-                                        <p:ajax process="chkHasReport" update="tmpRf" ></p:ajax>
                                     </p:selectBooleanCheckbox>
-
-                                    <p:spacer ></p:spacer>
-                                    <p:spacer ></p:spacer>
-                                    <p:outputLabel id="tmpRf" value="#{itemController.current.hasReportFormat}" ></p:outputLabel>
 
                                     <h:outputText value="Master Item Reference" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
