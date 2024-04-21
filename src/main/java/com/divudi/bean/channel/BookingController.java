@@ -541,26 +541,35 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public boolean errorCheckForSerial() {
+        if (selectedBillSession == null || billSessions == null) {
+            // Handle the case when selectedBillSession or billSessions is null
+            return false;
+        }
+
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            //System.out.println("billSessions" + bs.getId());
+            if (bs == null) {
+                // Skip null elements in billSessions
+                continue;
+            }
 
             if (selectedBillSession.equals(bs)) {
+                // Skip comparison with selectedBillSession itself
+                continue;
+            }
 
-            } else {
-                if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
+            if (bs.getSerialNo() == selectedBillSession.getSerialNo()) {
+                alreadyExists = true;
+                break; // No need to continue checking if alreadyExists is true
+            }
+
+            for (BillItem bi : bs.getBill().getBillItems()) {
+                if (bi != null && bi.getBillSession() != null && serealNo == bi.getBillSession().getSerialNo()) {
                     alreadyExists = true;
+                    JsfUtil.addErrorMessage("This Number Is Already Exist");
+                    break; // No need to continue checking if alreadyExists is true
                 }
             }
-            if (!bs.equals(selectedBillSession)) {
-                for (BillItem bi : bs.getBill().getBillItems()) {
-                    if (serealNo == bi.getBillSession().getSerialNo()) {
-                        alreadyExists = true;
-                        JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
-                    }
-                }
-            }
-
         }
 
         return alreadyExists;
@@ -604,13 +613,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public boolean billSessionErrorPresent() {
         boolean flag = false;
-        for (BillSession bs : getBillSessions()) {
-            if (selectedBillSession != null) {
+        List<BillSession> billSessions = getBillSessions();
+        if (billSessions != null && selectedBillSession != null) {
+            for (BillSession bs : billSessions) {
                 if (!bs.equals(selectedBillSession)) {
-                    for (BillItem bi : bs.getBill().getBillItems()) {
-                        if (serealNo == bi.getBillSession().getSerialNo()) {
-                            JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
-                            flag = true;
+                    List<BillItem> billItems = bs.getBill().getBillItems();
+                    if (billItems != null) {
+                        for (BillItem bi : billItems) {
+                            BillSession billSession = bi.getBillSession();
+                            if (billSession != null && serealNo == billSession.getSerialNo()) {
+                                JsfUtil.addErrorMessage("This Number Is Already Exist");
+                                flag = true;
+                                break; // No need to continue checking if flag is already true
+                            }
                         }
                     }
                 }
@@ -706,7 +721,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         patientController.save(patient);
         printingBill = saveBilledBill(reservedBooking);
-        
+
         createPayment(printingBill, paymentMethod);
         sendSmsAfterBooking();
         settleSucessFully = true;
@@ -866,13 +881,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
-            bi.getBillSession().setSerialNo(serealNo);
-            getBillItemFacade().edit(bi);
+        BillSession selectedBillSession = getSelectedBillSession();
+        if (selectedBillSession == null) {
+            // Handle case when selectedBillSession is null
+            return;
         }
 
-        getBillSessionFacade().edit(getSelectedBillSession());
-        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        for (BillItem bi : selectedBillSession.getBill().getBillItems()) {
+            BillSession billSession = bi.getBillSession();
+            if (billSession != null) {
+                billSession.setSerialNo(serealNo);
+                getBillItemFacade().edit(bi);
+            }
+        }
+
+        getBillSessionFacade().edit(selectedBillSession);
         JsfUtil.addSuccessMessage("Serial Updated");
     }
 
@@ -1920,7 +1943,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         savingBill.setSingleBillSession(savingBillSession);
 
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
-        
+
         getBillFacade().edit(savingBill);
         getBillSessionFacade().edit(savingBillSession);
         return savingBill;
@@ -2187,7 +2210,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             billFeeFacade.create(bf);
             billFeeList.add(bf);
         }
-       
 
         billItem.setDiscount(tmpDiscount);
         billItem.setNetValue(tmpTotal);
@@ -2211,12 +2233,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
             System.out.println("iteratingBillFee.getFeeGrossValue() = " + iteratingBillFee.getFeeGrossValue());
             System.out.println("iteratingBillFee.getFeeValue() = " + iteratingBillFee.getFeeValue());
 
-            
             calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
             calculatingNetBillTotal += iteratingBillFee.getFeeValue();
 
         }
-        billToCaclculate.setDiscount(calculatingGrossBillTotal-calculatingNetBillTotal);
+        billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
