@@ -9,9 +9,11 @@
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:pat="http://java.sun.com/jsf/composite/patient"
+                xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
+
         <h:form id="form">
             <!--            
             #{bookingController.selectedBillSession.bill.billItems}
@@ -516,7 +518,7 @@
                                                         or channelBillController.billSession.bill.cancelled==true
                                                         or  channelBillController.billSession.bill.paidAmount ne 0}" 
                                             oncomplete="PF('dlgSettle').show();">
-                                         <style>
+                                            <style>
                                                 .fa-credit-card {
                                                     font-size: 25px !important;
                                                 }
@@ -537,7 +539,7 @@
                                                         or channelBillController.billSession.bill.cancelled==true
                                                         or  channelBillController.billSession.bill.paidAmount ne 0}" 
                                             oncomplete="PF('dlgSettle').show();">
-                                         <style>
+                                            <style>
                                                 .fa-file-invoice-dollar {
                                                     font-size: 25px !important;
                                                 }
@@ -617,7 +619,31 @@
                     </p:tab>
 
 
-                    <p:tab title="Change" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                    <p:tab 
+                        title="Change Patient"
+                        id="change" 
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                        <p:panelGrid columns="2" class="w-100">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
+                                <p:commandButton ajax="false" value="Change Patient" action="#{bookingController.changePatient()}" ></p:commandButton>
+                            </f:facet>
+                            <p:panel header="Current Patient for Booking" >
+                                <ezcommon:patient patient="#{bookingController.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                            </p:panel>
+                            <ezcommon:patient_details controller="#{bookingController}" ></ezcommon:patient_details>
+                        </p:panelGrid>
+                    </p:tab>
+
+                    <p:tab 
+                        title="Change Number"
+                        id="changeNumber" 
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                        <p:panelGrid columns="2" >
+                            <p:panel header="Current Patient for This Booking" >
+                                <ezcommon:patient patient="#{bookingController.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                            </p:panel>
+                        </p:panelGrid>
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Title"/>
                             <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
@@ -653,7 +679,6 @@
 
 
                     </p:tab>
-
 
                     <p:tab title="Search" rendered="false">
 

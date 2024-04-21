@@ -2992,6 +2992,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
         this.paymentMethodData = paymentMethodData;
     }
 
+    public String changePatient() {
+        if(selectedBillSession==null){
+            JsfUtil.addErrorMessage("No Session Selected");
+            return null;
+        }
+        if(patient==null){
+            JsfUtil.addErrorMessage("No Session Selected");
+            return null;
+        }
+        selectedBillSession.getBill().setPatient(patient);
+        billFacade.edit(selectedBillSession.getBill());
+        JsfUtil.addSuccessMessage("Patient Changed");
+        return navigateToManageBooking();
+    }
+    
     public void changeListener() {
         getSelectedSessionInstance().getOriginatingSession().setTotalFee(0.0);
         getSelectedSessionInstance().getOriginatingSession().setTotalFfee(0.0);
