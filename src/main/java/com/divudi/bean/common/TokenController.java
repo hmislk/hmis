@@ -243,8 +243,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
     }
 
     public Token findToken(Long id) {
-        System.out.println("findToken");
-        System.out.println("id = " + id);
         if (id == null) {
             return null;
         }

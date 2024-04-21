@@ -114,7 +114,6 @@ public class ItemApplicationController {
     }
 
     private List<ItemLight> fillPackages() {
-        System.out.println("fillPackages");
         String jpql = "SELECT new com.divudi.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "
@@ -132,7 +131,6 @@ public class ItemApplicationController {
                 + "ORDER BY i.name";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
-        System.out.println("parameters = " + parameters);
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         return lst;
     }

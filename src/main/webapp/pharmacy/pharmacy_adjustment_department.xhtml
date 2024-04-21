@@ -68,7 +68,7 @@
                                                 headerText="Stocks" 
                                                 styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputText value="#{i.stock}" >
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                    <f:convertNumber pattern="#,###.##" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column

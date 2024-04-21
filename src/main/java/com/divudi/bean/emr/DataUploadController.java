@@ -1182,7 +1182,6 @@ public class DataUploadController implements Serializable {
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            System.out.println("row = " + row);
 
             Category category;
             Institution institution;
@@ -1210,7 +1209,6 @@ public class DataUploadController implements Serializable {
             if (institutionName == null || institutionName.trim().equals("")) {
                 institutionName = "Other";
             }
-            System.out.println("institutionName = " + institutionName);
             if (runningIns == null) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
                 institutionsSaved.add(institution);
@@ -1222,7 +1220,6 @@ public class DataUploadController implements Serializable {
                 institutionsSaved.add(institution);
                 runningIns = institution;
             }
-            System.out.println("runningIns = " + runningIns);
             Cell deptCell = row.getCell(6);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
@@ -1230,7 +1227,6 @@ public class DataUploadController implements Serializable {
             if (departmentName == null || departmentName.trim().equals("")) {
                 departmentName = institutionName;
             }
-            System.out.println("departmentName = " + departmentName);
             if (runningDept == null) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
                 runningDept = department;
@@ -1252,9 +1248,7 @@ public class DataUploadController implements Serializable {
             }
 
             comments = name;
-            System.out.println("1 name = " + name);
             name = CommonFunctions.sanitizeStringForDatabase(name);
-            System.out.println("2 name = " + name);
 
             item = itemController.findItemByName(name, code, department);
             if (item != null) {

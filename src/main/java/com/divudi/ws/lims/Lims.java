@@ -190,6 +190,16 @@ public class Lims {
             @PathParam("billId") String billId,
             @PathParam("username") String username,
             @PathParam("password") String password) {
+        return processSamplesFromBill(billId, username, password);
+    }
+
+    @GET
+    @Path("/samples1/{billId}/{username}/{password}")
+    @Produces("application/json")
+    public String generateSamplesFromBill1(
+            @PathParam("billId") String billId,
+            @PathParam("username") String username,
+            @PathParam("password") String password) {
 
         // Validation
         System.out.println("generateSamplesFromBill");
@@ -239,6 +249,69 @@ public class Lims {
         jSONObjectOut.put("Barcodes", array);
         String js = jSONObjectOut.toString();
         return js;
+    }
+
+    public String processSamplesFromBill(String billId, WebUser requestSendingUser) {
+        System.out.println("Processing generateSamplesFromBill for User");
+        System.out.println("billId = " + billId);
+
+        List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
+        System.out.println("patientBills = " + patientBills);
+        if (patientBills == null || patientBills.isEmpty()) {
+            return constructErrorJson(1, "Bill Not Found. Please reenter.", billId);
+        }
+
+        List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
+        System.out.println("ptSamples = " + ptSamples);
+
+        JSONArray array = new JSONArray();
+        Set<Long> uniqueIds = new HashSet<>();
+
+        if (ptSamples != null && !ptSamples.isEmpty()) {
+            for (PatientSample ps : ptSamples) {
+                if (uniqueIds.add(ps.getId())) {
+                    JSONObject j = constructPatientSampleJson(ps);
+                    if (j != null) {
+                        array.put(j);
+                    }
+                }
+            }
+        } else {
+            for (Bill b : patientBills) {
+                JSONObject j = constructPatientSampleJson(b);
+                System.out.println("j = " + j);
+                if (j != null) {
+                    array.put(j);
+                }
+            }
+        }
+
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("Barcodes", array);
+        return jSONObjectOut.toString();
+    }
+
+    public String processSamplesFromBill(String billId, String username, String password) {
+        System.out.println("Processing generateSamplesFromBill");
+        System.out.println("billId = " + billId);
+
+        String validationError = validateInput(billId, username, password);
+        System.out.println("validationError = " + validationError);
+        if (validationError != null) {
+            return constructErrorJson(1, validationError, billId);
+        }
+
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
+        if (requestSendingUser == null) {
+            return constructErrorJson(1, "Username / password mismatch.", billId);
+        }
+
+        return processSamplesFromBill(billId, requestSendingUser);
+    }
+
+    public String generateSamplesForInternalUse(String billId, WebUser user) {
+        return processSamplesFromBill(billId, user);
     }
 
     private String validateInput(String billId, String username, String password) {
@@ -655,9 +728,9 @@ public class Lims {
             }
         }
         if (b.getBillType() == BillType.OpdBathcBill) {
-                bs.addAll(validBillsOfBatchBill(b));
-                return bs;
-        }else{
+            bs.addAll(validBillsOfBatchBill(b));
+            return bs;
+        } else {
             bs.add(b);
             return bs;
         }

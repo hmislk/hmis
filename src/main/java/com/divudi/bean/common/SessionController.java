@@ -692,7 +692,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String loginActionWithoutDepartment() {
-        System.out.println("loginActionWithoutDepartment");
         department = null;
         institution = null;
         boolean l = checkUsersWithoutDepartment();

@@ -155,7 +155,6 @@ public class GrnController implements Serializable {
         List<BillItem> tmpBillItems = new ArrayList<>();
         for (BillItem i : getBillItems()){
             if(i.getReferanceBillItem()==referenceBillItem){
-                System.out.println("i = " + i.getPharmaceuticalBillItem().getQty());
                 tmpBillItems.add(i);
             }
         }
@@ -173,7 +172,6 @@ public class GrnController implements Serializable {
             PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
             newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
-            System.out.println("updateBillItem = " + originalBillItemToDuplicate.getItem().getName());
             newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
             newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
             newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
@@ -182,12 +180,9 @@ public class GrnController implements Serializable {
            
             for(BillItem bi:tmpBillItems){
                 totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
-                System.out.println("totalQuantityOfBillItemsRefernceToOriginalItem = " + totalQuantityOfBillItemsRefernceToOriginalItem);
                 totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
             }
-            System.out.println("originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() = " + originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
             remainQty = originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
-            System.out.println("remainQty = " + remainQty);
             remainFreeQty = originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
             
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
