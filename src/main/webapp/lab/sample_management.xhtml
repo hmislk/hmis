@@ -138,10 +138,7 @@
                                             </p:autoComplete>
                                         </p:column>
 
-
                                         <p:column headerText="Actions">
-                                            <h1>#{smpIx.billItem.bill.idStr}</h1>
-
                                             <div class="d-flex gap-2">
                                                 <p:commandButton  
                                                     disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   
@@ -171,7 +168,6 @@
                                             </div>
 
                                         </p:column>
-
 
                                     </p:dataTable>
 
