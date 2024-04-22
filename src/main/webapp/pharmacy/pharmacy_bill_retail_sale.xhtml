@@ -47,6 +47,7 @@
                                                 minQueryLength="3" 
                                                 maxResults="10" 
                                                 class="w-100"
+                                                forceSelection="true"
                                                 value="#{pharmacySaleController.stock}" 
                                                 completeMethod="#{stockController.completeAvailableStocks}" 
                                                 var="i" 
@@ -335,12 +336,15 @@
                                                             </p:selectOneMenu>
                                                         </div>
                                                         <div class="col-md-7">
-                                                            <p:commandButton ajax="false" accesskey="s" value="Settle"
-                                                                             icon="fa fa-check"
-                                                                             class="ui-button-success mx-1"
-                                                                             onclick="if (!confirm('Are you sure?'))
-                                                                                         return false"
-                                                                             action="#{pharmacySaleController.settleBillWithPay}" >
+                                                            <p:commandButton 
+                                                                ajax="false" 
+                                                                accesskey="s"
+                                                                value="Settle"
+                                                                icon="fa fa-check"
+                                                                class="ui-button-success mx-1"
+                                                                onclick="if (!confirm('Are you sure?'))
+                                                                            return false"
+                                                                action="#{pharmacySaleController.settleBillWithPay}" >
                                                                 <f:facet name="title" >
                                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                                     <h:outputLabel value="ettle"  ></h:outputLabel>
