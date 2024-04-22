@@ -460,6 +460,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
+        notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -471,7 +472,6 @@ public class TransferIssueController implements Serializable {
         issuedBill = null;
         issuedBill = b;
         
-        notificationController.createNotification(issuedBill);
         printPreview = true;
 
     }
