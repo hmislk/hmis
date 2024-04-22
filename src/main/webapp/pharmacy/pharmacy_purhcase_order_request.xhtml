@@ -469,7 +469,7 @@
         <p:dialog widgetVar="stockDetailsDialog" modal="true" header="Stock Details" width="50%" height="auto">
             <h:form id="stockDetailsForm">
 
-                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s">
+                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s" scrollable="true" scrollHeight="250px;">
 
                     <f:facet name="header">
                         <h:outputText id="stockItemName" value="Item: #{stockController.selectedItem.name}" />
