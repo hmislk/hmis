@@ -11,7 +11,18 @@
     <ui:define name="content">
         <h:form>
 
-            <h:panelGroup rendered="#{!grnController.printPreview}">
+            <p:panel rendered="#{!grnController.printPreview}">
+                <f:facet name="header">
+                    <h:outputLabel value="GRN Receive Wholesale" class="mt-2"/>
+                    <p:commandButton  
+                        value="Settle" 
+                        action="#{grnController.settle}"
+                        class="ui-button-success"
+                        icon="fas fa-check"
+                        ajax="false"  
+                        style="float: right;">
+                    </p:commandButton> 
+                </f:facet>
 
                 <h:panelGrid columns="7" style="min-width: 100%;">
                     <h:outputLabel value="Supplier"/>
@@ -21,17 +32,13 @@
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <h:outputLabel value="GRN Institution"/>
                     <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
-                                    completeMethod="#{institutionController.completeCompany}" 
-                                    forceSelection="true"
-                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                                     completeMethod="#{institutionController.completeCompany}" 
+                                     forceSelection="true"
+                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                         <f:selectItem itemLabel="SelectPayment method"/>
                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
-                    </p:selectOneMenu>
-                    <p:commandButton  value="Settle" action="#{grnController.settle}"
-                                      
-                                      ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                    </p:commandButton>      
+                    </p:selectOneMenu> 
                 </h:panelGrid>
 
 
@@ -40,21 +47,25 @@
                              rowKey="#{bi.searialNo}"
                              selection="#{grnController.selectedBillItems}"
                              value="#{grnController.billItems}" 
-                             scrollable="true" scrollHeight="250"
-                             id="itemList" editable="true">  
+                             class="w-100" scrollable="true"
+                             scrollHeight="350px"
+                             id="itemList" 
+                             editable="true">  
 
                     <f:facet name="header">  
                         <h:outputLabel  value="Ordered Bill Item"/>   
-                        <p:commandButton ajax="false" value="Remove All" 
-                                         action="#{grnController.removeSelected()}"/>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Remove All"
+                            style="float: right;"
+                            class="ui-button-danger"
+                            icon="fas fa-trash"
+                            action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
                     <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
                     <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
-                    <p:column style="width:6%">  
-                        <p:rowEditor />  
-                    </p:column>
 
                     <p:column selectionMode="multiple" style="width: 10px;"/>
 
@@ -81,18 +92,22 @@
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
                             </f:facet>                        
                             <f:facet name="input">  
-                                <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
+                                <p:inputText autocomplete="off" value="#{bi.tmpQty}" onfocus="this.select()"/>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>  
 
-                    <p:column headerText="Free">   
+                    <p:column headerText="Ordered Free Qty" >  
+                        <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
+                    </p:column>  
+
+                    <p:column headerText="Recieved Free Qty">   
                         <p:cellEditor>  
                             <f:facet name="output">  
-                                <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
+                                <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQtyInUnit}"/>
                             </f:facet>                      
                             <f:facet name="input">  
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" onfocus="this.select()"/>
                             </f:facet>
                         </p:cellEditor>                        
                     </p:column> 
@@ -108,7 +123,7 @@
                                 </h:panelGroup>
                             </f:facet>                       
                             <f:facet name="input">  
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" onfocus="this.select()">
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>                       
@@ -126,7 +141,7 @@
                                 </h:panelGroup>
                             </f:facet>  
                             <f:facet name="input">
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}" onfocus="this.select()" > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
                             </f:facet>
@@ -144,7 +159,7 @@
                                 </h:panelGroup>
                             </f:facet>  
                             <f:facet name="input">
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.wholesaleRate}"  > 
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.wholesaleRate}" onfocus="this.select()" > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
                             </f:facet>
@@ -192,16 +207,27 @@
                     </p:column>  
 
 
-                    <p:column >
-                        <p:commandButton value="Remove" ajax="false"
-                                         
-                                         action="#{grnController.removeItem(bi)}"/>
+                    <p:column width="6%">
+                        <p:commandButton 
+                            ajax="false"
+                            style="float: right;"
+                            icon="fas fa-trash"
+                            class="ui-button-danger"
+                            action="#{grnController.removeItem(bi)}"/>
+                         <p:commandButton 
+                                process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
+                                style="float: right;"
+                                icon="fas fa-plus"
+                                class="ui-button-danger mx-1"
+                                action="#{grnController.duplicateItem(bi)}"/>
+                        <p:rowEditor /> 
                     </p:column>
 
                 </p:dataTable>  
 
                 <p:panel>
-                    <p:panelGrid columns="2" style="min-width: 100%">
+                    <p:panelGrid columns="3" style="min-width: 100%" id="tot">
 
                         <p:panelGrid columns="2">
                             <p:outputLabel value="Invoice No : "/>
@@ -210,7 +236,7 @@
                             <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>                    
 
-                        <p:panelGrid columns="2" id="tot">
+                        <p:panelGrid columns="2">
                             <p:outputLabel value="Gross Total"/>
                             <p:outputLabel id="gro"  value="#{0-grnController.grnBill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -226,28 +252,58 @@
                             </p:outputLabel>
                         </p:panelGrid>
 
+                        <p:panelGrid columns="2" id="ins">
+                            <p:outputLabel value="Invoice Total"/>
+                            <p:inputText id="insv"  value="#{grnController.insTotal}" onfocus="this.select()">
+                                <f:convertNumber pattern="#,##0.00" />
+                                <p:ajax process="@this" update="diff" event="keyup"
+                                        listener="#{grnController.calDifference()}"/>
+                            </p:inputText>
+                            <p:outputLabel value="Difference"/>
+                            <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnController.difference}"
+                                         style="background-color: #e6e6e6;color: #{grnController.difference > 0 ? 'green' : (grnController.difference == 0 ? 'inherit' : 'red')}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:inputText>
+
+
+                        </p:panelGrid>
+
                     </p:panelGrid>
                 </p:panel>
-            </h:panelGroup>
-            
+            </p:panel>
+
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
-                <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
-                                 
-                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
-                <p:commandButton value="Print" ajax="false" action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
-                <p:panel   id="gpBillPreview"   style="border: none;">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <h:outputLabel value="GRN Preview " class="mt-2"/>
+                        <div class="d-flex gap-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_purchase_order_list_for_recieve"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}" 
+                                value="Back to PO List"> 
+                            </p:commandButton>                   
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                        <ph:grn_wh bill="#{grnController.grnBill}"/>
+                <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
+                        <ph:grn bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                        <ph:grn_detail_wh bill="#{grnController.grnBill}"/>
-                    </h:panelGroup>
-
-                </p:panel>
+                </h:panelGroup>
             </p:panel>
 
         </h:form>

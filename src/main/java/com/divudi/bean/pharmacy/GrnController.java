@@ -142,7 +142,7 @@ public class GrnController implements Serializable {
         pos = null;
         printPreview = false;
         billItems = null;
-        createGrnAll();
+        createGrnWholesale();
         return "/pharmacy/pharmacy_grn_wh?faces-redirect=true";
     }
 
@@ -686,7 +686,7 @@ public class GrnController implements Serializable {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
-        generateBillComponentAll();
+        generateBillComponent();
         calGrossTotal();
     }
 
