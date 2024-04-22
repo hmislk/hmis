@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/lims/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -77,7 +77,7 @@
                                     <h:inputText autocomplete="off" id="txtSearch" value="#{antibioticController.selectText}" >
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </h:inputText>
-                                    <p:selectOneListbox converter="vtm"   id="lstSelect"   value="#{antibioticController.current}" style="min-width: 223px; height: 300px;">
+                                    <p:selectOneListbox id="lstSelect"   value="#{antibioticController.current}" style="min-width: 223px; height: 300px;">
                                         <f:selectItems  value="#{antibioticController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                         </p:ajax>

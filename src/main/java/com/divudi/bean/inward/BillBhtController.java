@@ -12,9 +12,12 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemApplicationController;
+import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -22,7 +25,6 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -39,7 +41,6 @@ import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
-
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -51,8 +52,12 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.ItemLight;
+import com.divudi.data.lab.InvestigationTubeSticker;
+import com.divudi.entity.UserPreference;
 import com.divudi.java.CommonFunctions;
+import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,12 +66,10 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -82,6 +85,12 @@ public class BillBhtController implements Serializable {
     SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -104,8 +113,8 @@ public class BillBhtController implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
 
-    CommonFunctions commonFunctions;
-    ///////////////////
+    @Inject
+    Lims lims;
     @Inject
     InwardBeanController inwardBean;
     @Inject
@@ -115,6 +124,7 @@ public class BillBhtController implements Serializable {
     @Inject
     BillController billController;
     ///////////////////
+    CommonFunctions commonFunctions;
     private double total;
     private double discount;
     private double netTotal;
@@ -137,37 +147,76 @@ public class BillBhtController implements Serializable {
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
+    private String stickerPrinterString;
+    private List<InvestigationTubeSticker> stickers;
 
-
-    public String navigateToAddServiceFromAdmissionProfile() {
-        List<Bill> patientSurgeries = billController.fillPatientSurgeryBills(patientEncounter);
-        if (patientSurgeries == null) {
-            JsfUtil.addErrorMessage("No Surgeries added yet");
-            return null;
-        }
-        if (patientSurgeries.isEmpty()) {
-            JsfUtil.addErrorMessage("No Surgeries added yet");
-            return null;
-        }
-
-        makeNull();
-        if (patientSurgeries.size() == 1) {
-            bills = null;
-            setBatchBill(patientSurgeries.get(0));
-        } else if (patientSurgeries.size() > 1) {
-            setBatchBill(null);
-            bills = patientSurgeries;
-        }
-
-        return "/theater/inward_bill_surgery_service";
-    }
+    private List<ItemLight> inwardItems;
+    private ItemLight itemLight;
 
     public String navigateToAddServiceFromMenu() {
-        makeNull();
-        return "/theater/inward_bill_surgery_service";
+        resetBillData();
+        return "/theater/inward_bill_surgery_service?faces-redirect=true";
     }
-    
-    public void makeNull() {
+
+    public String navigateToPrintLabelsForInvestigations() {
+        String json = generateStockerPrinterString();
+        stickers = convertJsonToList(json);
+        return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
+    }
+
+    public List<InvestigationTubeSticker> convertJsonToList(String json) {
+        List<InvestigationTubeSticker> stickers = new ArrayList<>();
+
+        JSONObject jsonObject = new JSONObject(json);
+        JSONArray barcodes = jsonObject.getJSONArray("Barcodes");
+
+        for (int i = 0; i < barcodes.length(); i++) {
+            JSONObject barcode = barcodes.getJSONObject(i);
+            InvestigationTubeSticker sticker = new InvestigationTubeSticker();
+
+            sticker.setInsid(barcode.getString("insid"));
+            sticker.setTube(barcode.optString("tube", "")); // Using optString for optional fields
+            sticker.setTests(barcode.getString("tests"));
+            sticker.setPatientName(barcode.getString("name"));
+            sticker.setPatientAge(barcode.getString("age"));
+            sticker.setPatientSex(barcode.getString("sex"));
+            sticker.setSampleId(barcode.getString("id"));
+            sticker.setBillDateString(barcode.getString("billDate"));
+
+            // Add more fields as necessary
+            stickers.add(sticker);
+        }
+
+        return stickers;
+    }
+
+    public String generateStockerPrinterString() {
+        //TODO: Prevent Duplicates
+        JSONArray combinedBarcodes = new JSONArray();
+        if (bills == null) {
+            return "";
+        }
+        String username = sessionController.getUserName();
+        String password = sessionController.getPassword();
+        int count = 0;
+        for (Bill b : bills) {
+            String billId = b.getIdStr();
+            String result = lims.generateSamplesFromBill(billId, username, password);
+            JSONObject resultJson = new JSONObject(result);
+            if (resultJson.has("Barcodes")) {
+                JSONArray barcodes = resultJson.getJSONArray("Barcodes");
+                for (int i = 0; i < barcodes.length(); i++) {
+                    combinedBarcodes.put(barcodes.getJSONObject(i));
+                }
+            }
+            count++;
+        }
+        JSONObject finalJson = new JSONObject();
+        finalJson.put("Barcodes", combinedBarcodes);
+        return finalJson.toString();
+    }
+
+    public void resetBillData() {
         date = null;
         total = 0.0;
         discount = 0.0;
@@ -190,7 +239,7 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
     }
-    
+
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -302,7 +351,7 @@ public class BillBhtController implements Serializable {
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
     }
@@ -387,6 +436,24 @@ public class BillBhtController implements Serializable {
         return list;
     }
 
+    public List<ItemLight> fillInwardItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getInwardItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
+    }
+
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
         // System.err.println("1");
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
@@ -408,7 +475,7 @@ public class BillBhtController implements Serializable {
         printPreview = true;
         saveBatchBill();
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
 
     }
 
@@ -426,7 +493,7 @@ public class BillBhtController implements Serializable {
         paymentMethod = null;
         settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Services & Items/Add Services(/faces/inward/inward_bill_service.xhtml)");
+        
     }
 
     public void settleBillSurgery() {
@@ -447,7 +514,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getBatchBill().getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
 
@@ -456,7 +523,7 @@ public class BillBhtController implements Serializable {
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Service/Add service(/faces/theater/inward_bill_surgery_service.xhtml)");
+        
     }
 
     @EJB
@@ -514,24 +581,24 @@ public class BillBhtController implements Serializable {
     public void logicalDischage() {
         getPatientEncounter().getCurrentPatientRoom().setDischarged(true);
         getPatientEncounter().getCurrentPatientRoom().setDischargedBy(getSessionController().getLoggedUser());
-        UtilityController.addSuccessMessage("Logically Dischaged Success");
+        JsfUtil.addSuccessMessage("Logically Dischaged Success");
     }
 
     private boolean errorCheck() {
         if (getLstBillEntries().isEmpty()) {
 
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
         if (getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please select Bht Number");
+            JsfUtil.addErrorMessage("Please select Bht Number");
             return true;
         }
 
         //Check Staff
         if (checkStaff()) {
-            UtilityController.addErrorMessage("Please select Staff");
+            JsfUtil.addErrorMessage("Please select Staff");
             return true;
         }
 
@@ -544,7 +611,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
 
@@ -567,17 +634,17 @@ public class BillBhtController implements Serializable {
     private boolean errorCheckForPatientRoomDepartment() {
 
         if (getPatientEncounter().getCurrentPatientRoom() == null) {
-            UtilityController.addErrorMessage("Please Set Room or Bed For This Patient");
+            JsfUtil.addErrorMessage("Please Set Room or Bed For This Patient");
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
-            UtilityController.addErrorMessage("Please Set Room or Bed For This Patient");
+            JsfUtil.addErrorMessage("Please Set Room or Bed For This Patient");
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
-            UtilityController.addErrorMessage("Under administration, add a Department for this Room " + getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
+            JsfUtil.addErrorMessage("Under administration, add a Department for this Room " + getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
             return true;
         }
 
@@ -586,32 +653,32 @@ public class BillBhtController implements Serializable {
 
     private boolean errorCheckForAdding() {
         if (getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select Bht");
+            JsfUtil.addErrorMessage("Please Select BHT");
             return true;
         }
 
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return true;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation or Services");
             return true;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set To Department to This item");
+            JsfUtil.addErrorMessage("Please set To Department to This item");
             return true;
         }
 
-        if (!getSessionController().getLoggedPreference().isInwardAddServiceBillTimeCheck()) {
+        if (!getSessionController().getApplicationPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
                 if (getCurrentBillItem().getBillTime() == null) {
-                    UtilityController.addErrorMessage("Please set Time To This Investigation");
+                    JsfUtil.addErrorMessage("Please set Time To This Investigation");
                     return true;
                 }
 //                if (getCurrentBillItem().getDescreption() == null || getCurrentBillItem().getDescreption().equals("")) {
-//                    UtilityController.addErrorMessage("Please set Discription To This Investigation");
+//                    JsfUtil.addErrorMessage("Please set Discription To This Investigation");
 //                    return true;
 //                }
             }
@@ -621,16 +688,8 @@ public class BillBhtController implements Serializable {
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            if (!(getCurrentBillItem().getItem() instanceof Investigation)) {
-                UtilityController.addErrorMessage("Under administration, add Category For Item : " + getCurrentBillItem().getItem().getName());
-                return true;
-            } else {
-                if (((Investigation) getCurrentBillItem().getItem()).getInvestigationCategory() == null) {
-                    UtilityController.addErrorMessage("Under administration, add Category For Investigation " + getCurrentBillItem().getItem().getName());
-                    return true;
-                }
-            }
-
+            JsfUtil.addErrorMessage("Under administration, add Category For Item : " + getCurrentBillItem().getItem().getName());
+            return true;
         }
 
         return false;
@@ -640,7 +699,6 @@ public class BillBhtController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
-
         if (errorCheckForPatientRoomDepartment()) {
             return;
         }
@@ -665,13 +723,13 @@ public class BillBhtController implements Serializable {
 
             calTotals();
             if (bItem.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
+                JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
         }
 
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
@@ -698,7 +756,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getBatchBill().getFromDepartment() == null) {
-            UtilityController.addErrorMessage("There is no Department to for Matrix please set Department to surgery add again surgery ");
+            JsfUtil.addErrorMessage("There is no Department to for Matrix please set Department to surgery add again surgery ");
             return;
         }
 
@@ -718,13 +776,13 @@ public class BillBhtController implements Serializable {
 
             calTotals();
             if (bItem.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
+                JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
         }
 
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -809,7 +867,7 @@ public class BillBhtController implements Serializable {
 
     public void prepareNewBill() {
         clearBillItemValues();
-        makeNull();
+        resetBillData();
         printPreview = false;
 
     }
@@ -961,6 +1019,20 @@ public class BillBhtController implements Serializable {
 
     public void setCashPaid(double cashPaid) {
         this.cashPaid = cashPaid;
+    }
+
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
     }
 
     public double getCashBalance() {
@@ -1170,6 +1242,33 @@ public class BillBhtController implements Serializable {
 
     public void setReferredBy(Doctor referredBy) {
         this.referredBy = referredBy;
+    }
+
+    public String getStickerPrinterString() {
+        return stickerPrinterString;
+    }
+
+    public void setStickerPrinterString(String stickerPrinterString) {
+        this.stickerPrinterString = stickerPrinterString;
+    }
+
+    public List<InvestigationTubeSticker> getStickers() {
+        return stickers;
+    }
+
+    public void setStickers(List<InvestigationTubeSticker> stickers) {
+        this.stickers = stickers;
+    }
+
+    public List<ItemLight> getInwardItems() {
+        if (inwardItems == null) {
+            inwardItems = fillInwardItems();
+        }
+        return inwardItems;
+    }
+
+    public void setInwardItems(List<ItemLight> inwardItems) {
+        this.inwardItems = inwardItems;
     }
 
 }

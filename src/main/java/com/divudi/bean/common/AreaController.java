@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Area;
 import com.divudi.entity.Institution;
 import com.divudi.facade.AreaFacade;
@@ -49,12 +49,12 @@ public class AreaController implements Serializable {
         }
         if (area.getId() != null) {
             getFacade().edit(area);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             area.setCreatedAt(new Date());
             area.setCreater(getSessionController().getLoggedUser());
             getFacade().create(area);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
     
@@ -78,14 +78,14 @@ public class AreaController implements Serializable {
 
     public List<Area> completeArea(String qry) {
         List<Area> list;
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "select c from Area c "
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select c from Area c "
                 + " where c.retired=false "
                 + " and (c.name) like :q "
                 + " order by c.name";
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findByJpql(sql, hm);
+        params.put("q", "%" + qry.toUpperCase() + "%");
+        list = getFacade().findByJpql(jpql, params);
 
         if (list == null) {
             list = new ArrayList<>();
@@ -103,18 +103,18 @@ public class AreaController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
-            UtilityController.addErrorMessage("Please enter Value");
+            JsfUtil.addErrorMessage("Please enter Value");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -157,9 +157,9 @@ public class AreaController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

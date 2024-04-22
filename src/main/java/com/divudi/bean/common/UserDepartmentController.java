@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
@@ -90,12 +90,12 @@ public class UserDepartmentController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -134,9 +134,9 @@ public class UserDepartmentController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -146,11 +146,11 @@ public class UserDepartmentController implements Serializable {
 
     public void addDepartmentForUser() {
         if (selectedUser == null) {
-            UtilityController.addSuccessMessage("Select A User");
+            JsfUtil.addSuccessMessage("Select A User");
             return;
         }
         if (currentDepartment == null) {
-            UtilityController.addSuccessMessage("Select a Department");
+            JsfUtil.addSuccessMessage("Select a Department");
             return;
         }
         WebUserDepartment d = new WebUserDepartment();

@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -277,11 +277,26 @@
                                         </p:column>
                                         <p:column headerText="Discount Scheme">                                
                                         </p:column>
-                                        <p:column headerText="Gross Value" footerText="#{billController.grosTotal}">
+                                        <p:column headerText="Gross Value" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{billController.grosTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
                                         </p:column>
-                                        <p:column headerText="Discount" footerText="#{billController.discount}">
+                                        <p:column headerText="Discount">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{billController.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
                                         </p:column>
-                                        <p:column footerText="#{billController.netTotal}" >
+                                        <p:column  >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{billController.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
                                         </p:column>  
 
                                         <p:column headerText="Cancellations/Refunds"  

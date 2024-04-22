@@ -10,6 +10,7 @@ public enum TokenType {
     PHARMACY_TOKEN("Pharmacy Token"),
     DIAGNOSTIC_TOKEN("Diagnostic Token"),
     PRIORITY_TOKEN("Priority Token"),
+    OPD_TOKEN("OPD Token"),
     SPECIAL_CLINIC_TOKEN("Special Clinic Token"),
     COUNTER_TOKEN("Counter Token");
 

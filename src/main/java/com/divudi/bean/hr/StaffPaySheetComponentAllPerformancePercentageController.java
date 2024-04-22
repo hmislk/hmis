@@ -5,7 +5,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
@@ -109,7 +109,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
 //        }
 //
 //        if (!getRepeatedComponent().isEmpty()) {
-//            UtilityController.addErrorMessage("There is already " + getPaysheetComponent().getName() + " defined please finalize his ending date range && add new one or remove");
+//            JsfUtil.addErrorMessage("There is already " + getPaysheetComponent().getName() + " defined please finalize his ending date range && add new one or remove");
 //            items = null;
 //            return true;
 //        }
@@ -129,28 +129,28 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
     private boolean errorCheck() {
 
         if (getStaffController().getSelectedList() == null) {
-            UtilityController.addErrorMessage("Please select staff");
+            JsfUtil.addErrorMessage("Please select staff");
             return true;
         }
 
         if (getFromDate() == null) {
-            UtilityController.addErrorMessage("Please select From Date");
+            JsfUtil.addErrorMessage("Please select From Date");
             return true;
         }
 
         if (getToDate() == null) {
-            UtilityController.addErrorMessage("Please select To Date");
+            JsfUtil.addErrorMessage("Please select To Date");
             return true;
         }
 
         for (Staff staff : staffController.getSelectedList()) {
             if (staff.getTransDblValue() == 0) {
-                UtilityController.addErrorMessage("Some Staff Has No Percentage Value");
+                JsfUtil.addErrorMessage("Some Staff Has No Percentage Value");
                 return true;
             }
 
             if (humanResourceBean.checkStaff(getPaysheetComponent(), staff, getFromDate(), getToDate())) {
-                UtilityController.addErrorMessage("There is Some component in Same Date Range");
+                JsfUtil.addErrorMessage("There is Some component in Same Date Range");
                 return true;
             }
         }
@@ -189,7 +189,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
             getStaffPaysheetComponentFacade().create(spc);
         }
 
-        UtilityController.addSuccessMessage("Succesfully Saved");
+        JsfUtil.addSuccessMessage("Succesfully Saved");
 //        updateExistingComponent();
         makeNullWithout();
     }

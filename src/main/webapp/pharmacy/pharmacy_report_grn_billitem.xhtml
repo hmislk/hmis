@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/pharmacy/pharmacy_summery_index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="subcontent">
@@ -12,27 +12,27 @@
             <p:panel styleClass="noBorder summeryBorder" header="GRN Bill Item Report">
                 <h:panelGrid columns="4" class="w-100">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
-                    <p:outputLabel value="Dealer"></p:outputLabel>
-                    <p:autoComplete value="#{pharmacySaleReport.searchKeyword.ins}" 
+                    <p:outputLabel value="Supplier"></p:outputLabel>
+                    <p:autoComplete value="#{pharmacySaleReportController.searchKeyword.ins}" 
                                     completeMethod="#{institutionController.completeCompany}" 
                                     var="de" itemLabel="#{de.name}" itemValue="#{de}" >
                     </p:autoComplete>
 
                     <p:outputLabel value="Perchase Order Number"></p:outputLabel>
-                    <p:inputText value="#{pharmacySaleReport.searchKeyword.refBillNo}"></p:inputText>
+                    <p:inputText value="#{pharmacySaleReportController.searchKeyword.refBillNo}"></p:inputText>
 
                     <p:outputLabel value="GRN Number"></p:outputLabel>
-                    <p:inputText value="#{pharmacySaleReport.searchKeyword.billNo}"></p:inputText>
+                    <p:inputText value="#{pharmacySaleReportController.searchKeyword.billNo}"></p:inputText>
 
                     <p:outputLabel value="Department"/>
-                    <p:autoComplete  value="#{pharmacySaleReport.department}"
+                    <p:autoComplete  value="#{pharmacySaleReportController.department}"
                                      completeMethod="#{departmentController.completeDept}" var="i"
                                      itemValue="#{i}" itemLabel="#{i.name}"
                                      forceSelection="true" rendered="true">
@@ -46,9 +46,9 @@
                             value="Process"
                             icon="fa-solid fa-arrows-rotate"
                         class="ui-button-warning"
-                            action="#{pharmacySaleReport.createGRNBillItemTable()}"/>
+                            action="#{pharmacySaleReportController.createGRNBillItemTable()}"/>
                         <p:commandButton 
-                            actionListener="#{pharmacySaleReport.createGRNBillItemTable()}" 
+                            actionListener="#{pharmacySaleReportController.createGRNBillItemTable()}" 
                             ajax="false" 
                             value="Excel"
                             icon="fa-solid fa-file-excel"
@@ -66,15 +66,15 @@
                 </h:panelGrid>
 
                 <p:panel id="panelPrint" >
-                    <p:dataTable id="sum1" value="#{pharmacySaleReport.billItems}" var="i" >
+                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.billItems}" var="i" >
                         <f:facet name="header">
                             <h:outputLabel value="From Date :  "/>&nbsp;&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                            <h:outputLabel value="#{pharmacySaleReportController.fromDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                             &nbsp;&nbsp;
                             <h:outputLabel value="To Date  :"/>&nbsp;&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                            <h:outputLabel value="#{pharmacySaleReportController.toDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel><br/>                   
                             <h:outputLabel value="Pharmacy GRN Bill Item Table"/>&nbsp;&nbsp;
@@ -111,9 +111,9 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Dealer Name">
+                        <p:column headerText="Supplier Name">
                             <f:facet name="header" >
-                                <p:outputLabel value="Dealer Name" />
+                                <p:outputLabel value="Supplier Name" />
                             </f:facet>
                             <h:outputLabel value="#{i.bill.fromInstitution.name}">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -182,9 +182,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column footerText="#{pharmacySaleReport.totalPurchaseValue}" style=" text-align: right">
+                                <p:column footerText="#{pharmacySaleReportController.totalPurchaseValue}" style=" text-align: right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacySaleReport.totalPurchaseValue}">
+                                        <h:outputLabel value="#{pharmacySaleReportController.totalPurchaseValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>

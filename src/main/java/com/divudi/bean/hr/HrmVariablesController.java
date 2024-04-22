@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.hr.HrmVariables;
 import com.divudi.entity.hr.PayeeTaxRange;
 import com.divudi.facade.HrmVariablesFacade;
@@ -57,12 +57,12 @@ public class HrmVariablesController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
     }
@@ -117,9 +117,9 @@ public class HrmVariablesController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         
         current = null;
@@ -132,17 +132,17 @@ public class HrmVariablesController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrentPayeeTaxRange().getFromSalary() == 0) {
-            UtilityController.addErrorMessage("Set From Salary");
+            JsfUtil.addErrorMessage("Set From Salary");
             return true;
         }
 
         if (getCurrentPayeeTaxRange().getToSalary() == 0) {
-            UtilityController.addErrorMessage("Set To Salary");
+            JsfUtil.addErrorMessage("Set To Salary");
             return true;
         }
 
         if (getCurrentPayeeTaxRange().getTaxRate() == 0) {
-            UtilityController.addErrorMessage("Set Tax Rate");
+            JsfUtil.addErrorMessage("Set Tax Rate");
             return true;
         }
 

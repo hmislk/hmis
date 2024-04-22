@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -272,7 +272,7 @@ public class LabBillCollectingController implements Serializable {
             putToBills();
         }
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
 
@@ -352,11 +352,11 @@ public class LabBillCollectingController implements Serializable {
         ptIx.setPerformDepartment(e.getBillItem().getItem().getDepartment());
 
         if (e.getBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("No Bill Item Selected");
+            JsfUtil.addErrorMessage("No Bill Item Selected");
         } else if (e.getBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
+            JsfUtil.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() == null) {
-            UtilityController.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
+            JsfUtil.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() != getSessionController().getLoggedUser().getInstitution()) {
             ptIx.setOutsourcedInstitution(e.getBillItem().getItem().getInstitution());
         }
@@ -474,29 +474,29 @@ public class LabBillCollectingController implements Serializable {
         if (getPatientTabId().toString().equals("tabNewPt")) {
 
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
             if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
+                JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
             if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+                JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
 
         }
         if (getLstBillEntries().isEmpty()) {
 
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
         if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please Select Collecting Centre or Credit company");
+            JsfUtil.addErrorMessage("Please Select Collecting Centre or Credit company");
             return true;
 
         }
@@ -507,11 +507,11 @@ public class LabBillCollectingController implements Serializable {
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
 
@@ -530,11 +530,11 @@ public class LabBillCollectingController implements Serializable {
 
         calTotals();
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+            JsfUtil.addErrorMessage("Please enter the rate");
             return;
         }
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {

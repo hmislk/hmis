@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     >
 
@@ -17,6 +17,7 @@
 
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
+                <p:growl id="msg"/>
                 <p:focus id="focusIx" for="acIx" />
                 <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop" >
                     <p:panel class="w-100" >
@@ -34,6 +35,7 @@
                                     </h:panelGrid>
 
                                     <div class="mb-2">
+
                                         <p:panel id='pIxAdd' header="Items Request"  >
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-cart-plus"/>
@@ -44,31 +46,23 @@
                                                 id="acIx"
                                                 class="w-100"
                                                 scrollHeight="200"
-                                                value="#{billPackageController.itemLight}" var="ix" >
+                                                converter="itemLightConverter"
+                                                value="#{billPackageController.itemLight}" >
                                                 <f:selectItems value="#{billPackageController.opdPackages}"
-                                                               var="package" 
-                                                               itemLabel="#{package.name}"
-                                                               itemValue="#{package}" >
-                                                </f:selectItems>
-                                                <p:ajax listener="#{opdBillController.fillBillSessions}" process="acIx"></p:ajax>
-                                                <p:column>
-                                                    #{ix.name}
-                                                </p:column>
-                                                <p:column>
-                                                    #{ix.total}
-                                                </p:column>
-
+                                                               var="packege" 
+                                                               itemLabel="#{packege.name}"
+                                                               itemValue="#{packege}" />
                                             </p:selectOneListbox>
+
 
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
                                                 class="my-2 ui-button-success"
                                                 icon="fas fa-plus"
-                                                action="#{billPackageController.addToBill()}" >
-                                                <f:ajax 
-                                                    execute="acIx btnAddIx" 
-                                                    render="focusIx tblBillItem pBillDetails pIxAdd" />
+                                                action="#{billPackageController.addToBill()}"
+                                                process="acIx btnAddIx"
+                                                update="msg focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx">
                                             </p:commandButton>
                                         </p:panel>
                                     </div>
@@ -80,40 +74,17 @@
                                             <h:outputText styleClass="fas fa-info-circle"/>
                                             <h:outputText class="mx-4" value="Item Details"/>
                                         </f:facet>
-                                        <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" class="w-100" resizable="false">  
-                                            <h:panelGrid columns="2" class="w-100">  
-                                                <h:outputText id="lblNameD" value="Name" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
-                                                <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
-                                                <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  class="w-100"></h:inputText>
-                                                <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  class="w-100"></h:inputText>
-                                                <h:outputText id="lblAddressD" value="Address" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
-                                                <h:outputText value="Speciality" ></h:outputText>                                    
-                                                <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" class="w-100" >
-                                                    <f:selectItem itemLabel="Please select a speciality"/>
 
-                                                    <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </h:selectOneListbox>
-                                                <h:outputText id="lblRegD" value="Registration" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  class="w-100"></h:inputText>                 
-                                                <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}" class="w-100" ></h:inputText>   
-
-                                                <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" class="w-100" oncomplete="dlg.hide();">
-                                                </p:commandButton>
-                                            </h:panelGrid>  
-                                        </p:dialog>  
 
                                         <h:panelGroup id="panelBillItems" >
                                             <p:tabView id="tblBillItem" >
                                                 <p:tab id="pacName" title="Package Name" >
-                                                    <h:panelGrid columns="2" >
+                                                    <h:panelGrid columns="2" class="w-100">
                                                         <h:outputLabel value="#{billPackageController.currentBillItem.item.name}"/>
-                                                        <p:commandButton id="btnRemove" value="X" rendered="#{billPackageController.currentBillItem.item ne null}" action="#{billPackageController.removeBillItem}" ajax="false" />                                                
+                                                        <p:commandButton id="btnRemove" rendered="#{billPackageController.currentBillItem.item ne null}" action="#{billPackageController.removeBillItem}" 
+                                                                         ajax="false" class="ui-button-danger"
+                                                                         style="float: right;"
+                                                                         icon="fas fa-trash"/>                                                
                                                     </h:panelGrid>
                                                 </p:tab>
                                                 <p:tab id="tabBillItems" title="Bill Items" >
@@ -168,7 +139,10 @@
                                                             <f:facet name="header">Fee</f:facet>
                                                             <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                                 <f:convertNumber pattern="#,##0.00" />
-                                                                <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageController.feeChanged}" />
+                                                                <f:ajax event="keyup" execute="@this" 
+                                                                        render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                        listener="#{billPackageController.feeChangeListener(bif)}" />
+        <!--                                                                <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageController.feeChanged}" />-->
                                                             </h:inputText>
                                                         </p:column>
                                                         <p:column>
@@ -347,18 +321,43 @@
                                                     itemValue="#{ix}" 
                                                     size="30"  
                                                     />
+                                                <p:commandButton id="btnAddNewDoc" 
+                                                                 value="&nbsp;Add New Doctor"
+                                                                 icon="fas fa-plus"
+                                                                 oncomplete="PF('dlg').show();" 
+                                                                 class="ui-button-success"
+                                                                 actionListener="#{doctorController.prepareAdd}" 
+                                                                 process="btnAddNewDoc" 
+                                                                 update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
 
-                                                <p:commandButton 
-                                                    id="btnAddNewDoc" 
-                                                    type="button" 
-                                                    class="mx-2 ui-button-success"
-                                                    icon="fas fa-user-md"
-                                                    value="Add New Doctor" 
-                                                    onclick="dlg.show();" 
-                                                    actionListener="#{doctorController.prepareAdd}" 
-                                                    process="btnAddNewDoc" 
-                                                    update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" 
-                                                    />  
+
+                                                <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" class="w-100" resizable="false">  
+                                                    <h:panelGrid columns="2" class="w-100">  
+                                                        <h:outputText id="lblNameD" value="Name" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
+                                                        <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
+                                                        <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  class="w-100"></h:inputText>
+                                                        <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  class="w-100"></h:inputText>
+                                                        <h:outputText id="lblAddressD" value="Address" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
+                                                        <h:outputText value="Speciality" ></h:outputText>                                    
+                                                        <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" class="w-100" >
+                                                            <f:selectItem itemLabel="Please select a speciality"/>
+
+                                                            <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                        </h:selectOneListbox>
+                                                        <h:outputText id="lblRegD" value="Registration" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  class="w-100"></h:inputText>                 
+                                                        <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
+                                                        <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}" class="w-100" ></h:inputText>   
+
+                                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" class="w-100" oncomplete="dlg.hide();">
+                                                        </p:commandButton>
+                                                    </h:panelGrid>  
+                                                </p:dialog>  
                                             </p:tab>
 
                                             <p:tab title="Company" class="w-100">
@@ -397,26 +396,61 @@
 
                 <h:panelGroup rendered="#{billPackageController.printPreview}" >
                     <div >
-                        <div >
-                            <div >
-                                <p:commandButton value="Print" ajax="false" action="#" >
+                        <div >       
+                            <div class="my-1">
+                                <p:commandButton value="Print" ajax="false" action="#" class="ui-badge-info mx-1" icon="fas fa-print">
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton value="Print Without Totals" ajax="false" action="#" >
+                                <p:commandButton value="Print Without Totals" ajax="false" action="#" rendered="false">
                                     <p:printer target="gpBillPreview1" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton value="New Lab Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
+                                <p:commandButton value="New Package Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" class="ui-button-warning mx-1" icon="fas fa-plus">
                                 </p:commandButton>
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billPackageController.cancellAll}"/>
-                                <h:panelGroup id="gpBillPreview">
-                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
-                                        <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
-                                    </ui:repeat>
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billPackageController.cancellAll}" class="ui-button-danger mx-1" icon="fas fa-ban"/>
+                                <div style="float: right;" >
+                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                </div>
+
+
+                                <!--                                <h:panelGroup id="gpBillPreview">
+                                                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                                                        <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
+                                                                    </ui:repeat>
+                                                                </h:panelGroup>-->
+                                <div><br/></div>
+                                <h:panelGroup id="gpBillPreview" >
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                            <bi:five_five_paper_with_headings_opd_package bill="#{bill}"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                            <bi:opdPackegePosBill bill="#{bill}"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                            <bi:opdPackegePosBillWithoutHeader bill="#{bill}"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                        <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                            <bi:A4_paper_with_headings_package bill="#{bill}"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
                                 </h:panelGroup>
+
                                 <h:panelGroup id="gpBillPreview1">
-                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
+<!--                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
                                         <bi:opdBillPrintRuhunu_pack_1 bill="#{bill}" dup="false"/>
-                                    </ui:repeat>
+                                    </ui:repeat>-->
                                 </h:panelGroup>
                             </div>
                         </div>

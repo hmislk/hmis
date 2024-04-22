@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:p="http://primefaces.org/ui">
 
 
     <ui:define name="content">
 
         <h:form>
-
             <p:panel header="Guardian Room Change" rendered="#{roomChangeController.current eq null}">
                 <f:facet name="header">
                     <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
@@ -36,8 +36,6 @@
                         </p:column>
                     </p:autoComplete>   
                     <p:commandButton value="Select"  class="mx-3" ajax="false"   />
-
-
                 </h:panelGrid>
 
             </p:panel>
@@ -46,21 +44,18 @@
                 <f:facet name="header">
                     <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
                     <p:outputLabel value="Guardian Room Change" class="m-2"/>
-                </f:facet>
-                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
-                    <h:panelGrid columns="3">
-
+                    <div class="d-flex" style="float: right;">
                         <p:commandButton 
-                            style="float: right;"
                             ajax="false"
+                            value="Patient Lookup"
                             icon="fa fa-search"
                             class="ui-button-warning " 
                             action="#{patientController.navigateToSearchPatients()}" 
                             >
                         </p:commandButton>
                         <p:commandButton 
-                            style="float: right;"
                             ajax="false"
+                            value="Patient Profile"
                             icon="fa fa-user"
                             class="ui-button-warning mx-1" 
                             action="#{patientController.navigateToOpdPatientProfile()}" 
@@ -70,22 +65,19 @@
                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
                         <p:commandButton 
-                            style="float: right;"
+                            value="Inpatient Dashboard"
                             ajax="false"
                             icon="fa-solid fa-address-card "
                             class="ui-button-secondary " 
                             action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                             >
+                            <f:setPropertyActionListener 
+                                value="#{roomChangeController.current}" 
+                                target="#{admissionController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
-                    </h:panelGrid>
-                </div>
-                <h:panelGrid columns="2" class="mb-2 d-flex justify-content-end">
-                    <p:commandButton value="Change"  class="mx-3"
-                                     action="#{roomChangeController.changeGurdianRoom()}" ajax="false"   />
-                    <p:commandButton value="Clear"  class="mx-3"
-                                     action="#{roomChangeController.recreate()}"
-                                     ajax="false"   />
-                </h:panelGrid>
+                    </div>
+                </f:facet>
+
                 <div class="row mt-3">
                     <div class="col-6">
                         <p:panel>
@@ -94,35 +86,8 @@
                                 <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                             </f:facet>
 
+                            <in:bhtDetail admission="#{roomChangeController.current}"/>
 
-                            <p:tabView >
-                                <p:tab title="Patient Details" >
-                                    <p:panelGrid columns="2">
-                                        <h:outputText  value="Name" />
-                                        <h:outputText value="#{roomChangeController.current.patient.person.nameWithTitle}"/>
-                                        <h:outputText value="NIC" />
-                                        <h:outputText  value="#{roomChangeController.current.patient.person.nic}"  />
-                                        <h:outputLabel value="Age"/>
-                                        <h:outputLabel value="#{roomChangeController.current.patient.age}"/>
-                                        <h:outputText value="Address" />
-                                        <h:outputText  value="#{roomChangeController.current.patient.person.address}" />
-                                        <h:outputText value="Phone No" />
-                                        <h:outputText  value="#{roomChangeController.current.patient.person.mobile}"  />
-                                    </p:panelGrid>
-                                </p:tab>
-
-                                <p:tab title="Guardian Details">
-                                    <p:panelGrid columns="2">
-                                        <h:outputText  value="Name" />
-                                        <h:outputText value="#{roomChangeController.current.guardian.name}"  />
-                                        <h:outputText value="Address" />
-                                        <h:outputText  value="#{roomChangeController.current.guardian.address}"  />
-                                        <h:outputText value="Phone No" />
-                                        <h:outputText  value="#{roomChangeController.current.guardian.mobile}"  />
-                                    </p:panelGrid>
-                                </p:tab>
-
-                            </p:tabView>
                         </p:panel>
 
                     </div>
@@ -144,11 +109,15 @@
 
 
                                         <h:outputLabel value="Change at"/>
-                                        <p:calendar id="changeAt"
+                                        <p:datePicker id="changeAt"
                                                     value="#{roomChangeController.changeAt}" 
-                                                    navigator="true" pattern="dd MMM yyyy HH:mm:ss" class="m-2" >
+                                                    pattern="dd MMM yyyy HH:mm:ss"
+                                                    class="m-2" 
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true">
                                             <f:ajax event="dateSelect"  render="changeAt"  />
-                                        </p:calendar>
+                                        </p:datePicker>
 
                                         <p:commandButton value="Change"  
                                                          action="#{roomChangeController.changeGurdianRoom()}" ajax="false"   />

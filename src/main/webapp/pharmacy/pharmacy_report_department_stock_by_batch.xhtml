@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form id="frm">
@@ -36,15 +36,15 @@
                                 actionListener="#{reportsStock.fillDepartmentStocks()}" >
                             </p:commandButton>
                             <p:commandButton 
-                                class="mx-2 ui-button-secondary"
+                                class="mx-2 ui-button-danger"
                                 icon="fas fa-file-pdf"
                                 value="PDF" 
                                 ajax="false" >
                                 <p:dataExporter 
                                     type="pdf"
                                     target="tbl"
-                                    fileName="MessagesAndDetails"  
-                                             />  
+                                    fileName="stock_by_batch"
+                                    />  
                             </p:commandButton>
                             <p:commandButton 
                                 icon="fas fa-file-excel"
@@ -213,7 +213,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                                    <f:convertNumber parent="#,##0.00" />
+                                                    <f:convertNumber parent="#,###,###.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -221,7 +221,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                                    <f:convertNumber parent="#,##0.00" />
+                                                    <f:convertNumber parent="#,###,###.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

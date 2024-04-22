@@ -8,7 +8,7 @@ import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.BillItemController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -29,7 +29,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -185,13 +185,13 @@ public class StorePurchaseController implements Serializable {
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(0);
-            UtilityController.addErrorMessage("You cant set retail price below purchase rate");
+            JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
 
 //        if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
 //            if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
 //                tmp.getPharmaceuticalBillItem().setDoe(null);
-//                UtilityController.addErrorMessage("Check Date of Expiry");
+//                JsfUtil.addErrorMessage("Check Date of Expiry");
 //                //    return;
 //            }
 //        }
@@ -272,14 +272,14 @@ public class StorePurchaseController implements Serializable {
         Date toDate = null;
 
         if (getBill().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Dealor");
+            JsfUtil.addErrorMessage("Select Dealor");
             return;
         }
 
         //Need to Add History
         String msg = errorCheck();
         if (!msg.isEmpty()) {
-            UtilityController.addErrorMessage(msg);
+            JsfUtil.addErrorMessage(msg);
             return;
         }
 
@@ -347,11 +347,11 @@ public class StorePurchaseController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
-        UtilityController.addSuccessMessage("Successfully Billed");
+        JsfUtil.addSuccessMessage("Successfully Billed");
         printPreview = true;
 
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Direct purchase(/faces/store/store_purchase.xhtml)");
+        
     }
 
     private List<BillItem> billItems;
@@ -403,39 +403,39 @@ public class StorePurchaseController implements Serializable {
 
     public void addBillItem() {
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please Select Category");
+            JsfUtil.addErrorMessage("Please Select Category");
             return;
         }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
-            UtilityController.addErrorMessage("Please enter Purchase Rate");
+            JsfUtil.addErrorMessage("Please enter Purchase Rate");
             return;
         }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() == 0) {
-            UtilityController.addErrorMessage("Please enter Retail Rate");
+            JsfUtil.addErrorMessage("Please enter Retail Rate");
             return;
         }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() < getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) {
-            UtilityController.addErrorMessage("Please check Retail Rate");
+            JsfUtil.addErrorMessage("Please check Retail Rate");
             return;
         }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0) {
-            UtilityController.addErrorMessage("Please enter Purchase QTY");
+            JsfUtil.addErrorMessage("Please enter Purchase QTY");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() != 1) {
-                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
+                JsfUtil.addErrorMessage("Please Qty must be 1 for Asset");
                 return;
             }
         }
 
 //        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() > billItem.getPharmaceuticalBillItem().getRetailRate()) {
-//            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
+//            JsfUtil.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
 //            return;
 //        }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {

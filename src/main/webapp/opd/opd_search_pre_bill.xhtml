@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -116,7 +116,7 @@
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
                                             <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
                                                            value="#{bill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -143,9 +143,9 @@
 
                                     <p:column style="width: 70px">
                                         <p:commandButton ajax="false"  value="Accept Payment" 
+                                                         class="ui-button-primary"
                                                          action="#{opdPreSettleController.toSettle(bill)}" 
-                                                         disabled="#{bill.referenceBill ne null or bill.cancelled}">   
-                                            
+                                                         disabled="#{bill.referenceBill ne null or bill.cancelled}">     
                                         </p:commandButton>
                                     </p:column>
 
@@ -160,7 +160,7 @@
                                                 </h:outputLabel>
                                                 <br/>
                                                 <h:panelGroup rendered="#{rb.cancelled}">
-                                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                    <h:outputLabel style="color: red;" value="Cancelled At " />
                                                     <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                                    value="#{rb.cancelledBill.createdAt}" >
                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -172,19 +172,19 @@
                                                 </h:outputLabel>                                
                                                 <br/>
                                                 <h:panelGroup rendered="#{rb.cancelled}" >
-                                                    <h:outputLabel style="color: red;" value="Cancelled by " />
+                                                    <h:outputLabel style="color: red;" value="Cancelled By " />
                                                     <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                                    value="#{rb.cancelledBill.creater.webUserPerson.name}" >                                       
                                                     </h:outputLabel>
                                                 </h:panelGroup> 
                                             </p:column>                                                     
-                                            <p:column headerText="Net total">
+                                            <p:column headerText="Net Total">
                                                 <h:outputLabel value="#{rb.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
                                             </p:column>
                                             <p:column width="20%">
-                                                <p:commandButton ajax="false" value="View Payment Bill" action="bill_reprint" disabled="#{bill.referenceBill eq null}">
+                                                <p:commandButton class="ui-button-primary" ajax="false" value="View Payment Bill" action="/opd/bill_reprint?faces-redirect=true" disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>

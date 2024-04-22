@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -16,63 +16,90 @@
                             <h:outputText class="mx-4" value="Lab Report Print" />
                         </f:facet>
                         <div class="row">
-                            <div class="col-2">
-                                <h:panelGrid columns="1" >
+                            <div class="col-md-2">
+                                <h:outputLabel value="From Date "/>
+                                <p:calendar 
+                                    class="w-100 " 
+                                    inputStyleClass="w-100" 
+                                    id="fromDate"  
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date " />
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    class="w-100 " 
+                                    inputStyleClass="w-100" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                                </p:calendar>
 
-                                    <h:outputLabel value="From Date "/>
-                                    <p:calendar class="w-100 " inputStyleClass="w-100" id="fromDate"  value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date " />
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" class="w-100 " inputStyleClass="w-100" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                                    </p:calendar>
+                                <h:outputLabel value="Bill No" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class=" w-100"/>
+                                <h:outputLabel value="Patient Name" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class=" w-100"/>
+                                <h:outputLabel value="Patient Phone" />  
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class=" w-100"/>
+                                <h:outputLabel value="Investigation Name" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                <h:outputLabel value="BHT" />
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                 value="#{searchController.patientEncounter}"
+                                                 completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                                 var="myItem" itemValue="#{myItem}" 
+                                                 itemLabel="#{myItem.bhtNo}" 
+                                                 class="w-100 " inputStyleClass="w-100" >                                
+                                    <p:column>
+                                        #{myItem.bhtNo}
+                                    </p:column>
+                                    <p:column>
+                                        #{myItem.patient.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                </p:autoComplete>
 
-
-                                    <h:outputLabel value="Bill No" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class=" w-100"/>
-                                    <h:outputLabel value="Patient Name" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class=" w-100"/>
-                                    <h:outputLabel value="Patient Phone" />  
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class=" w-100"/>
-                                    <h:outputLabel value="Investigation Name" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
-                                    <h:outputLabel value="BHT" />
-                                    <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                     value="#{searchController.patientEncounter}"
-                                                     completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                                     var="myItem" itemValue="#{myItem}" 
-                                                     itemLabel="#{myItem.bhtNo}" 
-                                                     class="w-100 " inputStyleClass="w-100" >                                
-                                        <p:column>
-                                            #{myItem.bhtNo}
-                                        </p:column>
-                                        <p:column>
-                                            #{myItem.patient.person.nameWithTitle}
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                        </p:column>
-                                    </p:autoComplete>
-                                    <h:panelGrid columns="1" class="my-1">
-                                        <p:commandButton  icon="fas fa-search" id="btnSearch3" ajax="false" value="Search Loged Department" class="w-100 ui-button-warning" action="#{searchController.fillToDepartmentPatientInvestigations()}"  />
-                                        <p:commandButton  icon="fas fa-search" id="btnSearch" ajax="false" value="Search" class="w-100 ui-button-warning"  action="#{searchController.createPatientInvestigationsTable()}"  />
-                                        <p:commandButton  icon="fas fa-search" id="btnSearch2" ajax="false" value="Search All" class="w-100 ui-button-warning"  action="#{searchController.createPatientInvestigationsTableAll()}"  />
-
-                                    </h:panelGrid>
-                                </h:panelGrid>
+                                <p:commandButton 
+                                    icon="fas fa-search" 
+                                    id="btnSearch3" ajax="false" 
+                                    value="Search Loged Department" 
+                                    class="w-100 ui-button-warning mt-3" 
+                                    action="#{searchController.fillToDepartmentPatientInvestigations()}"  />
+                                <p:commandButton 
+                                    icon="fas fa-search" 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search" 
+                                    class="w-100 ui-button-warning my-1"  
+                                    action="#{searchController.createPatientInvestigationsTable()}"  />
+                                <p:commandButton 
+                                    icon="fas fa-search" 
+                                    id="btnSearch2" 
+                                    ajax="false" 
+                                    value="Search All" 
+                                    class="w-100 ui-button-warning"  
+                                    action="#{searchController.createPatientInvestigationsTableAll()}"  />
 
                             </div>
-                            <div class="col-10">
+                            <div class="col-md-10">
                                 <p:dataTable class="mt-4" id="tblBills" value="#{searchController.patientInvestigations}" var="pi" rowIndexVar="i" >
-                                    <p:column  headerText="No" styleClass="alignTop" >
+                                    <p:column  headerText="No" styleClass="alignTop" width="50px;">
                                         <p:outputLabel value="#{i+1}" />
                                     </p:column>
-                                    <p:column  headerText="Bill" styleClass="alignTop" >
-                                        <h:outputLabel id="lblBillNo" 
-                                                       value="#{pi.billItem.bill.insId}" 
-                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                                    <p:column headerText="Bill" width="150px;" styleClass="alignTop" filterBy="#{pi.billItem.bill.insId}" filterMatchMode="contains">
+                                        <h:commandLink  
+                                            id="lblBillNo" 
+                                            value="#{pi.billItem.bill.insId}" 
+                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
+                                            action="#{billSearch.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
+                                        </h:commandLink>
                                         <p:tooltip for="lblBillNo"  >
                                             <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                             <br/>
@@ -100,12 +127,10 @@
                                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                                 </h:outputLabel>
                                             </h:panelGroup>
-
-
                                         </p:tooltip>
                                     </p:column>
-
-                                    <p:column  headerText="Dep ID" styleClass="alignTop" >
+                                    <p:column  headerText="Dep ID" styleClass="alignTop" width="150px;" >
+                                        
                                         <h:outputLabel id="lblInvNo" 
                                                        value="#{pi.billItem.bill.deptId}" 
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
@@ -140,13 +165,14 @@
                                     </p:column>
 
 
-                                    <p:column  headerText="Patient" styleClass="alignTop" >
-                                        <h:commandLink id="colPtDetail" 
-                                                       value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
-                                                       action="patient" 
-                                                       style="text-decoration:underline;"
-                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
-                                                       >
+                                    <p:column  headerText="Patient" width="350px;" filterBy="#{pi.billItem.bill.patient.person.nameWithTitle}" filterMatchMode="contains" >
+                                        <h:commandLink 
+                                            id="colPtDetail"                                        
+                                            value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
+                                            action="#{patientController.navigateToOpdPatientEditFromId()}"
+                                            style="text-decoration:underline;"
+                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
+                                            >
                                             <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                         </h:commandLink>
                                         <p:tooltip for="colPtDetail"  >
@@ -161,7 +187,7 @@
                                         </p:tooltip>
                                     </p:column>
 
-                                    <p:column headerText="Investigation"  styleClass="alignTop" >
+                                    <p:column headerText="Investigation" width="300px;" filterBy="#{pi.billItem.item.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{pi.billItem.item.name}" >
                                         </h:outputLabel>
 
@@ -172,17 +198,12 @@
                                         </h:outputLabel>
                                     </p:column>
 
-
-
                                     <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
-                                        <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"  styleClass="noBorderGrid" >
+                                        <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}" >
                                             <h:column >
 
                                                 <h:panelGrid columns="6" styleClass="noBorderGrid">
-
-
-
                                                     <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
                                                         <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                         <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
@@ -193,7 +214,6 @@
                                                     <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
                                                                     style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                                 </h:panelGrid>
-
 
                                                 <p:tooltip for="imgApproved" >
                                                     <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
@@ -207,25 +227,15 @@
                                                     <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                                     </h:outputLabel>
                                                 </p:tooltip>
-
-
-
                                             </h:column>
                                         </h:dataTable>
-
-
                                     </p:column>
-
                                 </p:dataTable>
                             </div>
                         </div>
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

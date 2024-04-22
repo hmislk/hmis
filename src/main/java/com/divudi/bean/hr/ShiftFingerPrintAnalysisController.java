@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.ShiftTable;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.FingerPrintComparator;
@@ -201,7 +201,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         cal2.setTime(staffShift.getShiftEndTime());
 
         if (cal1.getTimeInMillis() > cal2.getTimeInMillis()) {
-            UtilityController.addErrorMessage("To Date Must Be lager Than From Date");
+            JsfUtil.addErrorMessage("To Date Must Be lager Than From Date");
             return;
         }
     }
@@ -217,7 +217,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         ////// // System.out.println("daycount = " + daycount);
         if (daycount > 2) {
-            UtilityController.addErrorMessage("Date Must Be less Than 2 Days");
+            JsfUtil.addErrorMessage("Date Must Be less Than 2 Days");
             return;
         }
 
@@ -544,7 +544,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Analys attendence(Fill)(/faces/hr/hr_shift_table_finger_print.xhtml)");
+        
     }
 
     public void createShiftTableByStaff() {
@@ -614,7 +614,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Analys attendence by staff(Fill New)(/faces/hr/hr_shift_table_finger_print_by_staff.xhtml)");
+        
     }
 
     private List<Form> fetchAdditionalForm(StaffShift staffShift) {
@@ -825,7 +825,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Analys attendence(Fill Additional Only)(/faces/hr/hr_shift_table_finger_print.xhtml or /faces/hr/hr_shift_table_finger_print_by_staff.xhtml)");
+        
     }
 
     public void createShiftTableAdditionalByStaff() {
@@ -1041,7 +1041,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //            return;
 //        }
         if (staffShift.getStartRecord() != null && staffShift.getStartRecord().getStaffShift() != null) {
-            UtilityController.addErrorMessage("This record associated with anther staff shift");
+            JsfUtil.addErrorMessage("This record associated with anther staff shift");
             return;
         }
 
@@ -1061,7 +1061,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //            return;
 //        }
         if (staffShift.getEndRecord() != null && staffShift.getEndRecord().getStaffShift() != null) {
-            UtilityController.addErrorMessage("This record associated with anther staff shift");
+            JsfUtil.addErrorMessage("This record associated with anther staff shift");
             return;
         }
 
@@ -1102,12 +1102,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        errorMessage += "  Some Starting Records Has"
 //                                + " No Starting Record";
 ////                        System.err.println("SS " + ss.getId());
-//                        UtilityController.addErrorMessage(errorMessage);
+//                        JsfUtil.addErrorMessage(errorMessage);
 //                        return true;
 //                    }
 //                    if (ss.getStartRecord().getRecordTimeStamp() == null) {
 //                        errorMessage += " Some Starting Records Has No Time ";
-//                        UtilityController.addErrorMessage(errorMessage);
+//                        JsfUtil.addErrorMessage(errorMessage);
 //                        return true;
 //                    }
 //                }
@@ -1115,12 +1115,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                if (ss.getNextStaffShift() == null) {
 //                    if (ss.getEndRecord() == null) {
 //                        errorMessage += " Some End Records Has No Starting Record";
-//                        UtilityController.addErrorMessage(errorMessage);
+//                        JsfUtil.addErrorMessage(errorMessage);
 //                        return true;
 //                    }
 //                    if (ss.getEndRecord().getRecordTimeStamp() == null) {
 //                        errorMessage += " Some End Records Has No Time ";
-//                        UtilityController.addErrorMessage(errorMessage);
+//                        JsfUtil.addErrorMessage(errorMessage);
 //                        return true;
 //                    }
 //                }
@@ -1180,7 +1180,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         + "  Has No Starting Record";
                 errorMessage.add(message);
 //                        System.err.println("SS " + ss.getId());
-//                    UtilityController.addErrorMessage(errorMessage);
+//                    JsfUtil.addErrorMessage(errorMessage);
                 shiftTable.getStaffShift().add(ss);
                 return true;
 
@@ -1192,7 +1192,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         + " -> " + code
                         + " Some Starting Records Has No Time \r ";
                 errorMessage.add(message);
-//                    UtilityController.addErrorMessage(errorMessage);
+//                    JsfUtil.addErrorMessage(errorMessage);
                 shiftTable.getStaffShift().add(ss);
                 return true;
 //                }
@@ -1208,7 +1208,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         + " Some End Records Has No Starting Record \r";
                 errorMessage.add(message);
                 shiftTable.getStaffShift().add(ss);
-//                    UtilityController.addErrorMessage(errorMessage);
+//                    JsfUtil.addErrorMessage(errorMessage);
                 return true;
 //                }
             }
@@ -1219,7 +1219,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         + " Some End Records Has No Time \r ";
                 errorMessage.add(message);
                 shiftTable.getStaffShift().add(ss);
-//                    UtilityController.addErrorMessage(errorMessage);
+//                    JsfUtil.addErrorMessage(errorMessage);
                 return true;
 //                }
             }
@@ -1322,14 +1322,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        Set<StaffShift> staffShiftsTmp = new HashSet<>();
         if (shiftTables == null) {
             final String empty_List = "Empty List";
-            UtilityController.addErrorMessage(empty_List);
+            JsfUtil.addErrorMessage(empty_List);
             errorMessage.add(empty_List);
             return;
         }
 
 //        System.err.println("2");
 //        if (errorCheckForSave()) {
-////            UtilityController.addErrorMessage("Staff Shift Not Updated");
+////            JsfUtil.addErrorMessage("Staff Shift Not Updated");
 //            return;
 //        }
         for (ShiftTable st : shiftTables) {
@@ -1432,7 +1432,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTables.addAll(tmpShiftTable);
 
         if (shiftTables.isEmpty()) {
-            UtilityController.addSuccessMessage("All Record Successfully Updated");
+            JsfUtil.addSuccessMessage("All Record Successfully Updated");
         }
 
     }

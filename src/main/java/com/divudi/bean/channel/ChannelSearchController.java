@@ -7,7 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -122,8 +122,8 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        //// // System.out.println("getFromDate() = " + getFromDate());
-        //// // System.out.println("getToDate() = " + getToDate());
+         //System.out.println("getFromDate() = " + getFromDate());
+         //System.out.println("getToDate() = " + getToDate());
         //// // System.out.println("txtSearch = " + txtSearch);
         //// // System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null 
@@ -221,58 +221,58 @@ public class ChannelSearchController implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
     }
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit && getBill().getPaidAmount() != 0.0) {
-            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
 //        if (getBill().getBillType() == BillType.LabBill && patientInvestigation.getCollected()== true) {
-//            UtilityController.addErrorMessage("You can't cancell mark as collected");
+//            JsfUtil.addErrorMessage("You can't cancell mark as collected");
 //            return true;
 //        }
 //        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 //
 //            ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
 //            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
-//                UtilityController.addErrorMessage("Sample Already collected can't cancel");
+//                JsfUtil.addErrorMessage("Sample Already collected can't cancel");
 //                return true;
 //            }
 //        }
         if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select a payment scheme.");
+            JsfUtil.addErrorMessage("Please select a payment scheme.");
             return true;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 

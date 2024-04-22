@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml" >
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
@@ -29,7 +29,7 @@
                         </h:panelGroup>
                     </f:facet>
                     <h:form id="form" >
-<!--                        <h1>#{patientReportController.currentPtIx.billItem.bill.total}</h1>-->
+<!--                        <h1>#{patientReportController.currentPtIx.patient.patientPhoneNumber}</h1>-->
 
                         <p:growl id="messages" showDetail="true"/> 
 
@@ -132,6 +132,7 @@
                                               icon="fa-solid fa-arrow-left"
                                               class="mx-1"
                                               style="float: right;"  ></p:commandButton>
+
                         </div>
 
                         <div class="w-100 float-left d-flex my-3"  >
@@ -420,6 +421,13 @@
                                 </p:commandButton>
 
                                 <p:commandButton  ajax="false" 
+                                                  rendered="false"
+                                                  value="Process" 
+                                                  icon="fa-solid fa-file-pdf"
+                                                  class="mx-1 ui-button-danger"
+                                                  />
+
+                                <p:commandButton  ajax="false" 
                                                   value="PDF" 
                                                   icon="fa-solid fa-file-pdf"
                                                   class="mx-1 ui-button-danger"
@@ -448,8 +456,12 @@
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
                                 <div id="divReport"  class="labReport"  >
                                     <ez:common_report 
+                                        showBackground="false"
                                         commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                         patientReport="#{patientReportController.currentPatientReport}"/>
+
+
+
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  escape="false" />
@@ -494,6 +506,7 @@
                                     </ui:repeat>
                                 </div>
                             </h:panelGroup>
+
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                 <div id="divReportM"  class="labReport"   >
                                     <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
@@ -534,7 +547,8 @@
                                                     </div>
                                                     <div style="float: left;width: 5%;  " ></div>
                                                     <div style=" text-align: left; float:left;width: 40%;padding-left: 1px; padding-right: 1px; padding-top: 0px; vertical-align: top;">
-                                                        <h:outputLabel value="#{prv.strValue}" escape="false" style="text-transform: uppercase;" />
+                                                        <h:outputLabel value="#{prv.strValue}" escape="false"
+                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
                                                     </div>
 
                                                 </h:panelGroup>

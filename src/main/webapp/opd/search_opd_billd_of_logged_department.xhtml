@@ -1,17 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-
-
 
                     <p:panel>
                         <f:facet name="header" >
@@ -59,9 +57,20 @@
 
 
                                     <div class="d-grid gap-2">
-                                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchDepartmentOpdBillLights}" class="w-100"/>
-                                        <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
-                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
+                                        <p:commandButton 
+                                            id="btnSearch" 
+                                            ajax="false" 
+                                            value="Search" 
+                                            icon="fa fa-search"
+                                            class="ui-button-warning w-100"
+                                            action="#{searchController.searchDepartmentOpdBillLights}"/>
+                                        <p:commandButton 
+                                            id="btnExcel" 
+                                            icon="fas fa-file-excel"
+                                            class="ui-button-success w-100 "
+                                            ajax="false" 
+                                            value="Download Excel" >
+                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -69,183 +78,165 @@
 
                             <div class="col-md-10">
                                 <p:defaultCommand target="btnSearch" />
-                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.billLights}" 
-                                             var="bill"  
-                                             style="min-width: 100%;"  
-                                             rows ="10"
-                                             paginator="true"
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,25,50"
-                                             >
-                                    <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
-                                              sortBy="#{bill.id}"
-                                              styleClass="alignTop" width="15">
-                                        <h:outputLabel value="#{bill.id}"/>
-                                    </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}" >                                
-                                        <p:commandLink id="billNo" ajax="false" value="#{bill.billNo}" action="#{searchController.viewOPDBillById(bill.id)}">
-                                            <f:setPropertyActionListener value="#{bill.id}" target="#{billSearch.bill}"/>
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblBills" 
+                                    value="#{searchController.billLights}" 
+                                    var="bill"  
+                                    style="min-width: 100%;"  
+                                    rows ="10"
+                                    paginatorPosition="bottom"
+                                    paginator="true"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,25,50,100"
+                                    >
+                                    <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}" filterMatchMode="contains">                                
+                                        <p:commandLink id="billNo" ajax="false" value="#{bill.billNo}" action="/opd/bill_reprint?faces-redirect=true">
+                                            <f:setPropertyActionListener value="#{billController.findBillbyID(bill.id)}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
-
                                     </p:column>
-
-                                    <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                    <p:column headerText="Billed At">
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
-
 
                                     <p:column headerText="Billed For" sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}" filterMatchMode="contains" >                                
                                         <h:outputLabel id="insDep" value="#{bill.departmentName}" />
                                     </p:column>
-                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
-                                        <h:outputLabel value="#{bill.departmentName}" />
-                                    </p:column>
-                                    <p:column headerText="Billed by"  sortBy="#{bill.userName}" filterBy="#{bill.userName}" >
+
+                                    <p:column headerText="Billed by" sortBy="#{bill.userName}" filterBy="#{bill.userName}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bill.userName}" >                                      
                                         </h:outputLabel>
 
-
-                                    </p:column>    
-                                    <p:column headerText="Client"  sortBy="#{bill.patientName}" filterBy="#{bill.patientName}" >                               
-                                        <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patientName}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-<!--                                                <f:setPropertyActionListener value="#{bill.patient.person.nameWithTitle}" target="#{patientController.current}"/>-->
-                                            </h:commandLink>
-                                            <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-
                                     </p:column>
-                                    <p:column headerText="Phone"  sortBy="#{bill.patientPhone}" filterBy="#{bill.patient.person.phone}" >                              
+                                    <p:column headerText="Client" sortBy="#{bill.patientName}" filterBy="#{bill.patientName}" filterMatchMode="contains">                               
+                                        <h:commandLink  value="#{bill.patientName}" action="patient.xhtml?faces-redirect=true" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <f:setPropertyActionListener value="#{patientController.findPatientById(bill.patientId)}" target="#{patientController.current}"/>
+                                        </h:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="Phone" sortBy="#{bill.patientPhone}" filterBy="#{bill.patientPhone}" filterMatchMode="contains">                              
                                         <h:outputLabel value="#{bill.patientPhone}" />
                                     </p:column>
 
-
-
-                                    <!--                                    <p:column headerText="Payment" rendered="false" >                                
-                                                                            <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                                                            <h:outputLabel value="#{bill.paymentScheme.name}" />
-                                                                        </p:column>-->
-                                    <p:column headerText="Gross Value" sortBy="#{bill.grossValue}" styleClass="averageNumericColumn">
+                                    <p:column headerText="Gross Value" styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.grossValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                    <p:column headerText="Discount" styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Net Value" sortBy="#{bill.netValue}" styleClass="averageNumericColumn">
+                                    <p:column headerText="Net Value" styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.netValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>                         
                                 </p:dataTable>
 
-
-                                <div class="printBlock">
-                                    <p:dataTable rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
-                                                 var="bill1" paginator="false" style="display: none;">
-                                        <p:column headerText="No" >
-                                            <h:outputLabel value="#{i+1}"/>
-                                        </p:column>
-                                        <p:column headerText="Bill No" >   
-                                            <p:outputLabel value="#{bill1.insId}" ></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Billed From Institution"  >                                
-                                            <h:outputLabel value="#{bill1.institution.name}" />
-                                        </p:column>
-                                        <p:column headerText="Billed From Department"  >                                
-                                            <h:outputLabel value="#{bill1.department.name}" />
-                                        </p:column>
-                                        <p:column headerText="Bill Date">
-                                            <p:outputLabel value="#{bill1.billDate}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Bill From" >                                
-                                            <h:outputLabel   value="#{bill1.deptId}"/>
-                                        </p:column> 
-                                        <p:column headerText="Institution Billed For"  >                                
-                                            <h:outputLabel value="#{bill1.toInstitution.name}" />
-                                        </p:column>
-                                        <p:column headerText="Department Billed For"  >                                
-                                            <h:outputLabel value="#{bill1.toDepartment.name}" />
-                                        </p:column>
-                                        <p:column headerText="Collecting Centre"  >                                
-                                            <h:outputLabel value="#{bill1.collectingCentre.name}" />
-                                        </p:column>
-                                        <p:column headerText="Billed At"  >                                
-                                            <h:outputLabel value="#{bill1.institution.name} - #{bill.department.name}" />
-                                        </p:column>
-                                        <p:column headerText="Billed by" >
-                                            <h:outputLabel value="#{bill1.creater.webUserPerson.name}" >                                      
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Calcelled" >
-                                            <h:outputLabel value="Yes" rendered="#{bill1.cancelled}" ></h:outputLabel>
-                                            <h:outputLabel value="No" rendered="#{!bill1.cancelled}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Calcelled by" >
-                                            <h:panelGroup rendered="#{bill1.cancelled}" >
-                                                <h:outputLabel style="color: red;" rendered="#{bill1.cancelled}"
-                                                               value="#{bill1.cancelledBill.creater.webUserPerson.name}" >                                       
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column headerText="Refunded" >
-                                            <h:outputLabel value="Yes" rendered="#{bill1.refunded}" ></h:outputLabel>
-                                            <h:outputLabel value="No" rendered="#{!bill1.refunded}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Refunded by" >
-                                            <h:panelGroup rendered="#{bill1.refunded}" >
-                                                <h:outputLabel value="Refunded By " />
-                                                <h:outputLabel rendered="#{bill1.refunded}" value="#{bill1.refundedBill.creater.webUserPerson.name}" >
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        </p:column>    
-                                        <p:column headerText="Client Name">                               
-                                            <h:outputLabel value="#{bill1.patient.person.nameWithTitle}" />                                   
-                                        </p:column>
-                                        <p:column headerText="Client Phone No">                              
-                                            <h:outputLabel value="#{bill1.patient.person.phone}" />
-                                        </p:column>
-                                        <p:column headerText="Client Email">                              
-                                            <h:outputLabel value="#{bill1.patient.person.email}" />
-                                        </p:column>
-
-                                        <p:column headerText="Paymentmethod" >                                
-                                            <h:outputLabel value="#{bill1.paymentMethod}" /><br/>
-                                            <h:outputLabel value="#{bill1.paymentScheme.name}" />
-                                        </p:column>
-                                        <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                            <h:outputLabel value="#{bill1.total}" >
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                            <h:outputLabel value="#{bill1.discount}" >
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                            <h:outputLabel value="#{bill1.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>                         
-                                        <p:column headerText="Comments" >
-                                            <h:outputLabel  value="#{bill1.comments}" >
-                                            </h:outputLabel>
-                                            <h:outputLabel rendered="#{bill1.refundedBill ne null}" value="#{bill1.refundedBill.comments}" >
-                                            </h:outputLabel>
-                                            <h:outputLabel  rendered="#{bill1.cancelledBill ne null}" value="#{bill1.cancelledBill.comments}" >
-                                            </h:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
-                                </div>
+                                <!--                                <div class="printBlock">
+                                                                    <p:dataTable rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
+                                                                                 var="bill1" paginator="false" style="display: none;">
+                                                                        <p:column headerText="No" >
+                                                                            <h:outputLabel value="#{i+1}"/>
+                                                                        </p:column>
+                                                                        <p:column headerText="Bill No" >   
+                                                                            <p:outputLabel value="#{bill1.insId}" ></p:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Billed From Institution"  >                                
+                                                                            <h:outputLabel value="#{bill1.institution.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Billed From Department"  >                                
+                                                                            <h:outputLabel value="#{bill1.department.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Bill Date">
+                                                                            <p:outputLabel value="#{bill1.billDate}" >
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                                            </p:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Bill From" >                                
+                                                                            <h:outputLabel   value="#{bill1.deptId}"/>
+                                                                        </p:column> 
+                                                                        <p:column headerText="Institution Billed For"  >                                
+                                                                            <h:outputLabel value="#{bill1.toInstitution.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Department Billed For"  >                                
+                                                                            <h:outputLabel value="#{bill1.toDepartment.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Collecting Centre"  >                                
+                                                                            <h:outputLabel value="#{bill1.collectingCentre.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Billed At"  >                                
+                                                                            <h:outputLabel value="#{bill1.institution.name} - #{bill.department.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Billed by" >
+                                                                            <h:outputLabel value="#{bill1.creater.webUserPerson.name}" >                                      
+                                                                            </h:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Calcelled" >
+                                                                            <h:outputLabel value="Yes" rendered="#{bill1.cancelled}" ></h:outputLabel>
+                                                                            <h:outputLabel value="No" rendered="#{!bill1.cancelled}" ></h:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Calcelled by" >
+                                                                            <h:panelGroup rendered="#{bill1.cancelled}" >
+                                                                                <h:outputLabel style="color: red;" rendered="#{bill1.cancelled}"
+                                                                                               value="#{bill1.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                                                </h:outputLabel>
+                                                                            </h:panelGroup>
+                                                                        </p:column>
+                                                                        <p:column headerText="Refunded" >
+                                                                            <h:outputLabel value="Yes" rendered="#{bill1.refunded}" ></h:outputLabel>
+                                                                            <h:outputLabel value="No" rendered="#{!bill1.refunded}" ></h:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Refunded by" >
+                                                                            <h:panelGroup rendered="#{bill1.refunded}" >
+                                                                                <h:outputLabel value="Refunded By " />
+                                                                                <h:outputLabel rendered="#{bill1.refunded}" value="#{bill1.refundedBill.creater.webUserPerson.name}" >
+                                                                                </h:outputLabel>
+                                                                            </h:panelGroup>
+                                                                        </p:column>    
+                                                                        <p:column headerText="Client Name">                               
+                                                                            <h:outputLabel value="#{bill1.patient.person.nameWithTitle}" />                                   
+                                                                        </p:column>
+                                                                        <p:column headerText="Client Phone No">                              
+                                                                            <h:outputLabel value="#{bill1.patient.person.phone}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Client Email">                              
+                                                                            <h:outputLabel value="#{bill1.patient.person.email}" />
+                                                                        </p:column>
+                                
+                                                                        <p:column headerText="Paymentmethod" >                                
+                                                                            <h:outputLabel value="#{bill1.paymentMethod}" /><br/>
+                                                                            <h:outputLabel value="#{bill1.paymentScheme.name}" />
+                                                                        </p:column>
+                                                                        <p:column headerText="Gross Value" styleClass="averageNumericColumn">
+                                                                            <h:outputLabel value="#{bill1.total}" >
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Discount" styleClass="averageNumericColumn">
+                                                                            <h:outputLabel value="#{bill1.discount}" >
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                                                            <h:outputLabel value="#{bill1.netTotal}" >
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputLabel>
+                                                                        </p:column>                         
+                                                                        <p:column headerText="Comments" >
+                                                                            <h:outputLabel  value="#{bill1.comments}" >
+                                                                            </h:outputLabel>
+                                                                            <h:outputLabel rendered="#{bill1.refundedBill ne null}" value="#{bill1.refundedBill.comments}" >
+                                                                            </h:outputLabel>
+                                                                            <h:outputLabel  rendered="#{bill1.cancelledBill ne null}" value="#{bill1.cancelledBill.comments}" >
+                                                                            </h:outputLabel>
+                                                                        </p:column>
+                                                                    </p:dataTable>
+                                                                </div>-->
                             </div>
                         </div>
 

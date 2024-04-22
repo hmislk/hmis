@@ -3,7 +3,7 @@
  * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -139,7 +139,7 @@ public class CashRecieveBillController implements Serializable {
 
 //        if (!isPaidAmountOk(billItem)) {
 //            billItem.setNetValue(0);
-////            UtilityController.addSuccessMessage("U cant add more than ballance");
+////            JsfUtil.addSuccessMessage("U cant add more than ballance");
 ////            return;
 //        }
         calTotal();
@@ -149,7 +149,7 @@ public class CashRecieveBillController implements Serializable {
 
 //        if (!isBhtPaidAmountOk(billItem)) {
 //            billItem.setNetValue(0);
-////            UtilityController.addSuccessMessage("U cant add more than ballance");
+////            JsfUtil.addSuccessMessage("U cant add more than ballance");
 ////            return;
 //        }
         calTotal();
@@ -232,20 +232,20 @@ public class CashRecieveBillController implements Serializable {
 
     private boolean errorCheckForAdding() {
         if (getCurrentBillItem().getReferenceBill().getCreditCompany() == null) {
-            UtilityController.addErrorMessage("U cant add without credit company name");
+            JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
         }
 
 //        double dbl = getReferenceBallance(getCurrentBillItem());
 //
 //        if (dbl < Math.abs(getCurrentBillItem().getNetValue())) {
-//            UtilityController.addErrorMessage("U Cant Recieve Over Than Due");
+//            JsfUtil.addErrorMessage("U Cant Recieve Over Than Due");
 //            return true;
 //        }
         for (BillItem b : getBillItems()) {
             if (b.getReferenceBill() != null && b.getReferenceBill().getCreditCompany() != null) {
                 if (!Objects.equals(getCurrentBillItem().getReferenceBill().getCreditCompany().getId(), b.getReferenceBill().getCreditCompany().getId())) {
-                    UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
+                    JsfUtil.addErrorMessage("U can add only one type Credit companies at Once");
                     return true;
                 }
             }
@@ -256,26 +256,26 @@ public class CashRecieveBillController implements Serializable {
 
     private boolean errorCheckForAddingPharmacy() {
         if (getCurrentBillItem().getReferenceBill().getToInstitution() == null) {
-            UtilityController.addErrorMessage("U cant add without credit company name");
+            JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
         }
 
 //        double dbl = getReferenceBallance(getCurrentBillItem());
 //
 //        if (dbl < Math.abs(getCurrentBillItem().getNetValue())) {
-//            UtilityController.addErrorMessage("U Cant Recieve Over Than Due");
+//            JsfUtil.addErrorMessage("U Cant Recieve Over Than Due");
 //            return true;
 //        }
         for (BillItem b : getBillItems()) {
             if (b.getReferenceBill() != null && b.getReferenceBill().getToInstitution() != null) {
                 if (!Objects.equals(getCurrentBillItem().getReferenceBill().getToInstitution().getId(), b.getReferenceBill().getToInstitution().getId())) {
-                    UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
+                    JsfUtil.addErrorMessage("U can add only one type Credit companies at Once");
                     return true;
                 }
             }
             if (b.getReferenceBill() != null) {
                 if (Objects.equals(getCurrentBillItem().getReferenceBill().getId(), b.getReferenceBill().getId())) {
-                    UtilityController.addErrorMessage("U can add only one Bill at Once");
+                    JsfUtil.addErrorMessage("U can add only one Bill at Once");
                     return true;
                 }
             }
@@ -286,20 +286,20 @@ public class CashRecieveBillController implements Serializable {
 
     private boolean errorCheckForAddingBht() {
         if (getCurrentBillItem().getPatientEncounter().getCreditCompany() == null) {
-            UtilityController.addErrorMessage("U cant add without credit company name");
+            JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
         }
 
 //        double dbl = getReferenceBhtBallance(getCurrentBillItem());
 //
 //        if (dbl < Math.abs(getCurrentBillItem().getNetValue())) {
-//            UtilityController.addErrorMessage("U Cant Recieve Over Than Due");
+//            JsfUtil.addErrorMessage("U Cant Recieve Over Than Due");
 //            return true;
 //        }
         for (BillItem b : getBillItems()) {
             if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
                 if (!Objects.equals(getCurrentBillItem().getPatientEncounter().getCreditCompany().getId(), b.getPatientEncounter().getCreditCompany().getId())) {
-                    UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
+                    JsfUtil.addErrorMessage("U can add only one type Credit companies at Once");
                     return true;
                 }
             }
@@ -423,17 +423,17 @@ public class CashRecieveBillController implements Serializable {
 
     private boolean errorCheck() {
         if (getSelectedBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Bill Item ");
+            JsfUtil.addErrorMessage("No Bill Item ");
             return true;
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Credit Company");
+            JsfUtil.addErrorMessage("Select Credit Company");
             return true;
         }
 
         if (!Objects.equals(getBillItems().get(0).getReferenceBill().getCreditCompany().getId(), getCurrent().getFromInstitution().getId())) {
-            UtilityController.addErrorMessage("Select same credit company as BillItem ");
+            JsfUtil.addErrorMessage("Select same credit company as BillItem ");
             return true;
         }
 
@@ -453,17 +453,17 @@ public class CashRecieveBillController implements Serializable {
 
     private boolean errorCheckPharmacy() {
         if (getSelectedBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Bill Item ");
+            JsfUtil.addErrorMessage("No Bill Item ");
             return true;
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Credit Company");
+            JsfUtil.addErrorMessage("Select Credit Company");
             return true;
         }
 
         if (!Objects.equals(getBillItems().get(0).getReferenceBill().getToInstitution().getId(), getCurrent().getFromInstitution().getId())) {
-            UtilityController.addErrorMessage("Select same credit company as BillItem ");
+            JsfUtil.addErrorMessage("Select same credit company as BillItem ");
             return true;
         }
 
@@ -483,22 +483,22 @@ public class CashRecieveBillController implements Serializable {
 
     private boolean errorCheckBht() {
         if (getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Bill Item ");
+            JsfUtil.addErrorMessage("No Bill Item ");
             return true;
         }
 
         if (getSelectedBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Selected Bill Item ");
+            JsfUtil.addErrorMessage("No Selected Bill Item ");
             return true;
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Credit Company");
+            JsfUtil.addErrorMessage("Select Credit Company");
             return true;
         }
 
         if (!Objects.equals(getBillItems().get(0).getPatientEncounter().getCreditCompany().getId(), getCurrent().getFromInstitution().getId())) {
-            UtilityController.addErrorMessage("Select same credit company as BillItem ");
+            JsfUtil.addErrorMessage("Select same credit company as BillItem ");
             return true;
         }
 
@@ -578,10 +578,10 @@ public class CashRecieveBillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         //   savePayments();
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Payment/By OPD bill(/faces/credit/credit_compnay_bill_opd.xhtml)");
+        
     }
 
     public void settleBillPharmacy() {
@@ -605,10 +605,10 @@ public class CashRecieveBillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         //   savePayments();
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Payment/By OPD bill(/faces/credit/credit_compnay_bill_opd.xhtml)");
+        
     }
 
     public void settleBillBht() {
@@ -630,10 +630,10 @@ public class CashRecieveBillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         //   savePayments();
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Inward/By OPD bill(/faces/credit/credit_compnay_bill_inward.xhtml)");
+        
 
     }
 

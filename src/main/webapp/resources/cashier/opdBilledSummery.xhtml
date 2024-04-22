@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -13,7 +13,9 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        
         <p:dataTable id="billed" rowStyleClass="noDisplayRow"  value="#{cc.attrs.data.bills}" var="b" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{b.billType}"  >
+            
             <f:facet name="header">  
                 <h:outputLabel value="OPD Bills "/>
             </f:facet>                        
@@ -44,7 +46,7 @@
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
-            <p:column headerText="Checque" style=" text-align: right" >
+            <p:column headerText="Cheque" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="Cheque"/>
                 </f:facet> 

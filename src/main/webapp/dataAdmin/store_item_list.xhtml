@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -14,18 +14,29 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Store Item List">
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Item" action="#{ampController.storeNoDeleteItem()}" 
-                                              ></p:commandButton>
-                            <p:commandButton ajax="false" value="deleted Item" action="#{ampController.storeDeleteItem()}" 
-                                              ></p:commandButton>
-                            <p:commandButton value="Excel" ajax="false" >
-                                <p:dataExporter target="tbl" type="xlsx" fileName="Items_list" />
-                            </p:commandButton>
-                        </h:panelGrid>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Store Item List"/>
+                                </div>
+                                <div>
+                                    <h:panelGrid columns="3">
+                                        <p:commandButton class="ui-button-warning" ajax="false" value="Item" action="#{ampController.storeNoDeleteItem()}" 
+                                                         ></p:commandButton>
+                                        <p:commandButton class="ui-button-warning mx-2" ajax="false" value="Deleted Item" action="#{ampController.storeDeleteItem()}" 
+                                                         ></p:commandButton>
+                                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
+                                            <p:dataExporter target="tbl" type="xlsx" fileName="Items_list" />
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
                         <h:panelGroup id="storeItem">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{ampController.itemList}" var="i"  >
-                            
+
                                 <p:column headerText="Id">
                                     <f:facet name="header">
                                         <h:outputLabel value="ID"/>
@@ -33,7 +44,7 @@
                                     <h:outputLabel value="#{i.id}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="item Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name"/>
@@ -62,7 +73,7 @@
                                     <h:outputLabel value="#{i.category.code}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="created At">
                                     <f:facet name="header">
                                         <h:outputLabel value="Created At"/>
@@ -70,7 +81,7 @@
                                     <h:outputLabel value="#{i.createdAt}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="created By">
                                     <f:facet name="header">
                                         <h:outputLabel value="Created By"/>
@@ -78,7 +89,7 @@
                                     <h:outputLabel value="#{i.creater.webUserPerson}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="delete" rendered="false">
                                     <f:facet name="header">
                                         <h:outputLabel value="Deleted or Not"/>
@@ -86,7 +97,7 @@
                                     <h:outputLabel value="#{i.retired eq true ? 'Deleted':'Not Deleted'}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

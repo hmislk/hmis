@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.inward.TimedItem;
@@ -258,16 +258,16 @@ public class TimedItemController implements Serializable {
 
     public void saveSelected() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to save. Please click add button.");
+            JsfUtil.addErrorMessage("Nothing to save. Please click add button.");
             return;
         }
         if (getCurrent().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select Department");
+            JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
 
         if (getCurrent().getInwardChargeType() == null) {
-            UtilityController.addErrorMessage("Please selelct Inward Charge Type");
+            JsfUtil.addErrorMessage("Please selelct Inward Charge Type");
             return;
         }
 
@@ -284,7 +284,7 @@ public class TimedItemController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Created Successfully");
+            JsfUtil.addSuccessMessage("Created Successfully");
         } else {
 //            
 //            getFacade().create(getCurrent());
@@ -296,7 +296,7 @@ public class TimedItemController implements Serializable {
 //            }
             getFacade().edit(getCurrent());
             ////System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
-            UtilityController.addSuccessMessage("Updated Successfully");
+            JsfUtil.addSuccessMessage("Updated Successfully");
         }
         recreateModel();
         getItems();
@@ -355,9 +355,9 @@ public class TimedItemController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

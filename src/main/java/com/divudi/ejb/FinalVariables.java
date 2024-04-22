@@ -4,7 +4,7 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.bean.channel.SheduleController;
+import com.divudi.bean.channel.ChannelScheduleController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.entity.ServiceSession;
@@ -22,7 +22,7 @@ import javax.inject.Inject;
 public class FinalVariables {
 
     @Inject
-    SheduleController sheduleController;
+    ChannelScheduleController sheduleController;
     @Inject
     SessionController sessionController;
     @EJB
@@ -119,12 +119,12 @@ public class FinalVariables {
 
     public double getVATPercentage() {
         //VAT 15% Only Vat Value
-        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+        if (sessionController.getApplicationPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 0.152;
             return 0.15;
 //            return 0;
-        } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+        } else if (sessionController.getApplicationPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                || sessionController.getApplicationPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
             return 0.15;
 //            return 0;
         } else {
@@ -134,12 +134,12 @@ public class FinalVariables {
 
     public double getVATPercentageWithAmount() {
         //VAT 15% With Total
-        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+        if (sessionController.getApplicationPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 1.152;
             return 1;
 //            return 1;
-        } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+        } else if (sessionController.getApplicationPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                || sessionController.getApplicationPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
             return 1;
 //            return 1;
         } else {
@@ -149,11 +149,11 @@ public class FinalVariables {
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    public SheduleController getSheduleController() {
+    public ChannelScheduleController getSheduleController() {
         return sheduleController;
     }
 
-    public void setSheduleController(SheduleController sheduleController) {
+    public void setSheduleController(ChannelScheduleController sheduleController) {
         this.sheduleController = sheduleController;
     }
 }

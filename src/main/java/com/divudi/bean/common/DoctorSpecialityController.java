@@ -11,7 +11,7 @@ package com.divudi.bean.common;
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Vocabulary;
 import com.divudi.facade.DoctorSpecialityFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -93,20 +93,13 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> completeSpeciality(String qry) {
-        //   ////System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
         lst = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        //   ////System.out.println("lst = " + lst);
         return lst;
     }
 
     public List<DoctorSpeciality> getSelectedItems() {
-        if (selectText == null || selectText.trim().equals("")) {
-            selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false order by c.name");
-        } else {
-            selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        }
-
+        selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false order by c.name");
         return selectedItems;
     }
 
@@ -130,12 +123,12 @@ public class DoctorSpecialityController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -220,9 +213,9 @@ public class DoctorSpecialityController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -244,7 +237,7 @@ public class DoctorSpecialityController implements Serializable {
         m.put("ret", false);
         m.put("name", name);
         DoctorSpeciality ds = getFacade().findFirstByJpql(j, m);
-        if(ds==null && createNewIfNotExists){
+        if (ds == null && createNewIfNotExists) {
             ds = new DoctorSpeciality();
             ds.setName(name);
             ds.setCreatedAt(new Date());
@@ -301,7 +294,7 @@ public class DoctorSpecialityController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorSpecialityController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + DoctorSpeciality.class.getName());
             }
         }
     }

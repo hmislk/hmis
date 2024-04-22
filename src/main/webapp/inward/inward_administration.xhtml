@@ -1,16 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
-
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
-
                 <div class="row">
                     <div class="col-3">
                         <h:form>  
@@ -20,7 +16,16 @@
 
                                     <p:tab title="Admission Types">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Admission Types" class="w-100" action="inward_admission_type"  ></p:commandButton>
+                                            <p:commandButton ajax="false" 
+                                                             value="Admission Types" 
+                                                             class="w-100" 
+                                                             action="#{admissionTypeController.navigateToManageAdmissionTypes}"  >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false"
+                                                value="Admission Items and Fees" 
+                                                class="w-100"
+                                                action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
 
@@ -71,8 +76,8 @@
                                                 value="Uploaded Diagnosis Card Templates"
                                                 class="w-100" 
                                                 action="#{uploadController.toListDiagnosisCardUploads()}" >
-                                             </p:commandButton>
-                                            
+                                            </p:commandButton>
+
                                         </div>
                                     </p:tab>
 

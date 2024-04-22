@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -15,25 +15,25 @@
                 <h:form>
                     <p:panel header="Doctor Payment Due Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="To Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="toDate" 
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" 
                                         value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <h:outputLabel value="Due Type"/>
-                            <p:selectOneRadio value="#{searchController.reportKeyWord.string}" >
+                            <p:selectOneRadio class="mx-4 w-100" value="#{searchController.reportKeyWord.string}" >
                                 <f:selectItem itemLabel="OPD" itemValue="0" />
                                 <f:selectItem itemLabel="inward" itemValue="1" />
                             </p:selectOneRadio>
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton id="btnSearch" ajax="false" value="Process" action="#{searchController.createDocPaymentDue}"/>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnSearch" ajax="false" value="Process" action="#{searchController.createDocPaymentDue}"/>
+                            <p:commandButton class="ui-button-info mx-2" value="Print" ajax="false" action="#" >
                                 <p:printer target="tblFee" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                                 <p:dataExporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton> 
                         </h:panelGrid>

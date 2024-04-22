@@ -1,5 +1,6 @@
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.Bill;
@@ -7,6 +8,7 @@ import com.divudi.entity.BillSession;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.Person;
 import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -22,7 +24,7 @@ import org.primefaces.event.SelectEvent;
  */
 @Named
 @SessionScoped
-public class ChannelBookingController implements Serializable {
+public class ChannelBookingController implements Serializable, ControllerWithPatient  {
 
     private Speciality speciality;
     private Staff staff;
@@ -38,20 +40,24 @@ public class ChannelBookingController implements Serializable {
     private boolean foriegn = false;
     private Institution institution;
     private int patientSearchTab;
-    private Patient searchPatient;
+    private Patient patient;
     private Bill printingBill;
     private boolean settleSucessFully = false;
     private String agentRefNo;
     private Staff toStaff;
     private String errorText;
+    private boolean patientDetailsEditable;
 
     public ChannelBookingController() {
     }
 
+
     public String navigateToChannelBookingFromMenu() {
         prepareForNewChannellingBill();
-        return "/channel/channel_booking";
+        return "/channel/channel_booking?faces-redirect=true";
     }
+    
+   
 
     public void prepareForNewChannellingBill() {
 
@@ -190,12 +196,20 @@ public class ChannelBookingController implements Serializable {
         this.foriegn = foriegn;
     }
 
-    public Patient getSearchPatient() {
-        return searchPatient;
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+            Person p = new Person();
+            patientDetailsEditable = true;
+
+            patient.setPerson(p);
+        }
+        return patient;
     }
 
-    public void setSearchPatient(Patient searchPatient) {
-        this.searchPatient = searchPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public String getAgentRefNo() {
@@ -228,6 +242,22 @@ public class ChannelBookingController implements Serializable {
 
     public void setErrorText(String errorText) {
         this.errorText = errorText;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     

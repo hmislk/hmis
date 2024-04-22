@@ -1,157 +1,247 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-      xmlns:emr="http://java.sun.com/jsf/composite/ezcomp/emr">
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:panelGroup rendered="#{patientController.current ne null}">
                     <h:form>
-
-                        <p:panel class="m-2 p-2">
-                            <f:facet name="header">
-                                <h:outputLabel value="Edit Patient Demographic Details" />
-                                <p:spacer width="10" />
-                                <p:commandButton value="Save" action="#{patientController.saveAndNavigateToProfile()}"
-                                                 ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
-                            </f:facet>
-                            <div class="container-fluid">
-                                <div class="row form-group">
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="Title:"  
-                                                       for="cmbTitle"
-                                                       class="form-label" />
-                                        <h:selectOneMenu id="cmbTitle" 
-                                                         value="#{patientController.current.person.title}"
-                                                         class="form-control">
-                                            <f:selectItem itemLabel="Select Title"  />
-                                            <f:selectItems value="#{billController.title}" 
-                                                           var="i" 
-                                                           itemLabel="#{i.label}"
-                                                           itemValue="#{i}" />
-                                        </h:selectOneMenu>
+                        <p:panel >
+                            <f:facet name="header" >
+                                <div class=" d-flex justify-content-between">
+                                    <div class="m-2  align-items-center">
+                                        <i class="fa fa-pencil m-2" aria-hidden="true"/>
+                                        <p:outputLabel value="Edit Patient Demographic Details" />
                                     </div>
-                                    <div class="col-md-10">
-                                        <h:outputLabel value="Name:" for="txtName" class="form-label" />
-                                        <h:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" />
+
+
+                                    <div class="">
+
+                                        <p:commandButton
+                                            value="Save"
+                                            action="#{patientController.saveAndNavigateToProfile()}"
+                                            ajax="false"
+                                            icon="pi pi-check"
+                                            iconPos="left"
+                                            class="ui-button-success m-1 " />
+
+                                        <p:commandButton
+                                            value="Patient Profile"
+                                            disabled="#{patientController.current eq null}"
+                                            action="#{patientController.toEmrPatientProfile()}"
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            iconPos="left"
+                                            class="ui-button-warning m-1 " />
+
+                                        <p:commandButton
+                                            value="Patient Lookup"
+                                            action="/emr/patient_search.xhtml"
+                                            ajax="false"
+                                            icon="fa fa-search"
+                                            iconPos="left"
+                                            class="ui-button-warning m-1 "
+                                            immediate="true" />
+
                                     </div>
                                 </div>
-                                <div class="row form-group">
+
+                            </f:facet>
+                            <div class="container-fluid">
+                                <div class="row form-group mb-1">
                                     <div class="col-md-2">
-                                        <h:outputLabel value="Sex:"  class="form-label" />
-                                        <h:selectOneMenu id="txtNewSex"
-                                                         value="#{patientController.current.person.sex}" 
-                                                         class="form-control" >
+                                        <p:outputLabel value="Title:"  class="form-label" />
+                                        <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Please Select a title">
+                                            <f:selectItem itemLabel="Select Title" />
+                                            <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
+                                                           itemValue="#{i}" />
+                                            <p:ajax process="cmbTitle" update="somSex" ></p:ajax>
+                                            <p:ajax event="change" process="cmbTitle" update="somSex" ></p:ajax>
+                                        </p:selectOneMenu>
+
+
+                                    </div>
+                                    <div class="col-md-10">
+                                        <p:outputLabel value="Name:" for="txtName" class="form-label" />
+                                        <p:inputText
+                                            id="txtName"
+                                            value="#{patientController.current.person.name}"
+                                            class="w-100 form-control"
+                                            required="true"
+                                            validatorMessage="Please enter only letters and spaces."
+                                            requiredMessage="Please Enter a name"
+                                            >
+                                            <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
+                                    </div>
+                                </div>
+                                <div class="row form-group mb-1">
+                                    <div class="col-md-2">
+                                        <p:outputLabel value="Sex:"  class="form-label" />
+                                        <p:selectOneMenu id="somSex" value="#{patientController.current.person.sex}" class="form-control" >
                                             <f:selectItem itemLabel="Select Gender" />
                                             <f:selectItems value="#{billController.sex}" />
-                                        </h:selectOneMenu>
+                                        </p:selectOneMenu>
                                     </div>
                                     <div class="col-md-4">
-                                        <h:outputLabel value="Age :"  class="form-label" />
+                                        <p:outputLabel value="Age:"  class="form-label" />
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="year" pt:placeholder="Years"
-                                                             value="#{patientController.ageYearComponant}" class="form-control" >
-                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                            listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                <p:inputText autocomplete="off" id="year" placeholder="Years"
+                                                             value="#{patientController.current.person.ageYearsComponent}" class="form-control" >
+                                                    <p:ajax event="keyup" process="@this" update="calNewPtDob" />
+                                                </p:inputText>
                                             </div>
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="month" pt:placeholder="months" class="form-control" 
-                                                             value="#{patientController.ageMonthComponant}">
-                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                            listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control"
+                                                             value="#{patientController.current.person.ageMonthsComponent}">
+                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob"/>
+                                                </p:inputText>
                                             </div>
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="day" pt:placeholder="days"
-                                                             value="#{patientController.ageDateComponant}" class="form-control" >
-                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                            listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                <p:inputText autocomplete="off" id="day" placeholder="days"
+                                                             value="#{patientController.current.person.ageDaysComponent}" class="form-control" >
+                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" />
+                                                </p:inputText>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <h:outputLabel value="Date of Birth:"  class="form-label" />
-                                        <p:datePicker value="#{patientController.current.person.dob}" 
-                                                      id="calNewPtDob"
-                                                      pattern="#{sessionController.applicationPreference.longDateFormat}" 
-                                                      yearNavigator="true"
-                                                      maxdate="#{sessionController.currentDate}" 
-                                                      inputStyleClass="form-control"
-                                                      class="w-100" >
-                                            <p:ajax event="dateSelect" process="calNewPtDob" update="year month day"
-                                                    listener="#{patientController.calculateAgeComponantsFromDob(patientController.current)}" />
-                                        </p:datePicker>
+                                        <p:outputLabel value="Date of Birth:"  class="form-label" />
+                                        <p:calendar value="#{patientController.current.person.dob}" id="calNewPtDob" navigator="true"
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;"
+                                                    maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
+                                            <p:ajax event="dateSelect" process="calNewPtDob" update="year month day" />
+                                        </p:calendar>
                                     </div>
                                 </div>
-                                <div class="row form-group">
+                                <div class="row form-group mb-1">
                                     <div class="col-md-3">
-                                        <h:outputLabel value="Phone:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.person.phone}" class="form-control" />
+                                        <p:outputLabel value="Phone for Quick Search:"  class="form-label" />
+                                        <p:inputText
+                                            required="true"
+                                            value="#{patientController.current.phoneNumberStringTransient}"
+                                            class="form-control"
+                                            validatorMessage="Please enter Valid Phone Number."
+                                            validator="#{patientController.validateMobile}"
+                                            >
+                                        </p:inputText>
+
                                     </div>
                                     <div class="col-md-3">
-                                        <h:outputLabel value="Mobile:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.person.mobile}" class="form-control" />
+                                        <p:outputLabel value="Other Contact Number:"  class="form-label" />
+                                        <p:inputText
+                                            value="#{patientController.current.person.mobile}"
+                                            class="form-control"
+                                            validatorMessage="Please enter Valid other contact Number."
+                                            validator="#{patientController.validateMobile}"
+                                            >
+                                        </p:inputText>
+
                                     </div>
                                     <div class="col-md-3">
-                                        <h:outputLabel value="Email:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.person.email}" class="form-control" />
+                                        <p:outputLabel value="Email:"  class="form-label" />
+                                        <p:inputText
+                                            value="#{patientController.current.person.email}"
+                                            class="form-control"
+                                            validatorMessage="Please enter Valid Email."
+                                            >
+                                            <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
                                     </div>
                                     <div class="col-md-3">
                                         <h:outputLabel class="form-label" value="NIC No:" />
-                                        <h:inputText 
-                                            autocomplete="off" 
-                                            id="txtNIC" 
-                                            value="#{patientController.current.person.nic}" 
-                                            class="form-control" />
-
-                                    </div>
-                                </div>
-                                <div class="row form-group">
-                                    <div class="col-md-12">
-                                        <h:outputLabel value="Address:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.person.address}" style="width: 100%;" class="form-control" />
-                                    </div>
-                                </div>
-                                <div class="row form-group">
-                                    <div class="col-md-6">
-                                        <h:outputLabel value="PHN Number:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.phn}" class="form-control" />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h:outputLabel class="form-label" value="MRN No"  />
                                         <h:panelGroup>
-                                            <h:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
+                                            <p:inputText autocomplete="off" id="txtNIC" value="#{patientController.current.person.nic}" class="form-control" />
                                         </h:panelGroup>
                                     </div>
                                 </div>
-                                <div class="row form-group">
+                                <div class="row form-group mb-1">
+                                    <div class="col-md-8">
+                                        <p:outputLabel value="Address:"  class="form-label" />
+                                        <p:inputText value="#{patientController.current.person.address}" style="width: 100%;" class="form-control" />
+
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Area"  class="form-label" />
+                                        <p:autoComplete
+                                            id="area"
+                                            class="w-100 -mx-2"
+                                            inputStyleClass="form-control"
+                                            forceSelection="true"
+                                            value="#{patientController.current.person.area}"
+                                            completeMethod="#{areaController.completeArea}"
+                                            var="pa"
+                                            placeholder="Area"
+                                            itemLabel="#{pa.name}"
+                                            itemValue="#{pa}"
+                                            size="10"
+                                            required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
+                                            requiredMessage="Need an Area"
+                                            >
+
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+                                <div class="row form-group mb-1">
                                     <div class="col-md-6">
-                                        <p:outputLabel value="Patient Account:"  class="form-label" />
-                                        <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
-                                                               offLabel="No Account"
-                                                               onLabel="Has an account" ></p:selectBooleanButton>
+                                        <p:outputLabel value="PHN Number:" class="form-label" />
+                                        <div class="input-group">
+                                            <p:inputText
+                                                id="txtPhn"
+                                                value="#{patientController.current.phn}" class="form-control" />
+
+                                            <span class="input-group-btn">
+                                                <p:commandButton
+                                                    id="btnPhn"
+                                                    value="Generate"
+                                                    process="btnPhn"
+                                                    update="txtPhn"
+                                                    action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}"
+                                                    class="mx-1" />
+                                            </span>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <h:outputLabel class="form-label" value="Credit Limit"  />
+                                        <h:outputLabel class="form-label" value="MRN No:"  />
+                                        <h:panelGroup>
+                                            <p:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                <div class="row form-group mb-1">
+                                    <div class="col-md-12">
+                                        <p:outputLabel value="Comments:"  class="form-label" />
+                                        <p:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="row form-group ">
+                                    <div class="col-md-6">
+                                        <p:outputLabel value="Patient Account:"  class="form-label w-100" />
+                                        <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
+                                                               offLabel="Patient has No Account"
+                                                               class="w-100"
+                                                               onLabel="Patient has An account" ></p:selectBooleanButton>
+                                    </div>
+                                    <div class="col-md-6" >
+                                        <h:outputLabel class="form-label" value="Credit Limit:" rendered="#{webUserController.hasPrivilege('Admin')}" />
                                         <h:panelGroup>
                                             <p:inputText autocomplete="off" id="txtCreditLimit"
                                                          value="#{patientController.current.creditLimit}"
-                                                         class="form-control" />
+                                                         class="form-control"
+                                                         rendered="#{webUserController.hasPrivilege('Admin')}"/>
                                         </h:panelGroup>
-                                    </div>
-                                </div>
-                                <div class="row form-group">
-                                    <div class="col-md-12">
-                                        <h:outputLabel value="Comments:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
                                     </div>
                                 </div>
                             </div>

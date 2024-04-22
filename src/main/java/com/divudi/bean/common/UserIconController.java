@@ -14,7 +14,7 @@ import com.divudi.entity.UserIcon;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.UserIconFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -235,9 +235,9 @@ public class UserIconController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             save(current);
-            UtilityController.addSuccessMessage("Removed Successfully");
+            JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Remove");
+            JsfUtil.addSuccessMessage("Nothing to Remove");
         }
     }
 

@@ -13,7 +13,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ItemType;
 import com.divudi.data.SymanticType;
@@ -42,7 +42,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -662,7 +662,7 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Setup/report samples(/faces/lab/report_samples.xhtml)");
+        
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -730,7 +730,7 @@ public class InvestigationController implements Serializable {
             i.setCategory(i.getInvestigationCategory());
             getFacade().edit(i);
         }
-        UtilityController.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     @EJB
@@ -874,7 +874,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -930,7 +930,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -981,7 +981,7 @@ public class InvestigationController implements Serializable {
 
     public Boolean isListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
-            if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+            if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
             } else {
                 listMasterItemsOnly = false;
@@ -992,7 +992,7 @@ public class InvestigationController implements Serializable {
 
     public Boolean getListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
-            if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+            if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
             } else {
                 listMasterItemsOnly = false;
@@ -1041,7 +1041,7 @@ public class InvestigationController implements Serializable {
             sql += " and (c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
-        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
+        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
             if (institution != null) {
                 sql += " and c.institution=:ins ";
                 m.put("ins", institution);
@@ -1068,7 +1068,7 @@ public class InvestigationController implements Serializable {
         Date toDate = null;
 
         if (selectedInvestigations.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
             return;
         }
 
@@ -1078,10 +1078,10 @@ public class InvestigationController implements Serializable {
             i.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(i);
         }
-        UtilityController.addSuccessMessage("Successfully Deleted");
+        JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public void unDeleteSelectedItems() {
@@ -1090,7 +1090,7 @@ public class InvestigationController implements Serializable {
         Date toDate = null;
 
         if (selectedInvestigations.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing to Un-Delete");
+            JsfUtil.addErrorMessage("Nothing to Un-Delete");
             return;
         }
 
@@ -1100,10 +1100,10 @@ public class InvestigationController implements Serializable {
             i.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(i);
         }
-        UtilityController.addSuccessMessage("Successfully Deleted");
+        JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public void markSelectedActive() {
@@ -1112,7 +1112,7 @@ public class InvestigationController implements Serializable {
         Date toDate = null;
 
         if (selectedInvestigations.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing to Active");
+            JsfUtil.addErrorMessage("Nothing to Active");
             return;
         }
 
@@ -1121,10 +1121,10 @@ public class InvestigationController implements Serializable {
             getFacade().edit(i);
         }
 
-        UtilityController.addSuccessMessage("Successfully Actived");
+        JsfUtil.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
 
     }
 
@@ -1134,7 +1134,7 @@ public class InvestigationController implements Serializable {
         Date toDate = null;
 
         if (selectedInvestigations.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing to Inactive");
+            JsfUtil.addErrorMessage("Nothing to Inactive");
             return;
         }
 
@@ -1143,10 +1143,10 @@ public class InvestigationController implements Serializable {
             getFacade().edit(i);
         }
 
-        UtilityController.addSuccessMessage("Successfully Inactived");
+        JsfUtil.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
+        
     }
 
     public Institution getInstitution() {
@@ -1172,7 +1172,7 @@ public class InvestigationController implements Serializable {
     }
 
 //    public List<Investigation> completeDepartmentItem(String qry) {
-//        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+//        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
 //            String sql;
 //            Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");
@@ -1194,7 +1194,7 @@ public class InvestigationController implements Serializable {
 //        }
 //    }
     public List<Investigation> completeDepartmentItem(String qry) {
-        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
+        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
             String sql;
             Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");
@@ -1269,7 +1269,7 @@ public class InvestigationController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed() == true) {
-            UtilityController.addErrorMessage("Cant tick both User can Change & Discount Allowed");
+            JsfUtil.addErrorMessage("Cant tick both User can Change & Discount Allowed");
             return true;
         }
         return false;
@@ -1280,7 +1280,7 @@ public class InvestigationController implements Serializable {
             i.setSymanticType(SymanticType.Laboratory_Procedure);
             getFacade().edit(i);
         }
-        UtilityController.addSuccessMessage("Updated");
+        JsfUtil.addSuccessMessage("Updated");
     }
 
     public void saveSelectedForEhr() {
@@ -1306,7 +1306,7 @@ public class InvestigationController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -1326,7 +1326,7 @@ public class InvestigationController implements Serializable {
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -1351,7 +1351,7 @@ public class InvestigationController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -1370,7 +1370,7 @@ public class InvestigationController implements Serializable {
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -1389,7 +1389,7 @@ public class InvestigationController implements Serializable {
                 i.setReportedAs(i);
             }
             getFacade().edit(i);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
@@ -1408,7 +1408,7 @@ public class InvestigationController implements Serializable {
             sc.setName(i.getName());
             sc.setParentItem(i);
             getItemFacade().create(sc);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -1438,7 +1438,7 @@ public class InvestigationController implements Serializable {
             investigationWithInvestigationItemses.add(items);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administration/Setup/report dynamic labels(/faces/lab/report_dynamic_lables.xhtml)");
+        
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1654,9 +1654,9 @@ public class InvestigationController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -1719,7 +1719,7 @@ public class InvestigationController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation with fee (/faces/dataAdmin/report_entered_data.xhtml)");
+        
     }
 
     public class ItemWithFee {

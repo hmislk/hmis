@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -45,7 +45,8 @@
                                                 ajax="false" 
                                                 value="Manage Units" 
                                                 action="#{measurementUnitController.navigateToManageMeasurementUnit()}"  ></p:commandButton>
-
+                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="#{pharmacyController.navigateToDiscardCategory()}"></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Medicine Component Management">
@@ -74,7 +75,7 @@
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="VMPPs" 
-                                                action="#{pharmacyController.navigateToVmp()}" />
+                                                action="#{pharmacyController.navigateToVmpp()}" />
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -115,10 +116,6 @@
                                                 ajax="false" 
                                                 value="AMPPs" 
                                                 action="#{pharmacyController.navigateToAmppMultiple()}" />
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Medatada Management - Multiple">
-                                        <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -135,10 +132,6 @@
                                                 value="Measurement Units" 
                                                 action="pharmacy_measurement_unit" />
                                             <p:commandButton class="w-100" ajax="false" value="Frequencies" action="pharmacy_frequency_unit" />
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Upload Meta Data">
-                                        <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -164,6 +157,13 @@
                                                 ajax="false" 
                                                 value="Upload AMPs (Minimal)" 
                                                 action="#{dataUploadController.toUploadAmpsMin()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
+                                                             action="/pharmacy/pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Update Bulk Discount Allowed" 
+                                                             action="/pharmacy/pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Stock Item List" 
+                                                             action="/pharmacy/pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+
                                         </div>
                                     </p:tab>
                                     <p:tab title="Institutions">
@@ -171,25 +171,14 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Manufacturers" action="#{pharmacyController.navigateToManufacturers()}" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Importers" action="#{pharmacyController.navigateToImporters()}" ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Supplier" action="/pharmacy/pharmacy_dealer" ></p:commandButton>                                
-                                            <p:commandButton class="w-100" ajax="false" value="Item Suppliers" action="/pharmacy/pharmacy_items_distributors" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Supplier" action="#{pharmacyController.navigateToSuppliers()}" ></p:commandButton>                                
+                                            <p:commandButton class="w-100" ajax="false" value="Item Suppliers" action="#{pharmacyController.navigateToItemSuppliers()}" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Categories">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="#{pharmacyController.navigateToDiscardCategory()}"></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
-                                        </div>
-                                    </p:tab>
-
                                     <p:tab title="Check Entered Data">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Item Distributor" action="pharmacy_item_by_distributor" ></p:commandButton>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Error Checking">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Error Detection" action="pharmacy_error_checking" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Item Distributor" action="/pharmacy/pharmacy_item_by_distributor" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Error Detection" action="/pharmacy/pharmacy_error_checking" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection By Date" action="pharmacy_error_checking_date" ></p:commandButton>                                   
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection Repport" action="pharmacy_report_department_error" ></p:commandButton>                                   
                                             <p:commandButton class="w-100" value="Department Stock By Batch minus" action="pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>
@@ -203,10 +192,6 @@
                                                 <p:commandButton styleClass="linkButton" ajax="false" value="Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" />
                                                 <p:commandButton styleClass="linkButton" ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                             </h:panelGroup>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Issue To Unit">
-                                        <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Correction of Issue To Unit (Discount To Margin)" 
                                                              action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
@@ -229,16 +214,6 @@
                                                              action="pharmacy_variant_ajustment_pre_list" />
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Bulk Update">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
-                                                             action="/pharmacy/pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Update Bulk Discount Allowed" 
-                                                             action="/pharmacy/pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Stock Item List" 
-                                                             action="/pharmacy/pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                        </div> 
-                                    </p:tab>
                                     <p:tab title="Set up">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Check Item Differences with other Database" action="pharmacy_item_mismatch_report" />
@@ -254,12 +229,8 @@
                                             <p:commandButton class="w-100" ajax="false" value="Import Item Distributors" action="/pharmacy/pharmacy_item_distributor_import" />
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Barcode" action="/pharmacy/pharmacy_item_name_from_barcode" />
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Barcode" action="/pharmacy/pharmacy_item_names_missing" />
-
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Snapshot" 
                                                              action="/pharmacy/pharmacy_item_names_correction_by_snapshot" />
-
-
-
                                         </div>
                                     </p:tab> 
                                 </p:accordionPanel>

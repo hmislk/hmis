@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:se="http://java.sun.com/jsf/composite/inward/search">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:se="http://xmlns.jcp.org/jsf/composite/inward/search">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -15,23 +15,29 @@
                         <div class="d-flex">
                             <h:panelGrid columns="1">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar
+                                <p:datePicker
                                     value="#{searchController.fromDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
-                                
+                                </p:datePicker>
+
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar 
+                                <p:datePicker 
                                     value="#{searchController.toDate}" 
                                     class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
-                                
+                                </p:datePicker>
+
                                 <p:commandButton 
                                     class="mt-2 w-100 mb-3 ui-button-warning" 
                                     icon="fa-solid fa-search"
@@ -68,7 +74,7 @@
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                     >
-                                    
+
 
                                     <p:column headerText="Bill No"  >
                                         <h:outputLabel value="#{bb.insId}" ></h:outputLabel>

@@ -17,7 +17,7 @@ import com.divudi.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
 import com.divudi.data.LoginRequest;
-
+import com.divudi.bean.common.util.JsfUtil;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import ca.uhn.hl7v2.parser.Parser;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexOld;
@@ -963,7 +963,7 @@ public class LimsMiddlewareController {
             addPatientReportItemValuesForReport(r);
             prFacade.edit(r);
         } else {
-            UtilityController.addErrorMessage("No ptIx or Ix selected to add");
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
         }
         return r;
     }

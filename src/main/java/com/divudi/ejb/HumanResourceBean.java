@@ -1430,7 +1430,7 @@ public class HumanResourceBean {
 //        }
 //
 //        if (frwStaffShift != null) {
-//            UtilityController.addSuccessMessage("This Staff continue to : " + frwStaffShift.getShift().getName());
+//            JsfUtil.addSuccessMessage("This Staff continue to : " + frwStaffShift.getShift().getName());
 //            return frwStaffShift;
 //        } else if (frwDayStaffShift != null && tmp.getShift().getShiftOrder() == getMaxShiftOrder(tmp)) {
 //            System.err.println("This Staff continue to : " + frwDayStaffShift.getShift().getName());

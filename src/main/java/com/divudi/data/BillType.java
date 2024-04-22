@@ -1,4 +1,3 @@
-
 /*
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
@@ -21,6 +20,7 @@ public enum BillType {
     ChannelCreditFlow(null),
     OpdBathcBill,
     OpdBathcBillPre,
+    OpdProfessionalFeePayment,
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
@@ -85,6 +85,13 @@ public enum BillType {
     PharmacyTransferReceive,
     PharmacyDirectReceive,
     PharmacyAdjustment,
+    PharmacyAdjustmentDepartmentStock,
+    PharmacyAdjustmentDepartmentSingleStock,
+    PharmacyAdjustmentStaffStock,
+    PharmacyAdjustmentSaleRate,
+    PharmacyAdjustmentWholeSaleRate,
+    PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentExpiryDate,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
     ChannelCash(ChannelCashFlow),
@@ -176,14 +183,14 @@ public enum BillType {
             case PharmacyGrnReturn:
                 return "Good Receive Note Return";
             case PharmacyPurchaseBill:
-                return "Pharmacy Purchase";
+                return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
             case PharmacyPre:
-                return "Pharmacy Sale Bill (Pre)";
+                return "Pharmacy Sale Bill for Cashier";
             case PharmacyAdjustment:
                 return "Pharmacy Adjustment";
             case GrnPayment:
@@ -241,7 +248,7 @@ public enum BillType {
             case OpdBathcBill:
                 return "OPD Accepet Payment";
             case CollectingCentrePaymentReceiveBill:
-                return "Collecting Centre Payment";
+                return "Collecting Centre Payment Receive";
             case ChannelProPayment:
                 return "Channel Professional Payment Bill";
             case ChannelIncomeBill:

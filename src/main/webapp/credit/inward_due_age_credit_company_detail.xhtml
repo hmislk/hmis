@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -21,7 +21,7 @@
                     <p:defaultCommand target="btnSearch"/>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i" rendered="#{creditCompanyDueController.creditCompanyAge.size() > 0.0}" >                       
-                        <p:column headerText="Dealor Name" filterBy="#{i.institution.name}">       
+                        <p:column headerText="Supplier Name" filterBy="#{i.institution.name}">       
                             <h:outputLabel id="colComDetailDue"  value="#{i.institution.name}"/>
                             <p:tooltip for="colComDetailDue"  >
                                 <h:outputLabel value="Address : #{i.institution.address}" >
@@ -240,36 +240,36 @@
                                  rendered="#{creditCompanyDueController.dealerDueDetailRows.size() > 0.0}">   
                         <p:columnGroup type="header">
                             <p:row>  
-                                <p:column rowspan="2" headerText="Dealor Name"/> 
-                                <p:column rowspan="2" headerText="Dealor NetTotal"/> 
+                                <p:column rowspan="2" headerText="Supplier Name"/> 
+                                <p:column rowspan="2" headerText="Supplier NetTotal"/> 
                                 <p:column colspan="6" headerText="0-30"/>
                                 <p:column colspan="6" headerText="30-60"/> 
                                 <p:column colspan="6" headerText="60-90"/> 
                                 <p:column colspan="6" headerText="90 more"/> 
                             </p:row> 
                             <p:row>  
-                                <p:column headerText="Dealor Tolal"/>
+                                <p:column headerText="Supplier Tolal"/>
                                 <p:column headerText="BHT No"/>  
                                 <p:column headerText="Patient"/>
                                 <p:column headerText="Admit Date"/> 
                                 <p:column headerText="Discharge Date"/> 
                                 <p:column headerText="Total"/> 
 
-                                <p:column headerText="Dealor Tolal"/>
+                                <p:column headerText="Supplier Tolal"/>
                                 <p:column headerText="BHT No"/>  
                                 <p:column headerText="Patient"/>
                                 <p:column headerText="Admit Date"/> 
                                 <p:column headerText="Discharge Date"/> 
                                 <p:column headerText="Total"/> 
 
-                                <p:column headerText="Dealor Tolal"/>
+                                <p:column headerText="Supplier Tolal"/>
                                 <p:column headerText="BHT No"/>  
                                 <p:column headerText="Patient"/>
                                 <p:column headerText="Admit Date"/> 
                                 <p:column headerText="Discharge Date"/> 
                                 <p:column headerText="Total"/> 
 
-                                <p:column headerText="Dealor Tolal"/>
+                                <p:column headerText="Supplier Tolal"/>
                                 <p:column headerText="BHT No"/>  
                                 <p:column headerText="Patient"/>
                                 <p:column headerText="Admit Date"/> 
@@ -279,7 +279,7 @@
                         </p:columnGroup>
 
 
-                        <p:column headerText="Dealor Name" >       
+                        <p:column headerText="Supplier Name" >       
                             <h:outputLabel id="colComDetailDue"  value="#{r.dealer.name}"/>
                             <p:tooltip for="colComDetailDue"  >
                                 <h:outputLabel value="Address : #{r.dealer.address}" >

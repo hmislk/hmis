@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/channel/channel_reports.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
                 >
 
     <ui:define name="subContent">
@@ -14,7 +14,7 @@
 
             <p:panel header="Statement Of Agent Account Total And Count">
                 <f:facet name="header">
-                    <p:outputLabel value="User Today All Paid Channel Summery" />
+                    <p:outputLabel value="User Today All Paid Channel Summary" />
                     <p:outputLabel value="****Do Not Change This Report****" style="color: red"/>
                    
                 </f:facet>
@@ -61,7 +61,7 @@
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
-                            <p:outputLabel value="All Booking Summery  - " />
+                            <p:outputLabel value="All Booking Summary  - " />
                             <p:outputLabel value="Cashier : #{channelReportTempController.reportKeyWord.webUser.webUserPerson.name}"/>
                             <br></br>
                             <p:outputLabel value="From : " />

@@ -11,7 +11,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.dataStructure.ServiceFee;
@@ -203,7 +203,7 @@ public class TheatreServiceController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed() == true) {
-            UtilityController.addErrorMessage("Cant tick both User can Change & Discount Allowed");
+            JsfUtil.addErrorMessage("Cant tick both User can Change & Discount Allowed");
             return true;
         }
         return false;
@@ -212,11 +212,11 @@ public class TheatreServiceController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select Department");
+            JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
         if (getCurrent().getInwardChargeType() == null) {
-            UtilityController.addErrorMessage("Please Select Inward Charge type");
+            JsfUtil.addErrorMessage("Please Select Inward Charge type");
             return;
         }
 
@@ -238,7 +238,7 @@ public class TheatreServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getTheatreServiceFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
@@ -253,7 +253,7 @@ public class TheatreServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getTheatreServiceFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -308,9 +308,9 @@ public class TheatreServiceController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getTheatreServiceFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -67,6 +67,11 @@ th.align-right-header .ui-column-title {
 
 }
 
+.button-margin-adjusted {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 
 /* Style for screen (if needed) */
 .prescription-text .ql-container.ql-snow {
@@ -79,4 +84,32 @@ th.align-right-header .ui-column-title {
     .prescription-text .ql-container.ql-snow {
         border: none !important;
     }
+}
+
+.condensedTable .ui-datatable-tablewrapper {
+    font-size: 10px; /* Smaller font size */
+}
+
+.condensedTable .ui-datatable-thead > tr > th,
+.condensedTable .ui-datatable-tbody > tr > td {
+    padding: 1px 1px; /* Reduced padding around cells */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.condensedTable .ui-datatable-header,
+.condensedTable .ui-datatable-footer {
+    padding: 1px 1px; /* Reduced padding for header and footer */
+}
+
+.condensedTable .ui-paginator .ui-paginator-pages {
+    padding: 1px 1px; /* Reduced padding for paginator */
+}
+
+.condensedTable .ui-datatable-tablewrapper .ui-datatable-data tr td a {
+    font-size: 10px; /* Adjust the font size as needed */
+    padding: 1px 1px; /* Adjust padding to make it more condensed, if necessary */
+}
+
+.no-header-table .ui-datatable-header {
+    display: none;
 }

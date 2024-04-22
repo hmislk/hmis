@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -13,9 +13,12 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder">
-
+        <h:outputStylesheet library="css" name="pharmacypos.css"/>
+        <!--        <div class="a4bill">-->
+        <div style="font-family: sans-serif!important;
+             font-size: 11px!important;
+             width: 95%;
+             height: 95%;">
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
             </div>
@@ -30,39 +33,38 @@
             </div>
 
 
-            <div >
+            <div>
                 <h:panelGrid columns="4" class="poDetail" >    
-                    <h:outputLabel value="Purchase Date"/>
-                    <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <h:outputLabel value="Purchase Date" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
 
-                    <h:outputLabel value="Direct GRN No"/>
-                    <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    <h:outputLabel value="Direct GRN No" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive"/>
 
-                    <h:outputLabel value="Invoice Date"/>
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceDate}">
+                    <h:outputLabel value="Invoice Date" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.invoiceDate}" class="billDetailsFiveFive">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
 
-                    <h:outputLabel value="Invoice No"/>  
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/> 
+                    <h:outputLabel value="Invoice No" class="billDetailsFiveFive"/>  
+                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="billDetailsFiveFive"/> 
 
-                    <h:outputLabel value="Supplier"/>
-                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                    <h:outputLabel value="Supplier" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="billDetailsFiveFive"/>
 
-                    <h:outputLabel value="Purchase Date"/>
-                    <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <h:outputLabel value="Purchase Date" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
                 </h:panelGrid>
             </div>
 
-
+            <p:spacer height="15px"/>
             <div >
-                <p:spacer height="15px"/>
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" >
 
+                <p:dataTable rowIndexVar="rowIndex" value="#{cc.attrs.bill.billItems}" var="bip" >
                     <p:column>
                         <f:facet name="header">Item</f:facet>
                         <h:outputText value="#{bip.item.name}" ></h:outputText>
@@ -75,49 +77,49 @@
                         </h:outputLabel>
                     </p:column>                                 
 
-                    <p:column styleClass="shortNumericColumn">
+                    <p:column >
                         <f:facet name="header">QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.qty}
                     </p:column>
 
-                    <p:column styleClass="shortNumericColumn">
+                    <p:column>
                         <f:facet name="header">Free</f:facet>
                             #{bip.pharmaceuticalBillItem.freeQty}
                     </p:column>
-                    <p:column styleClass="shortNumericColumn">
+                    <p:column>
                         <f:facet name="header">P. Rate</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column styleClass="shortNumericColumn">
+                    <p:column>
                         <f:facet name="header">Last P.R.</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column styleClass="averageNumericColumn">
+                    <p:column>
                         <f:facet name="header">P. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column styleClass="shortNumericColumn">
+                    <p:column>
                         <f:facet name="header">Re. Rate</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
-                    <p:column styleClass="averageNumericColumn">
+
+                    <p:column>
                         <f:facet name="header">Re. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate*(bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.freeQty )}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}">
-                        <f:facet name="header">Wholesale Price</f:facet>
+                        <f:facet name="header">Whole S.P</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.wholesaleRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -125,7 +127,7 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column colspan="6" footerText="Total"/>
-                            <p:column footerText="#{0-cc.attrs.bill.total}" style="text-align: right;">
+                            <p:column footerText="#{0-cc.attrs.bill.total}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -133,14 +135,14 @@
                                 </f:facet>
                             </p:column>
                             <p:column ></p:column>
-                            <p:column footerText="#{0-cc.attrs.bill.saleValue}" style="text-align: right;">
+                            <p:column footerText="#{0-cc.attrs.bill.saleValue}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.total}">
+                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
+
                         </p:row>
                         <p:row rendered="#{cc.attrs.bill.tax!=0}">
                             <p:column colspan="9" footerText="Tax"/>
@@ -178,7 +180,7 @@
                     </p:columnGroup>
                 </p:dataTable>
             </div>
-
+            <p:spacer height="5px"/>
             <div class="preparedBy">
                 <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
 

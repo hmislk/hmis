@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Item;
 import com.divudi.entity.PackageFee;
 import com.divudi.entity.PackageItem;
@@ -79,16 +80,16 @@ public class PackageItemController implements Serializable {
 
     public void updateFee() {
         if (getCurrentPackege() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("savedFeeSuccessfully");
+        JsfUtil.addSuccessMessage("savedFeeSuccessfully");
         saveCharge();
         //recreateModel();
         getItems();
@@ -147,11 +148,11 @@ public class PackageItemController implements Serializable {
 
     public void addToPackage() {
         if (getCurrentPackege() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
         PackageItem pi = new PackageItem();
@@ -161,17 +162,17 @@ public class PackageItemController implements Serializable {
         pi.setCreatedAt(new Date());
         pi.setCreater(sessionController.loggedUser);
         getFacade().create(pi);
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
         recreateModel();
     }
 
     public void removeFromPackage() {
         if (getCurrentPackege() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
@@ -179,8 +180,9 @@ public class PackageItemController implements Serializable {
         getCurrent().setRetirer(getSessionController().getLoggedUser());
         getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("Item Removed");
+        JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
+        getItems();
     }
 
     /**
@@ -291,12 +293,12 @@ public class PackageItemController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -314,9 +316,9 @@ public class PackageItemController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

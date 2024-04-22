@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -18,7 +18,7 @@
 
 
             <div class="headingBill">
-                <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <h:outputLabel value="Stock Adjustment Note" style="text-decoration: underline;"/>                           
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
@@ -52,7 +52,7 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-                    <p:column style="width: 8px;text-align: right!important;" >
+                    <p:column rendered="false" style="width: 60px;text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
@@ -66,17 +66,27 @@
                             <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stockHistory.stockQty}">
-                            <f:convertNumber integerOnly="true"/>
+                            <f:convertNumber pattern="#,###.##"/>
+                        </h:outputLabel>
+                        #{bip.pharmaceuticalBillItem.stockHistory.id}
+                    </p:column>                  
+
+                    <p:column style="text-align: right!important;"> 
+                        <f:facet name="header">                           
+                            <h:outputLabel value="Changed Qty" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>                  
 
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" />
+                            <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber integerOnly="true"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.stockHistory.stockQty}">
+                            <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>                  
 

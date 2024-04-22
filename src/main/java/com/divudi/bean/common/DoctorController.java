@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
@@ -63,16 +64,29 @@ public class DoctorController implements Serializable {
     List<Doctor> doctors;
     Speciality speciality;
 
+    public Doctor getDoctorsByName(String name) {
+        String jpql = "select d "
+                + " from Doctor d "
+                + " where d.retired=:ret "
+                + " and d.person.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     public List<Doctor> listDoctors(Speciality speciality) {
         List<Doctor> suggestions;
         String sql;
         sql = " select p "
                 + " from Doctor p "
                 + " where p.retired=false "
-                + " and p.speciality=:spe "
                 + " order by p.person.name";
         HashMap hm = new HashMap();
-        hm.put("spe", speciality);
+        if (speciality != null) {
+            sql += " and p.speciality=:spe ";
+            hm.put("spe", speciality);
+        }
         suggestions = getFacade().findByJpql(sql, hm);
         return suggestions;
     }
@@ -101,7 +115,7 @@ public class DoctorController implements Serializable {
         temSql = "SELECT d FROM Doctor d where d.retired=false ";
         doctors = getFacade().findByJpql(temSql);
 
-        commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
+        
 
     }
 
@@ -204,9 +218,9 @@ public class DoctorController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();
@@ -230,21 +244,48 @@ public class DoctorController implements Serializable {
         return Title.values();
     }
 
+    public void save(Doctor doc) {
+        if (doc == null) {
+            return;
+        }
+        if (doc.getPerson() == null) {
+            return;
+        }
+        if (doc.getPerson().getName().trim().equals("")) {
+            return;
+        }
+        if (doc.getSpeciality() == null) {
+            return;
+        }
+        if (doc.getPerson().getId() == null || doc.getPerson().getId() == 0) {
+            getPersonFacade().create(doc.getPerson());
+        } else {
+            getPersonFacade().edit(doc.getPerson());
+        }
+        if (doc.getId() != null && doc.getId() > 0) {
+            getFacade().edit(doc);
+        } else {
+            doc.setCreatedAt(new Date());
+            doc.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(doc);
+        }
+    }
+
     public void saveSelected() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson() == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a doctor name");
+            JsfUtil.addErrorMessage("Please enter a doctor name");
             return;
         }
         if (current.getSpeciality() == null) {
-            UtilityController.addErrorMessage("Please Select Speciality for Doctor");
+            JsfUtil.addErrorMessage("Please Select Speciality for Doctor");
             return;
         }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
@@ -254,12 +295,12 @@ public class DoctorController implements Serializable {
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         current = new Doctor();
         recreateModel();
@@ -339,6 +380,23 @@ public class DoctorController implements Serializable {
         this.speciality = speciality;
     }
 
+    public Doctor findDoctor(Long id) {
+        return getFacade().find(id);
+    }
+
+    public Doctor findDoctor(Person person) {
+        String jpql = "select d "
+                + " from Staff d "
+                + " where d.person = :person "
+                + " and d.retired = :ret";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("person", person);
+        m.put("ret", false);
+
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     /**
      *
      */
@@ -377,7 +435,7 @@ public class DoctorController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Doctor.class.getName());
             }
         }
     }

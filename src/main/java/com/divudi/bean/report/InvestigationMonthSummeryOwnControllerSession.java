@@ -6,7 +6,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
@@ -33,7 +33,7 @@ import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.ReportItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -169,7 +169,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         investigations.addAll(investigationController.getInvestigationItems());
 
         if (investigations.isEmpty()) {
-            UtilityController.addErrorMessage("No Investigations");
+            JsfUtil.addErrorMessage("No Investigations");
             return;
         }
 
@@ -380,7 +380,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         boolean flag=true;
         if(item == null){
-            UtilityController.addSuccessMessage("Please Select Investigation");
+            JsfUtil.addSuccessMessage("Please Select Investigation");
             return ;
         }
         if (department!=null) {
@@ -843,7 +843,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Investigation counts by institution and collecting centers(/faces/reportLab/ix_count_by_institution_and_collecting_centre.xhtml)");
+        
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {

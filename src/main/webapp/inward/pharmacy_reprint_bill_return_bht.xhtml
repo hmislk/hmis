@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -15,117 +15,160 @@
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Bht Issue Return Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" 
-                                            action="pharmacy_cancel_bill_return_bht" 
-                                             disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
-                            </p:commandButton>
-                            
+                            <div class="d-flex justify-content-between">
+                                <div class="">
+                                    <h:outputLabel value="BHT Issue Return Reprint" class="mt-2"></h:outputLabel>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        value="Reprint" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        ajax="false">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="false"
+                                        ajax="false" 
+                                        value="To Cancel"
+                                        icon="fa fa-cancel"
+                                        class="ui-button-danger"
+                                        action="pharmacy_cancel_bill_return_bht" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
+                                    </p:commandButton>
+                                     <p:commandButton
+                                id="check"
+                                ajax="false" 
+                                icon="fa fa-check-square"
+                                class="ui-button-success"
+                                value="Mark As Checked"
+                                action="#{pharmacyBillSearch.markAsChecked()}"
+                                process="uncheck"
+                                update="list "
+                                rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                            <p:commandButton 
+                                id="uncheck"
+                                ajax="false" 
+                                value="Mark As Uncheck"
+                                icon="fa fa-square"
+                                process="uncheck"
+                                update="list"
+                                class="ui-button-warning"
+                                action="#{pharmacyBillSearch.markAsUnChecked()}"
+                                rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                            <p:commandButton 
+                                ajax="false"
+                                icon="fa fa-backward"
+                                value="Back To Interim"
+                                action="/inward/inward_bill_intrim"  />
+                                </div>
+                            </div>
                         </f:facet>
 
-
-                    </p:panel>
-
-                    <p:panel>
-                        <p:commandButton ajax="false" value="Mark As Checked"
-                                        action="#{pharmacyBillSearch.markAsChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                        <p:commandButton ajax="false" value="Mark As Un Check"
-                                        action="#{pharmacyBillSearch.markAsUnChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                        <p:commandButton ajax="false" value="Back To Interim"
-                                        action="/inward/inward_bill_intrim"  />
-                    </p:panel>
-
-
-                    <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputLabel value="No"/>
-                            </f:facet>
-                            <h:outputLabel value="#{rowIndex+1}"/>
-                        </p:column>
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputLabel value="Item Name"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.item.name}"/>
-                        </p:column>
-
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputLabel value="QTY"/>
-                            </f:facet>
-                            <p:outputLabel value="#{bip.qty}"/>
-                        </p:column>
-
-                        <p:column style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Gross Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.grossValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Matrix Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.marginValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Net Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.netValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column  style="text-align: right;" colspan="4">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
-                                            <f:convertNumber pattern="#0.00" />
-                                        </h:outputLabel>
+                        <div class="row mt-2">
+                            <div class="col-lg-6">
+                                <p:panel id="list">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item List" />
                                     </f:facet>
-                                </p:column>
-                                <p:column  style="text-align: right;" colspan="2">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
-                                            <f:convertNumber pattern="#0.00" />
-                                        </h:outputLabel>
+
+                                    <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
+
+                                        <p:column width="2%">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="No" />
+                                            </f:facet>
+                                            <h:outputLabel value="#{rowIndex+1}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Item Name"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.item.name}"/>
+                                        </p:column>
+
+                                        <p:column width="2%">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="QTY"/>
+                                            </f:facet>
+                                            <p:outputLabel value="#{bip.qty}">
+                                                <f:convertNumber pattern="#0" />
+                                            </p:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Gross Value"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.grossValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Matrix Value"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.marginValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Net Value"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.netValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column  style="text-align: right;" colspan="4">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column  style="text-align: right;" colspan="2">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                            <div class="col-lg-6">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h:outputLabel value="View Bill" class="mt-2"/>
+                                            </div>
+                                            <div class="d-flex" >
+                                                <h:outputLabel value="Mark as Checked" rendered="#{pharmacyBillSearch.bill.checkedBy ne null}" style="background-color: #96E6B3" class="p-2 rounded-3"/>
+                                                <h:outputLabel value="Mark As Uncheck" rendered="#{pharmacyBillSearch.bill.checkedBy eq null}" style="background-color: #F97068" class="p-2 rounded-3"/>
+                                            </div>
+
+                                        </div> 
                                     </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                    </p:dataTable>
-
-
-                    <h:panelGroup id="gpBillPreview" >
-                        <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                    </h:panelGroup>
-
-
+                                    <h:panelGroup id="gpBillPreview">
+                                        <ph:returnBill_1 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

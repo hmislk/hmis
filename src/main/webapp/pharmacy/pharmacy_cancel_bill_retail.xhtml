@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:common="http://java.sun.com/jsf/composite/ezcomp/common"
-      xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -48,9 +48,9 @@
                                         <common:patient patient="#{pharmacyBillSearch.bill.patient}" class="w-100"/>
 
                                     </p:panel>
-                                    <p:panel header="Dealor Detail" rendered="#{not empty pharmacyBillSearch.bill.toInstitution}">
+                                    <p:panel header="Supplier Detail" rendered="#{not empty pharmacyBillSearch.bill.toInstitution}">
                                         <p:panelGrid columns="2">
-                                            <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
+                                            <h:outputLabel value="Supplier ​Name:" ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution}" ></h:outputLabel>                                        
                                         </p:panelGrid>
                                     </p:panel>
@@ -100,8 +100,15 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <p:commandButton value="Reprint" ajax="false" >
+                        <p:commandButton value="Reprint" ajax="false" class="ui-button-info m-1" icon="fas fa-print">
                             <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"  
+                                         value="Search Sale Bill" class="ui-button-warning m-1" icon="fas fa-arrow-left">
+                        </p:commandButton>
+                        <p:commandButton action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
+                                         class="ui-button-warning m-1" icon="fas fa-arrow-left"
+                                         value="Search Sale Pre Bill">
                         </p:commandButton>
 
 <!--                        <pharmacy:saleBill id="gpBillPreview" bill="#{pharmacyBillSearch.bill.cancelledBill}" />-->

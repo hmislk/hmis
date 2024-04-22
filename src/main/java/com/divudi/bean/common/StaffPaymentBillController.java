@@ -42,11 +42,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.LazyDataModel;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -242,17 +244,22 @@ public class StaffPaymentBillController implements Serializable {
         if (currentStaff == null || currentStaff.getId() == null) {
             dueBillFees = new ArrayList<>();
         } else {
+            List<BillTypeAtomic> btcs = new ArrayList<>();
+            btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            btcs.add(BillTypeAtomic.CC_BILL);
             String sql;
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
                     + " b.retired=false"
-                    + " and (b.bill.billType=:btp or b.bill.billType=:btpc) "
+                    + " and b.bill.billTypeAtomic in :btcs"
                     + " and b.bill.cancelled=false "
-//                    + " and b.bill.refunded=false "
                     + " and (b.feeValue - b.paidValue) > 0 "
-                    + " and b.staff.id = " + currentStaff.getId();
-            h.put("btp", BillType.OpdBill);
-            h.put("btpc", BillType.CollectingCentreBill);
+                    + " and b.staff=:staff ";
+            h.put("btcs", btcs);
+            h.put("staff", currentStaff);
+
+            
 
             dueBillFees = getBillFeeFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
 
@@ -264,8 +271,8 @@ public class StaffPaymentBillController implements Serializable {
                         + " and bi.bill.cancelled=false "
                         + " and type(bi.bill)=:class "
                         + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-                h.put("class",RefundBill.class);
-                BillItem rbi = getBillItemFacade().findFirstByJpql(sql,h);
+                h.put("class", RefundBill.class);
+                BillItem rbi = getBillItemFacade().findFirstByJpql(sql, h);
 
                 if (rbi != null) {
                     removeingBillFees.add(bf);
@@ -377,6 +384,7 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.PaymentBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -399,16 +407,16 @@ public class StaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Please select a Staff Memeber");
+            JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
         performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -444,7 +452,7 @@ public class StaffPaymentBillController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Successfully Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
 
@@ -547,9 +555,9 @@ public class StaffPaymentBillController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
 //        getItems();

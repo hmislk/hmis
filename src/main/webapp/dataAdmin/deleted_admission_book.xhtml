@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -16,15 +16,15 @@
 
                     <p:panel header="Detailed BHT Issuing Bill Items" >
 
-                        <h:panelGrid columns="6" >
+                        <h:panelGrid columns="2" class="my-2">
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
-                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                            <p:selectOneMenu class="w-100 mx-4" autoWidth="false" value="#{inwardReportController.admissionType}">
                                 <f:selectItem itemLabel="All Admission Type"/>
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
@@ -32,14 +32,14 @@
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardReportController.fillAdmissionBookOnlyInwardDeleted()}"  ></p:commandButton>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookOnlyInwardDeleted()}"  ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
                             </p:commandButton>  
                         </h:panelGrid>

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -12,59 +12,81 @@
                 <h:form>
                     <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Professional Cancellation">                           
-                            <h:commandButton value="Cancel" action="#{inwardSearch.cancelProfessional()}" >
-                            </h:commandButton>                            
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Professional Cancellation" />
+                                </div>
+                                    <div class="d-flex align-items-center" style="width: 50%">
+                                        <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{inwardSearch.comment}"/>
+                                <p:spacer width="20%"></p:spacer>
+                                <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{inwardSearch.cancelProfessional()}" >
+                                </p:commandButton> 
+                               </div>
+                              </div>
+                            </f:facet>                           
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Patient Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                    <h:outputLabel value="Patient ​Name" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" ></h:outputLabel>
-                                    <h:outputLabel value="Bht No:" ></h:outputLabel>
+                                    <h:outputLabel value="BHT No" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}" ></h:outputLabel>
                                     <h:outputLabel value="Age" />
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
                                     <h:outputLabel value="Sex" >
                                     </h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
                                     </h:outputLabel>
                                     <h:outputLabel value="Phone" >
                                     </h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
                                     </h:outputLabel>
-                                </p:panelGrid>
+                                </h:panelGrid>
                             </p:panel>
                             <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                    <h:outputLabel value="Bill No" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
+                                    <h:outputLabel value="Total" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.total}" ></h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
+                                    <h:outputLabel value="Discount" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.discount}" ></h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="Net Total" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
+                                     <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                </h:panelGrid>
                             </p:panel>
                         </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
+                        <p:panel header="Payment Detail" class="my-2">
                             <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                     <h:outputLabel value="#{rowIndex+1}"/>                                
                                 </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                    <h:outputLabel value="#{bip.item.name}"/>
+                                 <p:column headerText="Speciality">
+                                     <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.speciality.name}"/>
                                 </p:column>
+                                <p:column headerText="Name">
+                                    <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.name}"/>
+                                </p:column> 
                                 <p:column>
                                     <f:facet name="header">Fee</f:facet>
                                     <h:outputLabel value="#{bip.netValue}"/>                                
                                 </p:column>
                             </p:dataTable>
-                        </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{inwardSearch.comment}"/>                            
                         </p:panel>
                     </h:panelGroup>
 

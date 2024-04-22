@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
@@ -16,48 +16,48 @@
                                 <p:ajax process="@this"></p:ajax>
                                 <p:tab title="Service Report" closable="false">
                                     <div class="d-grid gap-2"> 
-                                        <p:commandButton  ajax="false" value="Report By Bill" action="report_md_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                        <p:commandButton  ajax="false" value="Report By Item (Count)" action="report_md_inward_item"  actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                        <p:commandButton  ajax="false" value="Report By Item " action="report_md_inward_item_1"  actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                        <p:commandButton  ajax="false" value="Report By Item With Bill " action="report_md_inward_item_with_bill"  actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                        <p:commandButton  ajax="false" value="Out Side Bill Report" action="report_out_side_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/>
-                                        <p:commandButton  ajax="false" value="Time Service Report" action="inward_report_timed_service" actionListener="#{inwardTimedItemController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Report By Bill" action="report_md_inward_bill?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Report By Item (Count)" action="report_md_inward_item?faces-redirect=true"  actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Report By Item " action="report_md_inward_item_1?faces-redirect=true"  actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Report By Item With Bill " action="report_md_inward_item_with_bill?faces-redirect=true"  actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Out Side Bill Report" action="report_out_side_inward_bill?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Time Service Report" action="inward_report_timed_service?faces-redirect=true" actionListener="#{inwardTimedItemController.makeNull()}"/>
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Doctor Payment Report">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report" action="inward_professional_payment_due"/>
-                                        <p:commandButton  ajax="false" value="Doctor Payment(By Bill Item)" action="report_doctor_payment" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
-                                        <p:commandButton  ajax="false" value="Doctor Payment(By Bill)" action="report_doctor_payment_by_bill" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
-                                        <p:commandButton  ajax="false" value="Doctor Payment Summary" action="report_doctor_payment_summery" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="Discharged/Not Discharged Doctor Payment Summary" action="inward_professional_payment_discharged_or_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report Inward" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="Doctor Payment Done Detailed" action="inward_report_professional_done_payment"/>
-                                        <p:commandButton  ajax="false" value="Doctor Payment Due OPD And Inward" action="inward_professional_payment_and_opd_payment_due"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report" action="inward_professional_payment_due?faces-redirect=true"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment(By Bill Item)" action="report_doctor_payment?faces-redirect=true" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment(By Bill)" action="report_doctor_payment_by_bill?faces-redirect=true" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Summary" action="report_doctor_payment_summery?faces-redirect=true" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Discharged/Not Discharged Doctor Payment Summary" action="inward_professional_payment_discharged_or_notdischarged?faces-redirect=true" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report Inward" action="inward_report_professional_payment_due?faces-redirect=true" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="All Doctors Search" action="report_all_doctors?faces-redirect=true" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Done Detailed" action="inward_report_professional_done_payment?faces-redirect=true"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due OPD And Inward" action="inward_professional_payment_and_opd_payment_due?faces-redirect=true"/>
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="All Summaries">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="Newly Added Report" action="inward_report_bht_bil"   ajax="false" />
-                                        <p:commandButton value="BHT Inward Charge Category Report" action="inward_report_bht_inward_charge_category"   ajax="false" />
-                                        <p:commandButton value="BHT Income By Categories Individual BHT " action="inward_report_bht_income_by_caregories_bht"   ajax="false" />
-                                        <p:commandButton value="BHT Income By Categories All BHT " action="inward_report_bht_income_by_caregories"   ajax="false" />
-                                        <p:commandButton value="BHT Vice Income by Catgories" action="inward_report_bht_vice_income_by_caregories" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="Room Time Report" action="inward_report_room"  ajax="false"/>
-                                        <p:commandButton value="Discount Report" action="inward_report_discount"  ajax="false"/>
-                                        <p:commandButton value="BHT VAT Report" action="inward_report_bht_inward_vat"   ajax="false" />
+                                        <p:commandButton value="Newly Added Report" action="inward_report_bht_bil?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="BHT Inward Charge Category Report" action="inward_report_bht_inward_charge_category?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="BHT Income By Categories Individual BHT " action="inward_report_bht_income_by_caregories_bht?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="BHT Income By Categories All BHT " action="inward_report_bht_income_by_caregories?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="BHT Vice Income by Catgories" action="inward_report_bht_vice_income_by_caregories?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Room Time Report" action="inward_report_room?faces-redirect=true"  ajax="false"/>
+                                        <p:commandButton value="Discount Report" action="inward_report_discount?faces-redirect=true"  ajax="false"/>
+                                        <p:commandButton value="BHT VAT Report" action="inward_report_bht_inward_vat?faces-redirect=true"   ajax="false" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Reports By BHT">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  ajax="false" value="BHT Break Down (TAB Format)" action="inward_bill_intrim_finalized" actionListener="#{bhtSummeryFinalizedController.makeNull()}" /> 
-                                        <p:commandButton  ajax="false" value="BHT Break Down (Table Format)" action="inward_bill_final_break_down" /> 
-                                        <p:commandButton  ajax="false" value="BHT Sevice Errror Diduction" action="inward_bill_final_break_down_error" rendered="false" /> 
-                                        <p:commandButton  ajax="false" value="BHT Interim Errror Correction" action="inward_bill_intrim_finalized_error_correction" /> 
+                                        <p:commandButton  ajax="false" value="BHT Break Down (TAB Format)" action="inward_bill_intrim_finalized?faces-redirect=true" actionListener="#{bhtSummeryFinalizedController.makeNull()}" />
+                                        <p:commandButton  ajax="false" value="BHT Break Down (Table Format)" action="inward_bill_final_break_down?faces-redirect=true" />
+                                        <p:commandButton  ajax="false" value="BHT Sevice Errror Diduction" action="inward_bill_final_break_down_error?faces-redirect=true" rendered="false" />
+                                        <p:commandButton  ajax="false" value="BHT Interim Errror Correction" action="inward_bill_intrim_finalized_error_correction?faces-redirect=true" />
                                         <p:commandButton ajax="false" value="Error" action="#{bhtSummeryFinalizedController.errorCheck}" rendered="false"/>
                                         <p:commandButton ajax="false" value="Reset Nurse Speciality" action="#{bhtSummeryFinalizedController.errorCheck2}" rendered="false" />
                                         <p:commandButton ajax="false" value="Reset Gross Pharmacy" action="#{bhtSummeryFinalizedController.errorCorrectionPharmacy()}" rendered="false"/>
@@ -71,23 +71,23 @@
 
                                 <p:tab title="Inward Admission Book">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="Admission Detail By Admitted Date" action="admission_book" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="Dicharge Detail By Discharged Date" action="discharge_book" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="Balance Payment Report(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment"   ajax="false" />
-                                        <p:commandButton value="Balance Payment Report(Credit)(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment_1"   ajax="false" />
+                                        <p:commandButton value="Admission Detail By Admitted Date" action="admission_book?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Dicharge Detail By Discharged Date" action="discharge_book?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Balance Payment Report(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="Balance Payment Report(Credit)(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment_1?faces-redirect=true"   ajax="false" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Room Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="Room Charge By BHT Wise" action="inward_report_bht_room_detail"   ajax="false" />
-                                        <p:commandButton value="Room Time Report" action="inward_report_room"  ajax="false"/>
+                                        <p:commandButton value="Room Charge By BHT Wise" action="inward_report_bht_room_detail?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="Room Time Report" action="inward_report_room?faces-redirect=true"  ajax="false"/>
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="inward Payment">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="Deposits of Undischarged Patient and Complete Payments of Discharged Patients" action="bht_deposit_by_discharge_date_and_created_date" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" /> 
+                                        <p:commandButton value="Deposits of Undischarged Patient and Complete Payments of Discharged Patients" action="bht_deposit_by_discharge_date_and_created_date?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="Complete Payments of Discharged Patient" action="bht_deposit_by_discharge_date" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="Deposite of Undischarged Patient" action="bht_deposit_by_created_date_not_discharge" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="All Payment By Created Date Date" action="bht_deposit_by_created_date_all" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
@@ -98,46 +98,46 @@
                                 <p:tab title="BHT Issuing">
                                     <div class="d-grid gap-2">
                                         <p:commandButton value="BHT Issue By Bill Item"
-                                                         action="report_bht_issue_by_bill_item" 
+                                                         action="report_bht_issue_by_bill_item?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"
                                                          ajax="false"/> 
 
                                         <p:commandButton value="BHT Issue By Item" 
                                                          ajax="false"
-                                                         action="pharmacy_report_bht_issue_by_item"/>
+                                                         action="pharmacy_report_bht_issue_by_item?faces-redirect=true"/>
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Surgery Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="Surgery Details" action="inward_search_surgery_1" actionListener="#{searchController.makeNull()}"  ajax="false" rendered="false" />
+                                        <p:commandButton value="Surgery Details" action="inward_search_surgery_1?faces-redirect=true" actionListener="#{searchController.makeNull()}"  ajax="false" rendered="false" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Inward Payment">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="Payment By Created Date " action="bht_deposit_by_created_date_discharged_all" 
+                                        <p:commandButton value="Payment By Created Date " action="bht_deposit_by_created_date_discharged_all?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged" 
+                                        <p:commandButton value="Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="All Payment of Discharged Patient"
-                                                         action="all_payment_by_created_date_discharged_only"
+                                                         action="all_payment_by_created_date_discharged_only?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}" 
                                                          ajax="false" />
-                                        <p:commandButton value="Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge" 
+                                        <p:commandButton value="Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="All Deposite of Not Discharged Patient" 
-                                                         action="bht_deposit_of_not_discharged_patient" 
+                                                         action="bht_deposit_of_not_discharged_patient?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="All Deposite of Not Discharged Patient by BHT" 
-                                                         action="bht_deposit_of_not_discharged_patient_by_bht" 
+                                                         action="bht_deposit_of_not_discharged_patient_by_bht?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="Discharged List and Due Report"
-                                                         action="discharge_book_no_changes_due"
+                                                         action="discharge_book_no_changes_due?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}" 
                                                          ajax="false" />
                                         <p:commandButton value="Discharged List and Due Report with Letter"
-                                                         action="discharge_book_no_changes_due_with_letter"
+                                                         action="discharge_book_no_changes_due_with_letter?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}" 
                                                          ajax="false"/>
                                     </div>
@@ -145,21 +145,21 @@
 
                                 <p:tab title=" Dues" >
                                     <div class="d-grid gap-2">
-                                        <p:commandButton action="/credit/inward_due_search" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" class="w-100"  />
-                                        <p:commandButton action="/credit/inward_due_search_credit_company" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search(Credit Company)" ajax="false" class="w-100"  />
-                                        <p:commandButton  action="/credit/inward_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" class="w-100" />
-                                        <p:commandButton  action="/credit/inward_due_age_credit_company_detail" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age Detail" ajax="false" class="w-100" />
-                                        <p:commandButton  action="/credit/inward_due_age_credit_company" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age(Credit Company)" ajax="false" class="w-100" />                            
+                                        <p:commandButton action="/credit/inward_due_search?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" class="w-100"  />
+                                        <p:commandButton action="/credit/inward_due_search_credit_company?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search(Credit Company)" ajax="false" class="w-100"  />
+                                        <p:commandButton  action="/credit/inward_due_age?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" class="w-100" />
+                                        <p:commandButton  action="/credit/inward_due_age_credit_company_detail?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age Detail" ajax="false" class="w-100" />
+                                        <p:commandButton  action="/credit/inward_due_age_credit_company?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age(Credit Company)" ajax="false" class="w-100" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title=" Excess" >
                                     <div class="d-grid gap-2">
 
-                                        <p:commandButton action="/credit/credit_company_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  class="w-100" />
-                                        <p:commandButton   action="/credit/credit_company_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" class="w-100" />
-                                        <p:commandButton action="/credit/cash_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  class="w-100" />
-                                        <p:commandButton   action="/credit/cash_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" class="w-100" />
+                                        <p:commandButton action="/credit/credit_company_inward_access?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  class="w-100" />
+                                        <p:commandButton   action="/credit/credit_company_inward_access_age?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" class="w-100" />
+                                        <p:commandButton action="/credit/cash_inward_access?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  class="w-100" />
+                                        <p:commandButton   action="/credit/cash_inward_access_age?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" class="w-100" />
                                     </div>
                                 </p:tab>
 

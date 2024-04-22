@@ -4,14 +4,15 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:prints="http://java.sun.com/jsf/composite/ezcomp/prints"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <h:form>
-            <ui:composition template="./index.xhtml">
+            <ui:composition template="/cashier/index.xhtml">
 
                 <ui:define name="subcontent">
+                    
                     <p:panel >
                         <f:facet name="header">
                             <i class="fas fa-piggy-bank mt-2"/>

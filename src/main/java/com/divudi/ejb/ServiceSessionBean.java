@@ -14,6 +14,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.NumberFormat;
@@ -21,11 +22,16 @@ import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 
@@ -208,7 +214,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ClinicalOpdBooking};
+            BillType.ClinicalOpdBooking,
+            BillType.ChannelCredit
+        };
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs where "
@@ -217,21 +225,29 @@ public class ServiceSessionBean {
                 + " and type(bs.bill)=:class"
                 + " and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
-        hh.put("ssDate", sessionDate);
-        hh.put("bt", bts);
-        hh.put("class", BilledBill.class);
-        hh.put("ss", serviceSession.getSessionNumberGenerator());
+
+        hh.put(
+                "ssDate", sessionDate);
+        hh.put(
+                "bt", bts);
+        hh.put(
+                "class", BilledBill.class
+        );
+        hh.put(
+                "ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
         ////// // System.out.println("serviceSession = " + serviceSession);
         ////// // System.out.println("serviceSession.getSessionNumberGenerator() = " + serviceSession.getSessionNumberGenerator());
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("hh = " + hh);
         ////// // System.out.println("lgValue= " + lgValue);
-        if (lgValue == null) {
+        if (lgValue
+                == null) {
             return 1;
         }
 
-        return lgValue.intValue() + 1;
+        return lgValue.intValue()
+                + 1;
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate, BillSession billSession) {
@@ -240,7 +256,8 @@ public class ServiceSessionBean {
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
             BillType.ChannelOnCall,
-            BillType.ChannelStaff};
+            BillType.ChannelStaff,
+            BillType.ChannelCredit};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs From BillSession bs where "
@@ -252,7 +269,8 @@ public class ServiceSessionBean {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("bt", bts);
-        hh.put("class", BilledBill.class);
+        hh.put("class", BilledBill.class
+        );
         hh.put("ss", serviceSession.getSessionNumberGenerator());
 
         List<BillSession> lgValue = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
@@ -294,6 +312,84 @@ public class ServiceSessionBean {
             }
         }
         return getSessionNumber(serviceSession, sessionDate);
+    }
+
+    @Lock(LockType.WRITE)
+    public Integer getNextNonReservedSerialNumber(SessionInstance si, List<Integer> reservedNumbers) {
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit
+        };
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String jpql = "SELECT bs.serialNo "
+                + "FROM BillSession bs "
+                + "WHERE bs.sessionInstance = :si "
+                + "AND bs.bill.billType IN :bt "
+                + "AND TYPE(bs.bill) = :class";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("si", si);
+        params.put("bt", bts);
+        params.put("class", BilledBill.class);
+
+        // Fetch the booked (already assigned) numbers
+        List<Integer> bookedNumbers = (List<Integer>) getBillSessionFacade().findLightsByJpql(jpql, params);
+
+        // Combine reserved and booked numbers into a single set to ensure uniqueness
+        Set<Integer> allUnavailableNumbers = new HashSet<>(bookedNumbers);
+        allUnavailableNumbers.addAll(reservedNumbers);
+
+        // Find the next available number
+        // Assuming serial numbers start from 1 and increment by 1
+        int nextAvailableNumber = 1;
+        while (allUnavailableNumbers.contains(nextAvailableNumber)) {
+            nextAvailableNumber++;
+        }
+
+        return nextAvailableNumber;
+    }
+
+    @Lock(LockType.WRITE)
+    public Integer getNextAvailableReservedNumber(SessionInstance si, List<Integer> reservedNumbers) {
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit
+        };
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String jpql = "SELECT bs.serialNo "
+                + "FROM BillSession bs "
+                + "WHERE bs.sessionInstance = :si "
+                + "AND bs.bill.billType IN :bt "
+                + "AND TYPE(bs.bill) = :class";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("si", si);
+        params.put("bt", bts);
+        params.put("class", BilledBill.class);
+
+        // Fetch the booked (already assigned) numbers
+        List<Integer> bookedNumbers = (List<Integer>) getBillSessionFacade().findLightsByJpql(jpql, params);
+
+        // Convert reservedNumbers to a Set for efficient search
+        Set<Integer> reservedNumbersSet = new HashSet<>(reservedNumbers);
+        // Remove all booked numbers from the reservedNumbers set
+        reservedNumbersSet.removeAll(bookedNumbers);
+
+        if (reservedNumbersSet.isEmpty()) {
+            // If no reserved numbers are available (not already booked), return null
+            return null;
+        } else {
+            // Return the smallest number in the remaining reservedNumbers set
+            return Collections.min(reservedNumbersSet);
+        }
     }
 
     private void addToIntList(Integer fromInt, Integer toInt, List<Integer> lst) {

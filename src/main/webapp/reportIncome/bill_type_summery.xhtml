@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
         <ui:composition template="/reportCashier/report_cashier.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-<!--                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 -->
+ 
                     <p:panel header="Bill Type Summary" >
 
                         <h:panelGrid columns="2" >
@@ -60,7 +60,7 @@
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
-                                action="#{billSearch.fillTransactionTypeSummery()}" 
+                                action="#{billSearch.processCashierBillSummery()}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 
@@ -84,7 +84,11 @@
 
 
                         <p:panel header="Data" >
-                            <p:dataTable id="tblBills" value="#{billSearch.billSummeries}" var="bs" rowKey="#{bs.key}" rowIndexVar="n" >
+                            <p:dataTable id="tblBills" 
+                                         value="#{billSearch.billSummeries}" 
+                                         var="bs" 
+                                         rowKey="#{bs.key}" 
+                                         rowIndexVar="n" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Summaries"/>
                                 </f:facet>
@@ -109,7 +113,9 @@
                                 </p:column>
 
                                 <p:column headerText="Count" sortBy="#{bs.count}" style="text-align: right; padding-right: 20px;">
-                                    <p:commandLink target="_blank" value="#{bs.count}" action="#{billSearch.listBillsFromBillTypeSummery()}">
+                                    <p:commandLink 
+                                        ajax="false"
+                                        value="#{bs.count}" action="#{billSearch.listBillsFromBillTypeSummery()}">
                                         <f:setPropertyActionListener value="#{bs}" target="#{billSearch.billSummery}" ></f:setPropertyActionListener>
                                     </p:commandLink>
                                 </p:column>

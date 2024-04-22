@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bil="http://java.sun.com/jsf/composite/bill"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
@@ -510,6 +510,7 @@
                             <p:commandButton class="mx-2" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeRetailSale()}" />
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController2.pharmacyWholeRetailSale()}" />
                             <p:commandButton class="mx-2" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
+                            <i class="fas fa-truck rounded-circle shadow-lg" style="font-size: 70px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
                         </p:panel>
 
                         <p:panel class="w-100">
@@ -532,7 +533,7 @@
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                                 <p:autoComplete accesskey="i"    id="acStock" 
                                                                 value="#{pharmacyWholeSaleController.stock}"
-                                                                completeMethod="#{pharmacyWholeSaleController.completeAvailableStocks}" 
+                                                                completeMethod="#{stockController.completeAvailableStocks}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
                                                                 >
                                                     <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -1019,13 +1020,13 @@
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}" >
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
-                                        <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
+                                        <phi:saleBill_without_item bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                        <phi:saleBill bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -1033,7 +1034,7 @@
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                        <phi:saleBill_prabodha bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -1041,7 +1042,7 @@
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>                            

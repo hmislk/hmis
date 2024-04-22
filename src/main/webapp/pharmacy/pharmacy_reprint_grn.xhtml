@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body style="width: 100%; " >
 
@@ -14,26 +14,47 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panelGrid columns="1" style="width: 100%;" >
+                    <p:panel style="width: 100%;" >
                         <f:facet name="header" >
-                            <h:outputLabel value="GRN Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_grn" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-
-                            </p:commandButton>                          
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="GRN Reprint" class="mt-2"></h:outputLabel>
+                                <div class="d-flex gap-2">
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-warning"
+                                        icon="fa fa-print"
+                                        action="#{transferIssueController.navigateToPharmacyIssueFromGrn}"
+                                        value="Transfer All Stocks" 
+                                        ajax="false" >
+                                        <f:setPropertyActionListener 
+                                            value="#{pharmacyBillSearch.bill}" 
+                                            target="#{transferIssueController.requestedBill}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-info"
+                                        icon="fa fa-print"
+                                        value="Reprint" 
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel" 
+                                        class="ui-button-danger"
+                                        icon="fa fa-ban"
+                                        action="pharmacy_cancel_grn" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                    </p:commandButton>  
+                                </div>
+                            </div>              
                         </f:facet>
-
-
 
                         <div style="width: 100%;">
 
                             <h:panelGroup id="gpBillPreview" >
 
-                                <h:panelGroup  >
+                                <h:panelGroup class="d-flex justify-content-center">
                                     <ph:grn bill="#{pharmacyBillSearch.bill}"/>
                                 </h:panelGroup>
 
@@ -52,28 +73,13 @@
                             </h:panelGroup>
 
                             <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
-
                                 <ph:grn_edit bill="#{pharmacyBillSearch.bill}" rendered="false" />
                             </h:panelGroup>
 
                         </div>
-
-
-
-
-                    </p:panelGrid>
-
-
-
-
-
-
-
+                    </p:panel>
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
 
     </h:body>

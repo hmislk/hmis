@@ -1,153 +1,209 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy/inward"
-                xmlns:phi="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
         <h:form>
             <h:panelGroup rendered="#{!bhtIssueReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
-
                     <f:facet name="header" >      
-
-                        <h:panelGrid columns="15"  >                                                     
-
-                            <p:commandButton  value="Return" 
-                                              action="#{bhtIssueReturnController.settle}" 
-                                              ajax="false" 
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"  >
-                            </p:commandButton>
-                            <p:outputLabel  value="Recievable Amount" rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
-                            <p:outputLabel id="total"  value="#{bhtIssueReturnController.returnBill.total}" style="float: right;"
-                                           rendered="#{webUserController.hasPrivilege('ShowInwardFee')}"/> 
-                        </h:panelGrid>
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex gap-3 mt-2">
+                                <p:outputLabel  
+                                    value="Recievable Amount" 
+                                    rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                                <p:outputLabel  
+                                    value=":" style="text-align: center; width: 20px;"/>
+                                <p:outputLabel 
+                                    id="total"  
+                                    value="#{bhtIssueReturnController.returnBill.total}" 
+                                    rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel> 
+                            </div>
+                            <div>
+                                <p:commandButton  
+                                    value="Return" 
+                                    icon="fa fa-undo"
+                                    action="#{bhtIssueReturnController.settle}" 
+                                    ajax="false" 
+                                    >
+                                </p:commandButton>
+                            </div>
+                        </div>
                     </f:facet>
+                    <p:dataTable var="ph" 
+                                 value="#{bhtIssueReturnController.billItems}"
+                                 scrollable="true" 
+                                 id="itemList" >  
+
+                        <f:facet name="header">  
+                            Returning Item 
+                        </f:facet>  
+
+                        <p:column headerText="Item Name" style="width:50px!important;">  
+                            <h:outputText value=" #{ph.item.name}"  />                     
+                        </p:column>  
+
+                        <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.qty}">  
+                                <f:convertNumber pattern="#0" />
+                            </h:outputText>
+                        </p:column>  
+
+                        <p:column headerText="Purchase Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.rate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>                
+
+                        <p:column headerText="Batch No" style="width:25px!important;">                       
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                        
+                        </p:column>  
+
+                        <p:column headerText="Date of Expiry" style="width:25px!important;">                     
+                            <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}"> 
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
+                            <p:inputText autocomplete="off" value="#{ph.qty}">
+                                <f:ajax 
+                                    event="blur" 
+                                    render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
+                                    execute="@this" 
+                                    listener="#{bhtIssueReturnController.onEdit(ph)}" >
+                                </f:ajax>                               
+                                <f:convertNumber pattern="#,##" />
+                            </p:inputText>
+                        </p:column>  
+
+                    </p:dataTable>  
+
                 </p:panel>
-
-                <p:dataTable var="ph" value="#{bhtIssueReturnController.billItems}"
-                             scrollable="true" scrollHeight="250"
-                             id="itemList" >  
-
-                    <f:facet name="header">  
-                        Returning Item 
-                    </f:facet>  
-
-
-                    <p:column headerText="Item Name" style="width:50px!important;">  
-                        <h:outputText value=" #{ph.item.name}"  />                     
-
-                    </p:column>  
-
-                    <p:column headerText="Ballance Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
-                    </p:column>  
-
-                    <!--                    <p:column headerText="Purchase Rate" style="width:25px!important;"> 
-                                            <h:outputText value="#{ph.rate}"  />                        
-                                        </p:column>                 -->
-
-
-                    <p:column headerText="Bathch No" style="width:25px!important;">                       
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
-                    </p:column>  
-
-                    <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
-                    </p:column>
-
-
-                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
-                        <p:inputText autocomplete="off" value="#{ph.qty}" >
-                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  execute="@this" listener="#{bhtIssueReturnController.onEdit(ph)}" ></f:ajax>
-                        </p:inputText>
-                    </p:column>  
-
-                </p:dataTable>  
-                <p:spacer height="50"/>
-
             </h:panelGroup>
 
             <p:panel rendered="#{bhtIssueReturnController.printPreview}">
-                <p:commandButton ajax="false" action="pharmacy_search_sale_bill" value="Pharmacy Sale Search" actionListener="#{bhtIssueReturnController.makeNull}"  />                    
-                <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
-                    <p:printer target="gpBillPreview1" ></p:printer>
-                </p:commandButton>
-                <p:commandButton value="Print Sale Bill" ajax="false" action="#">
-                    <p:printer target="gpBillPreview2" ></p:printer>
-                </p:commandButton>
-                <h:panelGroup   id="gpBillPreview1">
+                <f:facet name="header" >      
+                    <h:outputLabel value="Bill Preview" class="mt-2"></h:outputLabel>
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fa fa-plus"
+                        class="ui-button-warning"
+                        action="/inward/pharmacy_search_sale_bill_bht" 
+                        actionListener="#{searchController.makeListNull}"
+                        value="Pharmacy Sale Search"
+                        style="float: right;"
+                        >
+                    </p:commandButton> 
+                </f:facet>
 
+                <div class="d-flex justify-content-end mb-2" >
+                    <div class="d-flex gap-2">
+                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                            <f:selectItem itemLabel="Please Select Paper Type" />
+                            <f:selectItems value="#{enumController.paperTypes}" />
+                        </p:selectOneMenu>
+                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                    </div>
+                </div>
 
-                    <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Sale Bill Preview" class="mt-2"/>
+                                <p:commandButton 
+                                    value="Print Sale Bill" 
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    style="float: right;"
+                                    ajax="false" action="#">
+                                    <p:printer target="gpBillPreview2" ></p:printer>
+                                </p:commandButton>
+                            </f:facet>
 
-                        <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                            <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"/>
-                        </h:panelGroup>
+                            <h:panelGroup   id="gpBillPreview2">
 
-                    </h:panelGroup>
+                                <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                            <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
 
-                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                    <div >
+                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
+                                            <phi:saleBill_prabodha bill="#{bhtIssueReturnController.bill}"></phi:saleBill_prabodha>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
 
-                        <div >
-                            <h:panelGroup     rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq true}"> 
-                                <phi:saleBill_prabodha bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_prabodha>
+                                <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                            <phi:saleBill_five_five bill="#{bhtIssueReturnController.bill}"></phi:saleBill_five_five>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
+
                             </h:panelGroup>
-                        </div>
+                        </p:panel>
 
-                    </h:panelGroup>
+                    </div>
+                    <div class="col-md-6">
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Return Bill Preview" class="mt-2"/>
+                                <p:commandButton 
+                                    value="Print Return Bill" 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    action="#"  >
+                                    <p:printer target="gpBillPreview1" ></p:printer>
+                                </p:commandButton>
+                            </f:facet>
 
-                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup   id="gpBillPreview1">
+                                <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
-                        <div >
-                            <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                                <phi:saleBill_five_five bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_five_five>
+                                <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                    <div >
+                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
+                                            <phi:saleBill_prabodha bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_prabodha>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                            <phi:saleBill_five_five bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_five_five>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
+
                             </h:panelGroup>
-                        </div>
+                        </p:panel>
 
-                    </h:panelGroup>
-
-                </h:panelGroup>
-
-
-                <p:panel   id="gpBillPreview2">
-<!--                    <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>-->
-
-                    <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                        <div >
-                            <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                                <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>
-                            </h:panelGroup>
-                        </div>
-
-                    </h:panelGroup>
-
-                    <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-                        <div >
-                            <h:panelGroup     rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq true}"> 
-                                <phi:saleBill_prabodha bill="#{bhtIssueReturnController.bill}"></phi:saleBill_prabodha>
-                            </h:panelGroup>
-                        </div>
-
-                    </h:panelGroup>
-
-                    <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
-                        <div >
-                            <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                                <phi:saleBill_five_five bill="#{bhtIssueReturnController.bill}"></phi:saleBill_five_five>
-                            </h:panelGroup>
-                        </div>
-
-                    </h:panelGroup>
-
-                </p:panel>
+                    </div>
+                </div>
 
             </p:panel>
         </h:form>

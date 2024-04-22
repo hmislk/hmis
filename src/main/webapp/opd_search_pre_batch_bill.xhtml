@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -132,27 +132,30 @@
                                         <h:outputLabel value="#{bill.total - bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-
                                     </p:column>
 
                                     <p:column headerText="Accept">
-                                        #{bill.referenceBill.balance}
-                                        <p:commandButton ajax="false"  value="Accept Payment" 
-                                                         action="#{opdPreSettleController.toSettleBatch(bill)}" 
-                                                         disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
+                                        <p:commandButton 
+                                            ajax="false"  
+                                            value="Accept Payment" 
+                                            action="#{opdPreSettleController.toSettleBatch(bill)}" 
+                                            disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <p:column headerText="Reprint">
-                                        <p:commandButton ajax="false"  
-                                                         value="Reprint" 
-                                                         action="bill_print" 
-                                                         disabled="#{bill.referenceBill.balance ge 0.0}" >
-                                            <f:setPropertyActionListener value="#{bill.referenceBill.forwardReferenceBills}" target="#{opdPreBillController.bills}" />
+                                        <p:commandButton 
+                                            ajax="false"  
+                                            value="Reprint" 
+                                            action="bill_print" 
+                                            disabled="#{bill.referenceBill.balance le 0.0}" >
+                                            <f:setPropertyActionListener value="#{bill.forwardReferenceBills}" target="#{opdPreBillController.bills}" />
                                         </p:commandButton>
                                     </p:column>
 
                                 </p:dataTable>
+
+
                             </div>
                         </div>
 

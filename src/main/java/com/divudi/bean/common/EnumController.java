@@ -10,6 +10,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
+import com.divudi.data.CreditDuration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.Dashboard;
 import com.divudi.data.DepartmentListMethod;
@@ -24,7 +25,9 @@ import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
+import com.divudi.data.PaymentContext;
 import com.divudi.data.RestAuthenticationType;
+import com.divudi.data.SymanticType;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
@@ -71,6 +74,10 @@ public class EnumController implements Serializable {
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
+    
+    public SymanticType[] getSymanticTypes(){
+        return SymanticType.values();
+    }
 
     public ItemListingStrategy[] getOpdItemListingStrategys() {
         ItemListingStrategy[] sts
@@ -89,6 +96,16 @@ public class EnumController implements Serializable {
                     ItemListingStrategy.ITEMS_OF_SELECTED_INSTITUTIONS,
                     ItemListingStrategy.ITEMS_MAPPED_TO_SELECTED_DEPARTMENT,
                     ItemListingStrategy.ITEMS_MAPPED_TO_SELECTED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
+                    ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
+        return sts;
+    }
+    
+    public ItemListingStrategy[] getInwardItemListingStrategys() {
+        ItemListingStrategy[] sts
+                = {ItemListingStrategy.ALL_ITEMS,
                     ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
                     ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
                     ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
@@ -506,7 +523,8 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,
             PaymentMethod.Cheque,
-            PaymentMethod.Slip};
+            PaymentMethod.Slip,
+            PaymentMethod.MultiplePaymentMethods};
 
         return p;
     }
@@ -515,6 +533,16 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Credit};
 
         return p;
+    }
+    
+    public List<PaymentMethod> getPaymentMethodsForPurchases() {
+        return PaymentMethod.getMethodsByContext(PaymentContext.PURCHASES);
+    }
+    
+    public CreditDuration[] getCreditDuration() {
+        CreditDuration[] c = {CreditDuration.D30, CreditDuration.D60, CreditDuration.D90};
+
+        return c;
     }
 
     public PaymentMethod[] getPaymentMethodsForChannel() {

@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -34,7 +34,7 @@
                             <h:panelGrid columns="3">
                                 <h:outputLabel value="Leave Entitle || "/>
                                 <h:outputLabel value="Leave Utilized || "/>
-                                <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="Balance"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
@@ -162,7 +162,7 @@
                                 <p:column headerText="Comment">
                                     <p:outputLabel value="#{l.comments}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Creater">
+                                <p:column headerText="Creator">
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>

@@ -3,7 +3,7 @@
  * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -90,7 +90,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Agency");
+            JsfUtil.addErrorMessage("Select Agency");
             return true;
         }
 
@@ -107,11 +107,11 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     private boolean errorCheckCreditNoteDebitNote() {
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Agency");
+            JsfUtil.addErrorMessage("Select Agency");
             return true;
         }
         if (getAmount() < 0.0) {
-            UtilityController.addErrorMessage("Please Enter Correct Value");
+            JsfUtil.addErrorMessage("Please Enter Correct Value");
             return true;
         }
 
@@ -171,7 +171,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         settleBill(BillType.CollectingCentrePaymentReceiveBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCPAY);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Collecting center/Collecting center payment(/faces/lab/collecting_centre_bill.xhtml)");
+        
     }
 
     public void channellAgencyPaymentRecieveSettleBill() {
@@ -181,7 +181,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         settleBill(BillType.AgentPaymentReceiveBill, HistoryType.ChannelDeposit, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNPAY);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Agent/Agent payment(/faces/agent_bill.xhtml)");
+        
     }
 
     public void channelAgencyCreditNoteSettleBill() {
@@ -260,7 +260,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }

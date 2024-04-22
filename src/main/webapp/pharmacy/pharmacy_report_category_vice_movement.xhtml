@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/pharmacy/pharmacy_summery_index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="subcontent">
@@ -12,14 +12,14 @@
             <p:panel  header="Movement Report Stock By Date">
                 <h:panelGrid columns="4" class="w-100">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" 
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                     <h:outputLabel  rendered="true" value="Department"/>
                     <p:autoComplete rendered="true" 
-                                    value="#{pharmacySaleReport.department}"  
+                                    value="#{pharmacySaleReportController.department}"  
                                     style="text-align: left;" 
                                     completeMethod="#{departmentController.completeDept}" 
                                     var="dept" itemValue="#{dept}" required="false"
@@ -29,7 +29,7 @@
 
                     <h:outputLabel  rendered="true" value="Category"/>
                     <p:autoComplete rendered="true" styleClass="noPrintButton" 
-                                    value="#{pharmacySaleReport.category}"  
+                                    value="#{pharmacySaleReportController.category}"  
                                     style="text-align: left;  "
                                     completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
                                     var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
@@ -39,13 +39,13 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="3" class="my-2">
-                    <!--<p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReport()}"/>-->
+                    <!--<p:commandButton ajax="false" value="Process" action="#{pharmacySaleReportController.createCategoryMovementReport()}"/>-->
                     <p:commandButton 
                         ajax="false" 
                         value="Process"
                         icon="fas fa-arrows-rotate"
                         class="ui-button-warning"
-                        action="#{pharmacySaleReport.createCategoryMovementReportNew()}"/>
+                        action="#{pharmacySaleReportController.createCategoryMovementReportNew()}"/>
                     <p:commandButton 
                         ajax="false" 
                         value="Excel" 
@@ -65,18 +65,18 @@
 
 
                 <p:panel  id="panelPrint">
-                    <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
+                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportRows}" var="i">   
                         <f:facet name="header">
                             <p:outputLabel value="CATEGORY - WISE MOVEMENT REPORT" />
                             &#13;&nbsp;
                             <h:outputLabel value="From"/>&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.department.name}"/>&#13;&nbsp;
+                            <h:outputLabel value="#{pharmacySaleReportController.department.name}"/>&#13;&nbsp;
                             <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                            <h:outputLabel value="#{pharmacySaleReportController.fromDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                             <h:outputLabel class="mx-2" value=" To Date :"/>
-                            <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                            <h:outputLabel value="#{pharmacySaleReportController.toDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>   
 
@@ -103,7 +103,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{pharmacySaleReport.totalOpdSale}" style="float:  right;">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalOpdSale}" style="float:  right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>
@@ -117,7 +117,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{pharmacySaleReport.totalInwardIssue}" style="float:  right;">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalInwardIssue}" style="float:  right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>
@@ -131,7 +131,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalDepartmentIssue}" style="float:  right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>
@@ -145,7 +145,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{pharmacySaleReport.totalTatalValue}" style="float:  right;">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalTatalValue}" style="float:  right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>
@@ -173,7 +173,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputLabel value="#{pharmacySaleReport.totalMargineValue}" style="float:  right;">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalMargineValue}" style="float:  right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>

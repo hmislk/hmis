@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -55,20 +55,24 @@
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" style="font-size: 10px!important">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
+                            
                         </td>
-                        <td style="width: 10%" >
+                    
 
+                    </tr>
+                    
+                     <tr>
+                        <td style="width: 20%; text-align: left;" >
+                            <h:outputLabel value="Time" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
                         </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
-                        </td>
-
+                        <td>:</td>
                         <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" style="font-size: 10px!important">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
+                            
                         </td>
+                        
 
                     </tr>
 
@@ -142,14 +146,14 @@
             </div>
 
 
-            <div >
+            <div class="w-100">
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td style="width: 85%; ">
+                        <td style="width: 90%; padding-left: 20px;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
-                        <td  style="width:15%;text-align: right; padding-right: 30px;">
+                        <td  style="width:10%;text-align: right; padding-right: 30px;">
                             <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
@@ -164,10 +168,10 @@
                         </td>
                     </tr>
 
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
-                            <td colspan="3" style="overflow: visible;">
+                            <td colspan="1" style="overflow: visible; padding-left: 20px;">
 <!--                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
                                 </h:outputLabel>
                                 -
@@ -179,7 +183,7 @@
                             </td>
                         
                             <td>
-                                <h:outputLabel    value="#{bip.pharmaceuticalBillItem.qty}"    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
+                                <h:outputLabel    value="#{bip.pharmaceuticalBillItem.qty}"    styleClass="itemsBlock"   style="text-align: left;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
@@ -213,7 +217,7 @@
                              
 
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <td class="totalsBlock" style="text-align: left; width: 60%; padding-left: 20px;">
                                 <h:outputLabel value="Net Total" />
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
@@ -224,11 +228,11 @@
                         </tr> 
                     </h:panelGroup>
                     <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
+                        <td  class="totalsBlock" style="text-align: left; padding-left: 20px;">
                             <h:outputLabel   value="Number of Items Count" />
                         </td>
-                        <td  class="totalsBlock">
-                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

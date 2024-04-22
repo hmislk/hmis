@@ -1,93 +1,116 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
         <h:form>
 
             <p:panel rendered="#{!transferIssueController.printPreview}">
 
-                <f:facet name="header" >                                  
-                    <h:panelGrid columns="4">
-                        <f:facet name="header">
-                            <h:outputLabel value="To Department : &nbsp; #{transferIssueController.requestedBill.department.name}" class="mb-1"/>
-                        </f:facet>
-                        <h:outputLabel value="Select Staff Name :" />&nbsp;
-                        <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
-                                         forceSelection="true" 
-                                         var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                         value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
-                        <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" ajax="false" class="ui-button-success mx-2" >
-                        </p:commandButton>                        
-                    </h:panelGrid>
+                <f:facet name="header" >  
+                    <h:outputLabel value="Pharmacy Issue" />
                 </f:facet>
 
-                <p:panel class="my-2">
-                    <f:facet name="header" >  
-                        <h:outputLabel styleClass="fas fa-list" />
-                        <h:outputLabel value="Requested Items" class="mx-4" />
-                    </f:facet>
-                    <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
-                                 value="#{transferIssueController.billItems}" 
-                                 id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
+                <div class="row" >
+                    <div class="col-8" >
+                        <p:panel >
+                            <f:facet name="header" >  
+                                <h:outputLabel styleClass="fas fa-list" />
+                                <h:outputLabel value="Requested Items" class="mx-4" />
+                            </f:facet>
+                            <p:dataTable 
+                                styleClass="noBorder" 
+                                var="bItm" 
+                                scrollable="true" 
+                                scrollHeight="250" 
+                                value="#{transferIssueController.billItems}" 
+                                id="itemList" 
+                                sortBy="#{bItm.searialNo}"  
+                                editable="true"> 
 
+                                <p:ajax event="rowEdit" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}"  />  
+                                <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
 
+                                <p:column headerText="Item Name">                     
+                                    <h:outputText id="item" value="#{bItm.item.name}" >                                   
+                                    </h:outputText>
+                                </p:column>  
 
-                        <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />  
-                        <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
+                                <p:column headerText="Batch No" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                                </p:column>
 
+                                <p:column headerText="Sale Rate" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
+                                <p:column headerText="Cost Rate" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>  
 
-                        <p:column headerText="Item Name" style="width: 50px!important;"  >                     
-                            <h:outputText id="item" value="#{bItm.item.name}" >                                   
-                            </h:outputText>
-                        </p:column>  
-
-                        <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
-                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
-                        </p:column>
-
-                        <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
-                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
-                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>  
-
-                        <p:column style="width:6%">  
-                            <p:rowEditor />  
-                        </p:column>
-
-                        <p:column headerText="Qty" style="width:25px!important; text-align: right;
-                                  ">                   
-                            <p:cellEditor>  
-                                <f:facet name="output">  
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" />                               
-                                </f:facet>                        
-                                <f:facet name="input">  
-                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
+                                <p:column headerText="Qty" width="70px;">                   
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
                                     </p:inputText>
-                                </f:facet>
-                            </p:cellEditor>
-                        </p:column>              
+                                </p:column> 
 
-                        <p:column style="width: 10px!important;">
-                            <p:commandButton value="Remove" ajax="false" action="#{transferIssueController.remove(bItm)}">
-                            </p:commandButton>
-                        </p:column>
-                    </p:dataTable>  
-                </p:panel>
+                                <p:column width="35px;">
+                                    <p:commandButton  
+                                        icon="fas fa-trash-alt"
+                                        ajax="false" 
+                                        class="ui-button-danger justify-content-center"
+                                        action="#{transferIssueController.remove(bItm)}">
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>  
+                        </p:panel>
+                    </div>
+                    <div class="col-4" >
+                        <p:panel >
+                            <f:facet name="header" >                                  
+                                <h:outputText value="Issue Details" ></h:outputText>
+                                <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" style="float: right;" ajax="false" class="ui-button-success mx-2" >
+                                </p:commandButton>  
+                            </f:facet>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Items will be issued from &nbsp;" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{transferIssueController.issuedBill.fromDepartment}" disabled="true"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"/>
+
+                                <h:outputLabel value="Items will be issued to"/>
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{transferIssueController.issuedBill.toDepartment}" class="mb-1"
+                                                var="to" itemLabel="#{to.name}" itemValue="#{to}"
+                                                disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
+                                                completeMethod="#{departmentController.completeDept}"/>
+
+
+
+
+                                <h:outputLabel value="Select Staff Name" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                                 forceSelection="true" 
+                                                 var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                                 value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
+
 
                 <ph:history/>
 

@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://java.sun.com/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
 
 
     <ui:define name="content">
@@ -27,12 +27,15 @@
                                 var="myItem" itemValue="#{myItem}" 
                                 itemLabel="#{myItem.bhtNo}" 
                                 size="40" required="true" class="m-2" requiredMessage="Please enter patient details">
-                                
+
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
                                 <p:column>
                                     #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.currentPatientRoom.roomFacilityCharge.name}
                                 </p:column>
                             </p:autoComplete> 
                             <p:commandButton value="Select" ajax="false" ></p:commandButton>
@@ -42,56 +45,74 @@
             </h:panelGroup>
 
             <p:panel rendered="#{inwardTimedItemController.current.patientEncounter ne null}" >
-                
+
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
-                    <h:outputLabel value="Manage Inward Timed Services" class="m-2"/>                            
+                    <div class="row">
+                        <div class="col-9">
+                            <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
+                            <h:outputLabel value="Manage Inward Timed Services" class="m-2"/>                            
+
+                        </div>
+                        <div class="col-3">
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                style="float: right"
+                                class="ui-button-secondary" 
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                ><f:setPropertyActionListener 
+                                    target="#{admissionController.current.patient}" 
+                                    value="#{inwardTimedItemController.current.patientEncounter.patient}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{inwardTimedItemController.current.patientEncounter.patient}" 
+                                    target="#{patientController.current}" >
+                                </f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success "
+                                             style="float: right"
+                                             icon="fa fa-plus"
+                                             ajax="false" 
+                                             value="New Bill"
+                                             actionListener="#{inwardTimedItemController.makeNull()}" >
+                            </p:commandButton>
+                        </div>
+                    </div>
 
                 </f:facet>
 
                 <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
                     <h:panelGrid columns="3">
-                        <p:commandButton class="w-100 ui-button-success m-2 "
-                                         style="float: right"
-                                         icon="fa fa-plus"
-                                         ajax="false" 
-                                         value="Add"
-                                         actionListener="#{inwardTimedItemController.makeNull()}" >
-                        </p:commandButton>
-                        <p:commandButton 
-                            style="float: right;"
-                            ajax="false"
-                            icon="fa fa-search"
-                            class="ui-button-warning " 
-                            action="#{patientController.navigateToSearchPatients()}" 
-                            >
-                        </p:commandButton>
-                        <p:commandButton 
-                            style="float: right;"
-                            ajax="false"
-                            icon="fa fa-user"
-                            class="ui-button-warning mx-1" 
-                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{inwardTimedItemController.current.patientEncounter.patient}" 
-                                target="#{patientController.current}" >
-                            </f:setPropertyActionListener>
-                        </p:commandButton>
+
                     </h:panelGrid>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-6">
                         <p:panel >
                             <f:facet name="header">
                                 <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                <h:outputLabel value="Pateient Details" class="mx-4"></h:outputLabel>
+                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                             </f:facet>
-                            
+
                             <in:bhtDetail admission="#{inwardTimedItemController.current.patientEncounter}"/>
-                            
-                            
+
+
                         </p:panel>
                     </div>
                     <div class="col-6">
@@ -126,18 +147,28 @@
                                         <p:outputLabel value="Start Time"/>
                                     </div>
                                     <div class="col-4">
-                                        <p:calendar class="mx-2" id="startTime" value="#{inwardTimedItemController.current.fromTime}" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" size="40" >
-                                        </p:calendar>  
+                                        <p:datePicker 
+                                            class="mx-2" 
+                                            id="startTime" 
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
+                                            value="#{inwardTimedItemController.current.fromTime}" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            size="40" >
+                                        </p:datePicker>  
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-4">
-                                        
-                                        <p:commandButton class="mx-2" value="Add Service" ajax="false"
-                                                         action="#{inwardTimedItemController.save}" 
-                                                         />
+
+                                        <p:commandButton 
+                                            class="mx-2 ui-button-success" 
+                                            value="Add Service" 
+                                            ajax="false"
+                                            action="#{inwardTimedItemController.save}" 
+                                            />
                                     </div>
                                 </div>
                             </div>
@@ -148,9 +179,10 @@
                 <p:panel class="my-2" id="con">  
                     <f:facet name="header">
                         <h:outputText styleClass="fas fa-wrench"></h:outputText>
-                        <h:outputLabel value="Consumed Timed Sevice" class="mx-4"></h:outputLabel>
+                        <h:outputLabel value="Consumed Timed Service" class="mx-4"></h:outputLabel>
                     </f:facet>
-                    <p:dataTable class="mx-2" value="#{inwardTimedItemController.items}" var="ti">
+
+                    <p:dataTable id="list" class="w-100" value="#{inwardTimedItemController.items}" var="ti">
                         <p:column headerText="Service Name">
                             #{ti.item.name}
                         </p:column>
@@ -174,28 +206,36 @@
                             <br/>
                             <h:panelGroup rendered="#{ti.retired}" >
                                 <h:outputLabel style="color: red;" value="Deleted By " />
-                                <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}" >                                       
+                                <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}"  class="mx-1">                                       
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column>     
-                        <p:column headerText="Update" >
-                            <p:commandButton value="Update" ajax="false" action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
-                            </p:commandButton>
+                        <p:column headerText="Action" >
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    value="Update" 
+                                    class="ui-button-warning"
+                                    icon="fa fa-pencil"
+                                    ajax="false" 
+                                    action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                                </p:commandButton>
+                                <p:commandButton
+                                    icon="fa-solid fa-trash"
+                                    class="ui-button-danger"
+                                    ajax="false"
+                                    value="Remove"
+                                    action="#{inwardTimedItemController.removePatientItem(ti)}"
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
+                                </p:commandButton>
+                            </div>
+
                         </p:column>
-                        <p:column headerText="Remove">
-                            <p:commandButton ajax="false" value="Remove "  
-                                             action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                             disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}"  />
-                        </p:column>
+
                     </p:dataTable>
                 </p:panel>
 
-
-
             </p:panel>
         </h:form>
-
-
 
     </ui:define>
 

@@ -31,6 +31,7 @@ public class ComponentDetail {
     private PaymentMethod paymentMethod;
     private List<ComponentDetail> multiplePaymentMethodComponentDetails;
     private PaymentMethodData paymentMethodData;
+    private int creditDuration;
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         if (multiplePaymentMethodComponentDetails == null) {
@@ -45,6 +46,10 @@ public class ComponentDetail {
     public void addAnotherPaymentDetail(){
         ComponentDetail cd = new ComponentDetail();
         getMultiplePaymentMethodComponentDetails().add(cd);
+    }
+    
+    public void removePaymentDetail(ComponentDetail cd){
+        getMultiplePaymentMethodComponentDetails().remove(cd);
     }
 
     public void setMultiplePaymentMethod(List<ComponentDetail> multiplePaymentMethod) {
@@ -117,6 +122,15 @@ public class ComponentDetail {
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
+
+    public int getCreditDuration() {
+        return creditDuration;
+    }
+
+    public void setCreditDuration(int creditDuration) {
+        this.creditDuration = creditDuration;
+    }
+    
     
     
 

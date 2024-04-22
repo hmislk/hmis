@@ -7,14 +7,16 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Consultant;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Vocabulary;
 import com.divudi.facade.ConsultantFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -96,9 +98,9 @@ public class ConsultantController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();
@@ -194,19 +196,19 @@ public class ConsultantController implements Serializable {
 
     public void saveSelected() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson() == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please Enter a Name");
+            JsfUtil.addErrorMessage("Please Enter a Name");
             return;
         }
         if (current.getSpeciality() == null) {
-            UtilityController.addErrorMessage("Please Select Speciality.");
+            JsfUtil.addErrorMessage("Please Select Speciality.");
             return;
         }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
@@ -216,12 +218,12 @@ public class ConsultantController implements Serializable {
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         // getItems();
@@ -254,6 +256,24 @@ public class ConsultantController implements Serializable {
         }
     }
 
+    
+    public List<Doctor> completeConsultant(String query) {
+        List<Doctor> suggestions;
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = " select p from Consultant p "
+                    + " where p.retired=false "
+                    + " and ((p.person.name) like :q or (p.code) like :q) "
+                    + " order by p.person.name";
+            HashMap hm = new HashMap();
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, hm);
+        }
+        return suggestions;
+    }
+    
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -314,6 +334,7 @@ public class ConsultantController implements Serializable {
         return items;
     }
     
+    @Deprecated
     public List<Consultant> completeConsultants() {
         if (items == null) {
             String temSql;

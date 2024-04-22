@@ -44,8 +44,9 @@ public class BillItem implements Serializable {
     @ManyToOne
     private BillItem parentBillItem;
 
-    @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-    PharmaceuticalBillItem pharmaceuticalBillItem;
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private PharmaceuticalBillItem pharmaceuticalBillItem;
+
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -58,6 +59,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
+    
     double Rate;
     double discountRate;
     double marginRate;
@@ -139,9 +141,15 @@ public class BillItem implements Serializable {
     @Transient
     private double tmpQty;
     @Transient
+    private double tmpFreeQty;
+    @Transient
     private UserStock transUserStock;
     @Transient
     private BillItem transBillItem;
+    @Transient
+    private double previousRecieveQtyInUnit;
+    @Transient
+    private double previousRecieveFreeQtyInUnit;
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
@@ -322,10 +330,10 @@ public class BillItem implements Serializable {
     }
 
     public PharmaceuticalBillItem getPharmaceuticalBillItem() {
-//        if (pharmaceuticalBillItem == null) {
-//            pharmaceuticalBillItem = new PharmaceuticalBillItem();
-//            pharmaceuticalBillItem.setBillItem(this);
-//        }
+        if (pharmaceuticalBillItem == null) {
+            pharmaceuticalBillItem = new PharmaceuticalBillItem();
+            pharmaceuticalBillItem.setBillItem(this);
+        }
         return pharmaceuticalBillItem;
     }
 
@@ -562,6 +570,11 @@ public class BillItem implements Serializable {
     }
 
     public Double getQty() {
+        if(qty==null){
+            qty=0.0;
+        }else if(qty==0.0){
+            qty =0.0;
+        }
         return qty;
     }
 
@@ -658,6 +671,24 @@ public class BillItem implements Serializable {
         }
     }
 
+    public double getTmpFreeQty() {
+        if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
+            return tmpFreeQty / getItem().getDblValue();
+        } else {
+            return tmpFreeQty;
+        }
+    }
+
+    public void setTmpFreeQty(double tmpFreeQty) {
+        if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
+            this.tmpFreeQty = tmpFreeQty * getItem().getDblValue();
+        } else {
+            this.tmpFreeQty = tmpFreeQty;
+        }
+        if (getPharmaceuticalBillItem() != null) {
+            getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
+        }
+    }
     public UserStock getTransUserStock() {
         return transUserStock;
     }
@@ -666,21 +697,23 @@ public class BillItem implements Serializable {
         this.transUserStock = transUserStock;
     }
 
-    public List<BillFee> getBillFees() {
-        List<BillFee> tmp = new ArrayList<>();
-        if (billFees == null) {
-            return new ArrayList<>();
-        } else {
-            for (BillFee bf : billFees) {
-                if (!bf.isRetired()) {
-                    tmp.add(bf);
-                }
-            }
-        }
-
-        return tmp;
-    }
-
+//    public List<BillFee> getBillFees() {
+//        System.out.println("getBillFees");
+//        List<BillFee> tmp = new ArrayList<>();
+//        System.out.println("billFees = " + billFees);
+//        if (billFees == null) {
+//            billFees= new ArrayList<>();
+//            return billFees;
+//        } else {
+//            for (BillFee bf : billFees) {
+//                if (!bf.isRetired()) {
+//                    tmp.add(bf);
+//                }
+//            }
+//        }
+//        System.out.println("tmp = " + tmp);
+//        return tmp;
+//    }
     public void setBillFees(List<BillFee> billFees) {
         this.billFees = billFees;
     }
@@ -842,7 +875,29 @@ public class BillItem implements Serializable {
     public void setCollectingCentreFee(double collectingCentreFee) {
         this.collectingCentreFee = collectingCentreFee;
     }
-    
-    
 
+    public List<BillFee> getBillFees() {
+        if (billFees == null) {
+            billFees = new ArrayList<>();
+        }
+        return billFees;
+    }
+
+    public double getPreviousRecieveQtyInUnit() {
+        return previousRecieveQtyInUnit;
+    }
+
+    public void setPreviousRecieveQtyInUnit(double previousRecieveQtyInUnit) {
+        this.previousRecieveQtyInUnit = previousRecieveQtyInUnit;
+    }
+
+    public double getPreviousRecieveFreeQtyInUnit() {
+        return previousRecieveFreeQtyInUnit;
+    }
+
+    public void setPreviousRecieveFreeQtyInUnit(double previousRecieveFreeQtyInUnit) {
+        this.previousRecieveFreeQtyInUnit = previousRecieveFreeQtyInUnit;
+    }
+
+   
 }

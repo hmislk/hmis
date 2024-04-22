@@ -4,7 +4,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentListMethod;
 import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfAllInstitutions;
@@ -30,8 +30,10 @@ import com.divudi.entity.pharmacy.Reorder;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.ReorderFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.java.CommonFunctions;
+import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -55,7 +57,6 @@ import org.joda.time.Days;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.chart.CartesianChartModel;
 import org.primefaces.model.chart.LineChartSeries;
-
 
 @Named
 @SessionScoped
@@ -118,6 +119,92 @@ public class ReorderController implements Serializable {
     Department historyDept;
 
     private CartesianChartModel dateModel;
+
+    public String navigateReorderManagement() {
+        return "/pharmacy/reorder_management?faces-redirect=true";
+    }
+
+    public void updateReorder(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        save(ro);
+    }
+
+    public List<Reorder> fillReordersBySelectedDepartment() {
+        reorders = null;
+        Map m = new HashMap();
+        String sql = "select r from Reorder r where r.department=:dep";
+        m.put("dep", department);
+        reorders = reorderFacade.findByJpql(sql, m);
+        return reorders;
+
+    }
+
+    public List<Reorder> fillReordersBySelectedInstitution() {
+        reorders = null;
+        Map m = new HashMap();
+        String sql = "select r from Reorder r where r.institution=:ins";
+        m.put("ins", institution);
+        reorders = reorderFacade.findByJpql(sql, m);
+        return reorders;
+    }
+
+    public boolean isAmpHaveReorder(Amp amp, Department dept, Institution ins) {
+        List<Reorder> r = new ArrayList<>();
+        Map m = new HashMap();
+        String sql = "select r from Reorder r where r.item=:amp";
+        m.put("amp", amp);
+
+        if (dept != null) {
+            sql += " and r.department=:dep";
+            m.put("dep", dept);
+        }
+
+        if (ins != null) {
+            sql += " and r.institution=:ins";
+            m.put("ins", ins);
+        }
+
+        r = reorderFacade.findByJpql(sql, m);
+        if (r.size() == 0 || r.isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void removeReOrder(Reorder ro) {
+        if (ro != null) {
+            reorderFacade.remove(ro);
+        }
+
+    }
+
+    public void createReOrdersByDepartment() {
+        List<Amp> amps = new ArrayList();
+        amps = getAmpController().findItems();
+        for (Amp amp : amps) {
+            if (isAmpHaveReorder(amp, department, null) == false) {
+                Reorder ro = new Reorder();
+                ro.setDepartment(department);
+                ro.setItem(amp);
+                reorderFacade.create(ro);
+            }
+        }
+    }
+
+    public void createReOrdersByInstituion() {
+        List<Amp> amps = getAmpController().findItems();
+        for (Amp amp : amps) {
+            if (isAmpHaveReorder(amp, null, institution) == false) {
+                Reorder ro = new Reorder();
+                ro.setInstitution(institution);
+                ro.setItem(amp);
+                reorderFacade.create(ro);
+            }
+        }
+    }
 
     public CartesianChartModel getDateModel() {
         return dateModel;
@@ -430,7 +517,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill All Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -439,7 +526,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false, true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill Required Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
     }
 
     public List<Reorder> getReorders() {
@@ -512,7 +599,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(true, false, departmentListMethod);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(generate records)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
 
     }
 
@@ -563,7 +650,6 @@ public class ReorderController implements Serializable {
         List<Department> depst = departmentController.getDepartments(sql, m);
 
         //// // System.out.println("m = " + m);
-
         if (false) {
             Stock s = new Stock();
             s.getDepartment();
@@ -596,6 +682,17 @@ public class ReorderController implements Serializable {
         List<Department> deps = new ArrayList<>(ds.values());
 
         return deps;
+    }
+
+    private void save(Reorder ro) {
+        if (ro == null) {
+            return;
+        }
+        if(ro.getId()==null) {
+            reorderFacade.create(ro);
+        }else{
+            reorderFacade.edit(ro);
+        }
     }
 
     enum AutoOrderMethod {
@@ -793,8 +890,8 @@ public class ReorderController implements Serializable {
             }
         }
         JsfUtil.addSuccessMessage("Saved.");
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Reports for ordering/Reorder analysis(/faces/pharmacy/ordering_data.xhtml)");
 
     }
 
@@ -802,7 +899,7 @@ public class ReorderController implements Serializable {
 
         Reorder tmp = (Reorder) event.getObject();
         getEjbFacade().edit(tmp);
-        UtilityController.addSuccessMessage("Reorder Level Updted");
+        JsfUtil.addSuccessMessage("Reorder Level Updted");
     }
 
     public List<Item> getSelectableItems() {
@@ -824,7 +921,7 @@ public class ReorderController implements Serializable {
             sessionController.setDepartment(department);
             return "";
         }
-        purchaseOrderRequestController.recreate();
+        purchaseOrderRequestController.resetBillValues();
         purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstitution());
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);

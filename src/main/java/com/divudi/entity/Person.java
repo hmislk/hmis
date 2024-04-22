@@ -7,12 +7,14 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,6 +27,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -39,9 +42,9 @@ public class Person implements Serializable {
 
     @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
     private WebUser webUser;
-    
+
     @Transient
-    boolean ageCalculated=false;
+    boolean ageCalculated = false;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -55,17 +58,16 @@ public class Person implements Serializable {
     String email;
     String website;
     String mobile;
+    String phone;
     @Column(name = "TNAME")
     String fullName;
     @Column(name = "SNAME")
     String nameWithInitials;
-    String phone;
+
     String initials;
     String surName;
     String lastName;
     String zoneCode;
-                
-
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
@@ -134,9 +136,11 @@ public class Person implements Serializable {
     int serealNumber;
     @Transient
     private String smsNumber;
-    
+
+//    @Inject
+//    SessionController SessionController;
     @PostConstruct
-    public void init(){
+    public void init() {
         calAgeFromDob();
     }
 
@@ -230,25 +234,25 @@ public class Person implements Serializable {
     }
 
     public int getAgeMonthsComponent() {
-        if(ageCalculated==false){
+        if (ageCalculated == false) {
             calAgeFromDob();
-            ageCalculated=true;
+            ageCalculated = true;
         }
         return ageMonthsComponent;
     }
 
     public int getAgeDaysComponent() {
-        if(ageCalculated==false){
+        if (ageCalculated == false) {
             calAgeFromDob();
-            ageCalculated=true;
+            ageCalculated = true;
         }
         return ageDaysComponent;
     }
 
     public int getAgeYearsComponent() {
-        if(ageCalculated==false){
+        if (ageCalculated == false) {
             calAgeFromDob();
-            ageCalculated=true;
+            ageCalculated = true;
         }
         return ageYearsComponent;
     }
@@ -277,6 +281,7 @@ public class Person implements Serializable {
             temT = "";
         }
         nameWithTitle = temT + " " + getName();
+
         return nameWithTitle;
     }
 
@@ -606,17 +611,19 @@ public class Person implements Serializable {
         this.religion = religion;
     }
 
+    @Transient
     public String getSmsNumber() {
-        if (this.getMobile() == null && this.getPhone() == null) {
-            smsNumber = "";
-        } else if (this.getMobile() != null && this.getPhone() == null) {
-            smsNumber = this.getMobile();
-        } else if (this.getPhone() != null && this.getMobile() == null) {
-            smsNumber = this.getPhone();
+        if (StringUtils.isNotBlank(mobile)) {
+            return mobile;
+        } else if (StringUtils.isNotBlank(phone)) {
+            return phone;
         } else {
-            smsNumber = this.getMobile();
+            return null;
         }
-        return smsNumber;
+    }
+
+    public void setSmsNumber(String smsNumber) {
+        this.smsNumber = smsNumber;
     }
 
 }

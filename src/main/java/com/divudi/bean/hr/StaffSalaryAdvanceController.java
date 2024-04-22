@@ -6,7 +6,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
@@ -729,22 +729,22 @@ public class StaffSalaryAdvanceController implements Serializable {
 
     private boolean dateCheck() {
         if (getSalaryCycle() == null) {
-            UtilityController.addErrorMessage("Please Select Salary Cycle");
+            JsfUtil.addErrorMessage("Please Select Salary Cycle");
             return true;
         }
 
         if (getSalaryCycle().getSalaryAdvanceFromDate() == null || getSalaryCycle().getSalaryAdvanceToDate() == null) {
-            UtilityController.addErrorMessage("Please Select Salary Date");
+            JsfUtil.addErrorMessage("Please Select Salary Date");
             return true;
         }
 
         if (getSalaryCycle().getWorkedFromDate() == null || getSalaryCycle().getWorkedToDate() == null) {
-            UtilityController.addErrorMessage("Please Select Over time Date");
+            JsfUtil.addErrorMessage("Please Select Over time Date");
             return true;
         }
 
 //        if (getHumanResourceBean().checkExistingSalary(getSalaryCycle().getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff())) {
-//            UtilityController.addErrorMessage("There is Already defined Salary for this salary cycle please edit");
+//            JsfUtil.addErrorMessage("There is Already defined Salary for this salary cycle please edit");
 //            return true;
 //        }
         return false;
@@ -931,7 +931,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         }
 
-        UtilityController.addSuccessMessage("Record Succesfully Deleted");
+        JsfUtil.addSuccessMessage("Record Succesfully Deleted");
     }
 //
 //    public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime, double toTime, double shiftCount) {
@@ -1088,7 +1088,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         Date toDate = null;
 
         if (getStaffController().getSelectedList() == null) {
-            UtilityController.addErrorMessage("Pls Select Staff");
+            JsfUtil.addErrorMessage("Pls Select Staff");
             return;
         }
 
@@ -1121,11 +1121,11 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         if (flag) {
             items = null;
-            UtilityController.addErrorMessage("There is allready salary generated .please delete generated salary");
+            JsfUtil.addErrorMessage("There is allready salary generated .please delete generated salary");
         }
         //   createStaffSalaryTable();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Generate Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
     }
 
     private void fetchAndSetBankData() {
@@ -1252,7 +1252,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         //   createStaffSalaryTable();
-         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Save Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+         
         
         
     }

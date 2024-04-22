@@ -3,7 +3,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -214,22 +214,22 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -287,7 +287,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
-                UtilityController.addSuccessMessage("Cancelled");
+                JsfUtil.addSuccessMessage("Cancelled");
 
                 //for channel agencyHistory Update
                 getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
@@ -298,11 +298,11 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
-                UtilityController.addSuccessMessage("Awaiting Cancellation");
+                JsfUtil.addSuccessMessage("Awaiting Cancellation");
             }
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
 
     }
@@ -313,7 +313,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 //    public void approveCancellation() {
 //
 //        if (billsApproving == null) {
-//            UtilityController.addErrorMessage("Select Bill to Approve Cancell");
+//            JsfUtil.addErrorMessage("Select Bill to Approve Cancell");
 //            return;
 //        }
 //        for (Bill b : billsApproving) {
@@ -330,7 +330,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 //
 //            ejbApplication.getBillsToCancel().remove(b);
 //
-//            UtilityController.addSuccessMessage("Cancelled");
+//            JsfUtil.addSuccessMessage("Cancelled");
 //
 //        }
 //

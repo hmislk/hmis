@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -29,15 +29,15 @@
                                     class="ui-button-warning mx-2"
                                     icon="fa fa-refresh"
                                     style="float: right;" 
-                                    value="Refresh"
-                                    action="#{pharmacySaleReport.createItemListOneItemHasGreterThanOneDistributorOther}">
+                                    value="Process"
+                                    action="#{pharmacySaleReportController.createItemListOneItemHasGreterThanOneDistributorOther}">
                                 </p:commandButton>
                             </div>
                         </div>  
 
                         <p:dataTable 
                             id="tblItem" 
-                            value="#{pharmacySaleReport.items}" 
+                            value="#{pharmacySaleReportController.items}" 
                             var="i"
                             rowKey="#{i.id}"
                             rows="10"

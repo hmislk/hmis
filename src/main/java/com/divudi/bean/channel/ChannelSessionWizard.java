@@ -6,7 +6,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -88,9 +88,9 @@ public class ChannelSessionWizard implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getServiceSessionFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         getItems();
@@ -110,12 +110,12 @@ public class ChannelSessionWizard implements Serializable {
         current.setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getServiceSessionFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getServiceSessionFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         prepareAdd();
         getItems();
@@ -132,22 +132,22 @@ public class ChannelSessionWizard implements Serializable {
 
     private boolean checkError() {
         if (getCurrent().getStartingTime() == null) {
-            UtilityController.addErrorMessage("Starting time Must be Filled");
+            JsfUtil.addErrorMessage("Starting time Must be Filled");
             return true;
         }
 
         if (getCurrent().getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
-            UtilityController.addErrorMessage("Set Weekday or Date");
+            JsfUtil.addErrorMessage("Set Weekday or Date");
             return true;
         }
 
         if (speciality == null) {
-            UtilityController.addErrorMessage("Plaese Select Specility");
+            JsfUtil.addErrorMessage("Plaese Select Specility");
             return true;
         }
 
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Plaese Select Doctor");
+            JsfUtil.addErrorMessage("Plaese Select Doctor");
             return true;
         }
 
@@ -337,7 +337,7 @@ public class ChannelSessionWizard implements Serializable {
 
     public void updateItemFee(ItemFee itemFee) {
         getItemFeeFacade().edit(itemFee);
-        UtilityController.addSuccessMessage("Sucessfull Updated");
+        JsfUtil.addSuccessMessage("Sucessfull Updated");
     }
 
     private void createNewSession() {

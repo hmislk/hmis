@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:stores="http://java.sun.com/jsf/composite/store">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:stores="http://xmlns.jcp.org/jsf/composite/store">
 
     <ui:define name="content">
 
@@ -22,7 +22,7 @@
                             <p:selectOneMenu   id="cmbPs" value="#{storePurchaseController.bill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                             </p:selectOneMenu>
-                            <p:outputLabel value="Select Dealor"/>
+                            <p:outputLabel value="Select Supplier"/>
                             <p:autoComplete converter="deal" value="#{storePurchaseController.bill.fromInstitution}" 
                                             forceSelection="true"
                                             completeMethod="#{storeDealorController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
@@ -51,7 +51,7 @@
                         <h:outputLabel value="Purchase Rate"></h:outputLabel>
                         <h:outputLabel value="Sale Price"></h:outputLabel>
                         <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
-                        <h:outputLabel value="Bathch No"/>
+                        <h:outputLabel value="Batch No"/>
                         <h:outputLabel ></h:outputLabel>
 
                         <p:autoComplete id="acItem"   value="#{storePurchaseController.currentBillItem.item}" 

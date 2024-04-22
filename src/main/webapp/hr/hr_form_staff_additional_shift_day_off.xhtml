@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
         <h:form>
@@ -129,7 +129,7 @@
                             <p:column headerText="Comment">
                                 <p:outputLabel value="#{add.comments}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Creater">
+                            <p:column headerText="Creator">
                                 <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                 <br></br>
                                 <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>

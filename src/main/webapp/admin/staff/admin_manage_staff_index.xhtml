@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
 
     <h:body>
 
@@ -27,7 +27,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Doctors" action="#{navigationController.navigateToAdminDoctor()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Consultant" action="#{navigationController.navigateToAdminDoctorConsultant()}"/>
-                                            <p:commandButton  class="w-100" ajax="false" value="Staff" action="../../hr/hr_staff_admin"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Staff" action="#{navigationController.navigateToManageStaff}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{staffController.navigateToAdminStaffViewSignature()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToAdminStaffSignature()}"/>
                                         </div>
@@ -36,6 +36,7 @@
                                     <p:tab title="Setup">
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Upload Consultants" action="#{dataUploadController.navigateToUploadConsultants()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Upload Doctors" action="#{dataUploadController.navigateToUploadDoctors()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Connect staff to user" action="#{navigationController.navigateToAdminUserStaff()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Staff List " action="#{navigationController.navigateToStaffList()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="#{navigationController.navigateToPersonInstitution()}"/>

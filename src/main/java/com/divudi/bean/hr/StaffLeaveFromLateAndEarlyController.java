@@ -6,7 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
@@ -27,7 +27,7 @@ import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -301,21 +301,21 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
     public void calLeaveCount() {
         if (getCurrentLeaveForm().getStaff() == null) {
-            UtilityController.addErrorMessage("Please Select Staff");
+            JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
 
         LeaveType leaveTypeLocal = getCurrentLeaveForm().getLeaveType();
 
         if (leaveTypeLocal == null) {
-            UtilityController.addErrorMessage("Please Select Leave Type");
+            JsfUtil.addErrorMessage("Please Select Leave Type");
             return;
         }
 
         StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
 
         if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
-            UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
+            JsfUtil.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
             return;
         }
 

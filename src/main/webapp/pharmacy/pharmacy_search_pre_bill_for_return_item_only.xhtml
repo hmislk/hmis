@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -64,7 +64,7 @@
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>     
 
-                                    <p:column headerText="Billed at"  width="150px">
+                                    <p:column headerText="Billed At"  width="150px">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -78,7 +78,7 @@
                                         </h:panelGroup>                             
                                     </p:column> 
 
-                                    <p:column headerText="Billed by" width="100px">
+                                    <p:column headerText="Billed By" width="100px">
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>

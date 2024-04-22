@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -150,7 +150,7 @@
 
                         </td>
                         <td style="width: 50px;"></td>
-                        
+
                         <td>
                             <h:outputLabel value="Room No :" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -188,7 +188,7 @@
                             <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
-                        
+
                     </tr>
 
                     <tr>
@@ -204,20 +204,22 @@
 
                         </td>
                         <td style="width: 50px;"></td>
-                        
-                        <td>
-                            <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
-                        </td>
 
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
-                            </h:outputLabel>
-                        </td>
+                        <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod ne null}">
+                            <td>
+                                <h:outputLabel value="Payment Method" class="billDetailsFiveFive" ></h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                            </td>
+
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
+                                </h:outputLabel>
+                            </td>
+                        </h:panelGroup>
                     </tr>
-                    
+
                 </table>
             </div>
 
@@ -255,7 +257,7 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right;" >

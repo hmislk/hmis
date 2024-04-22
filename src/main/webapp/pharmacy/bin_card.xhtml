@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/pharmacy_analytics.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:form>
+            <p:panel header="Pharmacy Bin Card" >
+                <f:facet name="header" >
+                    <h:outputLabel value="Pharmacy Bin Card" ></h:outputLabel>
+                </f:facet>
+                <h:panelGrid columns="7" class="w-100">
+                    <h:outputLabel value="From" ></h:outputLabel>
+                    <p:datePicker class="w-100 m-1" inputStyleClass="w-100" value="#{pharmacyErrorChecking.fromDate}" pattern="dd MMMM yyyy"></p:datePicker>
+                    <p:spacer width="10" ></p:spacer>
+                    <h:outputLabel value="To" ></h:outputLabel>
+                    <p:datePicker class="w-100 m-1" inputStyleClass="w-100" value="#{pharmacyErrorChecking.toDate}" pattern="dd MMMM yyyy"></p:datePicker>
+                    <p:spacer width="10" ></p:spacer>
+                    <p:commandButton class="m-1" ajax="false" value="Process" action="#{pharmacyErrorChecking.processBinCard()}" >
+                    </p:commandButton>
+
+
+                    <p:outputLabel 
+                        value="Department" ></p:outputLabel>
+                    <p:autoComplete 
+                        value="#{pharmacyErrorChecking.department}"  
+                        inputStyleClass="w-100"
+                        class="w-100"
+                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
+                        forceSelection="true" rendered="true" 
+                        requiredMessage="You must select a department" >
+                        <p:column headerText="Department">
+                            <h:outputLabel value="#{dept.name}"/>
+                        </p:column>
+                        <p:column headerText="Institution">
+                            <h:outputLabel value="#{dept.institution.name}"/>
+                        </p:column>
+                    </p:autoComplete>
+                    <p:spacer width="10" ></p:spacer>
+
+                    <p:outputLabel value="Item" ></p:outputLabel>
+                    <p:autoComplete value="#{pharmacyErrorChecking.item}" 
+                                    inputStyleClass="w-100"
+                                    class="w-100"
+                                    completeMethod="#{itemController.completeAmpItemAll}" 
+                                    var="item" itemValue="#{item}" itemLabel="#{item.name}" 
+                                    forceSelection="true"  >
+                        <p:column headerText="Item">
+                            <h:outputLabel value="#{item.name}"/>
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputLabel value="#{item.code}"/>
+                        </p:column>
+                    </p:autoComplete>
+                    <p:spacer width="10" ></p:spacer>
+
+                    <p:commandButton class="m-1" ajax="false" value="Download" >
+                        <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
+                    </p:commandButton>
+
+                </h:panelGrid>
+
+                <p:dataTable value="#{pharmacyErrorChecking.stockHistories}"
+                             var="sh"
+                             rowIndexVar="i"
+                             rows="100"
+                             id="tbl"
+                             rendered="true"
+                             rowKey="#{sh.id}"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20,50,100,500,1000">
+
+                    <!-- Date & Time with Format -->
+                    <p:column headerText="Date &amp; Time">
+                        <h:outputText value="#{sh.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Bill Type -->
+                    <p:column headerText="Bill Type">
+                        <h:outputText value="#{sh.pbItem.billItem.bill.billType.label}" />
+                    </p:column>
+
+                    <!-- Quantity In -->
+                    <p:column headerText="Qty In">
+                        <h:outputText value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
+                                      rendered="#{sh.pbItem.transThisIsStockIn}"
+                                      styleClass="#{sh.pbItem.qty gt 0 ? 'text-success' : ''}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                        <p:commandLink value="" ></p:commandLink>
+                    </p:column>
+
+                    <!-- Quantity Out -->
+                    <p:column headerText="Qty Out">
+                        <h:outputText 
+                            value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
+                            rendered="#{sh.pbItem.transThisIsStockOut}"
+                            styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Balance Qty">
+                        <h:outputText value="#{sh.itemStock}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+                    
+                    
+
+                </p:dataTable>
+
+
+
+
+
+
+
+
+
+
+
+            </p:panel>
+
+
+
+
+        </h:form>
+
+
+
+    </ui:define>
+
+</ui:composition>

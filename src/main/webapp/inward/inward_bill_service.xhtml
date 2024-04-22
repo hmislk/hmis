@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:print="http://java.sun.com/jsf/composite/ezcomp/prints"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill">
+                xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <ui:define name="content">
         <h:form id="form">
@@ -24,11 +24,11 @@
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-
                                             value="#{billBhtController.patientEncounter}" 
                                             completeMethod="#{admissionController.completePatient}"
                                             var="apt2" itemLabel="#{apt2.bhtNo}"
-                                            itemValue="#{apt2}" size="30"  class="mx-2">
+                                            itemValue="#{apt2}" size="30"  class="mx-2"
+                                            >
                                 <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
                                 <p:column >
                                     <h:outputLabel value="#{apt2.bhtNo}"/> 
@@ -61,84 +61,91 @@
                                 <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> <!-- FontAwesome Icon -->
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
                             </div>
-                            <div class="col-md-8">
-                                <div class="d-flex justify-content-end align-items-center" >
 
-
-                                    <h:panelGrid columns="7">
-                                        <p:commandButton class="w-100 ui-button-success" id="btnSettle" 
-                                                         value="Settle" 
-                                                         style="float: right"
-                                                         icon="fa fa-check"
-                                                         action="#{billBhtController.settleBill}" 
-                                                         ajax="false" >
-                                        </p:commandButton>
-                                        <p:spacer width="5"/>
-                                        <p:defaultCommand target="btnSettle"/>
-
-                                        <p:commandButton class="w-100 ui-button-warning" 
-                                                         action="#{billBhtController.makeNull}" 
-                                                         style="float: right"
-                                                         icon="fa fa-plus"
-                                                         ajax="false" 
-                                                         value="New Bill" />
-                                        <p:spacer width="5"/>
-                                        <p:commandButton class="w-100 ui-button-warning" 
-                                                         value="Go To Add Outside" 
-                                                         ajax="false" 
-                                                         icon="fa fa-arrow-right"
-                                                         style="float: right"
-                                                         action="/inward/inward_bill_outside_charge" />
-                                        <p:spacer width="5"/>
-                                    </h:panelGrid>
-                                    <p:spacer width="35"/>
-                                    <h:panelGrid columns="5">
-
-                                        <p:commandButton 
-                                            style="float: right;"
-                                            ajax="false"
-                                            icon="fa fa-search"
-                                            class="ui-button-warning " 
-                                            action="#{patientController.navigateToSearchPatients()}" 
-                                            >
-                                        </p:commandButton>
-                                        <p:spacer width="5"/>
-                                        <p:commandButton 
-                                            style="float: right;"
-                                            ajax="false"
-                                            icon="fa fa-user"
-                                            class="ui-button-warning" 
-                                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                                            >
-                                            <f:setPropertyActionListener 
-                                                value="#{admissionController.current.patient}" 
-                                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                        <p:spacer width="5"/>
-                                        <p:commandButton 
-                                            style="float: right;"
-                                            ajax="false"
-                                            icon="fa fa-id-card"
-                                            class="ui-button-secondary " 
-                                            action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                            >
-                                            <f:setPropertyActionListener 
-                                                value="#{billBhtController.patientEncounter}" 
-                                                target="#{admissionController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                    </h:panelGrid>
-
-                                </div>
-                            </div>
                         </div>
 
                     </f:facet>
+
+
 
                     <div class="col-12">
                         <h:panelGroup rendered="true" styleClass="opdPanel" >
 
                             <p:panel rendered="#{!billBhtController.printPreview}" >
+                                <div class="row">
+                                    <div class="col-md-4">
 
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-end align-items-center mb-2" >
+
+
+                                            <h:panelGrid columns="7">
+                                                <p:commandButton class="w-100 ui-button-success" id="btnSettle" 
+                                                                 value="Settle" 
+                                                                 style="float: right"
+                                                                 icon="fa fa-check"
+                                                                 action="#{billBhtController.settleBill}" 
+                                                                 ajax="false" >
+                                                </p:commandButton>
+                                                <p:spacer width="5"/>
+                                                <p:defaultCommand target="btnSettle"/>
+
+                                                <p:commandButton class="w-100 ui-button-warning" 
+                                                                 action="#{billBhtController.resetBillData}" 
+                                                                 style="float: right"
+                                                                 icon="fa fa-plus"
+                                                                 ajax="false" 
+                                                                 value="New Bill" />
+                                                <p:spacer width="5"/>
+                                                <p:commandButton class="w-100 ui-button-warning" 
+                                                                 value="Go To Add Outside" 
+                                                                 ajax="false" 
+                                                                 icon="fa fa-arrow-right"
+                                                                 style="float: right"
+                                                                 action="/inward/inward_bill_outside_charge" />
+                                                <p:spacer width="5"/>
+                                            </h:panelGrid>
+                                            <p:spacer width="35"/>
+                                            <h:panelGrid columns="5">
+
+                                                <p:commandButton 
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-search"
+                                                    class="ui-button-warning " 
+                                                    action="#{patientController.navigateToSearchPatients()}" 
+                                                    >
+                                                </p:commandButton>
+                                                <p:spacer width="5"/>
+                                                <p:commandButton 
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-user"
+                                                    class="ui-button-warning" 
+                                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                    >
+                                                    <f:setPropertyActionListener 
+                                                        value="#{billBhtController.patientEncounter.patient}" 
+                                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                <p:spacer width="5"/>
+                                                <p:commandButton 
+                                                    style="float: right;"
+                                                    ajax="false"
+                                                    icon="fa fa-id-card"
+                                                    class="ui-button-secondary " 
+                                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                                    >
+                                                    <f:setPropertyActionListener 
+                                                        value="#{billBhtController.patientEncounter}" 
+                                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                            </h:panelGrid>
+
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="row">
                                     <div class="col-md-5">
@@ -207,33 +214,34 @@
                                                             <h:outputLabel value="Investigation or Service"/>
                                                         </div>
                                                         <div class="col-8">
-
-                                                            <p:selectOneMenu value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100">
-                                                                <f:selectItems value="#{itemController.items}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-
-                                                                </f:selectItems>
+                                                            <p:selectOneListbox 
+                                                                value="#{billBhtController.itemLight}" 
+                                                                filter="true" 
+                                                                var="t" 
+                                                                id="itm" 
+                                                                class="w-100" 
+                                                                converter="itemLightConverter">
+                                                                <f:selectItems value="#{billBhtController.inwardItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" />
                                                                 <p:column>
                                                                     <h:outputLabel value="#{t.name}"/>
                                                                 </p:column>
                                                                 <p:column>
-                                                                    <h:outputLabel value="#{t.department.name}"/>
+                                                                    <h:outputLabel value="#{t.departmentName}"/>
                                                                 </p:column>  
                                                                 <p:column>
-                                                                    <h:outputLabel value="#{t.total}" 
-                                                                                   rendered="#{t.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
+                                                                    <h:outputLabel value="#{t.total}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>  
                                                                 <p:ajax process="itm" update="gpQtyLbl gpQtyTxt" />
-
-                                                            </p:selectOneMenu>
+                                                            </p:selectOneListbox>
                                                         </div>
                                                     </div>
 
                                                     <div class="row m-1">
                                                         <div class="col-4">
                                                             <h:panelGroup id="gpQtyLbl">
-                                                                <h:outputLabel id="lblQty" value="Quentity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
+                                                                <h:outputLabel id="lblQty" value="Quantity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
                                                             </h:panelGroup>
                                                         </div>
                                                         <div class="col-8">
@@ -260,10 +268,13 @@
                                                         </div>
                                                         <div class="col-8">
 
-                                                            <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
-                                                                        id="billedTimeStamp"
-                                                                        pattern="dd MMM yyyy HH:mm:ss" >                               
-                                                            </p:calendar>
+                                                            <p:datePicker value="#{billBhtController.currentBillItem.billTime}" 
+                                                                          id="billedTimeStamp"
+                                                                          pattern="dd MMM yyyy HH:mm:ss"
+                                                                          showTime="true"
+                                                                          showButtonBar="true"
+                                                                          timeInput="true">                               
+                                                            </p:datePicker>
                                                         </div>
                                                     </div>
                                                     <div class="row m-1">
@@ -421,10 +432,15 @@
                                             <p:commandButton value="Print" class="w-100" ajax="false" action="#" icon="fa-solid fa-print" >
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
+                                            <p:commandButton 
+                                                value="To Print Labels" 
+                                                class="w-100" ajax="false" 
+                                                action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print" >
+                                            </p:commandButton>
                                             <p:commandButton value="New Bill" 
                                                              icon="fa fa-plus"
                                                              class="ui-button-success m-1"  ajax="false"
-                                                             action="#{billBhtController.makeNull()}" >
+                                                             action="#{billBhtController.resetBillData()}" >
                                             </p:commandButton>
                                         </h:panelGrid>
                                         <h:panelGrid columns="3">
@@ -453,19 +469,19 @@
                                                 <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>                        

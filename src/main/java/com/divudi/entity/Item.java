@@ -54,7 +54,7 @@ import javax.persistence.Transient;
  */
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) 
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
@@ -79,6 +79,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     private boolean isMasterItem;
     private boolean hasReportFormat;
+    private int numberOfDaysToMarkAsShortExpiary;
 
     @ManyToOne
     Category category;
@@ -119,16 +120,12 @@ public class Item implements Serializable, Comparable<Item> {
     String fullName;
     //Created Properties
     @ManyToOne
-
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-
     Date createdAt;
     //Retairing properties 
-//    
     boolean retired;
     @ManyToOne
-
     WebUser retirer;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -1301,6 +1298,17 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setPrintFeesForBills(Boolean printFeesForBills) {
         this.printFeesForBills = printFeesForBills;
+    }
+
+    public int getNumberOfDaysToMarkAsShortExpiary() {
+        if(numberOfDaysToMarkAsShortExpiary==0){
+            numberOfDaysToMarkAsShortExpiary = 30;
+        }
+        return numberOfDaysToMarkAsShortExpiary;
+    }
+
+    public void setNumberOfDaysToMarkAsShortExpiary(int numberOfDaysToMarkAsShortExpiary) {
+        this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
     }
     
     

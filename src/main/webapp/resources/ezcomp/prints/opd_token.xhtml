@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="token" type="com.divudi.entity.Token"  />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
+        <div class="posbill" style="text-align: center;">
+
+
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.token.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.token.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.token.department.telephone2}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.token.department.fax}"/>                                                 
+                </div>
+            </div>
+            <div class="headingBill">
+                <h:outputLabel value="#{cc.attrs.token.counter.name}" style="font-size: 16px; font-weight: 900"/>    
+            </div>
+            <div class="headingBill">
+                <h:outputLabel value="OPD Token" style="font-size: 13px; font-weight: 900"/>    
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div class="billline" style="margin-top: -10px;">
+                <h1>
+                    #{cc.attrs.token.tokenNumber}
+                </h1>                         
+            </div>
+
+            <div class="billline" style="margin-top: -20px;">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div style="margin-top: -10px;font-size: 12pt;font-weight: bold">
+                #{cc.attrs.token.staff.person.nameWithTitle}
+
+            </div>
+            <div class="billline d-flex justify-content-center my-1">
+                <p:barcode value="#{cc.attrs.token.idStr}" 
+                           width="400"
+                           height="100"
+                           type="code128"  >
+                </p:barcode>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div class="billDetails" >
+                <table style="margin-left:  15%">
+                    <tr>
+                        <td style="width: 20%; text-align: left;" >
+                            <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
+                        </td>
+                        <td style="width: 15%; text-align: center;">:</td>
+                        <td style="width: 65%; text-align: left;" >
+                            <h:outputLabel value="#{cc.attrs.token.tokenDate}" class="billDetails" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <p:spacer width="20"/>
+                            <h:outputLabel value="#{cc.attrs.token.createdAt}" class="billDetails">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.token.patient ne null}" >
+                        <tr>
+                            <td style="width: 20% ;text-align: left;" >
+                                <h:outputLabel value="Name" ></h:outputLabel>
+                            </td>
+                            <td style="width: 15%; text-align: center;">:</td>
+                            <td style="width: 65%; text-align: left;" >
+                                <h:outputLabel value="#{cc.attrs.token.patient.person.nameWithTitle}"  >
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                </table>
+            </div>
+            <div class="billline">
+                <h:outputLabel value="#{cc.attrs.token.bill.re}"   />                           
+            </div>
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

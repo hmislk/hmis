@@ -4,7 +4,7 @@ package com.divudi.bean.web;
 import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.web.DesignComponent;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;

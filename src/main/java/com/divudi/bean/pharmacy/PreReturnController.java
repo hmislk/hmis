@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -73,7 +73,7 @@ public class PreReturnController implements Serializable {
         }
 
         if (!getSessionController().getDepartment().equals(bill.getDepartment())) {
-            UtilityController.addErrorMessage("U can't return another department's Issue.please log to specific department");
+            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
             return;
         }
 
@@ -111,7 +111,7 @@ public class PreReturnController implements Serializable {
 
         if (tmp.getQty() > getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
         calTotal();
@@ -201,7 +201,7 @@ public class PreReturnController implements Serializable {
     public void settle() {
 
         if (getReturnBill().getTotal() == 0) {
-            UtilityController.addErrorMessage("Total is Zero cant' return");
+            JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
         }
 
@@ -219,15 +219,26 @@ public class PreReturnController implements Serializable {
 //            if (getBill().getToStaff() != null) {
 //                //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
 //                staffBean.updateStaffCredit(getBill().getToStaff(), getReturnBill().getNetTotal());
-//                UtilityController.addSuccessMessage("Staff Credit Updated");
+//                JsfUtil.addSuccessMessage("Staff Credit Updated");
 //                getReturnBill().setFromStaff(getBill().getToStaff());
 //                getBillFacade().edit(getReturnBill());
 //            }
 //        }
         /// setOnlyReturnValue();
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+    
+    public void fillReturningQty(){
+        if(billItems == null || billItems.isEmpty()){
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+        for(BillItem bi:billItems){
+            bi.setQty(bi.getPharmaceuticalBillItem().getQty());
+            onEdit(bi);
+        }
     }
 
     private void calTotal() {

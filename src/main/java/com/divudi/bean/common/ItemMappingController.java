@@ -7,7 +7,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ItemMapping;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemMappingFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.google.common.collect.HashBiMap;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -348,18 +348,19 @@ public class ItemMappingController implements Serializable {
     public List<ItemLight> fillItemLightByDepartment(Department dept) {
         List<ItemLight> results;
         String jpql = "SELECT new com.divudi.data.ItemLight("
-                + "im.item.id, im.item.orderNo, im.item.isMasterItem, im.item.hasReportFormat, "
-                + "im.item.category.name, im.item.category.id, im.item.institution.name, im.item.institution.id, "
-                + "im.item.department.name, im.item.department.id, im.item.speciality.name, im.item.speciality.id, "
-                + "im.item.staff.person.name, im.item.staff.id, im.item.clazz, im.item.name, im.item.code, im.item.barcode, "
-                + "im.item.printName, im.item.shortName, im.item.fullName) "
+                + "im.item.id, "
+                + "im.item.name, "
+                + "im.item.code, "
+                + "im.item.fullName, "
+                + "im.item.department.name, "
+                + "im.item.total) "
                 + "FROM ItemMapping im "
                 + "WHERE im.retired = false "
                 + "AND im.department = :dept "
                 + "ORDER BY im.item.name";
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("dept", dept);
-        results = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        results = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }
 

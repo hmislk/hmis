@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.lab.Antibiotic;
 import com.divudi.facade.AntibioticFacade;
 import com.divudi.facade.SpecialityFacade;
@@ -169,7 +169,7 @@ public class AntibioticController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -181,7 +181,7 @@ public class AntibioticController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -233,9 +233,9 @@ public class AntibioticController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

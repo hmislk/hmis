@@ -12,70 +12,88 @@
 
                 <ui:define name="subcontent">
                     <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
-                        <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"  style="text-align: center; width: 100%; height: 100%;">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 128px; height: 128px;">
-                                    <path fill="red" d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/>
-                                </svg>
+                        <h:panelGroup rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"  style="text-align: center; width: 100%; height: 100%;">
+                            <div class="mt-5">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 128px; height: 128px;">
+                                        <path fill="red" d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/>
+                                    </svg>
+                                </div>
+                                <div style="font-size: 2em">
+                                    No Start Fund Bill Available to Close
+                                </div>
                             </div>
-                            <div style="font-size: 2em">
-                                No Start Fund Bill Available to Close
-                            </div>
-                        </p:panel>
+                        </h:panelGroup>
                     </div>
-                    <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" >
 
-                        <p:panel>
-                            <f:facet name="header">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
-                                        <p:outputLabel value=" Shift Details" />
-                                    </div>
-                                    <div>
-                                        <p:commandButton class="ui-button-info mx-2" ajax="false" value="Close Start Fund Bill" 
-                                                         action="#{financialTransactionController.settleShiftEndFundBill()}" ></p:commandButton>
-                                    </div>
-                                </div>
 
-                            </f:facet>
-                            <div class="row" style="font-size: 16pt; font-weight: 600">
-                            <h:panelGrid columns="6" >
-                               
-                           <div class="col-md-12">
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Staff" ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel></div>
+                    <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" class="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
+                                    <p:outputLabel value=" Shift Details" />
                                 </div>
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Start Date " ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billDate}" >
-                                        <f:convertDateTime pattern="MM/dd/yyyy" />
-                                        </p:outputLabel></div>
-                                </div>
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Start Time" ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billTime}" >
-                                         <f:convertDateTime pattern="hh:mm:ss a" />
-                                        </p:outputLabel></div>
-                                </div>
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Total Value" ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.netTotal}" ></p:outputLabel></div>
+                                <div>
+                                    <p:commandButton class="ui-button-info mx-2" 
+                                                     ajax="false" 
+                                                     value="Close Start Fund Bill" 
+                                                     action="#{financialTransactionController.settleShiftEndFundBill()}" ></p:commandButton>
                                 </div>
                             </div>
-                         
-                            </h:panelGrid>
-                                  </div>
-                        </p:panel>
 
-                        <p:panel header="Add Funds" >
+                        </f:facet>
+                        <div class="row mx-2" >
+                            <div class="col-6">
+                                <div class="row" style="font-size: 16pt; font-weight: 600;padding: 10px">
+                                    <h:panelGrid columns="6" >
+                                        <p:outputLabel value="Staff" ></p:outputLabel>
+                                        <p:outputLabel value=":" class="mx-2"/>
+                                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel>
+                                        <p:spacer width="70" />
+                                        <p:spacer width="70" />
+                                        <p:spacer width="70" />
+                                        <p:outputLabel value="Start Date " ></p:outputLabel>
+                                        <p:outputLabel value=":" class="mx-2"/>
+                                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billDate}" >
+                                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                                        </p:outputLabel>
+                                        <p:spacer />
+                                        <p:spacer />
+                                        <p:spacer />
+                                        <p:outputLabel value="Start Time" ></p:outputLabel>
+                                        <p:outputLabel value=":" class="mx-2"/>
+                                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billTime}" >
+                                            <f:convertDateTime pattern="hh:mm:ss a" />
+                                        </p:outputLabel>
+                                        <p:spacer width="70" />
+                                        <p:spacer width="70" />
+                                        <p:spacer width="70" />
+                                        <p:outputLabel value="Total Value" ></p:outputLabel>
+                                        <p:outputLabel value=":" class="mx-2"/>
+                                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.netTotal}" ></p:outputLabel>
+                                    </h:panelGrid>
+                                </div>
+                            </div>
+                        </div>
 
-                            <div class="row">
+                        <p:panel header="Add Funds" class="my-1 mb-4" >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Add Funds"/>
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        style="float: right;"
+                                        value="Add"
+                                        icon="fa fa-plus"
+                                        class="ui-button-success"
+                                        process="btnAdd cmdPayment paymentDetails"
+                                        update="tblPayments totals cmdPayment paymentDetails"
+                                        action="#{financialTransactionController.addPaymentToShiftEndFundBill()}" >
+                                    </p:commandButton>
+                                </div>
+                            </f:facet>
+                            <div class="row d-flex align-items-center">
                                 <div class="col-md-3">
                                     <p:outputLabel value="Payment Method" ></p:outputLabel>
                                     <p:selectOneMenu 
@@ -89,15 +107,13 @@
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-3" >
+                                    <p:outputLabel value="" ></p:outputLabel>
                                     <h:panelGroup id="paymentDetails" >
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
                                             id="cheque" 
                                             rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
-
-
-
                                             <div class="d-flex mt-1">
                                                 <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
                                                     <p:ajax process="@this" ></p:ajax>
@@ -138,79 +154,143 @@
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGroup>
-
                                     </h:panelGroup>
-
-
-
-
-
                                 </div>
 
-                                <div class="col-md-3">
-
-                                </div>
 
                                 <div class="col-md-2">
-                                    <p:commandButton
-                                        id="btnAdd"
-                                        style="float: right;"
-                                        value="Add"
-                                        icon="fa fa-plus"
-                                        class="ui-button-success"
-                                        process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals cmdPayment paymentDetails"
-                                        action="#{financialTransactionController.addPaymentToShiftEndFundBill()}" >
-                                    </p:commandButton>
+
                                 </div>
                                 <div class="col-md-1"/>
                             </div>
 
                         </p:panel>
 
-                        <h:panelGroup id="totals">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h:outputText value="Funds List" ></h:outputText>
-                                </div>
-                                <div class="d-flex">
-                                    <h:outputText value=" Total Funds : " ></h:outputText>
-                                    <p:outputLabel 
+                        <h:panelGroup id="totals" rendered="true" styleClass="mt-4">
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>In</th>
+                                        <th>Out</th>
+                                        <th>Net Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Cash</td>
+                                        <td>#{financialTransactionController.financialReport.collectedCash}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedCash}</td>
+                                        <td>#{financialTransactionController.financialReport.netCashTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Card</td>
+                                        <td>#{financialTransactionController.financialReport.collectedCreditCard}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedCreditCard}</td>
+                                        <td>#{financialTransactionController.financialReport.netCreditCardTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Voucher</td>
+                                        <td>#{financialTransactionController.financialReport.collectedVoucher}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedVoucher}</td>
+                                        <td>#{financialTransactionController.financialReport.netVoucherTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Other</td>
+                                        <td>#{financialTransactionController.financialReport.collectedOtherNonCredit}</td>
+                                        <td>#{financialTransactionController.financialReport.refundedOtherNonCredit}</td>
+                                        <td>#{financialTransactionController.financialReport.netOtherNonCreditTotal}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Float My-Safe</td>
+                                        <td>#{financialTransactionController.financialReport.floatMySafe}</td>
+                                        <td></td> <!-- Assuming no refunded column for My-Safe -->
+                                        <td>#{financialTransactionController.financialReport.floatMySafe}</td> <!-- Assuming My-Safe equals net for floats -->
+                                    </tr>
 
-                                        class="mx-2"
-                                        value="#{financialTransactionController.currentBill.total}" >
-                                    </p:outputLabel>
-                                </div>
-                            </div>
+                                    <tr>
+                                        <td>Float Collected Handovers</td>
+                                        <td>#{financialTransactionController.financialReport.floatCollected}</td>
+                                        <td>#{financialTransactionController.financialReport.collectionHandover}</td> <!-- Assuming no refunded column for floats -->
+                                        <td>#{financialTransactionController.financialReport.floatCollected}</td> <!-- Assuming collected equals net for floats -->
+                                    </tr>
+                                    <tr>
+                                        <td>Bank Transaction</td>
+                                        <td>#{financialTransactionController.financialReport.bankWithdrawals}</td>
+                                        <td>#{financialTransactionController.financialReport.bankDeposits}</td> <!-- Assuming no refunded column for bank withdrawals -->
+                                        <td>#{financialTransactionController.financialReport.bankWithdrawals}</td> <!-- Assuming withdrawals equals net -->
+                                    </tr>
+
+                                    <tr>
+                                        <td>Cash Given Out (Transfer Out)</td>
+                                        <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td>
+                                        <td></td> <!-- Assuming no refunded column for cash given out -->
+                                        <td>#{financialTransactionController.financialReport.cashGivenOutTransferOut}</td> <!-- Assuming cash given out equals net -->
+                                    </tr>
+                                    <tr>
+                                        <td>Short Excess</td>
+                                        <td>#{financialTransactionController.financialReport.shortExcess}</td>
+                                        <td></td> <!-- Assuming no refunded column for short/excess -->
+                                        <td>#{financialTransactionController.financialReport.shortExcess}</td> <!-- Assuming short/excess equals net -->
+                                    </tr>
+                                    <tr class="table-primary"> <!-- Use a different class for the total row for emphasis -->
+                                        <td>Total</td>
+                                        <td colspan="2"></td>
+                                        <td>#{financialTransactionController.financialReport.total}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+
+
+                        <h:panelGroup rendered="true">
+                            <p:dataTable 
+                                id="tblPayments" 
+                                value="#{financialTransactionController.currentBillPayments}" 
+                                var="bp" 
+                                paginator="true"
+                                paginatorPosition="bottom"
+
+                                >
+                                <p:column headerText="ID" >
+                                    <h:outputText value="#{bp.id}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill ID" >
+                                    <h:outputText value="#{bp.bill.insId}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type" >
+                                    <h:outputText value="#{bp.bill.billType}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billTypeAtomic}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billClass}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Value" >
+                                    <h:outputText value="#{bp.paidValue}" />
+                                </p:column>
+
+
+                                <p:column headerText="Action" >
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon=" fa-solid fa-eye"
+                                        value="View Bill" 
+                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+
 
                         </h:panelGroup>
 
-                        <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
-                            <p:column headerText="Payment Method" >
-                                <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Value" >
-                                <h:outputText value="#{bp.paidValue}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Details" >
-                                <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                                <h:outputText value="#{bp.chequeRefNo}" ></h:outputText>
-                                <h:outputText value="#{bp.chequeDate}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Action" >
-                                <p:commandButton 
-                                    class="ui-button-danger"
-                                    icon=" fa-solid fa-trash"
-                                    id="btnRemove"
-                                    value="Remove" 
-                                    action="#{financialTransactionController.removePayment}" 
-                                    process="btnRemove tblPayments"
-                                    update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
-                                    >
-                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                            </p:column>
-                        </p:dataTable>
+
 
                         <p:panelGrid 
                             columns="2" 
@@ -220,8 +300,9 @@
 
 
                         </p:panelGrid>
-
                     </p:panel>
+
+
 
                 </ui:define>
             </ui:composition>

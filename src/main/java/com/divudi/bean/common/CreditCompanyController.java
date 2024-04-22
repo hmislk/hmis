@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
@@ -50,6 +50,26 @@ public class CreditCompanyController implements Serializable {
     List<Institution> institutions;
     String selectText = "";
 
+    public Institution findCreditCompanyByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CreditCompany);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
         String sql;
@@ -119,15 +139,30 @@ public class CreditCompanyController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
+    }
+    
+    public void save(Institution cc) {
+        if (cc == null) {
+            return;
+        }
+        if (cc.getId() != null) {
+            getFacade().edit(cc);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            cc.setCreatedAt(new Date());
+            cc.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(cc);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
     }
 
     public void fillCreditCompany() {
@@ -139,7 +174,7 @@ public class CreditCompanyController implements Serializable {
                 + "where i.retired=false ";
         institutions = getEjbFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Credit Company/credit card companies(/faces/dataAdmin/credit_companies.xhtml)");
+        
     }
 
     public void fillInstitutions() {
@@ -201,9 +236,9 @@ public class CreditCompanyController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

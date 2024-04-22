@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,11 +14,21 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid  columns="2" style="min-width: 100%!important;" rendered="#{cc.attrs.bill.procedure!=null}" >            
-            <h:outputLabel   value="Surgery Name : " />
-            <h:outputLabel  value="#{cc.attrs.bill.procedure.item.name}" />       
-             <h:outputLabel   value="From Deparmtent : " />
-            <h:outputLabel  value="#{cc.attrs.bill.fromDepartment.name}" />            
-        </h:panelGrid>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="Surgery Name"/></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.bill.procedure.item.name}" /></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="From Deparmtent"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.bill.fromDepartment.name}" /></div>
+                </div>
+            </div>
+        </div>
+        
     </cc:implementation>
 </html>

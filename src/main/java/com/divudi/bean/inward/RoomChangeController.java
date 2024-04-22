@@ -9,7 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -23,7 +23,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -94,7 +94,7 @@ public class RoomChangeController implements Serializable {
 
     public void remove(PatientRoom pR) {
         if(pR==null){
-            UtilityController.addErrorMessage("No Patient Room Detected");
+            JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
         
@@ -102,21 +102,21 @@ public class RoomChangeController implements Serializable {
 
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getPreviousRoom() == null) {
-            UtilityController.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
+            JsfUtil.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
             return;
         }
         
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null 
                 && !pR.getPreviousRoom().isRetired()) {
-            UtilityController.addErrorMessage("You have to Remove Last one First");
+            JsfUtil.addErrorMessage("You have to Remove Last one First");
             return;
         }
         
         
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
-            UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
+            JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
             return;
         }
 
@@ -137,7 +137,7 @@ public class RoomChangeController implements Serializable {
 
     public void discharge(PatientRoom pR) {
         if (pR.getDischargedAt() == null) {
-            UtilityController.addErrorMessage("Please Select Discharge Date");
+            JsfUtil.addErrorMessage("Please Select Discharge Date");
             return;
         }
 
@@ -166,7 +166,7 @@ public class RoomChangeController implements Serializable {
     public void removeGuardianRoom(PatientRoom pR) {
 
         if (pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
-            UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
+            JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
             return;
         }
 
@@ -201,7 +201,7 @@ public class RoomChangeController implements Serializable {
 
         if (patientRoom1.getAdmittedAt() != null
                 && patientRoom1.getAdmittedAt().getTime() > getChangeAt().getTime()) {
-            UtilityController.addErrorMessage("U cant discharge early date than admitted");
+            JsfUtil.addErrorMessage("U cant discharge early date than admitted");
             return null;
         }
 
@@ -226,7 +226,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
             }
@@ -240,7 +240,7 @@ public class RoomChangeController implements Serializable {
         oldPatientRoom.setNextRoom(newPatientRoom);
         getPatientRoomFacade().edit(oldPatientRoom);
 
-        UtilityController.addSuccessMessage("Successfully Room Changed");
+        JsfUtil.addSuccessMessage("Successfully Room Changed");
 
         // recreate();
         newRoomFacilityCharge = null;
@@ -249,7 +249,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public void addNewRoom() {
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
             }
@@ -260,7 +260,7 @@ public class RoomChangeController implements Serializable {
         getCurrent().setCurrentPatientRoom(newPatientRoom);
         getEjbFacade().edit(getCurrent());
 
-        UtilityController.addSuccessMessage("Successfully Room Changed");
+        JsfUtil.addSuccessMessage("Successfully Room Changed");
 
         // recreate();
         newRoomFacilityCharge = null;
@@ -304,7 +304,7 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(oldGaurdianRoom);
         }
 
-        UtilityController.addSuccessMessage("Successfully Room Changed");
+        JsfUtil.addSuccessMessage("Successfully Room Changed");
         newRoomFacilityCharge = null;
         changeAt = null;
         createGuardianRoom();
@@ -329,9 +329,9 @@ public class RoomChangeController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://java.sun.com/jsf/facelets"
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       template="/resources/template/template.xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"       
-      xmlns:ca="http://java.sun.com/jsf/composite/cashier"
-      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-      xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
       >
 
     <h:body>
@@ -47,7 +47,7 @@
                                 </p:selectBooleanCheckbox>
                             </h:panelGrid>
                             <div class="d-flex my-2">
-                                <p:commandButton id="btnRefresh" ajax="false" value="Refresh" class="ui-button-warning" icon="fas fa-refresh"
+                                <p:commandButton id="btnRefresh" ajax="false" value="Process" class="ui-button-warning" icon="fas fa-refresh"
                                                  action="#{commonReport.createUserOPDSeviceCount}" />  
                                 <p:defaultCommand target="btnRefresh"/>
 

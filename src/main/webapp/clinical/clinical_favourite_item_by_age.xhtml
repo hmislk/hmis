@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+
+    <h:body>
+
+        <ui:composition template="/emr/admin/index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputText value="Manage Favourite Medicines By Age" >
+                            </h:outputText>
+                        </f:facet>
+
+                        <h:panelGrid columns="4" >
+                            <p:outputLabel value="Select Medicine" ></p:outputLabel>
+
+                            <p:autoComplete id="acItem" 
+                                            value="#{favouriteController.item}" 
+                                            forceSelection="true" class="mx-4 w-100" inputStyleClass="w-100"
+                                            completeMethod="#{itemController.completeMedicine}" 
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column headerText="Item" >
+                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                </p:column>
+                                <p:ajax event="itemSelect" process="@this" update="tab" />
+                            </p:autoComplete>
+                            <p:watermark for="acItem" value="Select Medicine"/>
+
+                            <p:commandButton value="Add New"
+                                             class="ui-button-success mx-4" icon="fas fa-plus"
+                                             onclick="PF('dlg2').show();"
+                                             action="#{favouriteController.prepareAddingFavouriteItem()}" >
+                            </p:commandButton>
+                        </h:panelGrid>
+                        <p:dialog header="Add Favourite Medicine" widgetVar="dlg2" modal="true" height="50%" width="30%">
+                            <h:panelGrid id="tab" columns="3" class="w-75" >
+                                <h:outputText value="Selected Medicine" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <h:outputText class="mx-4 w-75" value="#{favouriteController.item.name}" ></h:outputText>
+                                <h:outputText value="From Age" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.fromDays}" ></p:inputText>
+                                <h:outputText value="To Age" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.toDays}" ></p:inputText>
+                                <h:outputText value="Category" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:selectOneMenu  class="mx-4 w-75" autoWidth="false"  
+                                                  value="#{favouriteController.current.category}" >
+                                    <f:selectItem itemLabel="Select Category" ></f:selectItem>
+                                    <f:selectItems  value="#{pharmaceuticalItemCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <h:outputText value="Dose" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.dose}" ></p:inputText>
+                                <h:outputText value="Dose Unit" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:selectOneMenu  class="mx-4 w-75" autoWidth="false" value="#{favouriteController.current.doseUnit}" >
+                                    <f:selectItem itemLabel="Select Dose Unit" ></f:selectItem>
+                                    <f:selectItems value="#{measurementUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <h:outputText value="Frequency" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:selectOneMenu    
+                                    value="#{favouriteController.current.frequencyUnit}" class="mx-4 w-75" >
+                                    <f:selectItem itemLabel="Select Frequency" ></f:selectItem>
+                                    <f:selectItems  value="#{frequencyUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <h:outputText value="Duration" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:inputText  class="mx-4 w-75" value="#{favouriteController.current.duration}" ></p:inputText>
+                                <h:outputText value="Duration Unit" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.durationUnit}" ></p:inputText>
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton class="ui-button-success" ajax="false" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
+                            </f:facet>
+                        </p:dialog>
+
+
+
+                        <p:dataTable value="#{favouriteController.items}" var="fi" >
+                            <p:column  >
+                                <f:facet name="header" >
+                                    <h:outputText value="From Age" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.fromDays}" >
+                                    <f:convertNumber pattern="0.#" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column  >
+                                <f:facet name="header" >
+                                    <h:outputText value="To Age" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.toDays}" >
+                                <f:convertNumber pattern="0.#" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column  >
+                                <f:facet name="header" >
+                                    <h:outputText value="Medicine" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.item.name}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Category" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.category}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Dose" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.dose}" >
+                                 <f:convertNumber pattern="0.#" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Dose Unit" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.doseUnit.name}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Frequency" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.frequencyUnit}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Duration" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.duration}" >
+                                 <f:convertNumber pattern="0.#" />
+                                </h:outputText>
+                                
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Duration Unit" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.durationUnit}" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

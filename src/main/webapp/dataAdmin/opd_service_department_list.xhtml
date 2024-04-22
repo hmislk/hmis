@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/dataAdmin/report_entered_data.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 >
@@ -17,22 +17,18 @@
                 <p:panel id="panIx"  >
 
                     <f:facet name="header" >
-                        <h:outputLabel value="List of Service"></h:outputLabel>
-                        
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                            <p:printer target="panIx" />
-                        </p:commandButton>
-                        
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" actionListener="#{serviceController.recreateModel}" >                            
-                        </p:commandButton>
-                        <p:defaultCommand target="btnRefresh"/>
-
-                        <p:commandButton value="Excel" ajax="false" >
-                            <p:dataExporter type="xlsx" target="tblBills" fileName="DepartmentIncome"
-                                           
-                                                
-                                           />
-                        </p:commandButton>
+                        <h:outputLabel value="List of Service" class="mx-2 mt-2"></h:outputLabel>
+                        <h:panelGrid columns="4" style="float: right">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" ajax="false" value="Process" actionListener="#{serviceController.recreateModel}" >                            
+                            </p:commandButton>
+                            <p:defaultCommand target="btnRefresh"/>    
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print">
+                                <p:printer target="print" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
+                                <p:dataExporter type="xlsx" target="tblBills" fileName="DepartmentIncome" />
+                            </p:commandButton>
+                        </h:panelGrid>
 
                     </f:facet>
 
@@ -46,7 +42,7 @@
                                             <h:outputLabel value="2013 / 2014"></h:outputLabel>
                                         </div>-->
 
-                    <p:panel >
+                    <p:panel id="print" >
 
                         <p:dataTable id="tblBills" value="#{serviceController.serviceDep}" rowIndexVar="i" var="ix" filteredValue="#{serviceController.filterItem}"  >
                             <f:facet name="header">
@@ -108,48 +104,48 @@
                                 </f:facet>
                                 <h:outputLabel value="#{ix.hospitalFee}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Hospital Foriegners" >
                                 <f:facet name="header">
-                                <h:outputLabel value="Hospital Foreigners"/>
+                                    <h:outputLabel value="Hospital Foreigners"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ix.hospitalFfee}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Professional Locals" >                                          
                                 <f:facet name="header">
-                                <h:outputLabel value="Professional Locals"/>
+                                    <h:outputLabel value="Professional Locals"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ix.professionalFee}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Professional Foriegners" >
                                 <f:facet name="header">
-                                <h:outputLabel value="Professional Foreigners"/>
+                                    <h:outputLabel value="Professional Foreigners"/>
                                 </f:facet>
-                                <h:outputLabel value="{ix.professionalFfee}"/>
+                                <h:outputLabel value="#{ix.professionalFfee}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Service Date Created">
                                 <f:facet name="header">
-                                <h:outputLabel value="Service Date Created"/>
+                                    <h:outputLabel value="Service Date Created"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ix.createdAt}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Fee Date Creted">
                                 <f:facet name="header">
-                                <h:outputLabel value="Fee Date Creted"/>
+                                    <h:outputLabel value="Fee Date Creted"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ix.itemFee.createdAt}"/>
                             </p:column>
-                            
+
                             <p:column >
-                                <p:commandButton ajax="false" value="Remove" action="#{serviceController.delete}"  >
+                                <p:commandButton class="ui-button-danger" icon="fas fa-trash" ajax="false" value="Remove" action="#{serviceController.delete}"  >
                                     <f:setPropertyActionListener value="#{ix}" target="#{serviceController.current}"/>
                                 </p:commandButton>
                             </p:column>
-                            
+
                         </p:dataTable>
                     </p:panel>
 

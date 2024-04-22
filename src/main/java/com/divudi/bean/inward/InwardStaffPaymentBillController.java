@@ -2,7 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -12,7 +12,8 @@ import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -46,16 +47,16 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
 public class InwardStaffPaymentBillController implements Serializable {
 
     @Inject
-    CommonController commonController; 
-    
+    CommonController commonController;
+
     @EJB
     private RefundBillFacade refundBillFacade;
     private List<BillComponent> billComponents;
@@ -74,7 +75,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     private Date toDate;
     @Inject
     SessionController sessionController;
-    
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
@@ -140,16 +141,27 @@ public class InwardStaffPaymentBillController implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public String navigateToInwardPayStaff() {
+        speciality = null;
+        currentStaff = null;
+        paymentMethod = null;
+        dueBillFees = null;
+        totalDue = 0.0;
+        totalPaying = 0.0;
+        printPreview = false;
+        return "/inward/inward_bill_staff_payment?faces-redirect=true";
+    }
+
     AdmissionType admissionType;
     Institution institution;
 
     public void fillDocPayingBillFeeByCreatedDate() {
         Date startTime = new Date();
-        
+
         fillDocPayingBillFee(false);
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill item)(/faces/inward/report_doctor_payment.xhtml)");
-        
+
     }
 
     public void fillDocPayingBillFeeByDischargeDate() {
@@ -218,20 +230,20 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void fillDocPayingBillByCreatedDate() {
         Date startTime = new Date();
-        
+
         fillDocPayingBill(false);
         fillDocPayingBillCancel(false);
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill)(/faces/inward/report_doctor_payment_by_bill.xhtml)");
     }
 
     public void fillDocPayingBillByDischargeDate() {
         Date startTime = new Date();
-        
+
         fillDocPayingBill(true);
         fillDocPayingBillCancel(true);
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment summery(/faces/inward/report_doctor_payment_by_bill.xhtml)");
     }
 
     public void fillDocPayingBill(boolean dischargeDate) {
@@ -540,7 +552,6 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public List<BillFee> createDocDueFeeTableDischarged() {
 
-        
         String sql;
         Map temMap = new HashMap();
         billFeeDueDischarged = new ArrayList<>();
@@ -850,6 +861,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     }
 
+    @Deprecated
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
@@ -867,6 +879,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         return suggestions;
     }
 
+    @Deprecated
     public List<Staff> completeReferringDoctor(String query) {
         List<Staff> suggestions;
         String sql;
@@ -912,6 +925,12 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void calculateDueFees() {
 
+        dueBillFees = new ArrayList<>();
+        payingBillFees = new ArrayList<>();
+        totalPaying = 0.0;
+        totalDue = 0.0;
+        printPreview = false;
+
         String sql;
         HashMap h = new HashMap();
         sql = "select b from BillFee b where "
@@ -919,7 +938,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and (b.bill.billType=:btp"
                 + " or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
-//                + " and b.bill.refunded=false "
+                //                + " and b.bill.refunded=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
                 + " and b.staff=:stf ";
 //            h.put("btp", BillType.ChannelPaid);
@@ -934,9 +953,9 @@ public class InwardStaffPaymentBillController implements Serializable {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false "
                     + " and bi.bill.cancelled=false "
                     + " and bi.bill.billType=:btp "
-//                    + " and bi.bill.toStaff=:stf "
+                    //                    + " and bi.bill.toStaff=:stf "
                     + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql,h);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql, h);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
@@ -944,7 +963,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
         dueBillFees.removeAll(removeingBillFees);
-
+        calculateTotalPay();
     }
 
     public void calculateTotalDue() {
@@ -961,15 +980,9 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void calculateTotalPay() {
         totalPaying = 0;
-
         for (BillFee f : payingBillFees) {
-            //   ////// // System.out.println("totalPaying before " + totalPaying);
-            //   ////// // System.out.println("fee val is " + f.getFeeValue());
-            //   ////// // System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //   ////// // System.out.println("totalPaying after " + totalPaying);
         }
-        //   ////// // System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -993,7 +1006,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        //   ////// // System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -1011,18 +1023,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
-
-        dueBillFees = new ArrayList<>();
-        payingBillFees = new ArrayList<>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        printPreview = false;
-
-        calculateDueFees();
-        performCalculations();
-
     }
 
     public void prepareAdd() {
@@ -1034,6 +1035,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.PaymentBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -1056,16 +1058,16 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Please select a Staff Memeber");
+            JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
-        performCalculations();
+//        performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -1080,7 +1082,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             return;
         }
 
-        calculateTotalPay();
+//        calculateTotalPay();
         Bill b = createPaymentBill();
         current = b;
 
@@ -1094,7 +1096,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Successfully Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
         //   ////// // System.out.println("Paid");
     }
 
@@ -1182,9 +1184,9 @@ public class InwardStaffPaymentBillController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(sessionController.getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -1474,9 +1476,9 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public List<BillItem> getDocPayDischarged() {
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Discharged/Not discharged Doctor payment summery/Doctor Payments For Discharged patients(/faces/inward/inward_professional_payment_discharged_or_notdischarged.xhtml)");
-        return docPayDischarged;
         
+        return docPayDischarged;
+
     }
 
     public void setDocPayDischarged(List<BillItem> docPayDischarged) {
@@ -1492,7 +1494,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocFeePayDischarged() {
-        if(docFeePayDischarged == null){
+        if (docFeePayDischarged == null) {
             docFeePayDischarged = new ArrayList<>();
         }
         return docFeePayDischarged;
@@ -1503,7 +1505,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocFeePayNotDischarged() {
-        if(docFeePayNotDischarged == null){
+        if (docFeePayNotDischarged == null) {
             docFeePayNotDischarged = new ArrayList<>();
         }
         return docFeePayNotDischarged;
@@ -1514,9 +1516,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillFee> getDocFeeDueDischarged() {
-         if(docFeeDueDischarged == null){
-             docFeeDueDischarged = new ArrayList<>();
-         }
+        if (docFeeDueDischarged == null) {
+            docFeeDueDischarged = new ArrayList<>();
+        }
         return docFeeDueDischarged;
     }
 
@@ -1525,7 +1527,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillFee> getDocFeeDueNotDischarged() {
-        if(docFeeDueNotDischarged == null){
+        if (docFeeDueNotDischarged == null) {
             docFeeDueNotDischarged = new ArrayList<>();
         }
         return docFeeDueNotDischarged;
@@ -1574,7 +1576,5 @@ public class InwardStaffPaymentBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
 
 }

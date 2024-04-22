@@ -35,6 +35,7 @@ public class Vmp extends PharmaceuticalItem implements Serializable {
     private Double issueUnitsPerPackUnit;
     private Double issueMultipliesQuantity;
     private Double minimumIssueQuantity;
+    
 
     public Vmp() {
     }

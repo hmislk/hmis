@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       
-      xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
 
@@ -41,7 +41,7 @@
                                 <au:department value="#{institutionLabSumeryController.department}" />
                             </h:panelGrid>
                             <h:panelGrid columns="6" class="my-2">
-                                <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-refresh" value="Refresh" ajax="false" action="#{institutionLabSumeryController.createLabBillsWithoutOwn()}" />
+                                <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-refresh" value="Process" ajax="false" action="#{institutionLabSumeryController.createLabBillsWithoutOwn()}" />
                                 <p:defaultCommand target="btnRefresh"/>
 
                                 <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >

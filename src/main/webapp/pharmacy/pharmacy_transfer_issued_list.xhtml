@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
         <h:form>
@@ -13,141 +13,138 @@
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/> 
                 </f:facet>
-
-                <h:panelGrid columns="6" class="w-100">
-                    <h:outputLabel value="From Date"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                    </p:calendar>
-                    <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                    </p:calendar>
-                    <h:outputLabel/>
-                    <h:outputLabel/>
-                    <h:outputLabel value="Issue No"/>   
-                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />  
-                    <h:outputLabel value="From Deprtment"/> 
-                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" /> 
-                    <h:outputLabel value="Staff "/>
-                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />  
-
-                </h:panelGrid>
-
-                <p:commandButton 
-                    id="btnSearch" 
-                    ajax="false" 
-                    value="Search" 
-                    icon="fas fa-search"
-                    class="ui-button-warning my-2"
-                    action="#{searchController.createIssueTable()}"/> 
-
-
-                <p:dataTable 
-                    value="#{searchController.bills}" 
-                    var="p"
-                    paginator="true" paginatorPosition="bottom"
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                    rowsPerPageTemplate="5,10,15"
-                    >                       
-                    <p:column headerText="Issue No" width="100px">                        
-                        <h:outputLabel value="#{p.deptId}"/>                          
-                    </p:column>
-                    <p:column headerText="From Department" width="150px">                       
-                        <h:outputLabel value="#{p.department.name}"/>                          
-                    </p:column>  
-                    <p:column headerText="Issued By" width="100px">
-                        <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
-                        <br/>
-                        <h:panelGroup rendered="#{p.cancelled}" >
-                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                            <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
-                            </h:outputLabel>
-                        </h:panelGroup>
-                    </p:column> 
-                    <p:column headerText="Staff" width="100px">                       
-                        <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                            
-                    </p:column> 
-                    <p:column headerText="Issued At" width="100px">                      
-                        <h:outputLabel value="#{p.createdAt}"/>                       
-                        <br/>
-                        <h:panelGroup rendered="#{p.cancelled}" >
-                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                            <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
-                                           value="#{p.cancelledBill.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
-                        </h:panelGroup>
-                    </p:column>
-
-                    <p:column headerText="Action" width="100px">
+                <div class='row'>
+                    <div class='col-2'>
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" class="w-100" inputStyleClass="w-100" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{searchController.toDate}" class="w-100" inputStyleClass="w-100" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                        </p:calendar>
                         <p:commandButton 
+                            id="btnSearch" 
                             ajax="false" 
-                            icon="far fa-eye"
-                            class="ui-button-info"
-                            action="pharmacy_reprint_transfer_isssue">
-                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
-                        </p:commandButton>
-
-                        <p:commandButton 
-                            ajax="false"
-                            icon="fas fa-check"
-                            class="ui-button-success mx-2"
-                            action="pharmacy_transfer_receive"
-                            disabled="#{p.cancelled eq true}">
-                            <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
-                        </p:commandButton>
-
-                    </p:column>
-
-                    <p:column headerText="Received" style="text-align: center">                   
-                        <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
-                            <p:column  >                                                               
-                                <h:outputLabel  value="#{b.deptId}"/>                                   
+                            value="Search" 
+                            icon="fas fa-search"
+                            class="ui-button-warning w-100 my-1"
+                            action="#{searchController.createIssueTable()}"/> 
+                        <h:outputLabel value="Issue No"/>   
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>  
+                        <h:outputLabel value="From Deprtment"/> 
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" class="w-100"/> 
+                        <h:outputLabel value="Staff "/>
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="w-100"/>  
+                    </div>
+                    <div class='col-10'>
+                        <p:dataTable 
+                            value="#{searchController.bills}" 
+                            var="p"
+                            paginator="true" paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            >                       
+                            <p:column headerText="Issue No" width="100px">                        
+                                <h:outputLabel value="#{p.deptId}"/>                          
                             </p:column>
-                            <p:column >
-                                <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputLabel>
+                            <p:column headerText="From Department" width="150px">                       
+                                <h:outputLabel value="#{p.department.name}"/>                          
+                            </p:column>  
+                            <p:column headerText="Issued By" width="100px">
+                                <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
                                 <br/>
-                                <h:panelGroup rendered="#{b.cancelled}" >
+                                <h:panelGroup rendered="#{p.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column> 
+                            <p:column headerText="Staff" width="100px">                       
+                                <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                            
+                            </p:column> 
+                            <p:column headerText="Issued At" width="100px">                      
+                                <h:outputLabel value="#{p.createdAt}"/>                       
+                                <br/>
+                                <h:panelGroup rendered="#{p.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                   value="#{b.cancelledBill.createdAt}" >
+                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
+                                                   value="#{p.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
-                                </h:panelGroup>                               
-                            </p:column> 
-                            <p:column >                               
-                                <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
-                                </h:outputLabel>                                
-                                <br/>
-                                <h:panelGroup rendered="#{b.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled by " />
-                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                   value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup> 
-                            </p:column>                                                     
-                            <p:column >
-                                <h:outputLabel value="#{b.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>                                  
+                                </h:panelGroup>
                             </p:column>
-                            <p:column>
+
+                            <p:column headerText="Action" width="100px">
                                 <p:commandButton 
                                     ajax="false" 
-                                    icon="fas fa-eye"
+                                    icon="far fa-eye"
                                     class="ui-button-info"
-                                    value="View Recieve Note" 
-                                    action="pharmacy_reprint_transfer_receive" 
-                                    disabled="#{b.creater eq null}">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                    action="pharmacy_reprint_transfer_isssue">
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fas fa-check"
+                                    class="ui-button-success mx-2"
+                                    action="pharmacy_transfer_receive"
+                                    disabled="#{p.cancelled eq true}">
+                                    <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
+                                </p:commandButton>
+
+                            </p:column>
+
+                            <p:column headerText="Received" style="text-align: center">                   
+                                <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
+                                    <p:column  >                                                               
+                                        <h:outputLabel  value="#{b.deptId}"/>                                   
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{b.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{b.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                           value="#{b.cancelledBill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>                               
+                                    </p:column> 
+                                    <p:column >                               
+                                        <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>                                
+                                        <br/>
+                                        <h:panelGroup rendered="#{b.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled by " />
+                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                           value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup> 
+                                    </p:column>                                                     
+                                    <p:column >
+                                        <h:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                  
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fas fa-eye"
+                                            class="ui-button-info"
+                                            value="View Recieve Note" 
+                                            action="pharmacy_reprint_transfer_receive" 
+                                            disabled="#{b.creater eq null}">
+                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:dataTable>
                             </p:column>
 
                         </p:dataTable>
-                    </p:column>
-
-                </p:dataTable>
+                    </div>
+                </div>
             </p:panel>
         </h:form>
     </ui:define>  

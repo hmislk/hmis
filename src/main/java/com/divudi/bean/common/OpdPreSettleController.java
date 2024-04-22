@@ -5,13 +5,16 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
@@ -26,6 +29,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
@@ -38,7 +42,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.util.JsfUtil;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -117,12 +121,14 @@ public class OpdPreSettleController implements Serializable {
     /////////////////////////
     //   PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
+    private double total;
     PaymentMethod paymentMethod;
     double cashPaid;
     double reminingCashPaid;
     double netTotal;
     double balance;
     Double editingQty;
+    private Token token;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -154,6 +160,10 @@ public class OpdPreSettleController implements Serializable {
     
     public String navigateToScanBills(){
         return "/cashier/scan_bill_by_barcode_scanner?faces-redirect=true";
+    }
+    
+    public String navigateToSettleOpdPreBills(){
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
     }
     
     public Double getEditingQty() {
@@ -257,11 +267,11 @@ public class OpdPreSettleController implements Serializable {
 
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //        }
@@ -278,6 +288,7 @@ public class OpdPreSettleController implements Serializable {
         getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBillClassType(BillClassType.BilledBill);
         getSaleBill().setBillType(BillType.OpdBill);
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -354,6 +365,10 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         
+        if(getCashPaid() < getPreBill().getNetTotal()){
+           JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
+            return; 
+        }
         saveSaleBill();
         saveSaleBillItems();
 
@@ -367,6 +382,26 @@ public class OpdPreSettleController implements Serializable {
 //        makeNull();
         billPreview = true;
 
+    }
+    
+    public double calculatRemainForMultiplePaymentTotal() {
+        
+        total = getPreBill().getNetTotal();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+
+            }
+            return total - multiplePaymentMethodTotalValue;
+        }
+        return total;
     }
 
     public BilledBill createBilledBillForPreBill(Bill preBill) {
@@ -495,7 +530,6 @@ public class OpdPreSettleController implements Serializable {
     }
     
     public String toSettle(Bill args) {
-        System.out.println("bill = " + args.getId());
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
@@ -505,11 +539,12 @@ public class OpdPreSettleController implements Serializable {
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
-            UtilityController.addErrorMessage("Allready Paid");
+            JsfUtil.addErrorMessage("Allready Paid");
             return "";
         } else {
             setPreBill(args);
-            return "/opd_bill_pre_settle";
+            getPreBill().setPaymentMethod(args.getPaymentMethod());
+            return "/opd_bill_pre_settle?faces-redirect=true";
         }
     }
 
@@ -537,7 +572,7 @@ public class OpdPreSettleController implements Serializable {
             setBilledBill(getPreBill().getReferenceBill());
         }
 
-        return "/opd_bill_batch_pre_settle";
+        return "/opd_bill_batch_pre_settle?faces-redirect=true";
     }
 
     public String settle() {
@@ -558,12 +593,12 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public boolean errorCheck() {
-        if (cashPaid == 0.0 && getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (cashPaid == 0.0 && getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             JsfUtil.addErrorMessage("Please Enter Correct Amount");
             return true;
         }
         if (getBilledBill() == null) {
-            UtilityController.addErrorMessage("Nothing To Pay");
+            JsfUtil.addErrorMessage("Nothing To Pay");
             return true;
         }
         return false;
@@ -629,21 +664,23 @@ public class OpdPreSettleController implements Serializable {
             //// // System.out.println("dbl = " + dbl);
             if (b.isCancelled()) {
                 if (getBilledBill().getForwardReferenceBills().size() == 1) {
-                    UtilityController.addErrorMessage("Can't Pay,This Bill cancelled");
+
+                    JsfUtil.addErrorMessage("Can't Pay,This Bill Cancelled");
+
                 } else {
-                    UtilityController.addErrorMessage("Some Bill cancelled This Batch Bill");
+                    JsfUtil.addErrorMessage("Some Bill cancelled This Batch Bill");
                 }
                 continue;
             }
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 for (BillItem bi : b.getBillItems()) {
 
                     String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
                     BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
                     if (rbi != null) {
-                        UtilityController.addErrorMessage("Some Bill Item Already Refunded");
+                        JsfUtil.addErrorMessage("Some Bill Item Already Refunded");
                         continue;
                     }
 
@@ -669,11 +706,11 @@ public class OpdPreSettleController implements Serializable {
         if (getBilledBill().getCashPaid() >= getBilledBill().getNetTotal()) {
             getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
             JsfUtil.addSuccessMessage("Sucessfully Fully Paid");
-            return "/bill_print";
+            return "/bill_print?faces-redirect=true";
         } else {
             JsfUtil.addSuccessMessage("Sucessfully Paid");
             getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
-            return "/bill_print_advance";
+            return "/bill_print_advance?faces-redirect=true";
         }
     }
 
@@ -683,6 +720,7 @@ public class OpdPreSettleController implements Serializable {
         tmp.copyValue(b);
         tmp.setReferenceBill(b);
         tmp.setBillType(BillType.OpdBathcBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         tmp.setBillClassType(BillClassType.BilledBill);
         tmp.setInstitution(getSessionController().getInstitution());
         tmp.setDepartment(getSessionController().getDepartment());
@@ -730,7 +768,7 @@ public class OpdPreSettleController implements Serializable {
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(paymentMethod);
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             if (cashPaid < getBilledBill().getBalance()) {
                 p.setPaidValue(cashPaid);
             } else {
@@ -748,7 +786,6 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
-
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
@@ -811,7 +848,7 @@ public class OpdPreSettleController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
@@ -848,9 +885,10 @@ public class OpdPreSettleController implements Serializable {
         JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
 
-    public Payment createPayment(Bill bill, PaymentMethod pm) {
+    public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1066,6 +1104,23 @@ public class OpdPreSettleController implements Serializable {
     public void setBillID(Long billID) {
         this.billID = billID;
     }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
+    
     
     
 

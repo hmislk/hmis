@@ -31,7 +31,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -186,10 +186,10 @@ public class AppointmentController implements Serializable {
         // getBillBean().calculateBillItems(b, getLstBillEntries());
         //     getBills().add(b);
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Inward appoinment(/faces/inward/inward_appointment.xhtml)");
+        
     }
     
     public void dateChangeListen() {
@@ -230,17 +230,17 @@ public class AppointmentController implements Serializable {
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
             
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
             
             if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
+                JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
             
             if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+                JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
             
@@ -261,7 +261,7 @@ public class AppointmentController implements Serializable {
 //
 //        if (getPatientTabId().toString().equals("tabSearchPt")) {
 //            if (getSearchedPatient() == null) {
-//                UtilityController.addErrorMessage("Plese Select Patient");
+//                JsfUtil.addErrorMessage("Plese Select Patient");
 //            }
 //        }
         //if (getPatientTabId().toString().equals("tabNewPt")) {
@@ -276,7 +276,7 @@ public class AppointmentController implements Serializable {
         }
         
         if (getSearchedPatient().getPerson().getName() == null || getSearchedPatient().getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Can not bill without Patient Name");
+            JsfUtil.addErrorMessage("Can not bill without Patient Name");
             return true;
         }
 

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
@@ -13,7 +13,81 @@
                 <p:growl ></p:growl>
                 <p:panel class="w-100" style="height: 100vh;">
                     <f:facet name="header" >
-                        <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
+                            </div>
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <h:form >
+                                        <div class="d-flex justify-content-end">
+                                            <p:commandButton
+                                                value="Edit"
+                                                action="#{patientController.navigateToEmrEditPatient()}"
+                                                ajax="false"
+                                                icon="fa fa-pencil"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="OPD Visit"
+                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                                ajax="false"
+                                                icon="fa fa-stethoscope"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Profile Picture"
+                                                action="#{patientController.navigateToCapturePatientPhoto()}"
+                                                ajax="false"
+                                                icon="fa fa-user"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+
+
+                                            <p:commandButton
+                                                value="Data Entry"
+                                                action="#{patientController.navigateToNewDataEntryForm}"
+                                                ajax="false"
+                                                icon="fa fa-keyboard"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="OPD Billing"
+                                                action="#{patientController.navigateToOpdBilling()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Pharmacy Billing"
+                                                action="#{patientController.navigateToPharamecyBilling()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Patient Dashboard"
+                                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                style="float: right;"
+                                                value="Lookup"
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning mx-1"
+                                                action="#{opdBillController.navigateToSearchPatients()}"
+                                                >
+                                            </p:commandButton>
+                                        </div>
+                                    </h:form>
+                                </div>
+                            </div>
+                        </div>
                     </f:facet>
                     <div class="row" >
                         <div class="col-md-4 " >
@@ -40,81 +114,6 @@
                             <emr:patient patient="#{patientController.current}" ></emr:patient>
                         </div>
                         <div class="col-md-8" >
-
-                            <div class="row" >
-                                <div class="col-12 p-2" >
-                                    <h:form >
-                                        <div class="d-flex justify-content-end">
-                                            <p:commandButton 
-                                                value="Edit" 
-                                                action="#{patientController.navigateToEmrEditPatient()}" 
-                                                ajax="false" 
-                                                icon="fa fa-pencil"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="OPD Visit" 
-                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
-                                                ajax="false" 
-                                                icon="fa fa-stethoscope"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="Profile Picture" 
-                                                action="#{patientController.navigateToCapturePatientPhoto()}"
-                                                ajax="false" 
-                                                icon="fa fa-user"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-
-
-                                            <p:commandButton 
-                                                value="Data Entry" 
-                                                action="#{patientController.navigateToNewDataEntryForm}" 
-                                                ajax="false" 
-                                                icon="fa fa-keyboard"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="OPD Billing" 
-                                                action="#{patientController.navigateToOpdBilling()}" 
-                                                ajax="false"
-                                                icon="fa fa-money-bill"
-                                                styleClass="mx-1">
-                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
-                                            </p:commandButton>
-                                             <p:commandButton 
-                                                value="Pharmecy Billing" 
-                                                action="#{patientController.navigateToPharamecyBilling()}" 
-                                                ajax="false"
-                                                icon="fa fa-money-bill"
-                                                styleClass="mx-1">
-                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="Patient Dashboard" 
-                                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                                ajax="false" 
-                                                icon="fa fa-money-bill"
-                                                styleClass="mx-1">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                style="float: right;"
-                                                value="Lookup" 
-                                                ajax="false"
-                                                icon="fa fa-search"
-                                                class="ui-button-warning mx-1" 
-                                                action="#{opdBillController.navigateToSearchPatients()}" 
-                                                >
-                                            </p:commandButton>
-                                        </div>
-                                    </h:form>
-
-
-
-                                </div>
-                            </div>
-
                             <div class="row" >
                                 <div class="col-12" >
                                     <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
@@ -173,7 +172,7 @@
                                                                                id="btnDeleteDx"
                                                                                process="btnDeleteDx"
                                                                                update="tblDxx"
-                                                                               onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                               onclick="if (!confirm('Are you sure you want to delete this Diagnosis?'))
                                                                                            return false;"
 
                                                                                action="#{patientEncounterController.removePatientDiagnosis()}"
@@ -330,6 +329,76 @@
 
                                             </h:form>
                                         </p:tab>
+                                        <p:tab title="Surgical Conditions" >
+                                            <h:form>
+                                                <div class="row m-2">
+                                                    <div class="col-md-3" >
+                                                        <p:autoComplete 
+                                                            id="acPr"
+                                                            completeMethod="#{procedureController.completeProcedures}"
+                                                            value="#{patientEncounterController.patientProcedure.itemValue}"
+                                                            var="item"
+                                                            itemLabel="#{item}"
+                                                            itemValue="#{item}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            placeholder="Select Surgery"
+                                                            />
+                                                    </div>
+                                                    <div class="col-md-6" >
+                                                        <p:inputText
+                                                            id="txtPr"
+                                                            class="w-100"
+                                                            value="#{patientEncounterController.patientProcedure.stringValue}"
+                                                            placeholder="Details"/>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton value="Add"
+                                                                         id="btnAddPr"
+                                                                         icon="fa fa-plus"
+                                                                         class="mx-1 ui-button-success"
+                                                                         process="btnAddPr acPr txtPr"
+                                                                         update="tblPrc acPr txtPr"
+                                                                         action="#{patientEncounterController.addPatientProcedure()}"
+                                                                         />
+                                                    </div>
+                                                </div>
+                                                <div class="row m-2" >
+                                                    <div class="col-md-12" >
+                                                        <p:dataTable
+                                                            id="tblPrc"
+                                                            value="#{patientEncounterController.patientProcedures}"
+                                                            var="pr">
+                                                            <p:column headerText="Procedure">
+                                                                <p:outputLabel value="#{pr.itemValue.name}">
+                                                                </p:outputLabel>
+                                                                <p:spacer height="1" width="5" ></p:spacer>
+                                                                <p:commandLink value="X" class="text-danger" 
+                                                                               id="btnDeletePr"
+                                                                               process="btnDeletePr"
+                                                                               update="tblPrc"
+                                                                               onclick="if (!confirm('Are you sure you want to delete this Procedure?'))
+                                                                                           return false;"
+
+                                                                               action="#{patientEncounterController.removePatientProcedure()}"
+                                                                               >
+                                                                    <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{pr}"/>
+                                                                </p:commandLink>
+                                                                <p:tooltip value="Delete" for="btnDeletePr" ></p:tooltip>
+                                                            </p:column>
+                                                            <p:column headerText="Details">
+                                                                <h:outputText value="#{pr.stringValue}"/>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+
+
+
+
+                                            </h:form>
+                                        </p:tab>
                                         <p:tab title="Allergies" >
                                             <h:form>
                                                 <div class="row m-2">
@@ -376,6 +445,8 @@
                                                             >
                                                             <p:column headerText="Medicine">
                                                                 <h:outputText value="#{allergy.itemValue.name}"/>
+                                                                <h:outputText value="#{allergy.lobValue}"/>
+                                                                <h:outputText value="#{allergy.stringValue}"/>
                                                                 <p:commandLink 
                                                                     value="X" 
                                                                     class="text-danger" 
@@ -392,9 +463,6 @@
                                                                         />
                                                                 </p:commandLink>
 
-                                                            </p:column>
-                                                            <p:column headerText="Details">
-                                                                <h:outputText value="#{allergy.stringValue}"/>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </div>
@@ -486,8 +554,8 @@
                                                                 <p:commandLink id="billNo" 
                                                                                ajax="false" 
                                                                                value="#{bill.insId}" 
-                                                                               action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
-                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                                               action="#{opdBillController.navigateToViewOpdBatchBill}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                                                 </p:commandLink>
                                                             </p:column>
                                                             <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
@@ -513,7 +581,7 @@
                                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>
                                                             </p:column>
-                                                             <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
+                                                            <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
                                                                 <p:outputLabel  value="#{bill.billDate}" >
                                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>

@@ -36,7 +36,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -901,7 +901,7 @@ public class StoreController1 implements Serializable {
         createInstitutionTransferReceive();
         createInstitutionIssue();
         
-commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Purchase orders(view Details)(/faces/store/store_purhcase_order_request.xhtml)");
+
     }
 
     public void createGrnTable() {

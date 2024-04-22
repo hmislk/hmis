@@ -180,7 +180,7 @@ public class Report3DController implements Serializable {
         }
 
         sql += " group by FUNC('Month',pbi.billItem.bill.createdAt) "
-                + " order by pbi.billItem.bill.createdAt ";
+                + " order by FUNC('Month',pbi.billItem.bill.createdAt) ";
 
         m.put("bc", PreBill.class);
         m.put("bt", BillType.PharmacyPre);

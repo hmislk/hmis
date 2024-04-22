@@ -11,7 +11,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
@@ -24,7 +24,7 @@ import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +75,7 @@ public class VmpController implements Serializable {
     @Inject
     VtmInVmpController vtmInVmpController;
     @EJB
-    VtmsVmpsFacade vivFacade;
+    VirtualProductIngredientFacade vivFacade;
     List<VirtualProductIngredient> vivs;
 
     @EJB
@@ -194,14 +194,15 @@ public class VmpController implements Serializable {
     }
 
     public List<Vmp> completeVmp(String query) {
-
-        String sql;
-        if (query == null) {
-            vmpList = new ArrayList<Vmp>();
+        List<Vmp> vmpList;
+        if (query == null || query.trim().isEmpty()) {
+            vmpList = new ArrayList<>();
         } else {
-            sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            vmpList = getFacade().findByJpql(sql);
+            String jpql = "SELECT c FROM Vmp c WHERE c.retired = false AND LOWER(c.name) LIKE :query ORDER BY c.name";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("query", "%" + query.trim().toLowerCase() + "%");
+
+            vmpList = getFacade().findByJpql(jpql, parameters);
         }
         return vmpList;
     }
@@ -339,8 +340,11 @@ public class VmpController implements Serializable {
         if (getCurrent().getId() == null) {
             return new ArrayList<VirtualProductIngredient>();
         } else {
-
-            vivs = getVivFacade().findByJpql("select v from VtmsVmps v where v.vmp.id = " + getCurrent().getId());
+            Long currentId = getCurrent().getId();
+            String jpqlQuery = "SELECT v FROM VirtualProductIngredient v WHERE v.vmp.id = :vmpId";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("vmpId", currentId);
+            vivs = getVivFacade().findByJpql(jpqlQuery, parameters);
 
             if (vivs == null) {
                 return new ArrayList<VirtualProductIngredient>();
@@ -398,7 +402,7 @@ public class VmpController implements Serializable {
             return true;
         }
         if (addingVtmInVmp.getVtm() == null) {
-            UtilityController.addErrorMessage("Select Vtm");
+            JsfUtil.addErrorMessage("Select Vtm");
             return true;
         }
 //        TODO:Message
@@ -406,15 +410,15 @@ public class VmpController implements Serializable {
             return true;
         }
         if (addingVtmInVmp.getStrength() == 0.0) {
-            UtilityController.addErrorMessage("Type Strength");
+            JsfUtil.addErrorMessage("Type Strength");
             return true;
         }
         if (current.getCategory() == null) {
-            UtilityController.addErrorMessage("Select Category");
+            JsfUtil.addErrorMessage("Select Category");
             return true;
         }
         if (addingVtmInVmp.getStrengthUnit() == null) {
-            UtilityController.addErrorMessage("Select Strenth Unit");
+            JsfUtil.addErrorMessage("Select Strenth Unit");
             return true;
         }
 
@@ -430,7 +434,7 @@ public class VmpController implements Serializable {
         getAddingVtmInVmp().setVmp(current);
         getVivFacade().create(getAddingVtmInVmp());
 
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
 
         addingVtmInVmp = null;
 
@@ -472,11 +476,11 @@ public class VmpController implements Serializable {
         this.removingVtmInVmp = removingVtmInVmp;
     }
 
-    public VtmsVmpsFacade getVivFacade() {
+    public VirtualProductIngredientFacade getVivFacade() {
         return vivFacade;
     }
 
-    public void setVivFacade(VtmsVmpsFacade vivFacade) {
+    public void setVivFacade(VirtualProductIngredientFacade vivFacade) {
         this.vivFacade = vivFacade;
     }
 
@@ -578,19 +582,19 @@ public class VmpController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         }
         recreateModel();
         getItems();
     }
-    
+
     public void save() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
-        }else{
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully.");
+            JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
         getItems();
@@ -638,9 +642,9 @@ public class VmpController implements Serializable {
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

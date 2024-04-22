@@ -1,150 +1,254 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Final Payment Cancellation">                            
-                            <h:commandButton value="Cancel" action="#{inwardSearch.cancelFinalBillPayment()}" >
-                            </h:commandButton>                            
-                        </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Patient Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" ></h:outputLabel>
-                                    <h:outputLabel value="Bht No:" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                                    <h:outputLabel value="Age" />
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
-                                    <h:outputLabel value="Sex" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Phone" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
-                                    </h:outputLabel>
-                                </p:panelGrid>
+                        <p:panel>   
+                            <f:facet name="header">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <h:outputLabel value="Final Payment Cancellation" class="mt-2"></h:outputLabel>
+                                    </div>
+                                    <div class="col-md-5 d-flex justify-content-end gap-2">
+                                        <p:inputText 
+                                            placeholder="Enter Comments to Cancel Bill"
+                                            value="#{inwardSearch.comment}" 
+                                            class="w-100"/> 
+                                        <p:commandButton 
+                                            class="ui-button-danger"
+                                            icon="fa fa-cancel"
+                                            style="float: right;"
+                                            value="Cancel" 
+                                            ajax="false"
+                                            action="#{inwardSearch.cancelFinalBillPayment()}" >
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p:panel header="Patient Details">
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Patient ​Name" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Bht No" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Age" />
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Sex" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Phone" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                    </p:panel>
+                                </div>
+                                <div class="col-md-6">
+                                    <p:panel header="Bill Details">
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Bill No " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Total " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.total}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Discount " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.discount}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Net Total " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-10">
+                                                <h:outputLabel value="#{inwardSearch.bill.netTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <style>
+                                .noDisplayRow {
+                                    display: none;
+                                }
+                            </style>
+
+                            <p:panel header="Bill Item Details" class="mt-2">
+                                <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip"
+                                             rowStyleClass="#{(bip.grossValue ne 0) ? '' : 'noDisplayRow' }">
+                                    <p:column width="5em">
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}"/>                                
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                        <h:outputLabel value="#{bip.inwardChargeType}"/>
+                                    </p:column>
+                                    <p:column width="10em">
+                                        <f:facet name="header">Fee</f:facet>
+                                        <h:outputLabel value="#{bip.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                           
+                                    </p:column>
+                                </p:dataTable>
                             </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.total}" ></h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.discount}" ></h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip"
-                                         rowStyleClass="#{bip.netValue !=0 ?'':'noDisplayRow' }">
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                    <h:outputLabel value="#{rowIndex+1}"/>                                
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                    <h:outputLabel value="#{bip.inwardChargeType}"/>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Fee</f:facet>
-                                    <h:outputLabel value="#{bip.netValue}"/>                                
-                                </p:column>
-                            </p:dataTable>
                         </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{inwardSearch.comment}"/>                            
-                        </p:panel>
+
+
                     </h:panelGroup>
 
 
                     <h:panelGroup rendered="#{inwardSearch.printPreview}" >
-                        <div id="centrewrapper">
-                            <div id="centrecell">
-                                <div class="centrecontent">
-                                    <p:commandButton value="Print" ajax="false" action="#" >
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Cancel Bill Preview" class="mt-2"/>
+                                <p:commandButton 
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    style="float: right;"
+                                    value="Print" 
+                                    ajax="false" 
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                            </f:facet>
 
+                            <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
+                                <bi:finalBill_Cancel bill="#{inwardSearch.bill}" />
+                            </h:panelGroup>
+                            
+                            
+                            
+<!--                           <div style="border: 1px solid;" >
+                                <h:panelGroup id="gpBillP1review" >
+                                    <div style="height:100cm; width:12cm; padding:0.5cm; overflow:hidden!important; page-break-after:always; font-family: sans-serif; font-size: 16px; position: relative; " >
+                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.insId} **Cancelled"  style="position:absolute;left:4.5cm; top:1.5cm;" /> 
 
-                                    <div style="border: 1px solid;" >
-                                        <h:panelGroup id="gpBillPreview" >
-                                            <div style="height:14cm; width:12cm; padding:0.5cm; overflow:hidden!important; page-break-after:always; font-family: sans-serif; font-size: 16px; position: relative; " >
-                                                <h:outputLabel value="#{inwardSearch.bill.cancelledBill.insId} **Cancelled"  style="position:absolute;left:4.5cm; top:1.5cm;" /> 
+                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billDate}"  style="position: absolute; left: 10.5cm; top:1.5cm;" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputLabel>
 
-                                                <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billDate}"  style="position: absolute; left: 10.5cm; top:1.5cm;" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                                </h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.paymentMethod} / #{inwardSearch.bill.insId}" style="position:absolute;left:4.5cm; top:2.0cm;"  />
 
-                                                <h:outputLabel value="#{inwardSearch.bill.cancelledBill.paymentMethod} / #{inwardSearch.bill.insId}" style="position:absolute;left:4.5cm; top:2.0cm;"  />
+                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billTime}"  style="position: absolute; left: 10.5cm; top:2.0cm;" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
+                                        </h:outputLabel>
 
-                                                <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billTime}"  style="position: absolute; left: 10.5cm; top:2.0cm;" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                                                </h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" style="position:absolute;left:4.5cm; top:2.5cm; text-transform: uppercase; "  />
 
-                                                <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" style="position:absolute;left:4.5cm; top:2.5cm; text-transform: uppercase; "  />
+                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" style="position: absolute;left:4.5cm; top:3.0cm;"  />
 
-                                                <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" style="position: absolute;left:4.5cm; top:3.0cm;"  />
+                                        <h:outputLabel value="Cashier : #{inwardSearch.bill.cancelledBill.creater.code}" style="position:absolute;left:1.5cm; top:14.1cm;"  />
 
-                                                <h:outputLabel value="Cashier : #{inwardSearch.bill.cancelledBill.creater.code}" style="position:absolute;left:1.5cm; top:14.1cm;"  />
+                                        <h:outputLabel value="#{inwardSearch.bill.collectingCentre.name} #{inwardSearch.bill.creditCompany.name}" style="position:absolute;left:5.5cm; top:14.1cm;"  />
 
-                                                <h:outputLabel value="#{inwardSearch.bill.collectingCentre.name} #{inwardSearch.bill.creditCompany.name}" style="position:absolute;left:5.5cm; top:14.1cm;"  />
+                                        <h:dataTable value="#{inwardSearch.billItems}" var="bip" style="position: absolute;left:1.6cm; top:4.5cm; border: 0px; ">
+                                            <h:column >
+                                                <h:outputLabel value="#{bip.inwardChargeType}" style="margin: 4px;" />
+                                            </h:column>
+                                        </h:dataTable>
 
-                                                <h:dataTable value="#{inwardSearch.billItems}" var="bip" style="position: absolute;left:1.6cm; top:4.5cm; border: 0px; ">
-                                                    <h:column >
-                                                        <h:outputLabel value="#{bip.inwardChargeType}" style="margin: 4px;" />
-                                                    </h:column>
-                                                </h:dataTable>
-
-                                                <div style="position: absolute;left:9.6cm; top:4.5cm; border: 0px; text-align: right;"  >
-                                                    <h:dataTable value="#{inwardSearch.billItems}" var="bip1"  >
-                                                        <h:column>
-                                                            <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </h:column>
-                                                    </h:dataTable>
-                                                </div>
-                                                <div style="position: relative;left:3.6cm; margin-top: 0.5cm; top:9.5cm; border: 0px; text-align: right;" >
-                                                    <table><tr><td><br/><br/></td>
-                                                            <td><br/><br/></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="min-width: 4.5cm;text-align: left;">
-                                                                <h:outputLabel value="Total"/>
-                                                            </td>
-                                                            <td>
-                                                                <h:outputLabel value="#{inwardSearch.bill.netTotal}"  style="font-size: 110%; font-weight: bold ; text-align: right;    ">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </div>
-
-
-                                            </div>
-
-                                        </h:panelGroup>
+                                        <div style="position: absolute;left:9.6cm; top:4.5cm; border: 0px; text-align: right;"  >
+                                            <h:dataTable value="#{inwardSearch.billItems}" var="bip1"  >
+                                                <h:column>
+                                                    <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </h:column>
+                                            </h:dataTable>
+                                        </div>
+                                        <div style="position: relative;left:3.6cm; margin-top: 0.5cm; top:9.5cm; border: 0px; text-align: right;" >
+                                            <table><tr><td><br/><br/></td>
+                                                    <td><br/><br/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="min-width: 4.5cm;text-align: left;">
+                                                        <h:outputLabel value="Total"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}"  style="font-size: 110%; font-weight: bold ; text-align: right;    ">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+
+                                </h:panelGroup>
+                            </div>-->
+                            
+                        </p:panel>
                     </h:panelGroup>
-
-
                 </h:form>                
             </ui:define>
         </ui:composition>

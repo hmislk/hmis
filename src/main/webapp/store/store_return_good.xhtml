@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:st="http://java.sun.com/jsf/composite/store">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:st="http://xmlns.jcp.org/jsf/composite/store">
 
 
     <ui:define name="content">
@@ -17,7 +17,7 @@
                     <f:facet name="header" >      
 
                         <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Dealor : "/>
+                            <h:outputLabel value="Supplier : "/>
                             <p:autoComplete converter="deal" value="#{storeGoodsReturnController.returnBill.toInstitution}"  
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}"
@@ -79,7 +79,7 @@
                         </h:outputText>
                     </p:column>  
 
-                    <p:column  headerText="Ballance Qty in Unit" style="width:25px!important;"> 
+                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;"> 
                         <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />                   
                     </p:column>  
 
@@ -93,7 +93,7 @@
                     </p:column>                 
 
 
-                    <p:column headerText="Bathch No" style="width:25px!important;">                       
+                    <p:column headerText="Batch No" style="width:25px!important;">                       
                         <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
                     </p:column>  
 

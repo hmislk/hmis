@@ -1,7 +1,7 @@
 package com.divudi.bean.web;
 
 import com.divudi.entity.web.TemplateComponent;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.facade.web.TemplateComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;

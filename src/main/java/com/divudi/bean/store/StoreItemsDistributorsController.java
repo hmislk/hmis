@@ -10,7 +10,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.DealerController;
 import com.divudi.bean.pharmacy.ItemsDistributorsController;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -99,16 +99,16 @@ public class StoreItemsDistributorsController implements Serializable {
 
     public void addToPackage() {
         if (getCurrentInstituion() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrentItem() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
         if (checkItem()) {
-            UtilityController.addErrorMessage("Item already added for this dealor");
+            JsfUtil.addErrorMessage("Item already added for this dealor");
             return;
         }
 
@@ -119,17 +119,17 @@ public class StoreItemsDistributorsController implements Serializable {
         pi.setCreatedAt(new Date());
         pi.setCreater(getSessionController().getLoggedUser());
         getFacade().create(pi);
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
         recreateModel();
     }
 
     public void removeFromPackage() {
         if (getCurrentInstituion() == null) {
-            UtilityController.addErrorMessage("Please select a package");
+            JsfUtil.addErrorMessage("Please select a package");
             return;
         }
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Please select an item");
+            JsfUtil.addErrorMessage("Please select an item");
             return;
         }
 
@@ -137,7 +137,7 @@ public class StoreItemsDistributorsController implements Serializable {
         getCurrent().setRetirer(getSessionController().getLoggedUser());
         getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
-        UtilityController.addSuccessMessage("Item Removed");
+        JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
     }
 
@@ -268,7 +268,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         searchItems = getFacade().findByJpql(sql, tmp);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Administration/Check entered data/Item Distributor(/faces/store/store_item_by_distributor.xhtml)");
+        
 
     }
 
@@ -293,12 +293,12 @@ public class StoreItemsDistributorsController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -316,9 +316,9 @@ public class StoreItemsDistributorsController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

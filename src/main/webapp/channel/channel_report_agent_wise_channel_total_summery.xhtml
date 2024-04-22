@@ -1,20 +1,20 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/channel/channel_reports.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
                 >
 
     <ui:define name="subContent">
 
         <h:form>
 
-            <p:panel header="Agent Wise Appoinment Count Summery">
+            <p:panel header="Agent Wise Appoinment Count Summary">
                 <f:facet name="header">
-                    <p:outputLabel value="Agent Wise Appoinment Count Summery(Session Date)" />
+                    <p:outputLabel value="Agent Wise Appoinment Count Summary(Session Date)" />
                     
                 </f:facet>
 
@@ -44,7 +44,7 @@
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
-                            <p:outputLabel value="Agent Wise Appoinment Count Summery" />
+                            <p:outputLabel value="Agent Wise Appoinment Count Summary" />
                             <br></br>
                             <p:outputLabel value="From : " />
                             <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >

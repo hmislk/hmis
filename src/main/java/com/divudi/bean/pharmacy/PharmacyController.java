@@ -51,7 +51,7 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import java.io.Serializable;
@@ -95,6 +95,8 @@ public class PharmacyController implements Serializable {
     ImporterController importerController;
     @Inject
     DiscardCategoryController discardCategoryController;
+    @Inject
+    VmpController vmpController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -122,7 +124,7 @@ public class PharmacyController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-  
+
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -152,7 +154,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> directPurchase;
     private List<Bill> bills;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
-    private int managePharamcyReportIndex;
+    private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
 
@@ -257,7 +259,6 @@ public class PharmacyController implements Serializable {
                 parameters.put("fi", institution);
             }
 
-
             bills = billFacade.findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
@@ -267,9 +268,64 @@ public class PharmacyController implements Serializable {
 
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
+    
+    
+    public String navigateToBinCard() {
+        return "/pharmacy/bin_card?faces-redirect=true";
+    }
+    
+    public String navigateToItemsList() {
+        return "/pharmacy/list_amps?faces-redirect=true";
+    }
+    
+    public String navigateToMedicineList() {
+        return "/pharmacy/list_medicines?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithoutDistributor() {
+        return "/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithSuppliersAndPrices() {
+        return "/pharmacy/item_supplier_prices?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithDistributor() {
+        return "/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true";
+    }
+    
+    public String navigateToItemsWithMultipleDistributorsItemsOnly() {
+        return "/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true";
+    }
+    
+    public String navigateToItemWithMultipleDistributors() {
+        return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
+    }
+    
+    public String navigateToReorderAnalysis() {
+        return "/pharmacy/ordering_data?faces-redirect=true";
+    }
+    
+    
+    public String navigateToReorderManagement() {
+        return "/pharmacy/reorder_management?faces-redirect=true";
+    }
+    
+    public String navigateToAllItemsTransactionSummary() {
+        return "/pharmacy/raport_all_item_transaction_summery?faces-redirect=true";
+    }
+    
+    public String navigateToItemTransactionDetails() {
+        return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
+    }
+    
     public String navigateToListPharmaceuticals() {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyAnalytics() {
+        return "/pharmacy/pharmacy_analytics?faces-redirect=true";
     }
 
     public String navigateToManagePharmaceuticals() {
@@ -293,6 +349,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAmp() {
+        ampController.setItems(null);
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
@@ -305,22 +362,31 @@ public class PharmacyController implements Serializable {
         atmController.getCurrent();
         return "/pharmacy/admin/atm?faces-redirect=true";
     }
-    
+
     public String navigateToManufacturers() {
         manufaturerController.getItems();
         manufaturerController.getCurrent();
         return "/pharmacy/pharmacy_manufacturer?faces-redirect=true";
     }
+
     public String navigateToDiscardCategory() {
         discardCategoryController.getItems();
         discardCategoryController.getCurrent();
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
-    
+
     public String navigateToImporters() {
         importerController.getItems();
         importerController.getCurrent();
         return "/pharmacy/pharmacy_importer?faces-redirect=true";
+    }
+    
+    public String navigateToSuppliers(){
+        return "/pharmacy/pharmacy_dealer?faces-redirect=true";
+    }
+    
+    public String navigateToItemSuppliers(){
+        return "/pharmacy/pharmacy_items_distributors?faces-redirect=true";
     }
 
     public String navigateToVmp() {
@@ -560,6 +626,40 @@ public class PharmacyController implements Serializable {
     }
 
     // </editor-fold>
+    public void clearItemHistory() {
+
+        grantStock = 0.00;
+        grantSaleQty = 0.00;
+        grantSaleValue = 0.00;
+        grantWholeSaleQty = 0.00;
+        grantWholeSaleValue = 0.00;
+        grantBhtIssueQty = 0.00;
+        grantBhtValue = 0.00;
+        grantTransferIssueQty = 0.00;
+        grantTransferIssueValue = 0.00;
+        grantTransferReceiveQty = 0.00;
+        grantTransferReceiveValue = 0.00;
+        grantIssueQty = 0.00;
+        grantIssueValue = 0.00;
+
+        fromDate = CommonFunctions.getStartOfMonth();
+        toDate = CommonFunctions.getEndOfDay(new Date());
+
+        pharmacyItem = null;
+        institutionStocks = null;
+        institutionSales = null;
+        grns = null;
+        institutionWholeSales = null;
+        institutionBhtIssue = null;
+        institutionTransferIssue = null;
+        institutionTransferReceive = null;
+        institutionIssue = null;
+        pos = null;
+        directPurchase = null;
+        ampps = null;
+
+    }
+
     public void deleteSelectedPharmaceuticalLight() {
         if (selectedLights == null || selectedLights.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -829,7 +929,7 @@ public class PharmacyController implements Serializable {
 
         Collections.sort(itemTransactionSummeryRows);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/All item transaction summery(/faces/pharmacy/raport_all_item_transaction_summery.xhtml)");
+        
 
     }
 
@@ -1313,6 +1413,134 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public double findAllOutTransactions(Item item) {
+        if (item instanceof Amp) {
+            return findAllOutTransactions((Amp) amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp((Vmp) item);
+            return findAllOutTransactions(amps);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public double findAllOutTransactions(Amp item) {
+        List<Amp> amps = new ArrayList<>();
+        amps.add(item);
+        return findAllOutTransactions(amps);
+    }
+
+    public double findAllOutTransactions(List<Amp> amps) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PharmacyBhtPre);
+        bts.add(BillType.PharmacyPre);
+        return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
+    }
+
+    public double findTransactionStocks(Department dep, Institution ins, List<BillType> billTypes, List<Amp> amps, Date fd, Date td) {
+        StringBuilder jpqlBuilder = new StringBuilder();
+        Map<String, Object> parameters = new HashMap<>();
+
+        jpqlBuilder.append("select sum(abs(i.pharmaceuticalBillItem.qty)) from BillItem i where i.retired = false");
+
+        if (dep != null) {
+            jpqlBuilder.append(" and i.bill.department = :dep");
+            parameters.put("dep", dep);
+        }
+        if (ins != null) {
+            jpqlBuilder.append(" and i.bill.department.institution = :ins");
+            parameters.put("ins", ins);
+        }
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpqlBuilder.append(" and i.bill.billType in :btp");
+            parameters.put("btp", billTypes);
+        }
+        if (amps != null && !amps.isEmpty()) {
+            jpqlBuilder.append(" and i.item in :itm");
+            parameters.put("itm", amps);
+        }
+        if (fd != null && td != null) {
+            jpqlBuilder.append(" and i.createdAt between :frm and :to");
+            parameters.put("frm", fd);
+            parameters.put("to", td);
+        }
+
+        jpqlBuilder.append(" group by i.bill.department");
+
+        String jpql = jpqlBuilder.toString();
+        double qty = getBillItemFacade().findDoubleByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return qty;
+    }
+
+    public double findTransactionQuentity(Item item) {
+        //TO DO Senula
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.InwardPharmacyRequest);
+        return 0.0;
+    }
+
+    public double findTransactionQuentity(Institution institution, Amp item, List<BillType> billTypes) {
+        //TO DO Senula
+        return 0.0;
+    }
+
+    public double findTransactionQuentity(Institution institution, Item item, List<BillType> billTypes, Date fromDate, Date toDate) {
+        //TO DO Senula
+        if (pharmacyItem instanceof Ampp) {
+            item = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            item = pharmacyItem;
+        }
+        String sql;
+
+//        sql = "select i "
+//                + " from BillItem i "
+//                + " where i.bill.department.institution=:ins"
+//                + " and i.bill.referenceBill.billType=:refType "
+//                + " and i.bill.referenceBill.cancelled=false "
+//                + " and i.item=:itm "
+//                + " and i.bill.billType=:btp "
+//                + " and i.createdAt between :frm and :to  "
+//                + " order by i.bill.department.name,i.bill.insId ";
+        Map m = new HashMap();
+
+        m.put("itm", item);
+        m.put("ins", institution);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btp", BillType.PharmacyPre);
+        m.put("refType", BillType.PharmacySale);
+//        
+//        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+//        if (billItems!=null) {
+//            grns.addAll(billItems);
+//        }
+//        //System.out.println("billItems = " + billItems);
+//        //System.out.println("institution.getName() = " + institution.getName());
+
+//        for (BillItem bi : billItems) {
+//            //System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
+//            //System.out.println("bi.getInsId() = " + bi.getInsId());
+//            //System.out.println("bi.getDeptId() = " + bi.getDeptId());
+//            //System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//        }
+        sql = "select i.bill.department,"
+                + " sum(i.netValue),"
+                + " sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.department.institution=:ins"
+                + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to  "
+                + " group by i.bill.department";
+
+        return 0.0;
+
+    }
+
     public List<Object[]> calDepartmentSale(Institution institution) {
         Item item;
 
@@ -1449,7 +1677,7 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(dayCount);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Date)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
+        
 
     }
 
@@ -1485,7 +1713,7 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(Math.abs(monthCount));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Month)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
+        
 
     }
 
@@ -1916,15 +2144,17 @@ public class PharmacyController implements Serializable {
         createDirectPurchaseTable();
         createInstitutionIssue();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/Item transaction details(/faces/pharmacy/pharmacy_item_transactions.xhtml)");
+        
     }
 
     public void createTable() {
-        createGrnTable();
-        createPoTable();
-        createDirectPurchaseTable();
+        createInstitutionSale();
+        createInstitutionWholeSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
         createInstitutionIssue();
-
+        createInstitutionTransferReceive();
     }
 
     public void createGrnTable() {

@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
@@ -125,11 +126,11 @@ public class MedicalPackageItemFeeController implements Serializable {
     public void saveCharge() {
 
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a Investigation");
+            JsfUtil.addErrorMessage("Please select a Investigation");
             return;
         }
 
@@ -140,10 +141,10 @@ public class MedicalPackageItemFeeController implements Serializable {
             currentFee.setCreater(getSessionController().getLoggedUser());
 
             getMedicalPackageFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getMedicalPackageFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
 
         setPakageTotal();
@@ -199,7 +200,7 @@ public class MedicalPackageItemFeeController implements Serializable {
 
     public void removeFee() {
         if (getRemovedMedicalPackageFee().getId() == null || getRemovedMedicalPackageFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedMedicalPackageFee().setRetired(true);
@@ -221,9 +222,9 @@ public class MedicalPackageItemFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;

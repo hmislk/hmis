@@ -4,14 +4,16 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:prints="http://java.sun.com/jsf/composite/ezcomp/prints"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <h:form>
-            <ui:composition template="./index.xhtml">
 
-                <ui:define name="subcontent">
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
                     <p:panel style="height: 100vh">
                         <f:facet name="header">
                             <i class="fas fa-barcode-scan mt-2"/>
@@ -26,7 +28,7 @@
                                     <p:inputText 
                                         id="billID"
                                         class="w-100"
-                                        value="#{searchController.currentBillId}"
+                                        value="#{searchController.currentTokenId}"
                                         placeholder="Enter Bill ID or Click here to Scan"
                                         >
                                     </p:inputText>
@@ -46,8 +48,11 @@
                             </div>
                         </div>
                     </p:panel>
-                </ui:define>
-            </ui:composition>
-        </h:form>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
     </h:body>
 </html>

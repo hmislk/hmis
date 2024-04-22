@@ -1,13 +1,13 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.SymanticType;
 import com.divudi.data.clinical.DocumentTemplateType;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.DocumentTemplate;
 import com.divudi.facade.DocumentTemplateFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,25 +95,36 @@ public class DocumentTemplateController implements Serializable {
 
     public String generateDefaultTemplateContents() {
         String contents = "";
-        contents = "{name}<br/>"
-                + "{age}<br/>"
-                + "{sex}<br/>"
-                + "{address}<br/>"
-                + "{phone}<br/>"
-                + "{medicines}<br/>"
-                + "{comments}<br/>"
-                + "{outdoor}<br/>"
-                + "{indoor}<br/>"
-                + "{ix}<br/>"
-                + "{past-dx}<br/>"
-                + "{routine-medicines}<br/>"
-                + "{allergies}<br/>"
-                + "{visit-date}<br/>"
-                + "{height}<br/>"
-                + "{weight}<br/>"
-                + "{bmi}<br/>"
-                + "{bp}";
+        contents = " Name : {name}<br/>"
+                + "Age : {age}<br/>"
+                + "Sex : {sex}<br/>"
+                + "Address : {address}<br/>"
+                + "Phone : {phone}<br/>"
+                + "Medicines : {medicines}<br/>"
+                + "Comments : {comments}<br/>"
+                + "Outdoor : {outdoor}<br/>"
+                + "Indoor : {indoor}<br/>"
+                + "Order Tests For Visit : {ix}<br/>"
+                + "Order Tests For Visit Same Line: {ix-same-line}<br/>"
+                + "Plan of Action : {pa}<br/>"
+                + "Past Diagnosis : {past-dx}<br/>"
+                + "Routine Medicines : {routine-medicines}<br/>"
+                + "Allergies : {allergies}<br/>"
+                + "Visit Date : {visit-date}<br/>"
+                + "Height : {height}<br/>"
+                + "Weight : {weight}<br/>"
+                + "BMI : {bmi}<br/>"
+                + "Blood Pressure : {bp}<br/>"
+                + "Pulse Rate : {pr}<br/>"
+                + "Peak Flow Rate : {pfr}<br/>"
+                + "Respiratory Rate : {rr}<br/>"
+                + "Saturation : {sat}<br/>"
+                + "Patient's Name : {patient_name}<br/>"
+                + "Patient's Age : {patient_age}<br/>"
+                + "Patient's PHN Number : {patient_phn_number}<br/>"
+                + "Patient's National Identity Card Number : {patient_nic}<br/>";
         return contents;
+
     }
 
     public String navigateToEditUserDocumentTemplates() {
@@ -156,12 +167,12 @@ public class DocumentTemplateController implements Serializable {
     private void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updates");
+            JsfUtil.addSuccessMessage("Updated");
         }
         items = null;
     }
@@ -192,9 +203,9 @@ public class DocumentTemplateController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         items = null;
         current = null;

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/pricing/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -65,7 +65,7 @@
                                     <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" style="min-width: 300px"></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
                                     <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}" style="min-width: 300px"></p:selectBooleanCheckbox>
-                                    <h:outputText value="Creater" ></h:outputText>
+                                    <h:outputText value="Creator" ></h:outputText>
                                     <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
                                     <h:outputText value="Created At" ></h:outputText>
                                     <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >

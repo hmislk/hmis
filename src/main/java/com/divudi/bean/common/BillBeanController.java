@@ -4,7 +4,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillType;
@@ -2778,7 +2778,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Item> itemFromPackage(Item packege) {
-
         String sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
         List<Item> packageItems = getItemFacade().findByJpql(sql);
 
@@ -2789,6 +2788,10 @@ public class BillBeanController implements Serializable {
 
         String sql = "Select i from MedicalPackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
         List<Item> packageItems = getItemFacade().findByJpql(sql);
+        if(packageItems==null){
+            packageItems = new ArrayList<>();
+            JsfUtil.addErrorMessage("No Items inside Package");
+        }
 
         return packageItems;
     }
@@ -2943,7 +2946,7 @@ public class BillBeanController implements Serializable {
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);
 //        bill.setDiscount(dis);
-        if (sessionController.getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////System.out.println("cashRemain" + billController.getCashRemain());
             if (billController.getCashRemain() != 0) {
                 if (tot > billController.getCashRemain()) {
@@ -2972,8 +2975,10 @@ public class BillBeanController implements Serializable {
             ////System.out.println(".................");
 
         } else {
+            bill.setGrantTotal(tot);
             bill.setTotal(tot);
             bill.setNetTotal(net);
+            bill.setBillTotal(net);
             bill.setDiscount(dis);
         }
 
@@ -3232,11 +3237,11 @@ public class BillBeanController implements Serializable {
         ptIx.setPerformDepartment(e.getBillItem().getItem().getDepartment());
 
         if (e.getBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("No Bill Item Selected");
+            JsfUtil.addErrorMessage("No Bill Item Selected");
         } else if (e.getBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
+            JsfUtil.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() == null) {
-            UtilityController.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
+            JsfUtil.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() != wu.getInstitution()) {
             ptIx.setOutsourcedInstitution(e.getBillItem().getItem().getInstitution());
         }

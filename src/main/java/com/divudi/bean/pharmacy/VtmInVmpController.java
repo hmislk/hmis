@@ -9,9 +9,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;
@@ -36,7 +36,7 @@ public class VtmInVmpController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private VtmsVmpsFacade ejbFacade;
+    private VirtualProductIngredientFacade ejbFacade;
     List<VirtualProductIngredient> selectedItems;
     private VirtualProductIngredient current;
     private List<VirtualProductIngredient> items = null;
@@ -62,10 +62,10 @@ public class VtmInVmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -83,11 +83,11 @@ public class VtmInVmpController implements Serializable {
         this.selectText = selectText;
     }
 
-    public VtmsVmpsFacade getEjbFacade() {
+    public VirtualProductIngredientFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(VtmsVmpsFacade ejbFacade) {
+    public void setEjbFacade(VirtualProductIngredientFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -115,9 +115,9 @@ public class VtmInVmpController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -125,7 +125,7 @@ public class VtmInVmpController implements Serializable {
         getCurrent();
     }
 
-    private VtmsVmpsFacade getFacade() {
+    private VirtualProductIngredientFacade getFacade() {
         return ejbFacade;
     }
 

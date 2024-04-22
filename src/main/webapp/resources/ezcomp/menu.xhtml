@@ -16,8 +16,27 @@
                     font-size: 18px !important;
                 }
             </style>
+
+            <p:tooltip for="home" value="Home" ></p:tooltip>
+            <p:tooltip for="smOpd" value="OPD" ></p:tooltip>
+            <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
+            <p:tooltip for="smInpatient" value="Inward" ></p:tooltip>
+            <p:tooltip for="smLab" value="Lab" ></p:tooltip>
+            <p:tooltip for="smPharmacy" value="Pharmacy" ></p:tooltip>
+            <p:tooltip for="smTheatre" value="Theatre" ></p:tooltip>
+            <p:tooltip for="smStore" value="Store" ></p:tooltip>
+            <p:tooltip for="smChannelling" value="Channelling" ></p:tooltip>
+            <p:tooltip for="smPayment" value="Payment" ></p:tooltip>
+            <p:tooltip for="smHr" value="HR" ></p:tooltip>
+            <p:tooltip for="smEmr" value="EMR" ></p:tooltip>
+            <p:tooltip for="smReports" value="Reports" ></p:tooltip>
+            <p:tooltip for="smSettings" value="Settings" ></p:tooltip>
+
+
+
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
-                <p:menuitem  
+                <p:menuitem 
+                    id="home"
                     ajax="false"
                     action="/home" 
                     icon="pi pi-home"
@@ -32,6 +51,12 @@
                         action="#{opdBillController.navigateToSearchPatients()}" 
                         value="Patient Lookup &amp; Registration" 
                         icon="fa fa-user-plus" 
+                        rendered="true" />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{opdTokenController.navigateToTokenIndex()}" 
+                        value="OPD Token" 
+                        icon="fa fa-file-medical" 
                         rendered="true" />
                     <p:submenu 
                         id="smOpdBilling"
@@ -130,7 +155,9 @@
                             action="#{opdBillController.navigateToSearchOpdBills()}" 
                             value="OPD Bill Search" 
                             icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
+                            actionListener="#{searchController.clearBillList()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="/opd_search_billitem_own?faces-redirect=true" 
@@ -196,6 +223,12 @@
                             action="#{workingTimeController.navigateToListWorkTimes()}" 
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            value="Pay" 
+                            action="#{workingTimeController.navigateToPay()}" 
+                            icon="fa fa-search"
+                            rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>
                     <p:menuitem 
@@ -204,11 +237,34 @@
                         value="Token Management" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
-                    <p:menuitem ajax="false" action="/lab/report_for_opd_print?faces-redirect=true" value="Lab Report print" icon="fa fa-file-medical" rendered="true" />
-                    <p:menuitem ajax="false" action="#{cashierReportController.navigateToOpdSummeries()}" value="Summaries" icon="fa fa-list-alt"></p:menuitem>
-                    <p:menuitem ajax="false" 
-                                action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
-                                value="Analytics" icon="fa fa-list-alt"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{reportController.navigatetoOPDLabReportByMenu()}" 
+                        value="Lab Report Print" 
+                        icon="fa fa-file-medical" 
+                        rendered="#{webUserController.hasPrivilege('OpdLabReportSearch')}"
+                         />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{cashierReportController.navigateToOpdSummeries()}" 
+                        value="OPD Analytics" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        rendered="false"
+                        action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
+                        value="Analytics" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
+                        rendered="#{webUserController.hasPrivilege('Opd') and sessionController.applicationPreference.opdBillingAftershiftStart eq true}"
+                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                        value="Financial Transaction Manager" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
@@ -221,10 +277,14 @@
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
                     <p:submenu label="Admissions" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">                                    
                         <p:menuitem ajax="false" 
+                                    action="#{patientController.navigatePatientAdmit()}" 
+                                    value="Patient Admit"
+                                    rendered="true" />
+                        <p:menuitem ajax="false" 
                                     action="#{opdBillController.navigateToSearchPatients()}" 
                                     value="Patient Lookup &amp; Registration"
                                     rendered="true" />
-                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Detail" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
+                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Details" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
                         <p:menuitem  ajax="false"  action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" value="Inward Appointment" rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" ></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Room" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
@@ -288,21 +348,47 @@
                     <p:submenu label="Pharmacy" rendered="#{webUserController.hasPrivilege('InwardPharmacyMenu')}">
                         <p:menuitem 
                             ajax="false" 
-                            action="#{admissionController.navigateToPharmacyBhtRequest}" 
-                            value="Pharmacy BHT Request" 
+                            action="#{admissionController.navigateToPharmacyBhtRequestFromMenu}" 
+                            value="Request Medicines from Pharmacy" 
                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}" 
                             actionListener="#{pharmacySaleBhtController.resetAll}">
                         </p:menuitem>
+
+
+                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
+                                    value="Direct Issue to BHTs" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
+                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                                     value="Direct Issue to Theatre Cases"
+                                     actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                        <p:menuitem  ajax="false"  action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true" 
+                                     value="BHT Issue Requests"
+                                     actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" />
+
                         <p:menuitem 
                             ajax="false" 
                             action="#{admissionController.navigateToSearchInwardBills}" 
-                            value="Search Inward Bills" 
+                            value="View Pharmacy Requests" 
                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}">
                         </p:menuitem>
+                        <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}" 
+                                     value="Search Inpatient Direct Issues by Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                        <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"   
+                                     value="Search Inpatient Direct Issues by Item" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                        <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
+                                    value="Search Inpatient Direct Issue Returns by Bill" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
+                                    value="Search Inpatient Direct Issue Returns by Item" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+
                     </p:submenu>
 
                     <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" value="Investigation Trace"></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/inward/inward_reports?faces-redirect=true" value="Inward Reports" rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/inward/inward_reports?faces-redirect=true" value="Inward Analytics" rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
 
                 </p:submenu>
 
@@ -312,211 +398,294 @@
                         <p:menuitem ajax="false" action="#{searchController.navigateToSearchOpdBillsOfLoggedDepartment()}" actionListener="#{searchController.makeListNull}"  value="Search OPD Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/opd_search_billitem_own?faces-redirect=true" value="Search OPD Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                         <p:separator/>
-                        <p:menuitem ajax="false" action="/inward/inward_bill_service?faces-redirect=true" value="In-patient Billing" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
+                        <p:menuitem ajax="false" action="/inward/inward_bill_service?faces-redirect=true" value="In-patient Billing" actionListener="#{billBhtController.resetBillData}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                     </p:submenu>
-                    <p:submenu label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('LabCollectingCentreBilling') and false}">
-                        <p:menuitem ajax="false" action="/collecting_centre/bill?faces-redirect=true"  
-                                    actionListener="#{billController.prepareNewBill}" 
-                                    value="CC Billing" 
-                                    rendered="#{webUserController.hasPrivilege('LabCCBilling')}" >
-                        </p:menuitem>
 
-                        <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
-                                    actionListener="#{searchController.makeListNull}"
-                                    value="CC Bill Search" 
-                                    rendered="#{webUserController.hasPrivilege('LabCCBillingSearch')}" >
-                        </p:menuitem>
-                        <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna' and false}">
-                            <p:menuitem ajax="false" action="/lab/bill_collecting_centre?faces-redirect=true" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                            <p:menuitem ajax="false" action="/lab/collecting_bill_search_all?faces-redirect=true" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                        </p:submenu>
-                    </p:submenu>
 
-                    <p:menuitem ajax="false" action="/lab/sample?faces-redirect=true" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        action="#{patientInvestigationController.navigateToSampleManagement()}"
+                        value="Sampling" 
+                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution?faces-redirect=true" value="Reports/Search By Logged Institution" rendered="#{false and webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_department?faces-redirect=true" value="Reports/Search By Logged Department" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_reports?faces-redirect=true" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Summeries"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Lab Analytics"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
                 </p:submenu>
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
-                    <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
-
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{tokenController.navigateToTokenIndex()}" 
+                        value="Token Management" 
+                        icon="fa fa-file-medical" 
+                        rendered="true" />
+                    <p:submenu label="Retail Transactions" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyRetailTransactionMenue')}">
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true"  
+                            action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"  
                             value="Sale" 
-                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
-                            actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem> 
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
-                                     value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem> 
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"  
+                            value="Sale for cashier" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" 
+                            actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
                         <p:menuitem  ajax="false" 
                                      action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"  
                                      value="Sale without Stocks" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWithoutStock')}" ></p:menuitem> 
+                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWithOutStock')}" ></p:menuitem> 
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"  
                                      value="Search Sale Bill"
                                      actionListener="#{searchController.makeListNull}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}"></p:menuitem>
+                                     rendered="#{webUserController.hasPrivilege('PharmacySearchSaleBill')}"></p:menuitem>
 
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"  
                                      value="Search Sale Pre Bill"
                                      actionListener="#{searchController.makeListNull}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}"></p:menuitem>
+                                     rendered="#{webUserController.hasPrivilege('PharmacySearchSalePreBill')}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_sale_bill_item?faces-redirect=true"  
                                      value="Search Sale Bill Items" actionListener="#{searchController.makeListNull}" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}"  ></p:menuitem>     
+                                     rendered="#{webUserController.hasPrivilege('PharmacySearchSaleBillItems')}"  ></p:menuitem>     
                         <p:menuitem  ajax="false" 
                                      action="/pharmacy/pharmacy_search_pre_bill_for_return_item_only?faces-redirect=true" 
                                      actionListener="#{searchController.makeListNull}"   
-                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"></p:menuitem>                                                                                    
+                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacyReturnItemsOnly')}"></p:menuitem>                                                                                    
                         <p:menuitem  ajax="false" 
                                      action="/pharmacy/pharmacy_search_pre_bill_for_return_item_and_cash?faces-redirect=true" 
                                      actionListener="#{searchController.makeListNull}"   
-                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"></p:menuitem>                                                                                    
+                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacyReturnItemsAndPayments')}"></p:menuitem>                                                                                    
                         <p:menuitem ajax="false" 
                                     action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
                                     actionListener="#{searchController.makeListNull}"  
                                     value="Search Return Bill (Item)" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                    rendered="#{webUserController.hasPrivilege('PharmacySearchReturnBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false" 
                                      action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
                                      actionListener="#{searchController.makeListNull}"   
                                      value="Add To Stock" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                     rendered="#{webUserController.hasPrivilege('PharmacyAddToStock')}" ></p:menuitem>
 
                     </p:submenu>
 
-                    <p:submenu label="Wholesale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"> 
+                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue')}">
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"  
-                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
+                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
-                                     value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
+                                     value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"  
                                      value="Search Sale Bill"
                                      actionListener="#{searchController.makeListNull}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>
+                                     rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSearchSaleBill')}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_pre_bill?faces-redirect=true"  
                                      value="Search Sale Bill to Pay"
                                      actionListener="#{searchController.makeListNull}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>
+                                     rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSearchSaleBillToPay')}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill_item?faces-redirect=true"  
                                      value="Search Sale Bill Items" actionListener="#{searchController.makeListNull}" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"  ></p:menuitem>     
+                                     rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSearchSaleBillItems')}"  ></p:menuitem>     
                         <p:menuitem  ajax="false" 
                                      action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_only?faces-redirect=true" 
                                      actionListener="#{searchController.makeListNull}"   
-                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>                                                                                    
+                                     value="Return - Items Only" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleReturnItemsOnly')}"></p:menuitem>                                                                                    
                         <p:menuitem  ajax="false" 
                                      action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_and_cash?faces-redirect=true" 
                                      actionListener="#{searchController.makeListNull}"   
-                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"></p:menuitem>                                                                                    
+                                     value="Return - Items and Payments" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleWholeSaleAddToStock')}"></p:menuitem>                                                                                    
                         <p:menuitem ajax="false" 
                                     action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
                                     actionListener="#{searchController.makeListNull}"  
                                     value="Search Return Bill (Item)" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
+                                    rendered="#{webUserController.hasPrivilege('PharmacySearchReturnBillItems')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
                                      actionListener="#{searchController.makeListNull}"   
-                                     value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
+                                     value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleWholeSaleAddToStock')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{pharmacyPurchaseController.navigateToAddNewPharmacyWholesaleDirectPurchaseBill}"  
+                            value="Wholesale Purchase" 
+                            icon="fas fa-balance-scale"
+                            rendered="#{webUserController.hasPrivilege('PharmacyWholeSalePurchase')}" ></p:menuitem> 
                     </p:submenu>
 
-                    <p:submenu label="BHT Bills" >
+                    <p:submenu label="Inpatient Medication Management" icon="fas fa-procedures" rendered="#{webUserController.hasPrivilege('InpatientMedicationManagementMenue')}">
                         <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
-                                    value="Inward Billing" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                                    value="Direct Issue to BHTs" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}" 
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
-                                     value="Theater Billing "
+                                     value="Direct Issue to Theatre Cases"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToTheaterCases')}" />
                         <p:menuitem  ajax="false"  action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true" 
-                                     value="Accept BHT Issue"
+                                     value="BHT Issue Requests"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" />
+                                     rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
 
                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}" 
-                                     value="Search Inward Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                     value="Search Inpatient Direct Issues by Bill" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyBill')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"   
-                                     value="Search Inward Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                     value="Search Inpatient Direct Issues by Item" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyItem')}" ></p:menuitem>                                        
                         <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
-                                    value="Search Return Bill" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                    value="Search Inpatient Direct Issue Returns by Bill" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssueReturnsbyBill')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
-                                    value="Search Return Bill Items" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                    value="Search Inpatient Direct Issue Returns by Item" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacysSearchInpatientDirectIssueReturnsbyItem')}" ></p:menuitem>
 
 
                     </p:submenu>
 
 
-                    <p:submenu label="Issue to Units" rendered="#{webUserController.hasPrivilege('PharmacySale')}">
+                    <p:submenu label="Procurement" icon="fas fa-shopping-cart" 
+                               rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}">
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
+                            value="Create Purchase Order" 
+                            icon="fas fa-plus-circle"
+                            rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{reorderController.autoOrderByDistributor()}"  
+                            value="Auto Order (P Model)" 
+                            icon="fas fa-sync-alt"
+                            rendered="#{webUserController.hasPrivilege('AutoOrderPModel')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{reorderController.autoOrderByDistributor()}"  
+                            value="Auto Order (Q Model)" 
+                            icon="fas fa-retweet"
+                            rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase"  
+                            value="Direct Purchase" 
+                            icon="fas fa-hand-holding-usd"
+                            rendered="#{webUserController.hasPrivilege('DirectPurchase')}" 
+                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"  
+                            value="Purchase Orders Approval"
+                            icon="fas fa-clipboard-check"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"  
+                            value="Goods Receipt"  
+                            icon="fas fa-dolly-flatbed"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>                                        
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
+                            value="Return Received Goods" 
+                            icon="fas fa-undo-alt"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" ></p:menuitem>  
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"  
+                            value="Return without Receipt" 
+                            icon="fas fa-exchange-alt"
+                            rendered="#{webUserController.hasPrivilege('ReturnWithoutRecipt')}" 
+                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{searchController.navigateToCancelPurchaseOrder()}"  
+                            value="Multiple Purchase Order Cancellation" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" 
+                            icon="fas fa-cancel"></p:menuitem>
+                    </p:submenu>
+
+
+
+                    <p:submenu label="Disposal" icon="fas fa-trash-alt" rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}">
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_issue?faces-redirect=true"  
-                                     value="Issue" actionListener="#{pharmacyIssueController.resetAll()}"  ></p:menuitem>                                       
+                                     value="Issue" actionListener="#{pharmacyIssueController.resetAll()}" 
+                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" ></p:menuitem>                                       
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
-                                     value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                     value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item?faces-redirect=true" actionListener="#{searchController.makeListNull}"   
-                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>  
+                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" ></p:menuitem>  
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
-                                     value="Search Issue Return Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                     value="Search Issue Return Bill" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueReturnBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager?faces-redirect=true"    
-                                     value="Unit Issue Margin" />
+                                     value="Unit Issue Margin" rendered="#{webUserController.hasPrivilege('PharmacyDisposalUnitIssueMargin')}" />
                     </p:submenu>
 
-                    <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}">
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true"  
-                                     value="Purchase Orders" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="#{reorderController.autoOrderByDistributor()}"  value="By Distributor" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"  
-                                     value="PO Approval" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('Pharmacy')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"  
-                                     value="GRN Receive"  actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}" ></p:menuitem>                                        
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
-                                     value="GRN Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveReturn')}" ></p:menuitem>  
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purchase"  
-                                     value="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true"  
-                                     value="Purchase for Wholesale" rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>               
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"  
-                                     value="Direct Return Without GRN" rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
+                    <p:submenu label="Disbursement" icon="fas fa-share-square" rendered="#{webUserController.hasPrivilege('PharmacyDisburesementMenu')}">
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
+                                    value="Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
+                                    value="Issue for Requests" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" 
+                                    icon="fas fa-prescription-bottle-alt"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
+                                    value="Direct Issue" 
+                                    actionListener="#{transferIssueController.makeNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" 
+                                    icon="fas fa-pills"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
+                                    value="Receive" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" 
+                                    icon="fas fa-truck-loading"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  
+                                    value="Reports" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementReports')}" 
+                                    icon="fas fa-file-alt"></p:menuitem>
                     </p:submenu>
-                    <p:submenu label="Transfer">
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request_list?faces-redirect=true"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>                                           
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
-                    </p:submenu>                                   
-                    <p:submenu label="Adjustments" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" >
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"  value="Department Stock(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item?faces-redirect=true"  value="Department Stock By Single Item(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_staff?faces-redirect=true"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_purchase_rate?faces-redirect=true"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_retail_sale_rate?faces-redirect=true"  value="Sale Rate" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_whole_sale_rate?faces-redirect=true"  value="Wholesale Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_expiry_date?faces-redirect=true"  value="Expiry Date" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item?faces-redirect=true"  value="Search Adjustment Bills"  ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_all?faces-redirect=true"  value="Transfer All Stock" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
+
+                    <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"  value="Department Stock(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item?faces-redirect=true"  value="Department Stock By Single Item(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_staff?faces-redirect=true"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_purchase_rate?faces-redirect=true"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentPurchaseRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_retail_sale_rate?faces-redirect=true"  value="Sale Rate" actionListener="#{pharmacyAdjustmentController.makeNull()}" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSaleRate')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_whole_sale_rate?faces-redirect=true"  value="Wholesale Rate" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentWholeSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_expiry_date?faces-redirect=true"  value="Expiry Date" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentExpiryDate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item?faces-redirect=true"  value="Search Adjustment Bills" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSearchAdjustmentBills')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_all?faces-redirect=true"  value="Transfer All Stock" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentTransferAllStock')}" ></p:menuitem>
                     </p:submenu>
-                    <p:submenu label="Dealer Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}">
-                        <p:menuitem  ajax="false" action="/dealorPayment/dealor_due?faces-redirect=true"  value="Dealer Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age?faces-redirect=true" actionListener="#{dealorDueController.makeNull()}" value="Dealer Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>
-                        <p:submenu label="Payment" >
-                            <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all?faces-redirect=true" value="By Dealer" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
+                    <p:submenu label="Dealer Payments" icon="fas fa-hand-holding-usd" rendered="#{webUserController.hasPrivilege('PharmacyDealerPaymentMenue')}">
+                        <p:menuitem  ajax="false" action="/dealorPayment/dealor_due?faces-redirect=true"  value="Dealer Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age?faces-redirect=true" actionListener="#{dealorDueController.makeNull()}" value="Dealer Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealerDueByAge')}"/>
+                        <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" >
+                            <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all?faces-redirect=true" value="By Dealer" rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" 
                                         actionListener="#{pharmacyDealorBill.makeNull()}"/>  
                             <p:menuitem ajax="false" action="/dealorPayment/bill_dealor?faces-redirect=true" value="By Bill" 
-                                        rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
+                                        rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" 
                                         actionListener="#{pharmacyDealorBill.makeNull()}"/>  
                         </p:submenu>
-                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}"/>   
+                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
+                        <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>
                     </p:submenu>
-                    <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access"  ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacySearch')}" ></p:menuitem>                                  
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('PharmacyReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summeries" rendered="#{webUserController.hasPrivilege('PharmacySummery')}" ></p:menuitem>
+
+                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search?faces-redirect=true"  value="Bill Search" icon="fas fa-search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" ></p:menuitem>                                  
+                    <p:menuitem  ajax="false" action="#{pharmacyController.navigateToPharmacyAnalytics()}"  value="Pharmacy Analytics" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
+
                 </p:submenu>
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
                     <p:menuitem  ajax="false"  action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
@@ -618,8 +787,8 @@
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
                 </p:submenu>
 
-                <p:submenu  
-                    icon="fa fa-fw fa-store"  rendered="#{webUserController.hasPrivilege('Store')}">                                                           
+                <p:submenu   
+                    id="smStore"  icon="fa fa-fw fa-store"  rendered="#{webUserController.hasPrivilege('Store')}">                                                           
                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}">
                         <p:menuitem ajax="false" action="/store/store_retail_sale_bht?faces-redirect=true"  value="Inward Billing"
                                     rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}" 
@@ -673,30 +842,46 @@
                     </p:submenu>
                     <p:menuitem  ajax="false" action="/store/store_search?faces-redirect=true"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/store/store_summery_index?faces-redirect=true"  value="Summery" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
+                    <p:menuitem  ajax="false" action="/store/store_summery_index?faces-redirect=true"  value="Summary" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
 
                 </p:submenu>
 
                 <p:submenu
+                    id="smChannelling"
                     icon="fa fa-fw fa-calendar-check" 
                     rendered="#{webUserController.hasPrivilege('Channelling')}">                                
                     <p:menuitem 
                         ajax="false"  
                         value="Channel Booking"  
-                        action="#{channelBookingController.navigateToChannelBookingFromMenu()}" 
+                        action="#{bookingController.navigateToChannelBookingFromMenu()}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
-                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.makeNull}" rendered="false" ></p:menuitem>
-                    <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/channel_booking_past?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Channel Queue"  
+                        action="#{bookingController.navigateToChannelQueueFromMenu()}" 
+                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Channel Display"  
+                        action="#{bookingController.navigateToChannelDisplayFromMenu()}" 
+                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                    </p:menuitem>
+                    <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future?faces-redirect=true" actionListener="#{bookingController.resetToStartFromSpeciality}" rendered="false" ></p:menuitem>
+                    <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/past_channel_booking?faces-redirect=true" actionListener="#{pastBookingController.navigateToPastChannelBookingFromMenu()}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="false" ></p:menuitem>
                     <p:submenu label="Doctor Leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" >
-                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.makeNull}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.makeNull}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
                     </p:submenu>
-                    <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule?faces-redirect=true" actionListener="#{sheduleController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        value="Channel Sheduling"  
+                        action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
-                    <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{sheduleController.prepareAdd}" rendered="false"></p:menuitem>
+                    <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false"></p:menuitem>
                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard?faces-redirect=true" rendered="false"/>
 
                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
@@ -719,12 +904,13 @@
                         <p:menuitem  ajax="false"  value="Debit Note Search"  action="/channel/channel_debit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
-                    <p:menuitem ajax="false" action="/reportCashier/report_cashier?faces-redirect=true" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/reportCashier/report_cashier?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
 
                 </p:submenu>
 
-                <p:submenu  icon="fa fa-fw fa-money-bill-wave"  rendered="#{webUserController.hasPrivilege('Payment')}">  
+                <p:submenu id="smPayment" icon="fa fa-fw fa-money-bill-wave"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                     <p:menuitem  
                         ajax="false"  
                         action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
@@ -735,9 +921,9 @@
                                rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="OPD">
                             <p:menuitem  ajax="false"  action="/payment_staff_bill?faces-redirect=true" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments-due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/opd_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                         value="Payments-done Search"  rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>                                                               
+                                         value="Payments Done Search"  rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>                                                               
                         </p:submenu>
                         <p:submenu label="Inward">
                             <p:menuitem  ajax="false" action="/inward/inward_bill_staff_payment?faces-redirect=true" value="Pay Doctor"  />
@@ -779,16 +965,16 @@
                                 <p:menuitem  ajax="false"  action="/credit/credit_company_opd_due?faces-redirect=true" value="Due Search"  />
                                 <p:menuitem  ajax="false"  action="/credit/credit_company_opd_due_age?faces-redirect=true" value="Due Age"  />
                                 <p:submenu label="Payment">
-                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd?faces-redirect=true" value="By Opd Bill"  />
+                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd?faces-redirect=true" value="By OPD Bill"  />
                                     <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd_all?faces-redirect=true" value="By Credit Company"  />
                                 </p:submenu>     
 
                             </p:submenu>
                             <p:submenu label="Inward">
-                                <p:menuitem  ajax="false"  action="/credit/credit_company_inward_due?faces-redirect=true" value="Due Search"  />
-                                <p:menuitem  ajax="false"  action="/credit/credit_company_inward_due_age?faces-redirect=true" value="Due Age"  />
+                                <p:menuitem  ajax="false"  action="/credit/inward_due_search_credit_company?faces-redirect=true" value="Due Search"  />
+                                <p:menuitem  ajax="false"  action="/credit/inward_due_age_credit_company?faces-redirect=true" value="Due Age"  />
                                 <p:submenu label="Payment">
-                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward?faces-redirect=true" value="By Bht Bill"  />
+                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward?faces-redirect=true" value="By BHT Bill"  />
                                     <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward_all?faces-redirect=true" value="By Credit Company"  />
                                 </p:submenu>     
                             </p:submenu>
@@ -851,8 +1037,8 @@
                 </p:submenu>
 
                 <p:submenu 
+                    id="smHr"
                     icon="fa fa-fw fa-users"
-
                     rendered="#{webUserController.hasPrivilege('Hr')}" >
                     <p:submenu label="Working Time" rendered="#{webUserController.hasPrivilege('HrWorkingTime')}" >
                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
@@ -879,23 +1065,24 @@
                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
                                  actionListener="#{staffSalaryController.clear}" rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
 
-                    <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Reports" rendered="#{webUserController.hasPrivilege('HrReports')}" />
+                    <p:menuitem  ajax="false"  action="/hr/hr_reports" value="HR Analytics" rendered="#{webUserController.hasPrivilege('HrReports')}" />
                 </p:submenu>
 
 
                 <p:submenu  
+                    id="smEmr"
                     icon="fa fa-fw fa-stethoscope"
                     rendered="#{webUserController.hasPrivilege('Clinical')}">
                     <p:menuitem ajax="false" action="#{patientController.toSearchPatient()}" icon="pi pi-search" value="Patient Search"/>
                     <p:menuitem ajax="false" action="#{patientController.toAddNewPatient()}" icon="fa fa-plus" value="Add New Patient"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToMembershipRegistration()}" value="Membership"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" value="Queue"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="Reports"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="EMR Analytics"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToSettings()}" value="Settings"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToEmrAdmin()}" value="Administration"/>
                 </p:submenu>
 
-                <p:submenu  icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
+                <p:submenu id="smReports" icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
                                  rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>  
@@ -913,12 +1100,18 @@
 
                 </p:submenu>
 
-                <p:submenu  icon="pi pi-cog" >
+                <p:submenu id="smSettings" icon="pi pi-cog" >
                     <p:menuitem  ajax="false"  action="/user_change_password?faces-redirect=true" value="Change My Password"></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{themeController.navigateToChangeOwnTheme()}" value="Change My Theme"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{sessionController.navigateToManageOwnWebUserPreferences()}" value="Change My Preferences"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{apiKeyController.toManageMyApiKeys()}" 
-                                 value="Manage My API Keys"  ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{apiKeyController.toManageMyApiKeys()}" 
+                        value="Manage My API Keys"  ></p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{versionController.navigateToAboutSoftware()}"
+                        value="About Software"  ></p:menuitem>
 
                 </p:submenu>
 
@@ -1022,10 +1215,22 @@
                     </p:menuitem>
                 </p:submenu>
 
-
-
                 <f:facet name="options">
-                    <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
+                    <div class="d-flex align-items-center">
+                        <div class="mx-4">
+                            <p:poll interval="180" 
+                                    listener="#{userNotificationController.fillLoggedUserNotifications()}"
+                                    update="notCount" />
+                            <h:panelGroup id="notCount">
+                                <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
+                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}"/>
+                                </p:badge>
+                            </h:panelGroup>
+                        </div>
+
+                        <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
+                    </div>
+
                     <p:tooltip for="btnLogout" value="df"  >
                         <h:panelGrid columns="3" >
                             <h:outputText value="Institution" ></h:outputText>

@@ -7,9 +7,10 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -21,12 +22,16 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Person;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -36,8 +41,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -68,8 +73,16 @@ public class InwardPaymentController implements Serializable {
     private PaymentMethodData paymentMethodData;
 
     public void bhtListener() {
+        if (current.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("Select BHT");
+            return;
+        }
         due = getFinalBillDue();
 
+    }
+
+    public String navigateToInpationDashbord() {
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     private double getFinalBillDue() {
@@ -89,8 +102,8 @@ public class InwardPaymentController implements Serializable {
             return 0;
         }
 
-       return b.getNetTotal()-(b.getPaidAmount()+getCurrent().getPatientEncounter().getCreditPaidAmount());
-        
+        return b.getNetTotal() - (b.getPaidAmount() + getCurrent().getPatientEncounter().getCreditPaidAmount());
+
 //        double billValue = Math.abs(b.getNetTotal());
 //        double paidByPatient = Math.abs(b.getPaidAmount());
 //        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
@@ -98,7 +111,6 @@ public class InwardPaymentController implements Serializable {
 //        double netCredit = creditUsedAmount - creditPaidAmount;
 //
 //        return billValue - (paidByPatient + netCredit);
-
     }
 
     @Inject
@@ -106,15 +118,19 @@ public class InwardPaymentController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
         if (getCurrent().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Method");
+            JsfUtil.addErrorMessage("Select Payment Method");
             return true;
         }
 
+        if (getCurrent().getTotal() == 0.0) {
+            JsfUtil.addErrorMessage("Please enter paying amount");
+            return true;
+        }
         if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
@@ -125,7 +141,7 @@ public class InwardPaymentController implements Serializable {
 //                double different = Math.abs((due - getCurrent().getTotal()));
 //
 //                if (different > 0.1) {
-//                    UtilityController.addErrorMessage("U cant recieve payment thenn due");
+//                    JsfUtil.addErrorMessage("U cant recieve payment thenn due");
 //                    return true;
 //                }
 //            }
@@ -143,6 +159,94 @@ public class InwardPaymentController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
+    }
+
+    public String fillDataForInpatientsDepositBill(String template, Bill bill) {
+        //System.out.println("fillDataForInpatientsDepositBill");
+        if (isInvalidInwardDepositBill(template, bill)) {
+            //System.out.println("Not Valid = " + bill);
+            return "";
+        }
+
+        PatientEncounter pe = bill.getPatientEncounter();
+        Patient patient = pe.getPatient();
+        Person person = patient.getPerson();
+
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+        
+        String finalBillInsId ="";
+        String finalBillDeptId = "";
+        
+        if(pe.getFinalBill()!=null){
+            finalBillInsId=pe.getFinalBill().getInsId();
+            finalBillDeptId=pe.getFinalBill().getDeptId();
+        }
+
+        String output;
+        output = template
+                .replace("{dept_id}", bill.getDeptId() != null ? String.valueOf(bill.getDeptId()) : "")
+                .replace("{ins_id}", bill.getInsId() != null ? String.valueOf(bill.getInsId()) : "")
+                .replace("{gross_total}", CommonFunctions.convertDoubleToString(bill.getTotal()))
+                .replace("{discount}", CommonFunctions.convertDoubleToString(bill.getDiscount()))
+                .replace("{net_total}", decimalFormat.format(bill.getNetTotal()))
+                .replace("{net_total_in_words}", CommonFunctions.convertToWord(bill.getTotal()))
+                .replace("{cancelled}", bill.isRefunded() ? "Yes" : "No")
+                .replace("{returned}", bill.isCancelled() ? "Yes" : "No")
+                .replace("{cashier_username}", bill.getCreater() != null && bill.getCreater().getName() != null ? bill.getCreater().getName() : "")
+                .replace("{patient_nic}", person.getNic() != null ? person.getNic() : "")
+                .replace("{patient_phn_number}", patient.getPhn() != null ? patient.getPhn() : "")
+                .replace("{admission_number}", pe.getBhtNo() != null ? pe.getBhtNo() : "")
+                .replace("{fian_bill_number}", finalBillDeptId != null ? finalBillDeptId : "")
+                .replace("{fian_bill_number_dept_id}", finalBillDeptId != null ? finalBillDeptId : "")
+                .replace("{fian_bill_number_ins_id}", finalBillInsId != null ? finalBillInsId : "")
+                .replace("{admission_date}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
+                .replace("{date_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
+                .replace("{bht}", pe.getBhtNo() != null ? pe.getBhtNo() : "")
+                .replace("{date_of_discharge}", pe.getDateOfDischarge() != null ? formatDate(pe.getDateOfDischarge(), sessionController) : "")
+                .replace("{admission_type}", getAdmissionType(pe) != null ? getAdmissionType(pe) : "")
+                .replace("{patient_name}", person.getNameWithTitle() != null ? person.getNameWithTitle() : "")
+                .replace("{patient_age}", patient.getAgeOnBilledDate(pe.getDateOfAdmission()) != null ? patient.getAgeOnBilledDate(pe.getDateOfAdmission()) : "")
+                .replace("{patient_sex}", person.getSex() != null ? person.getSex().name() : "")
+                .replace("{patient_address}", person.getAddress() != null ? person.getAddress() : "")
+                .replace("{patient_phone}", person.getPhone() != null ? person.getPhone() : "")
+                .replace("{from_institution}", getInstitutionName(pe) != null ? getInstitutionName(pe) : "")
+                .replace("{to_institution}", getInstitutionName(pe) != null ? getInstitutionName(pe) : "")
+                .replace("{from_department}", getDepartmentName(pe) != null ? getDepartmentName(pe) : "")
+                .replace("{to_department}", getDepartmentName(pe) != null ? getDepartmentName(pe) : "")
+                .replace("{payment_method}", pe.getPaymentMethod() != null && pe.getPaymentMethod().getLabel() != null ? pe.getPaymentMethod().getLabel() : "")
+                .replace("{bill_date}", bill.getBillDate() != null ? formatDate(bill.getBillDate(), sessionController) : "")
+                .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "")
+                .replace("{time_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
+                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "");
+
+        return output;
+    }
+
+    private String formatDate(Date date, SessionController sessionController) {
+        return date != null ? CommonFunctions.dateToString(date, sessionController.getApplicationPreference().getLongDateFormat()) : "";
+    }
+
+    private String formatTime(Date time, SessionController sessionController) {
+        return time != null ? CommonFunctions.dateToString(time, sessionController.getApplicationPreference().getLongTimeFormat()) : "";
+    }
+
+    private String getAdmissionType(PatientEncounter pe) {
+        return pe.getAdmissionType() != null ? pe.getAdmissionType().getName() : "";
+    }
+
+    private String getInstitutionName(PatientEncounter pe) {
+        return pe.getInstitution() != null ? pe.getInstitution().getName() : "";
+    }
+
+    private String getDepartmentName(PatientEncounter pe) {
+        return pe.getDepartment() != null ? pe.getDepartment().getName() : "";
+    }
+
+    private boolean isInvalidInwardDepositBill(String template, Bill bill) {
+        return template == null || template.trim().isEmpty()
+                || bill == null || bill.getPatientEncounter() == null
+                || bill.getPatientEncounter().getPatient() == null
+                || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
 
     public void pay() {
@@ -165,7 +269,7 @@ public class InwardPaymentController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Payment Bill Saved");
         printPreview = true;
     }
 
@@ -181,7 +285,7 @@ public class InwardPaymentController implements Serializable {
 
         saveBill();
         saveBillItem();
-        UtilityController.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Payment Bill Saved");
 
         Bill curr = getCurrent();
 

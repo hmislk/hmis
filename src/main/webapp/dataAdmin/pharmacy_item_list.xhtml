@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -12,10 +12,21 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Pharmacy Item List">
-                        <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Item" action="#{ampController.pharmacyNoDeleteItem()}"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="deleted Item" action="#{ampController.pharmacyDeleteItem()}"  ></p:commandButton>
-                        </h:panelGrid>
+                        <f:facet name="header">
+                        <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Pharmacy Item List"/>
+                                </div>
+                                <div>
+                                    <h:panelGrid columns="2" class="my-2" style="float: right">
+                                        <p:commandButton class="ui-button-warning" ajax="false" value="Item" action="#{ampController.pharmacyNoDeleteItem()}"  ></p:commandButton>
+                            <p:commandButton class="ui-button-warning mx-2" ajax="false" value="Deleted Item" action="#{ampController.pharmacyDeleteItem()}"  ></p:commandButton>
+                                    </h:panelGrid>
+                            
+                                </div>
+                            
+                        </div>
+                            </f:facet>
                         <h:panelGroup id="pharmacyItem">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{ampController.itemList}" var="i"  >
                             
@@ -54,9 +65,10 @@
                                 <p:column headerText="delete">
                                     <f:facet name="header">
                                         <h:outputLabel value="Deleted or Not"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.retired eq true ? 'Deleted':'Not Deleted'}"  >
-                                    </h:outputLabel>
+                                    </f:facet> 
+                                    <p:tag value="#{i.retired eq true ? 'Deleted':'Not Deleted'}" severity="#{i.retired eq true ? 'danger':'success'}" style="font-size: 10pt" />
+<!--                                    <h:outputLabel value="#{i.retired eq true ? 'Deleted':'Not Deleted'}"  >-->
+                                    <!--</h:outputLabel>-->
                                 </p:column>
                                 
                             </p:dataTable>

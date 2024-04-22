@@ -9,7 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
@@ -55,6 +55,10 @@ public class PlanController implements Serializable {
     
     public String navigateToManagePlans(){
         return "/emr/admin/plans";
+    }
+    
+    public String navigateToManageClinicaEntities(){
+        return "/emr/admin/clinical_entities";
     }
     
     
@@ -141,12 +145,12 @@ public class PlanController implements Serializable {
         current.setSymanticType(SymanticType.Preventive_Procedure);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updates");
+            JsfUtil.addSuccessMessage("Updated");
         }
         recreateModel();
         getItems();
@@ -193,9 +197,9 @@ public class PlanController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -217,6 +221,20 @@ public class PlanController implements Serializable {
         }
         return items;
 
+    }
+    
+    public List<ClinicalEntity> completePlanOfActions(String qry) {
+        List<ClinicalEntity> c;
+        Map m = new HashMap();
+        m.put("t", SymanticType.Preventive_Procedure);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        String sql;
+        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
+        c = getFacade().findByJpql(sql, m, 10);
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
     }
 
     /**

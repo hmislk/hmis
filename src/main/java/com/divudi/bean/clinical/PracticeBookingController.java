@@ -11,7 +11,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterType;
@@ -42,7 +42,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -241,7 +241,7 @@ public class PracticeBookingController implements Serializable {
     public String opdVisitFromQueue() {
         //   ////// // System.out.println("opd visit from queue");
         if (billSession == null) {
-            UtilityController.addErrorMessage("Please select encounter");
+            JsfUtil.addErrorMessage("Please select encounter");
             opdVisit = null;
             return "";
         }
@@ -264,7 +264,7 @@ public class PracticeBookingController implements Serializable {
 
     public String issueServices() {
         if (billSession == null) {
-            UtilityController.addErrorMessage("Please select encounter");
+            JsfUtil.addErrorMessage("Please select encounter");
             opdVisit = null;
             return "";
         }
@@ -279,7 +279,7 @@ public class PracticeBookingController implements Serializable {
             newOpdVisit();
         }
         if (opdVisit == null) {
-            UtilityController.addErrorMessage("Can not create an opd encounter");
+            JsfUtil.addErrorMessage("Can not create an opd encounter");
             return "";
         }
         getBillController().prepareNewBill();
@@ -294,7 +294,7 @@ public class PracticeBookingController implements Serializable {
 
     public String issuePharmacyBill() {
         if (billSession == null) {
-            UtilityController.addErrorMessage("Please select encounter");
+            JsfUtil.addErrorMessage("Please select encounter");
             opdVisit = null;
             return "";
         }
@@ -309,7 +309,7 @@ public class PracticeBookingController implements Serializable {
             newOpdVisit();
         }
         if (opdVisit == null) {
-            UtilityController.addErrorMessage("Can not create an opd encounter");
+            JsfUtil.addErrorMessage("Can not create an opd encounter");
             return "";
         }
         getPharmacySaleController().setPatient(opdVisit.getPatient());
@@ -323,7 +323,7 @@ public class PracticeBookingController implements Serializable {
     public void opdVisitFromServiceSession() {
         //   ////// // System.out.println("opd visit from service session ");
         if (billSession == null) {
-            UtilityController.addErrorMessage("Please select encounter");
+            JsfUtil.addErrorMessage("Please select encounter");
             opdVisit = null;
             return;
         }
@@ -348,7 +348,7 @@ public class PracticeBookingController implements Serializable {
 
     public void newOpdVisit() {
         if (billSession == null) {
-            UtilityController.addErrorMessage("Please select encounter");
+            JsfUtil.addErrorMessage("Please select encounter");
             opdVisit = null;
             return;
         }
@@ -378,21 +378,21 @@ public class PracticeBookingController implements Serializable {
 
 //    public void addToQueue() {
 //        if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
-//            UtilityController.addErrorMessage("Please select a patient");
+//            JsfUtil.addErrorMessage("Please select a patient");
 //            return;
 //        }
 //        if (doctor == null) {
-//            UtilityController.addErrorMessage("Please select a doctor");
+//            JsfUtil.addErrorMessage("Please select a doctor");
 //            return;
 //        }
 //        if (getSelectedServiceSession() == null) {
-//            UtilityController.addErrorMessage("Please select session");
+//            JsfUtil.addErrorMessage("Please select session");
 //            return;
 //        }
 //
 //        addToSession(addToBilledItem(addToBill()));
 //        listBillSessions();
-//        UtilityController.addSuccessMessage("Added to the queue");
+//        JsfUtil.addSuccessMessage("Added to the queue");
 //    }
 
 //    private BillItem addToBilledItem(Bill b) {
@@ -452,7 +452,7 @@ public class PracticeBookingController implements Serializable {
         getBillSessionFacade().edit(getSelectedBillSession());
 
         getPatientFacade().edit(getSelectedBillSession().getBill().getPatient());
-        UtilityController.addSuccessMessage("Patient Updated");
+        JsfUtil.addSuccessMessage("Patient Updated");
     }
 
     public void makeNull() {
@@ -577,7 +577,7 @@ public class PracticeBookingController implements Serializable {
         listCompletedBillSessions();
         listToCompleteBillSessions();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/EHR/Queue/(/faces/clinical/clinical_queue.xhtml)");
+        
     }
 
     List<PatientEncounter> encounters;
@@ -598,7 +598,7 @@ public class PracticeBookingController implements Serializable {
 //        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findByJpql(sql, hh, TemporalType.DATE);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/Daily visits/(/faces/clinical/report_queue.xhtml)");
+        
     }
 
     public List<PatientEncounter> getEncounters() {
@@ -763,7 +763,7 @@ public class PracticeBookingController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
-        getChannelCancelController().clearForNewBill();
+        getChannelCancelController().makeNull();
         getChannelCancelController().setBillSession(selectedBillSession);
     }
 
@@ -793,7 +793,7 @@ public class PracticeBookingController implements Serializable {
 
     public Boolean preSet() {
         if (getSelectedServiceSession() == null) {
-            UtilityController.addErrorMessage("Please select Service Session");
+            JsfUtil.addErrorMessage("Please select Service Session");
             return false;
         }
 

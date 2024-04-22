@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/emr/admin/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
         <h:form >
-            <p:growl/>
+            <p:growl id="msg"/>
             <p:focus id="selectFocus" context="gpSelect"/>
             <p:focus id="detailFocus" context="gpDetail"/>
             <p:panel header="Manage Procedures">
@@ -16,11 +16,12 @@
                     <div class="row">
                         <div class="col-md-5">
                             <h:panelGrid columns="3"  class="w-100" >
-                                <p:commandButton id="btnAdd"
-                                                 value="Add" 
-                                                 class="w-100"
-                                                 update="gpDetail lstSelect detailFocus" 
-                                                 action="#{procedureController.prepareAdd()}"  >
+                                <p:commandButton 
+                                    id="btnAdd"
+                                    value="Add" 
+                                    class="w-100"
+                                    update="gpDetail lstSelect detailFocus" 
+                                    action="#{procedureController.prepareAdd()}"  >
                                 </p:commandButton>
                                 <p:commandButton id="btnDelete" 
                                                  ajax="false"
@@ -81,11 +82,12 @@
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-10">
-                                        <p:commandButton id="btnSave" 
-                                                         value="Save"
-                                                         process="gpDetail" 
-                                                         update="lstSelect selectFocus" 
-                                                         action="#{procedureController.saveSelected()}" >
+                                        <p:commandButton 
+                                            id="btnSave" 
+                                            value="Save"
+                                            process="gpDetail" 
+                                            update="lstSelect selectFocus msg" 
+                                            action="#{procedureController.saveSelected()}" >
                                         </p:commandButton>
                                     </div>
                                 </div>

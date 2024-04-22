@@ -5,6 +5,7 @@
  */
 package com.divudi.java;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
@@ -12,17 +13,22 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.TimeZone;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -33,12 +39,174 @@ import org.joda.time.PeriodType;
  */
 public class CommonFunctions {
 
+    private SessionController sessionController;
+
+    private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
+    private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
+    private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+
+    public static List<Integer> convertStringToIntegerList(String text) {
+        List<Integer> numbers = new ArrayList<>();
+
+        // Check if the input string is null or empty
+        if (text == null || text.trim().isEmpty()) {
+            return numbers; // Return an empty list
+        }
+
+        // Split the input string by commas
+        String[] parts = text.split(",");
+
+        for (String part : parts) {
+            try {
+                // Attempt to convert each part to an integer and add it to the list
+                numbers.add(Integer.parseInt(part.trim()));
+            } catch (NumberFormatException e) {
+                // Handle parts of the string that cannot be converted to an integer
+                // For example, log the error or add a specific handling code here
+                // For now, we'll just ignore the invalid part and continue
+            }
+        }
+
+        return numbers;
+    }
+
+    public static String generateRandomNumericHIN(int length) {
+        Random random = new Random();
+        StringBuilder hinId = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            hinId.append(random.nextInt(10)); // Append a random digit (0-9)
+        }
+        return hinId.toString();
+    }
+
+    public static String convertToWord(double number) {
+        if (number == 0) {
+            return "Zero";
+        }
+
+        int intPart = (int) number;
+        int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
+        //System.out.println(number);
+        //System.out.println(number - intPart);
+        //System.out.println(String.format("%.2f", number%1));
+        //System.out.println(number);
+        //System.out.println(number - intPart);
+
+        // System.out.println(String.format("%.2f", decimalPart));
+        StringBuilder result = new StringBuilder();
+
+        if (intPart >= 1000000) {
+            result.append(convert(intPart / 1000000)).append(" Million ");
+            intPart %= 1000000;
+        }
+
+        if (intPart >= 1000) {
+            result.append(convert(intPart / 1000)).append(" Thousand ");
+            intPart %= 1000;
+        }
+
+        if (intPart > 0) {
+            result.append(convert(intPart));
+        }
+
+        if (decimalPart > 0) {
+            result.append(" and ").append(convert(decimalPart)).append(" Cents");
+        }
+
+        return result.toString().trim();
+    }
+
+    private static String convert(int number) {
+        if (number < 10) {
+            return units[number];
+        } else if (number < 20) {
+            return teens[number - 10];
+        } else if (number < 100) {
+            return tens[number / 10] + " " + units[number % 10];
+        } else {
+            return units[number / 100] + " Hundred " + convert(number % 100);
+        }
+    }
+
+    public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        if (phonenumber == null) {
+            return null;
+        }
+        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+        return convertedPhoneNumber;
+    }
+
+    public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    //----------Date Time Formats
+    public static String getDateFormat(Date date) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
+        s = d.format(date);
+        return s;
+    }
+
+    public static String getDateFormat(Date date, String formatString) {
+        if (date == null) {
+            date = new Date();
+        }
+        if (formatString == null || formatString.trim().equals("")) {
+            formatString = "dd MMMM yyyy";
+        }
+        String s;
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
+
+    public static LocalDateTime convertDateToLocalDateTime(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    public static Date convertDateToDbType(String argDate) {
+        if (argDate == null) {
+            return null; // Handle null input
+        }
+
+        SimpleDateFormat originalFormat = new SimpleDateFormat("MMMM d, yyyy, hh:mm a");
+        SimpleDateFormat desiredFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            Date date = originalFormat.parse(argDate);
+            String formattedDateString = desiredFormat.format(date);
+            return desiredFormat.parse(formattedDateString);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public static String sanitizeStringForDatabase(String input) {
         if (input == null) {
             return null;
         }
         return input.replaceAll("[\"'/\\\\]", "");
 
+    }
+
+    public static Long convertStringToLongByRemoveSpecialChars(String phonenumber) {
+        if (phonenumber == null || phonenumber.trim().equals("")) {
+            return null;
+        }
+        try {
+            String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+            return convertedPhoneNumber;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String removeNonUnicodeChars(String input) {
@@ -179,13 +347,16 @@ public class CommonFunctions {
         if (date == null) {
             date = new Date();
         }
-        Calendar calendar = Calendar.getInstance();
+        // Get a Calendar instance using the default time zone and locale.
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 0, 0, 0);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
+
+        // Reset hour, minutes, seconds and millis
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
@@ -197,19 +368,21 @@ public class CommonFunctions {
         return getEndOfDay(new Date());
     }
 
-    public static Date getEndOfDay(Date date) {
-        if (date == null) {
-            date = new Date();
+    public static Date getEndOfDay(Date d) {
+        if (d == null) {
+            d = new Date();
         }
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 23, 59, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
-        return calendar.getTime();
+        // Get a Calendar instance using the default time zone and locale.
+        Calendar c = Calendar.getInstance(TimeZone.getDefault());
+        c.setTime(d);
+
+        // Set hour, minute, second, and millisecond to the last possible values for the day.
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
+
+        return c.getTime();
     }
 
     public static String nameToCode(String name) {
@@ -220,6 +393,10 @@ public class CommonFunctions {
         code = name.replaceAll(" ", "_");
         code = code.toLowerCase();
         return code;
+    }
+
+    public static String dateToString(Date date, String ddMMyyyy) {
+        return formatDate(date, ddMMyyyy);
     }
 
     public Date getFirstDayOfYear(Date date) {
@@ -508,7 +685,7 @@ public class CommonFunctions {
         return date;
     }
 
-    public boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
+    public static boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
 
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
@@ -545,7 +722,7 @@ public class CommonFunctions {
 
     }
 
-    public Long getDayCount(Date frm, Date to) {
+    public static Long getDayCount(Date frm, Date to) {
         if (frm == null) {
             return 0l;
         }
@@ -669,7 +846,7 @@ public class CommonFunctions {
         return durationHours;
     }
 
-    public long calculateDurationMin(Date dob, Date toDate) {
+    public static long calculateDurationMin(Date dob, Date toDate) {
         if (dob == null || toDate == null || dob.getTime() > toDate.getTime()) {
             return 0;
         }
@@ -774,4 +951,13 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
 }

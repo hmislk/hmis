@@ -62,6 +62,8 @@ public class PatientEncounter implements Serializable {
     @ManyToOne
     Person guardian;
     @ManyToOne
+    private Item guardianRelationshipToPatient;
+    @ManyToOne
     private PatientRoom currentPatientRoom;
     @ManyToOne
     private Item item;
@@ -153,14 +155,31 @@ public class PatientEncounter implements Serializable {
     private Long dbp = null;
     private Double bmi = null;
     private Long pr = null;
-    private Double height;
+    private Double height = null;
+    private Integer respiratoryRate = null;
+    private Integer pfr = null;
+    private Double saturation = null;
+    @ManyToOne
+    private Institution workplace;
+    @ManyToOne
+    private Person referringPerson;
+    @ManyToOne
+    private Staff referringConsultant;
+    @ManyToOne
+    private Staff referringStaff;
 
     // Transient method for BP
     public String getBp() {
-        if (sbp != null && dbp != null) {
+        if (getSbp() != null && getDbp() != null) {
             return sbp + "/" + dbp + " mmHg";
         }
         return ""; // or some default value
+    }
+
+    public void setBp(Long sdp, Long dbp) {
+        this.sbp = sdp;
+        this.dbp = dbp;
+
     }
 
     // Transient method for BMI
@@ -946,5 +965,71 @@ public class PatientEncounter implements Serializable {
             this.bmi = this.weight / Math.pow(heightInMeters, 2);
         }
     }
+
+    public Institution getWorkplace() {
+        return workplace;
+    }
+
+    public void setWorkplace(Institution workplace) {
+        this.workplace = workplace;
+    }
+
+    public Person getReferringPerson() {
+        return referringPerson;
+    }
+
+    public void setReferringPerson(Person referringPerson) {
+        this.referringPerson = referringPerson;
+    }
+
+    public Staff getReferringConsultant() {
+        return referringConsultant;
+    }
+
+    public void setReferringConsultant(Staff referringConsultant) {
+        this.referringConsultant = referringConsultant;
+    }
+
+    public Staff getReferringStaff() {
+        return referringStaff;
+    }
+
+    public void setReferringStaff(Staff referringStaff) {
+        this.referringStaff = referringStaff;
+    }
+
+    public Integer getRespiratoryRate() {
+        return respiratoryRate;
+    }
+
+    public void setRespiratoryRate(Integer respiratoryRate) {
+        this.respiratoryRate = respiratoryRate;
+    }
+
+    public Integer getPfr() {
+        return pfr;
+    }
+
+    public void setPfr(Integer pfr) {
+        this.pfr = pfr;
+    }
+
+    public Double getSaturation() {
+        return saturation;
+    }
+
+    public void setSaturation(Double saturation) {
+        this.saturation = saturation;
+    }
+
+    public Item getGuardianRelationshipToPatient() {
+        return guardianRelationshipToPatient;
+    }
+
+    public void setGuardianRelationshipToPatient(Item guardianRelationshipToPatient) {
+        this.guardianRelationshipToPatient = guardianRelationshipToPatient;
+    }
+    
+    
 
 }

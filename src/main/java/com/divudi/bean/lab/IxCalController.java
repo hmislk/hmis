@@ -9,7 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -91,15 +91,15 @@ public  class IxCalController implements Serializable {
 
     public void addCal() {
         if (ix == null) {
-            UtilityController.addErrorMessage("Investigation ?");
+            JsfUtil.addErrorMessage("Investigation ?");
             return;
         }
         if (cal == null) {
-            UtilityController.addErrorMessage("Calculation ?");
+            JsfUtil.addErrorMessage("Calculation ?");
             return;
         }
         if (addingIxCal == null) {
-            UtilityController.addErrorMessage("Cal?");
+            JsfUtil.addErrorMessage("Cal?");
             return;
         }
         addingIxCal.setCalIxItem(cal);
@@ -113,7 +113,7 @@ public  class IxCalController implements Serializable {
         }
         items.add(addingIxCal);
         addingIxCal = new IxCal();
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
 
     }
 

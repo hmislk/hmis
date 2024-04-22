@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bil="http://java.sun.com/jsf/composite/bill"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
 
@@ -48,7 +48,7 @@
                                                 forceSelection="true"
                                                 id="acStock" 
                                                 value="#{pharmacyIssueController.stock}"
-                                                completeMethod="#{pharmacyIssueController.completeAvailableStocks}" 
+                                                completeMethod="#{stockController.completeAvailableStocks}" 
                                                 var="i" 
                                                 itemLabel="#{i.itemBatch.item.name}" 
                                                 itemValue="#{i}" >
@@ -85,7 +85,7 @@
                                             </p:autoComplete>
                                         </div>
                                         <div class="col-2">
-                                            <p:outputLabel value="Quentity" ></p:outputLabel>
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText 
                                                 autocomplete="off" 
                                                 accesskey="q"  
@@ -120,7 +120,7 @@
                                                 value="Add" 
                                                 action="#{pharmacyIssueController.addBillItem}"
                                                 process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
-                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" >
+                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty txtVal acStock focusItem tabI" >
                                             </p:commandButton>
 
                                             <p:defaultCommand  target="btnAdd" />  
@@ -188,7 +188,9 @@
                                             inputStyleClass="w-100"
                                             completeMethod="#{departmentController.completeDept}" 
                                             forceSelection="true"
-                                            var="w" itemLabel="#{w.name}" itemValue="#{w}"
+                                            var="w" 
+                                            itemLabel="#{w.name}" 
+                                            itemValue="#{w}"
                                             value="#{pharmacyIssueController.toDepartment}" 
                                             id="acDept">
                                             <p:column headerText="Department Name">
@@ -203,26 +205,27 @@
 
                                         <h:outputLabel value="Request Number"/>
                                         <p:inputText class="w-100" value="#{storeIssueController.preBill.invoiceNumber}" id="req"/>
+                                        
+                                        <h:outputLabel value="Comment"/>
+                                        <p:inputTextarea class="w-100" value="#{storeIssueController.preBill.comments}" id="comment"/>
 
                                         <p:watermark value="Request Number" for="req"/>
                                         <p:watermark value="Issuing Department" for="acDept"/>
+                                        <p:watermark value="Comment" for="comment"/>
                                     </h:panelGrid>
 
-                                    <h:panelGrid columns="2" class="my-4 d-flex justify-content-end">
+                                    
                                         <p:commandButton  
                                             accesskey="s" 
                                             value="Issue" 
                                             ajax="false"
+                                            icon="fas fa-check"
                                             action="#{pharmacyIssueController.settleBill()}" 
-                                            class="ui-button-warning"
+                                            class="w-25 ui-button-warning"
                                             actionListener="#{pharmacyIssueController.calculateAllRates}">
-                                            <f:facet name="title" >
-                                                <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
-                                                <h:outputLabel value="ettle"  ></h:outputLabel>
-                                            </f:facet>
+                                           
                                         </p:commandButton>
 
-                                    </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
                                     <f:facet name="header">
@@ -269,7 +272,7 @@
                                     <p:column headerText="Item">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Quentity">
+                                    <p:column headerText="Quantity">
                                         <p:cellEditor>  
                                             <f:facet name="output">  
                                                 <h:outputText value="#{bi.qty}" >
@@ -282,7 +285,7 @@
                                         </p:cellEditor> 
                                     </p:column>
 
-                                    <p:column style="width:6%">  
+                                    <p:column style="width:6%">
                                         <p:rowEditor />  
                                     </p:column>  
                                     <p:column headerText="Rate">
@@ -375,36 +378,13 @@
                         <h:panelGroup   id="gpBillPreview" > 
 
                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}" >
-                                <phi:saleBill_five_five bill="#{pharmacyIssueController.printBill}"/>
+                                <phi:pharmacy_disposal_bill_five_five bill="#{pharmacyIssueController.printBill}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}" >
-                                <phi:posBill bill="#{pharmacyIssueController.printBill}"/>
+                                <phi:pharmacy_disposal_bill_pos bill="#{pharmacyIssueController.printBill}"/>
                             </h:panelGroup>
-
-<!--                           <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-    <div >
-        <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-            <phi:saleBill_prabodha bill="#{pharmacyIssueController.printBill}"></phi:saleBill_prabodha>
-        </h:panelGroup>
-    </div>
-
-    <div >
-        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-            <phi:issue bill="#{pharmacyIssueController.printBill}"></phi:issue>
-        </h:panelGroup>
-    </div>
-
-</h:panelGroup>
-
-<h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-    <div >
-        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-            <phi:saleBill_five_five bill="#{pharmacyIssueController.printBill}"></phi:saleBill_five_five>
-        </h:panelGroup>
-    </div>
-</h:panelGroup>                           -->
+                            
                         </h:panelGroup> 
                     </p:panel>
                 </h:form>

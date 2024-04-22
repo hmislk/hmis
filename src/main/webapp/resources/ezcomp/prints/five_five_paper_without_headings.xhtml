@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
 
@@ -28,13 +28,14 @@
 
 
 
-            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="row mt-2 d-flex align-items-center">
-                <div class="col-4">
-                    <div class="d-flex align-items-center">          
-                        <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+            <div style="font-weight: bold;text-align: left;font-size: 10pt" class="row mt-2 d-flex align-items-center">
+                <div class="col-5">
+                    <div class="d-flex"> 
+                        <h:outputLabel value="REFUND" rendered="#{cc.attrs.bill.refunded}" /> 
+                        <h:outputLabel value="RECEIPT"/><h:outputText value=" - " /><h:outputText value="#{cc.attrs.bill.department.name}" />
                     </div>
                 </div>
-                <div class="col-8">
+                <div class="col-7">
                     <div class="mx-5">
                         <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
                             <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
@@ -249,12 +250,12 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
 
 
-                            <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
+                            <h:panelGroup >
                                 <tr>
                                     <td  style="overflow: visible;">
                                         <div class="d-flex justify-content-between">
                                             <div>
-                                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
                                                 </h:outputLabel>
 
                                             </div>
@@ -283,7 +284,7 @@
                                         <td >
                                             <div class="d-flex justify-content-between">
                                                 <div>
-                                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
                                                     </h:outputLabel>
                                                     <p:spacer height="1" width="2"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
                                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bf.fee.name}"  style="text-transform: capitalize!important;"  >
@@ -316,7 +317,7 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
                                 <td>
@@ -423,7 +424,7 @@
             </div>
 
             <ui:repeat value="#{cc.attrs.payments}" var="ps">
-                <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
+                <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                     <h:outputText 
                         style="font-size: 8pt"  
                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
@@ -436,7 +437,6 @@
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
                 <br/>
             </div>
-
 
 
         </div>

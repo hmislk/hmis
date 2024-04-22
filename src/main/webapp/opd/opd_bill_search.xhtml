@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -16,32 +16,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h:outputText styleClass="fas fa-search" />
-                                    <h:outputLabel value="Opd Bill Search " class="mx-4"/>
-                                </div>  
-                                <div class="d-flex">
-                                    <p:commandButton 
-                                        icon="fas fa-search"
-                                        id="btnSearch" 
-                                        ajax="false" 
-                                        value="Search" 
-                                        class="ui-button-success"
-                                        action="#{searchController.searchOpdBills()}" />
-                                    <p:commandButton 
-                                        id="btnExcel"
-                                        icon="fas fa-download"
-                                        ajax="false" 
-                                        value="Download"
-                                        class="w-100 mx-2">
-                                        <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        id="btnClear"
-                                        icon="fas fa-broom"
-                                        value="Clear" 
-                                        class="my-2 ui-button-warning" 
-                                        action="#{searchController.clearOpdBillSearchData}"
-                                        process="btnClear"
-                                        update="searchKeyword"/>
+                                    <h:outputLabel value="OPD Bill Search " class="mx-4"/>
                                 </div>
                             </div>
                         </f:facet>
@@ -60,7 +35,6 @@
                                                     inputStyleClass="form-control"
                                                     maxdate="#{commonController.currentDateTime}">      
                                         </p:calendar>
-                                        <p:spacer height="10" width="5" ></p:spacer>
 
                                         <h:outputLabel value="To Date"/>
                                         <p:calendar id="toDate"
@@ -71,49 +45,86 @@
                                                     class="w-100"
                                                     inputStyleClass="form-control">                                                                              
                                         </p:calendar>
-                                        <h:outputLabel value="SameDate" rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}"/>
-                                        <!--<p:spacer height="10" width="5" ></p:spacer>-->
 
-                                        <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
+                                        <p:commandButton 
+                                            icon="fas fa-search"
+                                            id="btnSearch" 
+                                            ajax="false" 
+                                            value="Search" 
+                                            class="ui-button-success w-100 mt-2"
+                                            action="#{searchController.searchOpdBills()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            id="btnExcel"
+                                            icon="fa-solid fa-file-excel"
+                                            ajax="false" 
+                                            value="Download"
+                                            class="w-100 mt-1">
+                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            id="btnClear"
+                                            icon="fas fa-broom"
+                                            value="Clear" 
+                                            class="w-100 mt-1 mb-2 ui-button-warning" 
+                                            action="#{searchController.clearOpdBillSearchData}"
+                                            process="btnClear"
+                                            update="searchKeyword">
+                                        </p:commandButton>
+
+
+                                        <p:inputText placeholder="Bill No" 
+                                                     autocomplete="off" 
+                                                     class="w-100"
                                                      value="#{searchController.searchKeyword.billNo}" />
-                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                        <p:inputText placeholder="Name" class="form-control"
+
+                                        <p:inputText placeholder="Name" 
+                                                     class="form-control my-1"
                                                      autocomplete="off" 
                                                      value="#{searchController.searchKeyword.patientName}" />
-                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                        <p:inputText placeholder="Phone" class="form-control"
+
+                                        <p:inputText placeholder="Phone" 
+                                                     class="form-control"
                                                      autocomplete="off"  
                                                      value="#{searchController.searchKeyword.patientPhone}" />
-                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                        <p:inputText placeholder="Total" class="form-control"
+
+                                        <p:inputText placeholder="Total" 
+                                                     class="form-control my-1"
                                                      autocomplete="off"  
                                                      value="#{searchController.searchKeyword.total}"
                                                      />
-                                        <p:spacer height="10" width="5" ></p:spacer>
 
-
-                                        <p:inputText placeholder="Net Total"   class="form-control"
+                                        <p:inputText placeholder="Net Total"   
+                                                     class="form-control"
                                                      autocomplete="off"
                                                      value="#{searchController.searchKeyword.netTotal}"/>
-                                        <p:spacer height="10" width="5" ></p:spacer>
+
                                         <hr/>
+
                                         <h:outputLabel value="From Institution" class="w-100"/>
                                         <p:selectOneMenu 
                                             id="cmdFromInstitution"
                                             value="#{searchController.fromInstitution}"
                                             filter="true"
                                             placeholder="Ordering Institution"
-                                            style="width: 230px"
+                                            class="col-12"
+                                            autoWidth="false"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                                           var="i"
-                                                           itemLabel="#{i.name}"
-                                                           itemValue="#{i}" ></f:selectItems>
-                                            <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                                            <f:selectItems 
+                                                value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                var="i"
+                                                itemLabel="#{i.name}"
+                                                itemValue="#{i}" ></f:selectItems>
+                                            <p:ajax 
+                                                process="cmdFromInstitution" 
+                                                update="cmdFromDepartment" >
+                                            </p:ajax>
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="From Department"/><br/>
@@ -124,10 +135,12 @@
                                             filter="true"
                                             class="w-100">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems value="#{departmentController.getInsDepartments(searchController.fromInstitution)}"
-                                                           var="d"
-                                                           itemLabel="#{d.name}"
-                                                           itemValue="#{d}" ></f:selectItems>
+                                            <f:selectItems 
+                                                value="#{departmentController.getInsDepartments(searchController.fromInstitution)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" >
+                                            </f:selectItems>
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="To Institution"/>
@@ -135,15 +148,20 @@
                                             id="cmdToInstitution"
                                             value="#{searchController.toInstitution}"
                                             filter="true"
+                                            autoWidth="false"
                                             placeholder="To Institution"
-                                            style="width: 230px"
+                                            class="w-100"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                                           var="i"
-                                                           itemLabel="#{i.name}"
-                                                           itemValue="#{i}" ></f:selectItems>
-                                            <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
+                                            <f:selectItems 
+                                                value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                var="i"
+                                                itemLabel="#{i.name}"
+                                                itemValue="#{i}" ></f:selectItems>
+                                            <p:ajax 
+                                                process="cmdToInstitution" 
+                                                update="cmdToDepartment" >
+                                            </p:ajax>
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="To Department"/><br/>
@@ -154,16 +172,15 @@
                                             filter="true"
                                             class="w-100">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
-                                            <f:selectItems value="#{departmentController.getInsDepartments(searchController.toInstitution)}"
-                                                           var="d"
-                                                           itemLabel="#{d.name}"
-                                                           itemValue="#{d}" ></f:selectItems>
+                                            <f:selectItems 
+                                                value="#{departmentController.getInsDepartments(searchController.toInstitution)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" >
+                                            </f:selectItems>
                                         </p:selectOneMenu>
 
-
                                     </h:panelGroup>
-
-
 
                                 </div>
                             </div>
@@ -184,20 +201,21 @@
                                              >
                                     <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
                                               sortBy="#{bill.id}"
+                                              rendered="false"
                                               styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
-                                                       value="#{bill.insId}" 
+                                                       value="#{bill.deptId}" 
                                                        action="#{billSearch.navigateToViewOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
-                                        <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
+                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >
@@ -223,23 +241,18 @@
                                               filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
                                             <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patient.person.name}" target="#{patientController.patientId}"/>
+                                                <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Remarks"   >                              
-                                        <h:outputLabel value="#{bill.cancelled?'Cancelled':''}" class="#{bill.cancelled?'text-danger':''}" />
-                                        <h:outputLabel value="#{bill.refunded ?'Refunded':''}" />
+                                    <p:column headerText="Remarks"   >  
+                                        <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                        <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+
                                     </p:column>
 
-
-
-                                    <!--                                    <p:column headerText="Payment" rendered="false" >                                
-                                                                            <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                                                            <h:outputLabel value="#{bill.paymentScheme.name}" />
-                                                                        </p:column>-->
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}" 
                                               styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.total}" >
@@ -256,7 +269,31 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>                         
+                                    </p:column> 
+
+
+
+
+
+                                    <p:column headerText="Actions">                                
+                                        <p:commandLink 
+                                            ajax="false" 
+                                            value="View Bill" 
+                                            action="#{billSearch.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                        <p:spacer width="5" ></p:spacer>
+                                        |
+                                        <p:spacer width="5" ></p:spacer>
+                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                        </h:commandLink>  
+                                    </p:column>
+
+
+
+
+
                                 </p:dataTable>
                             </div>
                         </div>
@@ -264,7 +301,6 @@
 
                 </h:form>
             </ui:define>
-
 
         </ui:composition>
 

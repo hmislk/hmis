@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -45,7 +45,7 @@
             </div>
 
             <div class="billDetails" >
-                <table style="width: 100%;" >
+                <table style="width: 90%; margin-left: 5%" >
                     <tr>
                         <td style="width: 15%; text-align: left;" >
                             <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
@@ -99,6 +99,50 @@
 
                     </tr>
 
+                    <h:panelGroup rendered="#{cc.attrs.bill.invoiceNumber ne null}" >
+                        <tr>
+                            <td style="width: 20% ;text-align: left;" >
+                                <h:outputLabel value="Request No" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}"  >
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="To Dept." ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%;" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  >
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%" >
+                            <!--<h:outputLabel value="User" ></h:outputLabel>-->
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Comment" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 85%;" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.comments}"  >
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
@@ -118,27 +162,20 @@
                             </td>
                         </tr>
                     </h:panelGroup>
-
-
                 </table>
-
-
             </div>
-
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-
             <div >
-
-                <table width="100%" style="width: 100%;" >
+                <table style="width: 90%; margin-left: 5%" >
                     <tr>
                         <td style="width: 25%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
-                        <td  style="width:30%;text-align: right; padding-right: 30px;">
+                        <td  style="width:30%;text-align: right; padding-right: 0px;">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                     </tr>
@@ -148,55 +185,38 @@
                             <h:outputLabel value="-----------------------------------------------"  style="text-align:center; " />                           
                         </td>
                     </tr>
-                    
 
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
 
                         <tr>
                             <td style="overflow: visible;">
-                                
-                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+
+                                <h:outputLabel value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
-                                
-                                
+
                             </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
+                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 0px;" >
                                 <h:outputLabel    value="#{bip.grossValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
 
                         </tr>
-
-
-
-
                     </ui:repeat>
-
-
-
-
                 </table>
-
-
             </div>
-
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-
-
             <div  >
-
-                <table style="width: 100%;">
-
+                <table style="width: 90%; margin-left: 5%">
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Total" />
                         </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
                             <h:outputLabel value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -206,7 +226,7 @@
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount (#{cc.attrs.bill.paymentScheme.discountPercentForPharmacy} %)" style="font-weight: bolder!important;"/>
                         </td>
-                        <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
+                        <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 0px;">
                             <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -216,25 +236,21 @@
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
                         </td>
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 00px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
                     </tr>
-                  
+
                 </table>
 
             </div>
-
 
             <div class="footer">
                 <br/>
                 THANK YOU !
             </div>
-
-
-
         </div>
     </cc:implementation>
 </html>

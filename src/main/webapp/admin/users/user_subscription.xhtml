@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      >
+    <h:body>
+        <ui:composition template="/admin/users/user_list.xhtml">
+            <ui:define name="users">
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
+                    <h:outputLabel value="You are NOT authorized"/>
+                </h:panelGroup>
+
+                <p:panelGrid 
+                    class="w-100"
+                    columns="3"
+                    rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
+                    <f:facet name="header">
+                        <i class="fa fa-icons" />
+                        <h:outputLabel class="mx-2" value="Manage User Subscriptions"/>
+                    </f:facet>
+                    <p:outputLabel value="Department" ></p:outputLabel>
+                    <p:selectOneMenu 
+                        id="cmbDepartment"
+                        placeholder="Department"
+                        value="#{triggerSubscriptionController.department}" 
+                        class="w-100"
+                        required="true"
+                        requiredMessage="Select a Department"
+                        filter="true">
+                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                        <f:selectItems 
+                            value="#{triggerSubscriptionController.departments}"
+                            var="d"
+                            itemLabel="#{d.name}"
+                            itemValue="#{d}" ></f:selectItems>
+                    </p:selectOneMenu>
+                    <p:commandButton 
+                        id="btnList"
+                        title="List Subscriptions for the Department"
+                        value="List Subscriptions"
+                        process="btnList cmbDepartment"
+                        class="ui-button-warning w-100"
+                        ajax="false"
+                        icon="fa fa-list"
+                        update="tbl"
+                        action="#{triggerSubscriptionController.fillDepartmentSubscription}"
+                        >
+                    </p:commandButton>
+
+                    <p:outputLabel value="Subscription to Add" ></p:outputLabel>
+                    <p:selectOneMenu 
+                        value="#{triggerSubscriptionController.triggerType}" 
+                        filter="true"
+                        filterMatchMode="contains"
+                        class="w-100">
+                        <f:selectItems value="#{triggerSubscriptionController.triggerTypes}" 
+                                       var="i"
+                                       itemLabel="#{i.label}"
+                                       itemValue="#{i}"/>
+                    </p:selectOneMenu>
+                    <p:commandButton 
+                        value="Add Subscription" 
+                        icon="fa fa-plus" 
+                        class="ui-button-success w-100"
+                        action="#{triggerSubscriptionController.addUserSubscription}" 
+                        update="tbl" 
+                        />
+
+
+
+
+                </p:panelGrid>
+
+
+                <p:dataTable 
+                    var="sub" 
+                    value="#{triggerSubscriptionController.triggerSubscriptions}" 
+                    rowKey="#{sub.id}" 
+                    id="tbl">
+                    <p:column headerText="Subscription">
+                        <h:outputText value="#{sub.triggerType.label}" />
+                    </p:column>
+                    <p:column 
+                        headerText="Department" 
+                        rendered="#{triggerSubscriptionController.department eq null}">
+                        <h:outputText value="#{sub.department.name}" />
+                    </p:column>
+                    <p:column headerText="Order">
+                        <h:outputText value="#{sub.orderNumber}" />
+                    </p:column>
+                    <p:column headerText="Actions" style="text-align: center; width: 200px;" >
+                        <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
+                            <p:commandButton 
+                                id="up" 
+                                icon="fa fa-arrow-up"
+                                class="ui-button-warning"
+                                action="#{triggerSubscriptionController.moveSelectedUserSubscriptionUp}" 
+                                update="tbl" >
+                                <f:setPropertyActionListener 
+                                    value="#{sub}" 
+                                    target="#{triggerSubscriptionController.current}" >
+                                </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                id="down" 
+                                icon="fa fa-arrow-down"
+                                class="mx-2 ui-button-warning"
+                                action="#{triggerSubscriptionController.moveSelectedUserSubscriptionDown}" 
+                                update="tbl" >
+                                <f:setPropertyActionListener 
+                                    value="#{sub}" 
+                                    target="#{triggerSubscriptionController.current}" >
+                                </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
+                            </p:commandButton>
+                            <p:commandButton 
+                                id="remove" 
+                                icon="fa fa-trash"
+                                action="#{triggerSubscriptionController.removeUserSubscription()}" 
+                                class="ui-button-danger"
+                                update="tbl" >
+                                <f:setPropertyActionListener 
+                                    value="#{sub}" 
+                                    target="#{triggerSubscriptionController.current}" >
+                                </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
+                            </p:commandButton>
+
+                            <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
+                            <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
+                            <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
+                        </h:panelGroup>
+                    </p:column>
+                </p:dataTable>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

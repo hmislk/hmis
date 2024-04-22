@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -18,7 +18,7 @@
 
 
             <div class="headingBill">
-                <h:outputLabel value="Adjustment Note" style="text-decoration: underline;"/>                           
+                <h:outputLabel value=" Retail Sale Rate Adjustment Note" style="text-decoration: underline;"/>
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
@@ -53,27 +53,30 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
                     <p:column style="width: 8px;text-align: right!important;" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputLabel>
+                        
                     </p:column>                                  
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Before Retail Price" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Before Retail Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}" >
                              <f:convertNumber pattern="#00.00"/>
                         </h:outputLabel>
-                    </p:column>                  
+                    </p:column>
 
+                    <p:column style="text-align: right!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Rate Difference" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate - bip.pharmaceuticalBillItem.retailRate}">
+                            <f:convertNumber pattern="#00.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Retail Price" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Retail Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
                             <f:convertNumber pattern="#00.00"/>

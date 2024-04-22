@@ -44,19 +44,12 @@ public class ItemApplicationController {
 
     public List<ItemLight> fillAllItems() {
         String jpql = "SELECT new com.divudi.data.ItemLight("
-                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
-                + "c.name, c.id, ins.name, ins.id, "
-                + "d.name, d.id, s.name, s.id, "
-                + "p.name, stf.id, i.name, i.code, i.barcode, "
-                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "i.id, "
+                + "CASE WHEN d.name IS NULL THEN 'No Department' ELSE d.name END, "
+                + "i.name, i.code, i.total) "
                 + "FROM Item i "
-                + "LEFT JOIN i.category c "
-                + "LEFT JOIN i.institution ins "
                 + "LEFT JOIN i.department d "
-                + "LEFT JOIN i.speciality s "
-                + "LEFT JOIN i.staff stf "
-                + "LEFT JOIN stf.person p "
-                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service) "
+                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service OR TYPE(i) = MedicalPackage ) "
                 + "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
@@ -81,10 +74,9 @@ public class ItemApplicationController {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public List<ItemLight> getItems() {
-//        if (items == null) {
-//            items = fillAllItems();
-//        }
-        items = fillAllItems();
+        if (items == null) {
+            items = fillAllItems();
+        }
         return items;
     }
 
@@ -120,8 +112,6 @@ public class ItemApplicationController {
         }
         return investigationsAndServices;
     }
-    
-    
 
     private List<ItemLight> fillPackages() {
         String jpql = "SELECT new com.divudi.data.ItemLight("

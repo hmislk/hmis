@@ -10,13 +10,13 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -207,16 +207,16 @@ public class InwardTimedItemController implements Serializable {
         }
 
         if (getBatchBill().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Admission ?");
+            JsfUtil.addErrorMessage("Admission ?");
             return true;
         }
         if (getBatchBill().getProcedure().getItem() == null) {
-            UtilityController.addErrorMessage("Select Surgery");
+            JsfUtil.addErrorMessage("Select Surgery");
             return true;
         }
 
         if (getBatchBill().getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Final Payment is Finalized");
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
             return true;
         }
 
@@ -230,7 +230,7 @@ public class InwardTimedItemController implements Serializable {
         }
 
         if (getTimedEncounterComponent().getBillFee().getPatientItem().getItem() == null) {
-            UtilityController.addErrorMessage("Select Timed Service ");
+            JsfUtil.addErrorMessage("Select Timed Service ");
             return;
         }
 
@@ -288,11 +288,11 @@ public class InwardTimedItemController implements Serializable {
         }
         if (bf.getPatientItem().getToTime() != null) {
             if (bf.getPatientItem().getToTime().before(bf.getPatientItem().getFromTime())) {
-                UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
             if (bf.getPatientItem().getToTime().getTime() == bf.getPatientItem().getFromTime().getTime()) {
-                UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }
         }
@@ -347,6 +347,10 @@ public class InwardTimedItemController implements Serializable {
             patientItem.setRetiredAt(new Date());
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
+            
+            createPatientItems();
+            
+            JsfUtil.addSuccessMessage("Removed successfully.");
         }
     }
 
@@ -481,7 +485,7 @@ public class InwardTimedItemController implements Serializable {
 
         getBillBean().updateBatchBill(getBatchBill());
 
-        UtilityController.addSuccessMessage("Surgery Detail Successfull Updated");
+        JsfUtil.addSuccessMessage("Surgery Detail Successfull Updated");
 
         //makeNull();
     }
@@ -537,11 +541,11 @@ public class InwardTimedItemController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select BHT");
+            JsfUtil.addErrorMessage("Please Select BHT");
             return true;
         }
         if (getCurrent().getItem() == null) {
-            UtilityController.addErrorMessage("Please Select service");
+            JsfUtil.addErrorMessage("Please Select Service");
             return true;
         }
         return false;
@@ -552,7 +556,10 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) getCurrent().getItem());
-        double count = getInwardBean().calCount(timedItemFee, getCurrent().getFromTime(), getCurrent().getToTime());
+        if (getCurrent().getToTime() == null) {
+            getCurrent().setToTime(new Date());
+        }
+        double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
         getCurrent().setServiceValue(count * timedItemFee.getFee());
         getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -568,6 +575,8 @@ public class InwardTimedItemController implements Serializable {
         current.setItem(null);
 
         createPatientItems();
+        
+        JsfUtil.addSuccessMessage("Added Successfully.");
 
     }
 
@@ -575,11 +584,11 @@ public class InwardTimedItemController implements Serializable {
         PatientItem temPi;
         if (pic.getToTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
-                UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
             if (pic.getToTime().getTime() == pic.getFromTime().getTime()) {
-                UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }
         }
@@ -605,6 +614,8 @@ public class InwardTimedItemController implements Serializable {
         getPatientItemFacade().edit(pic);
 
         createPatientItems();
+        
+        JsfUtil.addSuccessMessage("Updated Successfully.");
 
     }
 

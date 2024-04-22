@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
 
@@ -31,13 +31,13 @@
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   
                                 id="cmbPs" 
-                                style="width: 10em;"
+                                class="w-100"
                                 value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
                                 disabled="#{sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                 <p:ajax 
                                     process="cmbPs" 
-                                    update="creditCard cheque slip " 
+                                    update="creditCard cheque slip multiplePaymentMethods" 
                                     event="change" />
                             </p:selectOneMenu>
 
@@ -62,7 +62,15 @@
 
                             <p:defaultCommand target="settle"/>
                         </h:panelGrid>
+                        <h:panelGroup
+                            class="row my-2 w-50"
+                            layout="block" 
+                            id="multiplePaymentMethods"  style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;" 
+                            >
+                            <pa:multiple_payment_methods paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}" controller="#{pharmacyPreSettleController}" class="w-100"/>
 
+                        </h:panelGroup>
+                        
                         <div class="row mt-2">
                             <div class="col-5">
                                 <p:panel header="Customer Detail">
@@ -153,15 +161,26 @@
                     </p:panel>
 
 
-<!--                    <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
-                        <p:commandButton ajax="false" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
+                    <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
+                                <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
+                                    <p:printer target="gpBillPreview" />
+                                </p:commandButton>
+                            </div>
+                            <div>
+                                <p:commandButton 
+                                    value="New Pharmacy Token"
+                                    ajax="false" 
+                                    action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
+                                </p:commandButton>
+                            </div>
+                        </div>
                         <h:panelGroup id="gpBillPreview" >
                             <ph:saleBill bill="#{pharmacyPreSettleController.bill}"/>
                         </h:panelGroup>
-                    </p:panel>-->
+                    </p:panel>
 
                 </h:form>
             </ui:define>

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/pricing/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -12,7 +12,7 @@
 
 
         <h:form class="w-100"  >
-            <p:growl />
+            <p:growl id="msg"/>
             <p:focus id="selectFocus" for="lstSelect" />
             <p:focus id="detailFocus" for="txtName" />
 
@@ -23,41 +23,44 @@
                     <h:outputText value="Manage Package Names" ></h:outputText>
                 </f:facet>
 
-                <h:panelGroup class="row" >
-                    <h:panelGroup class="col-6" >
+                <div class="row" >
+                    <div class="col-6" >
+                        <p:commandButton 
+                            id="btnAdd" 
+                            value="Add" 
+                            action="#{packageNameController.prepareAdd()}"
+                            class="ui-button-success w-25"
+                            update="lstSelect gpDetail" 
+                            icon="fa fa-plus"
+                            process="btnAdd">
+                        </p:commandButton>
+
+                        <p:commandButton id="btnDelete" 
+                                         icon="fa fa-trash"
+                                         onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                     return false;" 
+                                        action="#{packageNameController.delete()}"   
+                                         value="Delete"
+                                         update="lstSelect gpDetail msg" process="btnDelete"
+                                         class=" m-1 ui-button-danger w-25"
+                                         >
+                        </p:commandButton>
                         <p:selectOneListbox  
                             id="lstSelect"   
                             class="w-100" 
-                            scrollHeight="500" 
                             filter="true"
                             value="#{packageNameController.current}" 
                             >
                             <f:selectItems  value="#{packageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                            <p:ajax process="lstSelect" update="gpDetails" ></p:ajax>
+                            <p:ajax process="lstSelect" update="gpDetail" ></p:ajax>
                         </p:selectOneListbox>
+
                         
-                        <p:commandButton 
-                            id="btnAdd" 
-                            process="btnAdd"
-                            update="gpDetails lstSelect detailFocus"
-                            value="Add" 
-                            class="ui-button-success m-1"
-                            action="#{packageNameController.prepareAdd()}" >
-                        </p:commandButton>
+                    </div>
 
-                        <p:commandButton 
-                            id="btnDelete" 
-                            class="ui-button-danger m-1"
-                            onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" 
-                            action="#{packageNameController.delete()}"  
-                            value="Delete"  >
-                        </p:commandButton>
-                    </h:panelGroup>
+                    <div class="col-6 float-left" >
 
-                    <h:panelGroup class="col-6 float-left" >
-
-                        <p:panelGrid id="gpDetails" columns="2" class="w-100 no-border" >
+                        <p:panelGrid id="gpDetail" columns="2" class="w-100 no-border" >
 
                             <h:outputText id="lblName" value="Name" ></h:outputText>
                             <p:inputText 
@@ -76,7 +79,7 @@
                         <p:defaultCommand target="btnSave"/>
                         <p:commandButton id="btnSave" 
                                          value="Save" 
-                                         process="gpDetails btnSave"
+                                         process="gpDetail btnSave"
                                          update="lstSelect selectFocus"
                                          action="#{packageNameController.saveSelected()}" 
                                          class="ui-button-info m-1"
@@ -84,11 +87,11 @@
                         </p:commandButton>
 
 
-                    </h:panelGroup>
+                    </div>
 
 
 
-                </h:panelGroup>
+                </div>
 
 
 

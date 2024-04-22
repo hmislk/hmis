@@ -67,7 +67,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -314,11 +314,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > opdBill.getBalance()) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -382,11 +382,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -686,7 +686,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     private boolean checkPatientAgeSex() {
         if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
-            UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
         return false;
@@ -855,12 +855,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         saveBatchBill();
         saveBillItemSessions();
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
+        
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
@@ -939,7 +939,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
 
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -980,7 +980,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
         tmp.copy(billedBill);
@@ -1082,14 +1082,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private boolean errorCheck() {
         if (getPatient().getPerson().getName() == null
                 || getPatient().getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please select a patient before billing");
+            JsfUtil.addErrorMessage("Please select a patient before billing");
             return true;
         }
         if (checkPatientAgeSex()) {
             return true;
         }
         if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please select a collecting centre");
+            JsfUtil.addErrorMessage("Please select a collecting centre");
             return true;
         }
         if (referralId == null || referralId.trim().equals("")) {
@@ -1102,7 +1102,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        }
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("Please Add tests before billing");
+            JsfUtil.addErrorMessage("Please Add tests before billing");
             return true;
         }
 
@@ -1115,26 +1115,26 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         ///not wanted 
 //        if ((collectingCentre.getBallance() - Math.abs(feeTotalExceptCcfs)) < 0 - collectingCentre.getStandardCreditLimit()) {
-//            UtilityController.addErrorMessage("This bill excees the Collecting Centre Limit");
+//            JsfUtil.addErrorMessage("This bill excees the Collecting Centre Limit");
 //            return true;
 //        }
         if (collectingCentre.getBallance() - feeTotalExceptCcfs < 0 - collectingCentre.getAllowedCredit()) {
-            UtilityController.addErrorMessage("Collecting Centre Ballance is Not Enough");
+            JsfUtil.addErrorMessage("Collecting Centre Balance is Not Enough");
             return true;
         }
 
 //        if (agentReferenceBookController.numberHasBeenIssuedToTheAgent(getReferralId())) {
-//            UtilityController.addErrorMessage("Invaild Reference Number.");
+//            JsfUtil.addErrorMessage("Invaild Reference Number.");
 //            return true;
 //        }
         if (agentReferenceBookController.agentReferenceNumberIsAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
-            UtilityController.addErrorMessage("This Reference Number is alredy Used.");
+            JsfUtil.addErrorMessage("This Reference Number is alredy Used.");
             setReferralId("");
             return true;
         }
 
         if (!agentReferenceBookController.numberHasBeenIssuedToTheAgent(collectingCentre, getReferralId())) {
-            UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+            JsfUtil.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
         }
 
@@ -1229,19 +1229,19 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void addToBill() {
         if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please Select Collecting Center");
+            JsfUtil.addErrorMessage("Please Select Collecting Center");
             return;
         }
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an Item");
+            JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please corect item fee");
+            JsfUtil.addErrorMessage("Please corect item fee");
             return;
         }
 
@@ -1282,11 +1282,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the fess");
+            JsfUtil.addErrorMessage("Please enter the Fees");
             return;
         }
         clearBillItemValues();
-        UtilityController.addSuccessMessage("Item Added");
+        JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -1561,7 +1561,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         for (BillEntry be : billEntrys) {
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
 
@@ -1574,7 +1574,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);

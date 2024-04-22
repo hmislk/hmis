@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -55,8 +55,8 @@
                                 </p:tab>
                                 <p:tab title="Cashier Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. All Cashier Summery" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Shift End Summery" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. All Cashier Summary" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Shift End Summary" ></p:commandButton>
 
                                     </div>
                                 </p:tab>
@@ -85,7 +85,7 @@
                                 <p:tab title="Financial Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="1. Daily return" action="/reports/financialReports/daily_return"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Income Category Wise Summery (Daily Return Summery)"  action="/reports/financialReports/income_category_wise_report"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Income Category Wise Summary (Daily Return Summary)"  action="/reports/financialReports/income_category_wise_report"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="3. IP Income Category Wise Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>

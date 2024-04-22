@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
 
-                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
 
 
 
@@ -51,46 +51,51 @@
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Inward Payment Bill - Estimated Professional Fees" rendered="#{bhtSummeryController.patientEncounter ne null}">
-                    <div class="d-flex justify-content-end mx-4 my-2" >
-                        <p:commandButton ajax="false"  value="Refresh" class="ui-button-plain mx-1" 
-                                         icon="fa-solid fa-arrows-rotate"
-                                         style="float:right; margin-right: 10px" action="#{bhtSummeryController.createTablesWithEstimatedProfessionalFees()}"  />                        
-                        <p:commandButton ajax="false" value="Settle" icon="fa fa-check"
-                                         class="ui-button-success mx-1"
-                                         action="#{bhtSummeryController.toSettle()}"  />
-                        <p:commandButton ajax="false"  value="Print Bill"
-                                         icon="fas fa-print"
-                                         class="ui-button-help"  action="#{bhtSummeryController.toPrintItrim()}"  />
-                        <p:commandButton 
-                            ajax="false"
-                            icon="fa fa-search"
-                            class="ui-button-plain mx-1" 
-                            action="#{patientController.navigateToSearchPatients()}" 
-                            />
+                <p:panel header="" rendered="#{bhtSummeryController.patientEncounter ne null}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center ">
+                            <h:outputText value="Inward Payment Bill - Estimated Professional Fees" />
+                            <div class="d-flex justify-content-end mx-4 my-2" >
+                                <p:commandButton ajax="false"  value="Process" class="ui-button-plain mx-1" 
+                                                 icon="fa-solid fa-arrows-rotate"
+                                                 style="float:right; margin-right: 10px" action="#{bhtSummeryController.createTablesWithEstimatedProfessionalFees()}"  />                        
+                                <p:commandButton ajax="false" value="Settle" icon="fa fa-check"
+                                                 class="ui-button-success mx-1"
+                                                 action="#{bhtSummeryController.toSettle()}"  />
+                                <p:commandButton ajax="false"  value="Print Bill"
+                                                 icon="fas fa-print"
+                                                 class="ui-button-info"  action="#{bhtSummeryController.toPrintItrim()}"  />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToSearchPatients()}" 
+                                    />
 
-                        <p:commandButton 
-                            ajax="false"
-                            icon="fa fa-user"
-                            class="ui-button-plain  mx-1" 
-                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{bhtSummeryController.patientEncounter.patient}" 
-                                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                        </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning  mx-1" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{bhtSummeryController.patientEncounter.patient}" 
+                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
 
-                        <p:commandButton 
-                            ajax="false"
-                            icon="fas fa-id-card"
-                            class="ui-button-secondary " 
-                            action="#{bhtSummeryController.navigateToInpatientProfile()}"
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{bhtSummeryController.patientEncounter}" 
-                                                target="#{admissionController.current}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                    </div>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    class="ui-button-secondary" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{bhtSummeryController.patientEncounter}" 
+                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
 
                     <div class="row">
                         <div class="col-md-4">
@@ -115,20 +120,20 @@
                                     </h:panelGroup>
 
                                     <h:panelGrid columns="2" >
-                                        <h:outputLabel  value="Total Charges : "  style="min-width: 100px;font-weight: bold;"/>
-                                        <h:outputLabel value="#{bhtSummeryController.grantTotal}" style="float: right;">
+                                        <h:outputLabel  value="Total Charges  "  style="min-width: 100px;font-weight: bold;"/>
+                                        <h:outputLabel class="mx-5" value="#{bhtSummeryController.grantTotal}" style="float: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>                               
-                                        <h:outputLabel value="Paid By Patient :  " style="min-width: 100px;font-weight: bold;"/>
-                                        <h:outputLabel value="#{bhtSummeryController.paid}" style="float: right;">
+                                        <h:outputLabel  value="Paid By Patient   " style="min-width: 100px;font-weight: bold;"/>
+                                        <h:outputLabel class="mx-5" value="#{bhtSummeryController.paid}" style="float: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                        <h:outputLabel value="Due : " style="min-width: 100px;font-weight: bold;"
+                                        <h:outputLabel value="Due  " style="min-width: 100px;font-weight: bold;"
                                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
                                                                    and bhtSummeryController.due > 0 }" />
-                                        <h:outputLabel  value="#{bhtSummeryController.due}"
-                                                        rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
-                                                                    and bhtSummeryController.due > 0 }" style="float: right;">
+                                        <h:outputLabel class="mx-5" value="#{bhtSummeryController.due}"
+                                                       rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
+                                                                   and bhtSummeryController.due > 0 }" style="float: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </h:panelGrid>
@@ -140,13 +145,17 @@
                                         <p:outputLabel value="Discharge" class="mx-2"/>
                                     </f:facet>
 
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid columns="2" class=" w-100">
                                         <p:outputLabel value="Discharge Time"/>
-                                        <p:calendar value="#{bhtSummeryController.date}"
-                                                    id="dischargeTimeStamp"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
-                                            <!--<f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />-->
-                                        </p:calendar> 
+                                        <p:datePicker value="#{bhtSummeryController.date}"
+                                                      id="dischargeTimeStamp"
+                                                      showTime="true"
+                                                      showButtonBar="true"
+                                                      timeInput="true"
+                                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                      inputStyleClass="w-100" styleClass="w-100" class="w-100 ">                               
+                                              <!--<f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />-->
+                                        </p:datePicker>
                                     </h:panelGrid>
                                     <div class="d-flex justify-content-end my-2">
                                         <p:commandButton 
@@ -157,13 +166,12 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             style="float: right;"
-                                            value="Disharge" 
-                                            class="mx-1 ui-button-info"
+                                            value="Discharge" 
+                                            class="mx-1 ui-button-success"
                                             action="#{bhtSummeryController.discharge}"  />
                                         <p:commandButton 
                                             ajax="false" 
-                                            style="float: right;" 
-                                            value="Disharge Cancel" 
+                                            value="Discharge Cancel" 
                                             class="mx-1 ui-button-warning"
                                             action="#{bhtSummeryController.dischargeCancel}"  />
                                     </div>
@@ -197,7 +205,7 @@
 
                     <p:panel class="mt-3">
                         <p:tabView  id="tvPt" style="min-height: 50%;"  >                     
-                            <p:tab id="tabNewPt" title="Room Detail" >
+                            <p:tab id="tabNewPt" title="Room Details" >
 
                                 <p:dataTable   value="#{bhtSummeryController.patientRooms}" var="rm">                                
                                     <p:column headerText="Room Name">
@@ -205,17 +213,22 @@
                                         <h:outputLabel value="GAURDIAN ROOM" style="color: #008000;"
                                                        rendered="#{rm.patientRoomClass eq 'class com.divudi.entity.inward.GuardianRoom'}"/>
                                     </p:column>                                                                          
-                                    <p:column headerText="Admitted At">
-                                        <p:calendar navigator="true"  
-                                                    id="roomAdmittedTimeStamp"
-                                                    value="#{rm.admittedAt}" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />     
+                                    <p:column headerText="Admitted At" width="200px">
+                                        <p:datePicker showTime="true"
+                                                      showButtonBar="true"
+                                                      timeInput="true"  
+                                                      id="roomAdmittedTimeStamp"
+                                                      value="#{rm.admittedAt}" 
+                                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />     
                                     </p:column>
-                                    <p:column headerText="Discharged At">                                      
-                                        <p:calendar navigator="true"  
-                                                    id="roomDischargeTimeStamp"
-                                                    value="#{rm.dischargedAt}" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  /> 
+                                    <p:column headerText="Discharged At" width="200px">                                      
+                                        <p:datePicker
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
+                                            id="roomDischargeTimeStamp"
+                                            value="#{rm.dischargedAt}" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  /> 
                                     </p:column>
                                     <p:column headerText="Room Charge" style="text-align: right;">
                                         <h:outputLabel value="#{rm.calculatedRoomCharge}" >
@@ -250,19 +263,21 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column> 
-                                    <p:column headerText="Madical Care Charge" style="text-align: right;">
+                                    <p:column headerText="Medical Care Charge" style="text-align: right;">
                                         <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>                                
                                     <p:column>
                                         <p:commandButton ajax="false" value="Update Room"
+                                                         class="bg-success"
                                                          action="#{roomChangeController.dischargeWithCurrentTime(rm)}"
                                                          actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
                                                          />
                                     </p:column> 
                                     <p:column>
                                         <p:commandButton ajax="false" value="Cancel Discharge"
+                                                         class="ui-button-warning"
                                                          action="#{roomChangeController.dischargeCancel(rm)}"
                                                          actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
                                                          />
@@ -272,7 +287,7 @@
                             </p:tab>
 
 
-                            <p:tab id="tabTimed" title="Timed Service Detail"  >  
+                            <p:tab id="tabTimed" title="Timed Service Details"  >  
                                 <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
                                     <p:column headerText="Service Name">
                                         <h:outputLabel value="#{pt.item.name}"/>
@@ -317,7 +332,7 @@
                                 </p:dataTable>
                             </p:tab>
 
-                            <p:tab id="tabSer" title="Service Detail"  >                            
+                            <p:tab id="tabSer" title="Service Details"  >                            
                                 <p:dataTable id="service" scrollable="true" scrollHeight="300" 
                                              value="#{bhtSummeryController.departmentBillItems}" var="dep">
                                     <p:columnGroup type="header">
@@ -380,7 +395,7 @@
                                 </p:dataTable>
                             </p:tab>
 
-                            <p:tab title="Madicine Issue">                          
+                            <p:tab title="Medicine Issue">                          
                                 <p:dataTable value="#{bhtSummeryController.pharmacyIssues}" var="iss" scrollable="true"
                                              scrollHeight="300"
                                              rowStyleClass="#{((iss.billClass eq 'class com.divudi.entity.PreBill')
@@ -528,7 +543,7 @@
                                 </p:dataTable>
                             </p:tab>
 
-                            <p:tab id="tabAdd" title="Out Side Charge Detail"  >
+                            <p:tab id="tabAdd" title="Out Side Charge Details"  >
                                 <p:dataTable    scrollable="true" scrollHeight="300" 
                                                 value="#{bhtSummeryController.additionalChargeBill}" var="bil"
                                                 rowStyleClass="#{((bil.billClass eq 'class com.divudi.entity.BilledBill')

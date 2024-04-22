@@ -17,12 +17,12 @@
 
 
                         <h:form>
-
+     
                             <p:dataTable 
                                 value="#{institutionController.items}" var="item"
                                 rowKey="#{item.id}"
                                 class="w-100"
-
+                                
                                 rows="10"
                                 paginator="true" paginatorPosition="both"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -83,23 +83,21 @@
                                     <f:facet name="header">
                                         <h:outputText value="Actions"/>
                                     </f:facet>
-                                    <p:commandButton 
-                                        class="ui-button-success"
-                                        icon="fas fa-pencil"
-                                        ajax="false"
-                                        action="#{navigationController.navigateToManageInstitution()}" 
-                                        >
+                                    <p:commandButton class="ui-button-success"
+                                                     icon="fas fa-pencil"
+                                                     ajax="false"
+                                                     action="#{institutionController.toEditInstitution()}" 
+                                                     >
                                         <f:setPropertyActionListener value="#{item}" target="#{institutionController.current}" >
                                         </f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false"
-                                        class="ui-button-danger mx-2"
-                                        icon="fas fa-trash"
-                                        action="#{institutionController.deleteInstitution()}" 
-                                        onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                    return false;"
-                                        >
+                                    <p:commandButton class="ui-button-danger mx-2"
+                                                     icon="fas fa-trash"
+                                                     ajax="false"
+                                                     action="#{institutionController.deleteInstitution()}" 
+                                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                                 return false;"
+                                                     >
                                         <f:setPropertyActionListener value="#{item}" target="#{institutionController.current}" >
                                         </f:setPropertyActionListener>
                                     </p:commandButton>

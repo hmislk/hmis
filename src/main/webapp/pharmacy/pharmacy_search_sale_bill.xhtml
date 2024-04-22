@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -33,13 +33,15 @@
                                     class="w-100"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
-                                <p:commandButton class="w-100 mt-2" icon="fa fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyRetailBills}"/>
-                                <p:commandButton class="w-100 mb-4 mt-2" icon="fa fa-search" id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createPharmacyRetailAllBills()}"/>
+                                <p:commandButton class="w-100 mt-2 ui-button-warning" icon="fa fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyRetailBills}"/>
+                                <p:commandButton class="w-100 mb-4 mt-2 ui-button-warning" icon="fa fa-search" id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createPharmacyRetailAllBills()}"/>
 
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                 <h:outputLabel value="Patient Name"/>   
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="Patient Phone Number"/>   
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientPhone}" class="w-100"/>
                                 <h:outputLabel value="Department Name"/> 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" class="w-100"/>
                                 <h:outputLabel value="Total"/>
@@ -72,15 +74,22 @@
                                         </h:outputLabel>
 
                                     </f:facet>
-                                    <p:column headerText="No" styleClass="alignTop">
-                                        <h:outputLabel value="#{i+1}"/>
-                                    </p:column>
-
-                                    <p:column headerText="View">
+                                    
+<!--                                    <p:column headerText="View">
                                         <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
                                                          action="pharmacy_reprint_bill_sale">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                         </p:commandButton>
+                                    </p:column>-->
+
+                                    <p:column headerText="Bill No" >
+                                        <p:commandLink id="billNo" 
+                                                       ajax="false" 
+                                                       value="#{bill.deptId}" 
+                                                       disabled="#{bill.referenceBill eq null}"
+                                                       action="pharmacy_reprint_bill_sale">
+                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
+                                        </p:commandLink>
                                     </p:column>
 
                                     <p:column headerText="Paid/Not">
@@ -88,29 +97,25 @@
                                         <h:outputLabel value="NOT PAID" rendered="#{bill.referenceBill eq null}" style="color: red;"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" >                                
-                                        <h:outputLabel  value="#{bill.deptId}"  />
-                                    </p:column>
-
                                     <p:column headerText="Department"  >                                
                                         <h:outputLabel value="#{bill.department.name}" />                                    
                                     </p:column>   
 
-                                    <p:column headerText="Pre Bill at"  >
+                                    <p:column headerText="Pre Bill At"  >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
 
                                         <br/>                                
                                         <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Return at " />
+                                            <h:outputLabel style="color: red;" value="Return At " />
                                             <h:outputLabel style="color: red;" rendered="#{bill.refunded}" 
                                                            value="#{bill.refundedBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bill.retired}" >
-                                            <h:outputLabel style="color: red;" value="Deleted at " />
+                                            <h:outputLabel style="color: red;" value="Deleted At " />
                                             <h:outputLabel style="color: red;"  
                                                            value="#{bill.retiredAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -118,28 +123,28 @@
                                         </h:panelGroup>
                                     </p:column>   
 
-                                    <p:column headerText="Billed at"  >
+                                    <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.referenceBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
 
                                         <br/>
                                         <h:panelGroup rendered="#{bill.referenceBill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
                                             <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" 
                                                            value="#{bill.referenceBill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" value="Refunded At " />
                                             <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" 
                                                            value="#{bill.referenceBill.refundedBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bill.retired}" >
-                                            <h:outputLabel style="color: red;" value="Deleted at " />
+                                            <h:outputLabel style="color: red;" value="Deleted At " />
                                             <h:outputLabel style="color: red;"  
                                                            value="#{bill.retiredAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -147,7 +152,7 @@
                                         </h:panelGroup>
                                     </p:column> 
 
-                                    <p:column headerText="Pre Bill by" >
+                                    <p:column headerText="Pre Bill By" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                                      
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
@@ -165,7 +170,7 @@
                                         </h:panelGroup>                               
                                     </p:column>    
 
-                                    <p:column headerText="Billed by" >
+                                    <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" />                                      
                                         <br/>
                                         <h:panelGroup rendered="#{bill.referenceBill.cancelled}" >

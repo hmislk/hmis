@@ -1,1150 +1,244 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                >
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
     <ui:define name="content">
-        <h:form >
-            <div class="row" >
-                <div class="col-md-2" >
-                    <p:dataTable  scrollable="true" 
-                                  scrollHeight="30vh"
-                                  class="w-100"
-                                  id="acSpeciality"
-                                  lazy="false"
-                                  emptyMessage="No Specialities"
-                                  selection="#{channelBookingController.speciality}"
-                                  rowKey="#{spe.id}"
-                                  value="#{doctorSpecialityController.selectedItems}"  
-                                  var="spe" 
-                                  selectionMode="single" 
-                                  style="height: 30vh;">
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('tblCon',view).clientId}  
-                                 :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
-                                 :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
-                                 :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}" 
-                                 listener="#{channelBookingController.listnerStaffListForRowSelectNew}"/> 
-                        <p:column 
-                            filterBy="#{spe.name}"
-                            filterMatchMode="contains"
-                            style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
-                            <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" ></p:tooltip>
-                        </p:column>
-                    </p:dataTable>
+        <h:form id="form">
+            <style >
+                .fullHeightListbox,
+                .fullHeightListbox .ui-selectlistbox-listcontainer,
+                .fullHeightListbox * {
+                    box-sizing: border-box;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                .fullHeightListbox .ui-selectlistbox-listcontainer {
+                    height: 80vh !important;
+                }
+            </style>
+
+                <p:panel class="my-2">
+                    <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                            <h:outputText class="mx-4" value="Channel Booking"/>
+                        </div>
+
+                        <div class="d-flex justify-content-center align-items-center">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="To Add Booking" 
+                                icon="fas fa-plus"
+                                class="ui-button-success"
+
+                                action="#{bookingController.navigateToAddBooking()}"
+                                />
+
+                            <!-- View Session Data Button -->
+                            <p:commandButton 
+                                ajax="false" 
+                                value="View Session Data"
+                                icon="fas fa-eye"
+                                class="mx-1 ui-button-primary"
+                                action="#{bookingController.navigateToViewSessionData()}"
+                                />
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Consulant Room"
+                                icon="fas fa-eye"
+                                class="mx-1 ui-button-primary"
+                                action="#{bookingController.navigateToViewSessionData()}"
+                                />
+
+                            <!-- Manage Booking Button -->
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Manage Booking" 
+                                class="ui-button-warning"
+                                action="#{bookingController.navigateToManageBooking()}"
+                                icon="fa-solid fa-bars-progress" />
+
+                        </div>
+                    </div>
+                </f:facet>
+                <div class="row">
+                    <div class="col-2">
+                        <div >
+                            <div >
+                                <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                                <p:selectOneListbox 
+                                    id="acSpeciality"
+                                    filter="true"
+                                    value="#{bookingController.speciality}"
+                                    class="w-100 fullHeightListbox"
+                                    >
+                                    <p:ajax
+                                        event="change"
+                                        process="@this" 
+                                        update="acBookings scStaff acSessions"
+                                        listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{doctorSpecialityController.selectedItems}"
+                                        var="spe" 
+                                        itemValue="#{spe}"
+                                        itemLabel="#{spe.name}">
+                                    </f:selectItems>
+                                </p:selectOneListbox>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                        <div>
+                            <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
+                            <p:selectOneListbox 
+                                id="scStaff"
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{bookingController.staff}"
+                                class="w-100 fullHeightListbox"
+                                >
+                                <p:ajax  
+                                    process="@this" 
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
+                                    listener="#{bookingController.generateSessions}"/>
+
+                                <f:selectItems value="#{bookingController.consultants}"
+                                               var="con" 
+                                               itemValue="#{con}"
+                                               itemLabel="#{con.name}">
+                                </f:selectItems>
+                            </p:selectOneListbox>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 p-0" >
+                        <p:watermark for="acSessions" value="Select Session" ></p:watermark>
+                        <p:selectOneListbox 
+                            id="acSessions"
+                            filter="true"
+                            value="#{bookingController.selectedSessionInstance}" 
+                            class="w-100 fullHeightListbox"
+                            var="s">
+
+                            <f:selectItems 
+                                value="#{bookingController.sessionInstances}" 
+                                var="ses" 
+                                itemValue="#{ses}"
+                                itemLabel="#{ses.name}">
+                            </f:selectItems>
+                            
+                            <p:column headerText="Name">
+                                <f:facet name="header" >
+                                    <h:outputText value="Name" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{s.name}" />
+                            </p:column>
+                            <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{s.sessionDate}">
+                                    <f:convertDateTime pattern="dd MMM"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Start" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.startingTime}">
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column rendered="false" headerText="Booked" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.displayCount}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value="&nbsp;"></h:outputText>
+                                <h:outputText value="(" class="text-danger"></h:outputText>
+                                <h:outputText value="#{s.transCreditBillCount}"  class="text-danger">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value=")"  class="text-danger"></h:outputText>
+                            </p:column>
+                            <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.total}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:ajax 
+                                event="change" 
+                                process="@this"
+                                update="acBookings acSessions"
+                                listener="#{bookingController.fillBillSessions}" />
+                        </p:selectOneListbox>
+                    </div>
+
+                    <div class="col-4" >
+                        <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
+                        <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
+                        <p:selectOneListbox 
+                            id="acBookings" 
+                            value="#{bookingController.selectedBillSession}" 
+                            filter="true" 
+
+                            var="bs" 
+                            class="w-100 fullHeightListbox">
+                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
+                            <p:ajax process="acBookings" update="test"></p:ajax>
+                            <p:column style="width: 5px!important;">
+                                <h:outputText value="#{bs.serialNo}" />
+                            </p:column>
+
+                            <p:column style="width: 60px!important;">
+                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column style="width: 20px!important;">
+                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
+                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
+                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
+                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
+                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                            </p:column>
+
+                            <p:column style="width: 10px!important;">
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                            </p:column>
+
+                            <p:column style="width: 5px!important;">
+                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                            </p:column>
+
+                            <p:column style="width: 10px!important;">
+                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                            </p:column>
+
+                        </p:selectOneListbox>
+                    </div>
                 </div>
-                <div class="col-md-2" >
-                    <p:dataTable id="tblCon" 
-                                 lazy="false"
-                                 class="w-100"
-                                 scrollHeight="30vh"
-                                 emptyMessage="No Consultants"
-                                 var="mys" 
-                                 rowKey="#{mys.id}"
-                                 value="#{channelBookingController.consultants}"
-                                 selection="#{channelBookingController.staff}" 
-                                 scrollable="true" 
-                                 selectionMode="single" >
-                        <p:column
-                            filterBy="#{mys.person.nameWithTitle}"
-                            filterMatchMode="contains"
-                            style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
-                            <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
-                            <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
-                                       showDelay="0" 
-                                       hideDelay="0" 
-                                       ></p:tooltip>
-                        </p:column>
-                        <p:ajax  event="rowSelect" 
-                                 process="@this" 
-                                 update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
-                                 :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
-                                 :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}"  
-                                 listener="#{channelBookingController.listnerServiceSessionListForRowSelectNew}"/>
-                    </p:dataTable>
-                </div>
-                <div class="col-md-5" >
-                    <p:dataTable 
-                        class="w-100"
-                        lazy="false"
-                        emptyMessage="No Sessions"
-                        value="#{channelBookingController.serviceSessionInstances}" 
-                        rowKey="#{ses.transRowNumber}"
-                        id="tblSessionsOfSelectedConsultant" 
-                        var="ses"
-                        selectionMode="single" 
-                        selection="#{channelBookingController.selectedServiceSessionInstance}"
-                        scrollable="true" 
-                        rowStyleClass="#{ses.deactivated ? 'redText':''}" 
-                        scrollHeight="30vh">
 
-                        <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId} 
-                                :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} 
-                                :#{p:resolveFirstComponentWithId('tabViewPatientDetails',view).clientId} 
-                                :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId}"
-                                listener="#{channelBookingController.listnerBillSessionListForRowSelectNew}" />
-                        <p:column 
-                            style="word-wrap: normal;" 
-                            filterBy="#{ses.name}" filterMatchMode="contains">
-                            <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
-                            <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>
-                            <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
-                        </p:column>
-                        <p:column headerText="Max" style="width: 20px!important; text-align: center;" >
-                            <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
-                                <f:convertNumber pattern="00" ></f:convertNumber>
-                            </h:outputText>
-                        </p:column>
 
-                        <p:column headerText="Booked" style="width: 20px!important; text-align: center;" >
-                            <h:outputText value="#{ses.displayCount}">
-                                <f:convertNumber pattern="00" ></f:convertNumber>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Date" style="width: 50px!important; text-align: center;" >
-                            <h:outputText value="#{ses.sessionDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
-                            <h:outputText value="#{ses.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
-                            <h:outputText value="#{ses.totalFee}">
-                                <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                            </h:outputText>                                                            
-                        </p:column>   
-                    </p:dataTable>
-                </div>
-                <div class="col-md-3" >
-                    <p:dataTable 
-                        lazy="false"
-                        id="tblBookingsOfSelectedSession" 
-                        scrollHeight="30vh"
-                        value="#{channelBookingController.billSessions}" 
-                        emptyMessage="No Bookings"
-                        var='bs'
-                        selectionMode="single" 
-                        rowKey="#{bs.id}" 
-                        rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
-                        selection="#{channelBookingController.selectedBillSession}" 
-                        scrollable="true" >
-                        <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
-                                listener="#{channelBookingController.createBillfees}" />
-                        <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
-                        <p:column 
-                            filterBy=">#{bs.bill.patient.person.nameWithTitle}"
-                            filterMatchMode="contains"
-                            style="min-width: 50px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                        <p:column headerText="Paid" style="width: 30px!important;">
-                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
-                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
-                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
-                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
-                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
-                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
-                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
-                        </p:column>
-                        <p:column headerText="C/R" style="width: 20px!important;" >
-                            <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                            <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                        </p:column>   
-                        <p:column headerText="Agent" style="width: 10px!important;">
-                            <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                            <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
-                        </p:column> 
-                        <!--                        <p:column headerText="P/A" style="width: 10px!important;">                           
-                                                    <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                                                </p:column> -->
-                    </p:dataTable>  
-                </div>
-            </div>
+            </p:panel>
 
-
-            <div class="row my-5" >
-                <div class="col-md-5" >
-                    <p:panel id="gpThisBookingDetails" class="w-100"  >
-                        <f:facet name="header" >
-                            <p:tabView id="tabViewAgentBookDetails" >
-                                <p:tab title="Payemnet Details" rendered="false">
-                                    <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
-                                        <p:outputLabel value="Amount" style="width: 200px!important;"/>
-                                        <h:panelGroup id="lblSessionTotal">
-                                            <p:outputLabel  
-                                                value="#{channelBookingController.selectedServiceSessionInstance.originatingSession.totalFfee}"
-                                                rendered="#{channelBookingController.foriegn}">
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </p:outputLabel>
-                                            <p:outputLabel  
-                                                value="#{channelBookingController.selectedServiceSessionInstance.originatingSession.totalFee}"
-                                                rendered="#{!channelBookingController.foriegn}">
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </p:outputLabel>
-
-                                        </h:panelGroup>
-
-                                        <p:outputLabel value="Payment Method"/>
-                                        <h:panelGroup >
-                                            <p:selectOneMenu  id="cmbPs" value="#{channelBookingController.paymentMethod}">  
-                                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                                <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2 :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} 
-                                                        creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
-                                                        lblChequeDate ChequeDate bankSel :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} tabViewAgentBookDetails" event="change" listener="#{channelBookingController.generateSessionsOnlyIdNew}" />
-                                            </p:selectOneMenu>
-                                        </h:panelGroup>
-                                        <h:outputLabel rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBookingController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
-                                        <p:autoComplete rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBookingController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
-                                                        value="#{channelBookingController.institutionOnCallAgency}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                                        itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
-                                            <p:column>#{ix.institutionCode}</p:column>
-                                            <p:column>#{ix.name}</p:column>                                
-                                        </p:autoComplete>
-                                        <p:outputLabel value="Discount Scheme"/>
-                                        <p:selectOneMenu   id="cmbPs2" value="#{channelBookingController.paymentScheme}">     
-                                            <f:selectItem itemLabel="Select Discount Scheme"/>
-                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}" 
-                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                            <p:ajax process="@this" 
-                                                    update="lblSessionTotal" 
-                                                    event="change" 
-                                                    listener="#{channelBookingController.changeListener()}"/>
-                                        </p:selectOneMenu>
-
-                                        <h:outputLabel/>
-                                        <p:selectBooleanCheckbox id="f" value="#{channelBookingController.foriegn}" itemLabel="Foriegner">
-                                            <f:ajax event="change" execute="@this :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" render="lblSessionTotal :#{p:resolveFirstComponentWithId('tabViewPatientDetails',view).clientId}"/>
-                                        </p:selectBooleanCheckbox>
-                                        <h:outputLabel id="agent" value="Agent"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                        <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBookingController.paymentMethod eq 'Agent'? 'block' : 'none'};"
-                                                        value="#{channelBookingController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                                        itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="shortinput2">
-                                            <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks2',view).clientId} pgNewBookingDetail :#{p:resolveFirstComponentWithId('ballance2',view).clientId} :#{p:resolveFirstComponentWithId('ballance6',view).clientId} :#{p:resolveFirstComponentWithId('ballance4',view).clientId}" listener="#{channelBookingController.validateAgentBalance()}"/>
-                                            <!--<p:ajax event="click" process="@this" update=":#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} pgNewBookingDetail" />-->
-                                            <p:column>#{ix.institutionCode}</p:column>
-                                            <p:column>#{ix.name}</p:column>                                
-                                        </p:autoComplete> 
-
-                                        <h:outputLabel id="agRefLbl" value="Agent Ref"  style="display: #{channelBookingController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
-                                        <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBookingController.agentRefNo}"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-
-                                        <h:outputLabel id="staff" value="Staff"  style="display: #{channelBookingController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
-                                        <h:panelGroup id="autoStaff" style="display: #{channelBookingController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; ">
-                                            <au:completeStaffChannel value="#{channelBookingController.toStaff}" />
-                                        </h:panelGroup>
-
-                                        <h:outputLabel id="creditCardRef" value="Card Ref. No." style="display: #{channelBookingController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                                        <p:inputText id="creditCardTxt" autocomplete="off"   value="#{channelBookingController.paymentMethodData.creditCard.no}" style="display: #{channelBookingController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                                        <h:outputLabel id="creditCardbnkLbl" value="Select Bank" style="display: #{channelBookingController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                                        <p:selectOneMenu id="creditCardSlc" value="#{channelBookingController.paymentMethodData.creditCard.institution}" style="display: #{channelBookingController.paymentMethod ne 'Card' ? 'none' : 'block'} ;">
-                                            <f:selectItem itemLabel="Select Bank"/>
-                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                        </p:selectOneMenu>
-
-
-
-
-                                        <h:outputLabel id="lblCheque" value="Cheque No." style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                                        <p:inputText autocomplete="off"  value="#{channelBookingController.paymentMethodData.cheque.no}" id="chequNo" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
-                                        <h:outputLabel id="lblBank" value="Select Bank" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                                        <p:selectOneMenu  id="bankSel" value="#{channelBookingController.paymentMethodData.cheque.institution}" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                            <f:selectItem itemLabel="Select Bank"/>
-                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                        </p:selectOneMenu>
-                            <!--            <p:inputText autocomplete="off"   value="#{channelBookingController.paymentMethodData.creditCard.comment}"  id="memo"/>-->
-
-                                        <h:outputLabel id="lblChequeDate" value="Cheque Date" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                                        <p:calendar   value="#{channelBookingController.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >                            
-                                        </p:calendar>
-
-
-
-
-                                        <h:outputLabel value="Select Bank" id="slipLblBank" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
-                                        <p:selectOneMenu id="slipSelBank" value="#{channelBookingController.paymentMethodData.slip.institution}" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                            <f:selectItem itemLabel="Select Bank"/>
-                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                        </p:selectOneMenu>
-                                        <h:outputLabel value="Slip Date" id="slipLblDate" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
-                                        <p:calendar  value="#{channelBookingController.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">                            
-                                        </p:calendar>
-
-
-                                    </h:panelGrid>
-                                </p:tab>
-                                <p:tab title="Agent Book" disabled="#{channelBookingController.paymentMethod ne 'Agent'}" >
-                                    <h:panelGrid id="pgNewBookingDetail2" columns="2"  styleClass="noBorder">
-
-
-                                        <h:panelGroup id="tblAgentBooks" >
-                                            <p:dataTable emptyMessage="No Book" 
-                                                         lazy="false"
-                                                         rendered="#{channelBookingController.institution.agentReferenceBooks ne null}"
-                                                         style="display: #{channelBookingController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooksTable" 
-                                                         value="#{channelBookingController.institution.agentReferenceBooks}" var="a">
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <p:outputLabel value="S.R.N." />
-                                                    </f:facet>
-                                                    <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                                        <f:convertNumber pattern="00000" />
-                                                    </p:outputLabel>
-                                                </p:column>
-                                            </p:dataTable>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="tblAgentBooks2" >
-                                            <p:dataTable emptyMessage="No Book"
-                                                         lazy="false"
-                                                         rendered="#{channelBookingController.institution.agentReferenceBooks ne null}"
-                                                         style="display: #{channelBookingController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " 
-                                                         id="tblAgentBooks2Table" 
-                                                         value="#{channelBookingController.institution.agentReferenceBooks}" 
-                                                         var="a">
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        <p:outputLabel value="E.R.N." />
-                                                    </f:facet>
-                                                    <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                                        <f:convertNumber pattern="00000" />
-                                                    </p:outputLabel>
-                                                </p:column>
-                                            </p:dataTable>
-                                        </h:panelGroup>
-
-                                        <h:outputLabel id="ballance" value="Credit Limit"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                        <h:outputLabel id="ballance2" value="#{-channelBookingController.institution.allowedCredit}"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                            <f:convertNumber  pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel id="ballance5" value="Max Credit Limit"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                        <h:outputLabel id="ballance6" value="#{-channelBookingController.institution.maxCreditLimit}"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                            <f:convertNumber  pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                        <h:outputLabel id="ballance4" value="#{channelBookingController.institution.ballance}"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ;">
-                                            <f:convertNumber  pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </h:panelGrid>
-                                </p:tab>
-                            </p:tabView>
-
-
-                        </f:facet>
-                        <p:tabView id="tabViewPatientDetails" 
-                                   activeIndex="#{channelBookingController.patientSearchTab}" >
-                            <p:ajax event="tabChange"  process="@this" listener="#{channelBookingController.onTabChange}" />
-                            <p:tab id="tabNewPt" title="New Pateint">
-                                <h:panelGrid columns="2">
-                                    <h:outputLabel value="Title"/>
-                                    <p:selectOneMenu id="somNewPtTitle" value="#{channelBookingController.searchPatient}"  >
-                                        <f:selectItem itemLabel="Select Title"/>
-                                        <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                    </p:selectOneMenu>
-                                    <h:outputLabel value="Name"/>
-                                    <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBookingController.searchPatient.person.name}" style="width: 200px;">
-                                    </p:inputText>
-
-                                    <h:outputLabel value="Phone"/>
-                                    <p:inputText  
-                                        id="txtNewPtPhone" 
-                                        autocomplete="off"  
-                                        validatorMessage="Please enter a valid phone number (numbers only)"
-                                        value="#{channelBookingController.searchPatient.person.phone}">
-                                        <f:validateRegex pattern="^[0-9]*$"/>
-                                    </p:inputText>
-                                    <h:outputLabel value="Sex"/>
-                                    <p:selectOneMenu id="txtNewSex"  value="#{channelBookingController.searchPatient.person.sex}" style="width: 200px;">
-                                        <f:selectItem itemLabel="Select Sex"/>
-                                        <f:selectItems value="#{billController.sex}"/>
-                                    </p:selectOneMenu> 
-                                    <p:outputLabel value="Area"></p:outputLabel>
-                                    <p:autoComplete styleClass="mediuminput" widgetVar="np" id="acnp" forceSelection="true" 
-                                                    value="#{channelBookingController.area}" 
-                                                    completeMethod="#{areaController.completeArea}" 
-                                                    var="npt" itemLabel="#{npt.name}" 
-                                                    itemValue="#{npt}" size="30"  style="width: 40px;">
-                                    </p:autoComplete>
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab  id="tabSearchPt" title="Search Pateint">
-                                <h:panelGrid columns="1" >
-                                    <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
-                                                             itemLabel="Serch Only Registed Patient" >
-                                        <f:ajax execute="@this" render="acPt" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                    value="#{channelBookingController.searchPatient}" 
-                                                    completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                    var="apt" itemLabel="#{apt.person.name}" 
-                                                    itemValue="#{apt}" size="30"  styleClass="mediuminput">
-                                        <p:column headerText="Name">
-                                            <h:outputLabel value="#{apt.person.nameWithTitle}" />
-                                        </p:column>
-
-                                        <p:column headerText="Age">
-                                            <h:outputLabel value="#{apt.age}" />
-                                        </p:column>
-                                        <p:column headerText="Code">
-                                            <h:outputLabel value="#{apt.code}" />
-                                        </p:column>
-                                        <p:column headerText="Sex">
-                                            <h:outputLabel value="#{apt.person.sex}" />
-                                        </p:column>
-                                        <p:column headerText="Address">
-                                            <h:outputLabel value="#{apt.person.address}" />
-                                        </p:column>
-                                        <p:column headerText="Date of Birth">
-                                            <h:outputLabel value="#{apt.person.dob}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:ajax event="itemSelect" process="@this" update="panSearch"/>
-                                    </p:autoComplete>
-                                    <h:panelGrid id="panSearch" columns="2" >
-                                        <h:outputLabel  rendered="#{channelBookingController.searchPatient!=null}" value="Name" />
-                                        <h:outputLabel rendered="#{channelBookingController.searchPatient!=null}" value=": #{channelBookingController.searchPatient.person.nameWithTitle}" />
-                                        <h:outputLabel  rendered="#{channelBookingController.searchPatient!=null}" value="Code" />
-                                        <h:outputLabel rendered="#{channelBookingController.searchPatient!=null}" value=": #{channelBookingController.searchPatient.code}" />
-                                        <h:outputLabel  rendered="#{channelBookingController.searchPatient!=null}" value="Phone" />
-                                        <h:outputLabel rendered="#{channelBookingController.searchPatient!=null}" value=": #{channelBookingController.searchPatient.person.phone}" />
-                                        <h:outputLabel  rendered="#{channelBookingController.searchPatient!=null}" value="Sex" />
-                                        <h:outputLabel rendered="#{channelBookingController.searchPatient!=null}" value=": #{channelBookingController.searchPatient.person.sex}" />
-                                        <h:outputLabel  rendered="#{channelBookingController.searchPatient!=null}" value="Address" />
-                                        <h:outputLabel rendered="#{channelBookingController.searchPatient!=null}" value=": #{channelBookingController.searchPatient.person.address}" />
-                                        <h:outputLabel  rendered="#{channelBookingController.searchPatient!=null}" value="Age" />
-                                        <h:outputLabel rendered="#{channelBookingController.searchPatient!=null}" value=": #{channelBookingController.searchPatient.age}" />
-                                    </h:panelGrid> 
-                                </h:panelGrid>  
-                            </p:tab>
-                            <p:tab  id="tabFees" title="Fees" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' and channelBookingController.selectedServiceSessionInstance.originatingSession.forBillType eq 'XrayScan'}" >
-                                <p:dataTable 
-                                    lazy="false"
-                                    rendered="#{channelBookingController.selectedServiceSessionInstance.originatingSession.itemFees ne null}"
-                                    value="#{channelBookingController.selectedServiceSessionInstance.originatingSession.itemFees}" 
-                                    var="f" rowStyleClass="#{(f.name.equals('Doctor Fee') or f.name.equals('Hospital Fee')) ? '':'noDisplayRow'}" >
-                                    <p:column>
-                                        <p:outputLabel value="#{f.name}" />
-                                    </p:column>
-                                    <p:column>
-                                        <p:outputLabel value="#{f.feeType}" />
-                                    </p:column>
-                                    <p:column>
-
-                                        <p:inputText value="#{f.ffee}" rendered="#{channelBookingController.foriegn}" />
-                                        <p:inputText value="#{f.fee}" rendered="#{!channelBookingController.foriegn}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:tab>
-                        </p:tabView>
-                        <h:panelGrid columns="3" style="min-width: 100%;">
-
-
-                            <p:commandButton   id="btnAdd" 
-                                               value="Add" process=":#{p:resolveFirstComponentWithId('tabNewPt',view).clientId} 
-                                               :#{p:resolveFirstComponentWithId('tabSearchPt',view).clientId} btnAdd 
-                                               :#{p:resolveFirstComponentWithId('pgNewBookingDetail',view).clientId}" 
-                                               update="gpThisBookingDetails dialogChannelAdded" style="float: right;" 
-                                               action="#{channelBookingController.add}" 
-                                               onclick="if (!confirm('Are you sure?'))
-                                                           return false"
-                                               oncomplete="PF('dlgAdd').show();">   
-                                <!--<p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />-->
-                            </p:commandButton>
-                            <p:confirmDialog global="true" >
-                                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
-                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
-                            </p:confirmDialog>
-
-                            <p:commandButton  action="#{channelBookingController.prepareForNewChannellingBill}"  value="New Booking" ajax="false"/>
-                        </h:panelGrid>
-
-                        <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
-                                  modal="true" height="400" width="600" closable="false">
-                            <p:commandButton value="New Bill" action="#{channelBookingController.prepareForNewChannellingBill}" ajax="false"
-                                             ></p:commandButton>
-
-                            <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
-                                             rendered="#{!channelBookingController.settleSucessFully}" 
-                                             ></p:commandButton>
-
-                            <p:commandButton value="Print" ajax="false" action="#"
-                                             disabled="#{channelBookingController.printingBill.balance ne 0.0 or !channelBookingController.settleSucessFully}">
-                                <p:printer target="panelAddedBillPrint" ></p:printer>
-                            </p:commandButton>
-
-                            <p:outputLabel value="Total : " />
-                            <p:outputLabel value="#{channelBookingController.printingBill.netTotal+channelBookingController.printingBill.vat}" style="color: red;font-size: x-large;"/>
-                            <p:outputLabel value="Agency Balance : "  rendered="#{channelBookingController.printingBill.creditCompany ne null}"/>
-                            <p:outputLabel value="#{channelBookingController.printingBill.creditCompany.ballance}" style="color: red;font-size: x-large;" rendered="#{channelBookingController.printingBill.creditCompany ne null}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-
-
-
-                            <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBookingController.settleSucessFully}" >
-                                <div >
-                                    <ch:channelRecipt bill="#{channelBookingController.printingBill}" dup="false"/>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup  styleClass="noBorder" rendered="#{!channelBookingController.settleSucessFully}" >
-                                <br/>
-                                <br/>
-                                <p:outputLabel value="#{channelBookingController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
-
-                            </h:panelGroup>
-
-                        </p:dialog>  
-
-                    </p:panel>
-                </div>
-                <div class="col-md-7" >
-                    <p:panel id="panelSelectedBookinDetails">
-
-                        <p:tabView id="detail" rendered="true" style="width: 800px!important;height: 450px!important;">
-
-                            <p:tab title="Booking" id="booking" 
-                                   rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-                                <h:panelGrid columns="2" >
-
-                                    <p:panel header="Booking" rendered="#{channelBookingController.selectedBillSession.bill.paidBill eq null and channelBookingController.selectedBillSession.bill.balance ne 0.0}">
-                                        <div class="ui-message-error ui-widget ui-corner-all">
-                                            <span class="ui-message-error-icon"/>
-                                            <span class="ui-message-error-detail">
-                                                <h:outputText value="NOT PAID YET" ></h:outputText>
-                                            </span>
-                                        </div>
-
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Name"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle ne null}"/>
-                                            <p:outputLabel value="" rendered="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle eq null}"/>
-                                            <p:outputLabel value="Consultant"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                            <p:outputLabel value="Appo. No"/>
-                                            <ui:repeat value="#{channelBookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                                <p:outputLabel value="#{bis.billSession.serialNo}"/>
-                                            </ui:repeat>
-                                            <p:outputLabel value="Appointment Date">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" >
-                                                </f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Appointment Time">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Tel "/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}"/>
-                                            <p:outputLabel value="Bill Total"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.netTotal+channelBookingController.selectedBillSession.bill.vat}" style="color: red;">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:outputLabel>
-                                            <p:separator ></p:separator>
-                                            <p:separator ></p:separator>
-                                            <p:outputLabel value="Payment Method"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paymentMethod}"/>
-                                            <p:outputLabel value="Agent" rendered="#{channelBookingController.selectedBillSession.bill.creditCompany ne null}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.creditCompany.name}" rendered="#{channelBookingController.selectedBillSession.bill.creditCompany ne null}"/>
-                                            <p:outputLabel value="Agent" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Agent Ref No" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Staff Name" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{channelBookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="User"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-                                            <p:outputLabel value="Booked At"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.createdAt}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-
-                                            <p:outputLabel value="Settled At" rendered="#{channelBookingController.selectedBillSession.bill.paidBill ne null}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill ne null}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
-                                            <p:outputLabel style="color: red" value="Payment" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.paymentMethod} #{channelBookingController.selectedBillSession.bill.refundedBill.paymentMethod}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.creater.webUserPerson.nameWithTitle} #{channelBookingController.selectedBillSession.bill.refundedBill.creater.webUserPerson.nameWithTitle}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true }">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.refundedBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.refunded==true}">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel> 
-                                            <p:outputLabel style="color: red" value="Comment" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.comments} #{channelBookingController.selectedBillSession.bill.refundedBill.comments}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                        </h:panelGrid>                            
-                                    </p:panel>
-
-                                    <p:panel header="Booking &amp; Settling" rendered="#{channelBookingController.selectedBillSession.bill.paidBill eq channelBookingController.selectedBillSession.bill and channelBookingController.selectedBillSession.bill.balance eq 0.0}">
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Name"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle ne null}"/>
-                                            <p:outputLabel value="" rendered="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle eq null}"/>
-                                            <p:outputLabel value="Consultant"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                            <p:outputLabel value="Appo. No"/>
-                                            <ui:repeat value="#{channelBookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                                <p:outputLabel value="#{bis.billSession.serialNo}"/>
-                                            </ui:repeat>
-                                            <p:outputLabel value="Appointment Date">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" >
-                                                </f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Appointment Time">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Tel "/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}"/>
-                                            <p:separator ></p:separator>
-                                            <p:separator ></p:separator>
-
-                                            <p:outputLabel value="Bill No"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.deptId}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.insId}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}"/>
-                                            <p:outputLabel value="Bill Total"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.netTotal+channelBookingController.selectedBillSession.bill.vat}" style="color: red;">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Payment"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paymentMethod}"/>
-                                            <p:outputLabel value="Agent" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.creditCompany.name}" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Agent Ref No" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Staff Name" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{channelBookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="User"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-                                            <p:outputLabel value="Billed At"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.createdAt}"> 
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.printed==true}" ></p:separator>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.printed==true}" ></p:separator>
-                                            <!--                                        <p:outputLabel value="Printed User"/>
-                                                                                    <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.printedUser.webUserPerson.nameWithTitle}"/>
-                                                                                    <p:outputLabel value="Printed At"/>
-                                                                                    <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.printedAt}"> 
-                                                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
-                                                                                    </p:outputLabel>-->
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
-                                            <p:outputLabel style="color: red" value="Payment" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.paymentMethod} #{channelBookingController.selectedBillSession.bill.refundedBill.paymentMethod}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.creater.webUserPerson.nameWithTitle} #{channelBookingController.selectedBillSession.bill.refundedBill.creater.webUserPerson.nameWithTitle}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true }">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.refundedBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.refunded==true}">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel style="color: red" value="Comment" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.cancelledBill.comments} #{channelBookingController.selectedBillSession.bill.refundedBill.comments}" rendered="#{channelBookingController.selectedBillSession.bill.cancelled==true or channelBookingController.selectedBillSession.bill.refunded==true}"/>
-                                        </h:panelGrid>                            
-                                    </p:panel>
-
-                                    <p:panel header="Booking" rendered="#{(channelBookingController.selectedBillSession.bill.paidBill ne channelBookingController.selectedBillSession.bill) and channelBookingController.selectedBillSession.bill.balance eq 0.0}">
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Name"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle ne 'null'}"/>
-                                            <p:outputLabel value="" rendered="#{channelBookingController.selectedBillSession.bill.patient.person.nameWithTitle eq 'null'}"/>
-                                            <p:outputLabel value="Consultant"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                            <p:outputLabel value="Appo. No"/>
-                                            <ui:repeat value="#{channelBookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                                <p:outputLabel value="#{bis.billSession.serialNo}"/>
-                                            </ui:repeat>
-                                            <p:outputLabel value="Appointment Date">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" >
-                                                </f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Appointment Time">
-                                            </p:outputLabel>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Tel "/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}"/>
-                                            <p:outputLabel value="Bill Total"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.netTotal+channelBookingController.selectedBillSession.bill.vat}" style="color: red;">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:outputLabel>
-                                            <p:separator ></p:separator>
-                                            <p:separator ></p:separator>
-                                            <p:outputLabel value="Payment"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paymentMethod}"/>
-                                            <p:outputLabel value="Agent" rendered="#{channelBookingController.selectedBillSession.bill.creditCompany ne null}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.creditCompany.name}" rendered="#{channelBookingController.selectedBillSession.bill.creditCompany ne null}"/>
-                                            <p:outputLabel value="Agent" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Agent Ref No" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Booking User"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-                                            <p:outputLabel value="Staff Name" rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{channelBookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{channelBookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
-                                            <p:outputLabel value="Booked At"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.createdAt}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="Settled At" rendered="#{channelBookingController.selectedBillSession.bill.paidBill ne null}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill ne null}"> 
-                                                <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                        </h:panelGrid>                            
-                                    </p:panel>
-
-                                    <p:panel header="Settling" rendered="#{(channelBookingController.selectedBillSession.bill.paidBill ne channelBookingController.selectedBillSession.bill) and channelBookingController.selectedBillSession.bill.balance eq 0.0}">
-                                        <h:panelGrid columns="2">
-                                            <p:outputLabel value="Bill Id"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.deptId}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.insId}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}"/>
-                                            <p:outputLabel value="Cancel Id(Booking)" rendered="#{webUserController.hasPrivilege('Developers')}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.cancelledBill.deptId}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
-                                            <p:outputLabel value="Payment Method"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
-                                            <p:outputLabel value="Agent" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.fromInstitution.name}" 
-                                                           rendered="#{channelBookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="Agent Ref No" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.billItem.paidBill.agentRefNo}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
-                                            <p:outputLabel value="User"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.creater.webUserPerson.nameWithTitle}"/>
-                                            <p:outputLabel value="Settled At"/>
-                                            <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.paidBill.createdAt}"> 
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}" ></p:separator>
-                                            <p:separator rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}" ></p:separator>
-                                            <p:outputLabel style="color: red" value="Payment" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.paidBill.cancelledBill.paymentMethod} #{channelBookingController.selectedBillSession.bill.paidBill.refundedBill.paymentMethod}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.paidBill.cancelledBill.creater.webUserPerson.nameWithTitle} #{channelBookingController.selectedBillSession.bill.paidBill.refundedBill.creater.webUserPerson.nameWithTitle}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}"/>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.paidBill.cancelledBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true }">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.paidBill.refundedBill.createdAt}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.refunded==true}">
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel style="color: red" value="Comment" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}" />
-                                            <p:outputLabel style="color: red" value="#{channelBookingController.selectedBillSession.bill.paidBill.cancelledBill.comments} #{channelBookingController.selectedBillSession.bill.paidBill.refundedBill.comments}" rendered="#{channelBookingController.selectedBillSession.bill.paidBill.cancelled==true or channelBookingController.selectedBillSession.bill.paidBill.refunded==true}"/>
-                                        </h:panelGrid>                            
-                                    </p:panel>
-
-                                </h:panelGrid>
-
-                            </p:tab>
-
-                            <p:tab title="REPRINT" id="rePrint" class="w-100"
-                                   rendered="#{webUserController.hasPrivilege('ChannelBookingReprint') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-
-                                <h:commandButton value="Print" actionListener="#{channelBookingController.updatePrintStatus}"
-                                                 disabled="#{channelBookingController.billSession.billItem.bill.balance ne 0.0}"
-                                                 rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and channelBookingController.billSession.billItem.bill.paymentMethod eq 'Agent'}">
-                                    <f:ajax execute="@this" />
-                                    <p:printer target="panelAddedBillPrintRe" />
-                                    <!--<f:ajax event="click" execute="@this" listener="#{channelBookingController.updatePrintStatus}" />-->
-                                </h:commandButton>
-                                <p:commandButton value="Print" ajax="false" action="#" 
-                                                 disabled="#{channelBookingController.billSession.billItem.bill.balance ne 0.0}"
-                                                 rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna' or (channelBookingController.billSession.billItem.bill.paymentMethod ne 'Agent' and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna')}">
-                                    <p:printer target="panelAddedBillPrintRe" ></p:printer>
-                                </p:commandButton>
-
-                                <div style="width: 780px!important;height: 330px!important;overflow:scroll!important;" >
-                                    <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
-                                        <div >
-                                            <ch:channelRecipt bill="#{channelBookingController.billSession.billItem.bill}" dup="true"/>
-                                        </div>
-                                    </h:panelGroup>
-                                </div>
-                            </p:tab>
-
-                            <p:panel id="panelBillPrint" class="w-100">
-
-                                <h:panelGroup id="panelAddedBillPrintFees" styleClass="noBorder">
-                                    <ch:bill_fees bill="#{channelBookingController.billSession.billItem.bill}"/>
-                                </h:panelGroup>
-
-                            </p:panel>
-
-                            <p:tab title="Cancel" class="w-100" id="cancel" rendered="#{webUserController.hasPrivilege('ChannelBookingCancel') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">                                                         
-                                #{channelBookingController.billSession.bill.billType}
-
-                                <h:panelGroup rendered="#{channelBookingController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
-                                    <p:outputLabel value="Re-payment Method"/>
-                                    <p:selectOneMenu  id="cmbCancellPs" value="#{channelBookingController.cancelPaymentMethod}">  
-                                        <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>    
-                                        <f:ajax event="change" execute="@this"  render="aaa"/>
-                                    </p:selectOneMenu>
-                                </h:panelGroup>
-                                <p:outputLabel id="aaa" value="#{channelBookingController.cancelPaymentMethod}"/>
-
-
-
-                                <h:panelGroup>
-                                    <ch:bill_fees bill="#{channelBookingController.billSession.billItem.bill}" />
-                                </h:panelGroup>
-                                <h:inputTextarea value="#{channelBookingController.comment}"/>
-                                <p:commandButton ajax="false" value="Cancel Agent Bill" 
-                                                 rendered="#{channelBookingController.billSession.bill.billType eq 'ChannelAgent'}"
-                                                 action="#{channelBookingController.cancelAgentPaidBill}"
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true}"/>
-                                <p:commandButton ajax="false" value="Cancel" 
-                                                 rendered="#{channelBookingController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBookingController.billSession.bill.billType ne 'ChannelAgent'}"
-                                                 action="#{channelBookingController.cancelCashFlowBill}"
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true}" 
-                                                 />
-                                <p:commandButton ajax="false" value="Cancel Booking" 
-                                                 rendered="#{(channelBookingController.billSession.bill.billType eq 'ChannelOnCall' or channelBookingController.billSession.bill.billType eq 'ChannelStaff')and channelBookingController.billSession.bill.paidBill eq null}"
-                                                 action="#{channelBookingController.cancelBookingBill}"
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true}" 
-                                                 />
-                                <p:commandButton ajax="false" value="Cancel Paid" 
-                                                 rendered="#{channelBookingController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBookingController.billSession.bill.billType ne 'ChannelAgent'}"
-                                                 action="#{channelBookingController.cancelCreditPaidBill}"
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true
-                                                             or channelBookingController.billSession.bill.paidAmount eq 0}" 
-                                                 />
-                            </p:tab>
-
-                            <p:tab title="Refund" class="w-100" id="refund" rendered="#{webUserController.hasPrivilege('ChannelBookingRefund') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">                          
-                                <h:panelGroup>
-                                    <h:panelGrid columns="2" rendered="#{channelBookingController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
-
-                                        <p:outputLabel value="Re-payment Method"/>
-                                        <p:selectOneMenu  id="cmbRefundPs" value="#{channelBookingController.refundPaymentMethod}" >  
-                                            <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                            <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
-                                            <f:ajax event="change" execute="@this"  render="aa"/>
-                                        </p:selectOneMenu>
-                                        <p:outputLabel id="aa" value="#{channelBookingController.refundPaymentMethod}"/>
-
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="2">
-                                        <h:outputLabel value="Refundable Total : " style="font-weight: bold;color: red;"/>
-                                        <h:outputLabel id="tot" value="#{channelBookingController.refundableTotal}" style="font-weight: bold; color: red;">
-                                            <f:convertNumber pattern="#,###0.00"  />
-                                        </h:outputLabel>
-                                    </h:panelGrid>
-                                    <p:dataTable 
-                                        rendered="#{channelBookingController.billSession.bill.billFees ne null}"
-                                        value="#{channelBookingController.billSession.bill.billFees}" 
-                                        var="bi"
-                                        lazy="false">
-                                        <p:column headerText="Fee Name">
-                                            <p:outputLabel value="#{bi.fee.name}"/>
-                                        </p:column>
-                                        <p:column headerText="Fee Type">
-                                            <p:outputLabel value="#{bi.fee.feeType}"/>
-                                        </p:column>
-                                        <p:column headerText="Fee Value" styleClass="numberCol">
-                                            <p:outputLabel value="#{bi.feeValue}">
-                                                <f:convertNumber pattern="#,###0.00"  />
-                                            </p:outputLabel> 
-                                        </p:column>
-                                        <p:column headerText="Vat" styleClass="numberCol">
-                                            <p:outputLabel value="#{bi.feeVat}" >
-                                                <f:convertNumber pattern="#,###0.00"  />
-                                            </p:outputLabel> 
-                                        </p:column>
-                                        <p:column headerText="Fee Total" styleClass="numberCol">
-                                            <p:outputLabel value="#{bi.feeVatPlusValue}" >
-                                                <f:convertNumber pattern="#,###0.00"  />
-                                            </p:outputLabel> 
-                                        </p:column>
-                                        <p:column headerText="Return Value">
-                                            <p:inputText value="#{bi.tmpChangedValue}" disabled="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBookingController.calRefundTotal()}"/>
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{channelBookingController.checkRefundTotal()}"/>
-                                            </p:inputText>
-
-                                        </p:column>
-                                    </p:dataTable>
-                                </h:panelGroup>
-                                <h:inputTextarea value="#{channelBookingController.commentR}"/>
-
-                                <p:commandButton ajax="false" value="Refund Agent Bills" 
-                                                 rendered="#{channelBookingController.billSession.billItem.bill.paymentMethod eq 'Agent'}"
-                                                 action="#{channelBookingController.refundAgentBill}" 
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true}"
-                                                 />
-
-                                <p:commandButton ajax="false" value="Refund" 
-                                                 rendered="#{channelBookingController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBookingController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
-                                                 action="#{channelBookingController.refundCashFlowBill}" 
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true}"
-                                                 />
-
-                                <p:commandButton ajax="false" value="Refund Paid" 
-                                                 rendered="#{channelBookingController.billSession.bill.billType.parent eq 'ChannelCreditFlow' }"
-                                                 action="#{channelBookingController.refundCreditPaidBill}" 
-                                                 disabled="#{channelBookingController.billSession.bill.refunded==true
-                                                             or channelBookingController.billSession.bill.cancelled==true
-                                                             or channelBookingController.billSession.bill.paidAmount eq 0}"
-                                                 />
-
-
-                            </p:tab>
-
-                            <p:tab title="Settle" class="w-100" id="settle" rendered="#{webUserController.hasPrivilege('ChannelBookingSettle') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-                                <p:panel  id="set">
-                                    <ch:bill_fees bill="#{channelBookingController.billSession.billItem.bill}" />
-
-                                    <p:outputLabel value="Payment Method"/>
-                                    <p:selectOneMenu  id="cmbSettlePs" value="#{channelBookingController.settlePaymentMethod}">  
-                                        <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
-                                        <f:ajax execute="@this" render="settleAgent settleAgent2 settleBallance settleBallance2 settleAgRefLbl settleAgRefTxt" event="change" />
-                                    </p:selectOneMenu>
-
-                                    <h:outputLabel id="settleAgent" value="Agent"  style="display: #{channelBookingController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <p:autoComplete id="settleAgent2" forceSelection="true" style="display: #{channelBookingController.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "
-                                                    value="#{channelBookingController.settleInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                                    itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                        <f:ajax  event="itemSelect" execute="@this"  render="settleBallance settleBallance2 settleAgRefLbl settleAgRefTxt"/>
-                                        <p:column>#{ix.institutionCode}</p:column>
-                                        <p:column>#{ix.name}</p:column>                                
-                                    </p:autoComplete> 
-                                    <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{channelBookingController.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
-                                    <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{channelBookingController.settleAgentRefNo}"  style="display: #{channelBookingController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance" value="Credit Limit"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance2" value="#{channelBookingController.institution.allowedCredit}"  style="display: #{channelBookingController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance5" value=" Max Credit Limit"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance6" value="#{channelBookingController.institution.maxCreditLimit}"  style="display: #{channelBookingController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance3" value="Ballance"  style="display: #{channelBookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance4" value="#{channelBookingController.institution.ballance}"  style="display: #{channelBookingController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <p:commandButton id="setBtn"  value="Settle Credit"
-                                                     process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
-                                                     update="gpSettlePrint"
-                                                     action="#{channelBookingController.settleCredit}" 
-                                                     disabled="#{channelBookingController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
-                                                                 or channelBookingController.billSession.bill.cancelled==true
-                                                                 or  channelBookingController.billSession.bill.paidAmount ne 0}" 
-                                                     oncomplete="PF('dlgSettle').show();"/>
-                                    <h:panelGroup id="gpSettlePrint" >
-                                        <p:dialog id="dialogChannelSettle" header="Booked" widgetVar="dlgSettle" 
-                                                  modal="true" height="400" width="600" closable="false">
-                                            <p:commandButton value="New Bill" action="#{channelBookingController.prepareForNewBill}" ajax="false" ></p:commandButton>
-                                            <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
-                                                             rendered="#{!channelBookingController.settleSucessFully}" />
-                                            <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBookingController.billSession.billItem.bill.balance ne 0.0}">
-                                                <p:printer target="panelAddedBillPrintSettle" ></p:printer>
-                                            </p:commandButton>
-                                            <p:outputLabel value="Total : " />
-                                            <p:outputLabel value="#{channelBookingController.printingBill.netTotal+channelBookingController.printingBill.vat}" style="color: red;font-size: x-large;"/>
-
-                                            <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" rendered="#{channelBookingController.settleSucessFully}">
-                                                <div>
-                                                    <ch:channelRecipt bill="#{channelBookingController.billSession.bill}" dup="false"/>
-                                                </div>
-                                            </h:panelGroup>
-                                            <h:panelGroup  styleClass="noBorder" rendered="#{!channelBookingController.settleSucessFully}" >
-                                                <br/>
-                                                <br/>
-                                                <p:outputLabel value="#{channelBookingController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
-                                            </h:panelGroup>
-                                        </p:dialog>
-                                    </h:panelGroup>
-                                </p:panel>
-                            </p:tab>
-                            <p:tab title="Change" class="w-100" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-                                <h:panelGrid columns="2">
-                                    <h:outputLabel value="Title"/>
-                                    <p:selectOneMenu  value="#{channelBookingController.selectedBillSession.bill.patient.person.title}"  >
-                                        <f:selectItem itemLabel="Title" />
-                                        <f:selectItems value="#{billController.title}"/>
-                                    </p:selectOneMenu>
-                                    <p:outputLabel value="Name"/>
-                                    <p:inputText 
-                                        autocomplete="off" 
-                                        validatorMessage="Please enter a valid phone number (numbers only)"
-                                        value="#{channelBookingController.selectedBillSession.bill.patient.person.name}" >
-                                        <f:validateRegex pattern="^[0-9]*$"/>
-                                    </p:inputText>
-                                    <h:outputLabel value="Phone"/>
-                                    <p:inputText  autocomplete="off" maxlength="11" value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}">
-                                    </p:inputText>
-                                    <p:outputLabel value="Current Serial No"/>
-                                    <ui:repeat value="#{channelBookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                        <p:outputLabel value="#{bis.billSession.serialNo}">                                        
-                                        </p:outputLabel>
-                                    </ui:repeat>
-                                    <p:outputLabel value="Appo. No"/>
-                                    <p:inputText autocomplete="off" value="#{channelBookingController.serealNo}">                                        
-                                    </p:inputText>
-                                    <p:outputLabel value="Mark As Absent"/>
-                                    <p:selectBooleanCheckbox value="#{channelBookingController.selectedBillSession.absent}" >
-                                        <p:ajax process="@this" event="change" listener="#{channelBookingController.listnerMarkAbsent}" />
-                                    </p:selectBooleanCheckbox>
-
-                                    <p:commandButton ajax="false" value="Update Serial" action="#{channelBookingController.updateSerial()}" 
-                                                     disabled="#{channelBookingController.selectedBillSession.bill.cancelled==true
-                                                                 or channelBookingController.selectedBillSession.bill.refunded==true or !webUserController.hasPrivilege('ChannellingEditSerialNo')}" />
-                                    <p:commandButton ajax="false" value="Update Patient" action="#{channelBookingController.updatePatient}"
-                                                     disabled="#{channelBookingController.selectedBillSession.bill.cancelled==true
-                                                                 or channelBookingController.selectedBillSession.bill.refunded==true or (!webUserController.hasPrivilege('ChannellingEditPatientDetails') and channelBookingController.billSession.bill.paidAmount ne 0)}" />
-
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="Search" class="w-100" rendered="#{webUserController.hasPrivilege('ChannelBookingSearch') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-                                <h:panelGrid columns="2">
-                                    <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" placeholder="From Date" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >   
-                                        <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
-                                    </p:calendar>
-                                    <p:calendar id="calTo"  value="#{channelSearchController.toDate}" placeholder="To Date" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >   
-                                        <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
-                                    </p:calendar>
-
-                                    <p:inputText id="txtBsSearch" value="#{channelSearchController.txtSearch}" placeholder="Bill No" >
-                                    </p:inputText>
-                                    <p:inputText id="txtBsSearch2" value="#{channelSearchController.txtSearchRef}" placeholder="Agent Ref. No" >
-                                    </p:inputText>
-                                    <p:inputText id="txtBsSearch3" value="#{channelSearchController.txtSearchPhone}"  />
-                                    <h:outputLabel />
-                                    <p:commandButton id="btnBsSearch" 
-                                                     value="Search" action="#{channelSearchController.searchForBillSessions}" 
-                                                     process="txtBsSearch txtBsSearch2 txtBsSearch3 calFrom calTo btnBsSearch" 
-                                                     update="bSessionSearch"></p:commandButton>
-                                </h:panelGrid>
-                                <h:panelGroup id="bSessionSearch" >
-                                    <p:dataTable id="bSessionSearchTable" 
-                                                 lazy="false"
-                                                 value="#{channelSearchController.searchedBillSessions}"
-                                                 rendered="#{channelSearchController.searchedBillSessions ne null}"
-                                                 var="bs"
-                                                 styleClass="noBorder" style="width: 780px!important;height: 270px!important;overflow:scroll!important;">
-                                        <p:column>
-                                            <p:commandButton value="view" action="#{channelBookingController.viewBill(bs)}" update=":#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId}" />
-                                        </p:column>
-                                        <p:column headerText="Patient Name" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" />
-                                        </p:column>
-                                        <p:column headerText="Phone" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.bill.patient.person.phone}" />
-                                        </p:column>
-                                        <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.billItem.agentRefNo}"/>
-                                        </p:column>
-                                        <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.bill.bookingId}" />
-                                        </p:column>
-                                        <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                                        </p:column> 
-                                        <p:column headerText="App. No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.serialNo}" />
-                                        </p:column>
-                                        <p:column headerText="Consultant" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.serviceSession.staff.person.nameWithTitle}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.serviceSession.staff.person.nameWithTitle}" />
-                                        </p:column>
-                                        <p:column headerText="Session Name" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{bs.serviceSession.name}" />
-                                        </p:column>
-                                        <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
-                                            <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                            <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                                        </p:column>   
-
-
-                                    </p:dataTable> 
-                                </h:panelGroup>
-
-
-                            </p:tab>
-
-                            <p:tab title="Views" class="w-100" rendered="#{webUserController.hasPrivilege('ChannelBookingViews') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-                                <h:panelGrid columns="2">
-                                    <p:panel header="Selected Session">
-                                        <h:panelGrid columns="1">
-                                            <p:commandButton value="Nurse View " action="#{channelBookingController.nurse}"   >                                       
-                                            </p:commandButton>
-                                            <p:commandButton value="Doctor View " action="#{channelBookingController.doctor}" ajax="false" >                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="Session View " action="#{channelBookingController.session}" ajax="false" >                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="Phone View " action="#{channelBookingController.phone}" ajax="false" >                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="User View " action="#{channelBookingController.user}" ajax="false" >                                        
-                                            </p:commandButton>
-                                        </h:panelGrid>
-
-                                    </p:panel>
-                                    <p:panel header="Today's">
-                                        <h:panelGrid columns="1">
-                                            <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" >                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="All Doctor" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctor()}" ajax="false" >                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="All Doctor(Scan)" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctorScan()}" ajax="false"  rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}">                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="Doctor Arraival List" action="channel_doctor_view_today_1" actionListener="#{channelReportController.createDoctorArrival()}" ajax="false" >                                        
-                                            </p:commandButton>
-                                            <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" >    
-                                                <f:setPropertyActionListener value="#{null}" target="#{channelReportController.date}"/>
-                                            </p:commandButton>
-                                            <p:commandButton value="All Cancel" action="channel_cancel_view_today" actionListener="#{channelReportController.createTodayCancelList()}" ajax="false" >        
-                                                <f:setPropertyActionListener value="#{null}" target="#{channelReportController.date}"/>
-                                            </p:commandButton>
-                                        </h:panelGrid>                                    
-                                    </p:panel>
-                                </h:panelGrid>
-
-                            </p:tab>
-
-                            <p:tab title="Doctor Payment" rendered="#{webUserController.hasPrivilege('ChannelBookingDocPay') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" class="w-100">
-                                <p:panel header="Selected Session">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="Pay Selected Doctor" action="#{channelBookingController.paySelectedDoctor}" 
-                                                         ajax="false"  />                                        
-                                        <p:commandButton value="Go To Channel Shedule"
-                                                         rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                         action="/channel/channel_shedule" 
-                                                         ajax="false"  />                                                                                  
-                                    </h:panelGrid>
-                                </p:panel>
-                            </p:tab>
-                        </p:tabView>
-                    </p:panel>
-                </div>
-            </div>
 
         </h:form>
-
-
     </ui:define>
-
-
 </ui:composition>

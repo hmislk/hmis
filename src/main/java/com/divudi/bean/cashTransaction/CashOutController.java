@@ -6,7 +6,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -140,7 +140,7 @@ public class CashOutController implements Serializable {
 //        if (getBill().getToWebUser() != null) {
 //            getCashTransactionBean().addToBallance(getBill().getToWebUser().getDrawer(), dbl, ct);
 //        }
-        UtilityController.addSuccessMessage("Succesfully Cash Out");
+        JsfUtil.addSuccessMessage("Succesfully Cash Out");
         printPreview = true;
 
     }

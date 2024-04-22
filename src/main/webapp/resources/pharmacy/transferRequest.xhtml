@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -43,24 +43,30 @@
             <div  >
 
 
-                <h:outputLabel value="Request To : "/>
-                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"   /> 
-                <br></br>
-                <h:outputLabel value="Req No : #{cc.attrs.bill.deptId}"/>
-                <br></br>
-                <h:outputLabel value="Req Person : "/>
+            <h:panelGrid columns="3" class="w-100">
+                <h:outputLabel value="Request From"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.bill.fromDepartment.name}  (#{cc.attrs.bill.fromDepartment.institution.name})"   />
+                <h:outputLabel value="Request To"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}  (#{cc.attrs.bill.toDepartment.institution.name})"   /> 
+                <h:outputLabel value="Req No"/>
+                <h:outputLabel value=":"/>
+                 <h:outputLabel value="#{cc.attrs.bill.deptId}"   /> 
+                <h:outputLabel value="Req Person"/>
+                <h:outputLabel value=":"/>
                 <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
-                <br></br>
-                <h:outputLabel value="Req Date : "/>
+                <h:outputLabel value="Req Date"/>
+                <h:outputLabel value=":"/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 </h:outputLabel>
-                <br></br>
-                <h:outputLabel value="Req Time : "/>
+                <h:outputLabel value="Req Time"/>
+                <h:outputLabel value=":"/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                 </h:outputLabel>
-
+            </h:panelGrid>
                 <!--</h:panelGrid>-->
             </div>
 

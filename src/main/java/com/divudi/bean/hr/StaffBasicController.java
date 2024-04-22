@@ -6,7 +6,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
@@ -20,7 +20,7 @@ import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -91,22 +91,22 @@ public class StaffBasicController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getStaff() == null) {
-            UtilityController.addErrorMessage("Select Staff");
+            JsfUtil.addErrorMessage("Select Staff");
             return true;
         }
 
         if (getCurrent().getFromDate() == null) {
-            UtilityController.addErrorMessage("Select From Date");
+            JsfUtil.addErrorMessage("Select From Date");
             return true;
         }
 
         if (getCurrent().getToDate() == null) {
-            UtilityController.addErrorMessage("Select To Date");
+            JsfUtil.addErrorMessage("Select To Date");
             return true;
         }
 
         if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
-            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+            JsfUtil.addErrorMessage("There is Some component in Same Date Range");
             return true;
         }
 
@@ -383,7 +383,7 @@ public class StaffBasicController implements Serializable {
         items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff paysheet component list(/faces/hr/hr_staff_paysheet_component_list.xhtml)");
+        
 
     }
 

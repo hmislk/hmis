@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+        <cc:attribute name="bill" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:commandButton value="Print" class="ui-button-info mx-2" icon="fas fa-print" ajax="false" action="#" >
+            <p:printer target="gpBillPreview" ></p:printer>
+        </p:commandButton>
+
+        <h:outputStylesheet library="css" name="inwardpayments.css" ></h:outputStylesheet>
+        <!--<div class="a4bill" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >-->
+        <h:panelGroup id="gpBillPreview" >
+            <div class="a4bill1" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >
+
+                <div class="institutionName">
+                    <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                </div>
+                <div class="institutionContact" >
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                    </div>
+                    <div >
+                        <h:outputLabel value="Phone :  #{cc.attrs.bill.department.telephone1} "/>
+                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
+                        <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    </div>
+                    <div >
+                        <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}"/>                                                 
+                    </div>
+                    <div >
+                        <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>                                                 
+                    </div>
+                </div>
+
+                <div class="billline">
+                    <hr/>
+                </div>
+
+                <div class="" style=" text-align: center;font-weight: bold;font-size: 13pt">
+                    <h:outputLabel value="PAYMENT VOUCHER" />
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                </div>
+
+                <div class="billline">
+                    <hr></hr>   
+                    <br/>
+                </div>
+
+                <div class="billDetailsFiveFive" >
+                    <table style="width: 95%!important;" align="center" >
+
+                        <tr>
+                            <td><h:outputLabel value="Bill ID" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td style="text-align: center;" >:</td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.bill.id}" class="billDetailsFiveFive" ></h:outputLabel>
+                            </td>
+                            <td width="2%" />
+                            <td width="" ><h:outputLabel value="Payment Type" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td style="text-align: center;" >:</td>
+                            <td width="">
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
+                                               rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" class="billDetailsFiveFive" />                        
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
+                                               rendered="#{cc.attrs.bill.cancelledBill.insId eq null }" class="billDetailsFiveFive"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td  style="text-align: center;" >:</td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
+                                               rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" class="billDetailsFiveFive" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>                      
+                                <h:outputLabel value="#{cc.attrs.bill.billDate}"
+                                               rendered="#{cc.attrs.bill.cancelledBill.insId eq null }" class="billDetailsFiveFive" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+                            </td>
+                            <td width="2%" />
+                            <td width="" ><h:outputLabel value="Time" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td style="text-align: center;" >:</td>
+                            <td width="">
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
+                                               rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" class="billDetailsFiveFive">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </h:outputLabel>                        
+                                <h:outputLabel value="#{cc.attrs.bill.billTime}" 
+                                               rendered="#{cc.attrs.bill.cancelledBill.insId eq null }" class="billDetailsFiveFive">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><h:outputLabel value="Doctor Name" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td style="text-align: center;" >:</td>
+                            <td>
+                                <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize; " class="billDetailsFiveFive"  />
+                            </td>
+                            <td width="2%" />
+                            <td width="" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td style="text-align: center;" >:</td>
+                            <td width="">
+                                <h:outputLabel value="#{cc.attrs.controller.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="billline">
+                    <br/>
+                    <hr/>
+                    <br/>
+                </div>
+                <div class="billDetailsFiveFive" >
+                    <h:dataTable value="#{cc.attrs.controller.billItems}"
+                                 var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
+
+                        <p:column style="text-align: center; margin-left: 10%" >
+                            <f:facet name="header" >
+                                <h:outputLabel value="" ></h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="&emsp;" 
+                                           style="font-size:10px!important;" />
+                        </p:column>
+                        <p:column style="text-align: center;" >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Bill No"  ></h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.insId}" 
+                                           style="font-size:10pt!important;" />
+                        </p:column>
+                        <p:column style="text-align: center;" >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Investigation/Service"  ></h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.referanceBillItem.item.name}" 
+                                           style="font-size:10pt!important;" />
+                        </p:column>
+                        <h:column   >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Patient Name" ></h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />                                    
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" 
+                                           style="margin: 4px; font-size:  10pt!important;"   />                                                                                
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Value" ></h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.netValue}" 
+                                           style="font-size:  10pt!important; text-align: right!important;" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:column>
+                    </h:dataTable>
+                </div>
+                <div class="billline">
+                    <br/>
+                    <hr/>
+                    <br/>
+                </div>
+
+                <div  >
+
+                    <table style="width: 100%;"> 
+
+                        <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+                            <tr>
+                                <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                     font-family:Verdana, Helvetica, sans-serif!important;
+                                     font-weight: bold;">
+                                    &nbsp;&nbsp;
+                                    <h:outputLabel value="Total" />
+                                </td>
+                                <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                     font-family:Verdana, Helvetica, sans-serif!important;
+                                     font-weight: bold;">
+                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
+                            <tr>
+                                <td class="totalsBlock1" style="text-align: left; width: 60%;">
+                                    <h:outputLabel value="Total" />
+                                </td>
+                                <td  class="totalsBlock1" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
+                    </table> 
+                </div>
+
+                <div class="billline">
+                    <br/>
+                    <hr/>
+                </div>
+
+                <div class="footer" >
+                    <h:outputLabel value="casher :  #{sessionController.loggedUser.name}"/>
+                </div>
+            </div>
+        </h:panelGroup>
+    </cc:implementation>
+</html>

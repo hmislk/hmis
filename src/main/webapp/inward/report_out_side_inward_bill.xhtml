@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/inward/inward_reports.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="subcontent">
@@ -140,9 +140,9 @@
                                 <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Creater Name">     
+                        <p:column headerText="Creator Name">     
                             <f:facet name="header">
-                                <p:outputLabel value="Creater Name" />
+                                <p:outputLabel value="Creator Name" />
                             </f:facet>
                             <p:outputLabel value="#{bi.creater.webUserPerson.nameWithTitle}" />
                         </p:column>

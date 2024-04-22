@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -20,20 +20,24 @@
                                 <h:panelGrid class="col-1 mx-1">
                                     <h:panelGrid columns="1" class="mt-1">
                                         <h:outputLabel value="From Date"/>
-                                        <p:calendar 
+                                        <p:datePicker 
                                             styleClass="dateTimePicker" 
                                             id="fromDate" 
                                             value="#{searchController.fromDate}"
-                                            navigator="false" 
+                                            showTime="true"                                            
+                                            showButtonBar="true"  
+                                            timeInput="true" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                        </p:calendar>
+                                        </p:datePicker>
                                         <h:outputLabel value="To Date"/> 
-                                        <p:calendar 
+                                        <p:datePicker 
                                             id="toDate" 
                                             value="#{searchController.toDate}" 
-                                            navigator="false" 
+                                            showTime="true"                                            
+                                            showButtonBar="true"  
+                                            timeInput="true" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                        </p:calendar>
+                                        </p:datePicker>
                                         <p:commandButton 
                                             id="btnSearch" 
                                             ajax="false"
@@ -71,8 +75,8 @@
                                     rowsPerPageTemplate="5,10,15"
                                     size="10"
                                     >
-                                    
-                                    
+
+
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>

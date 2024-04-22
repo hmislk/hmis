@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
@@ -103,13 +103,13 @@ public class PaysheetComponentController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getComponentType() == null) {
-            UtilityController.addErrorMessage("Pls Select Compnent Type");
+            JsfUtil.addErrorMessage("Pls Select Compnent Type");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             boolean flag = false;
             for (PaysheetComponentType p : PaysheetComponentType.addition.getSystemDefinedComponents()) {
@@ -118,14 +118,14 @@ public class PaysheetComponentController implements Serializable {
                 }
             }
             if (flag && checkComponent()) {
-                UtilityController.addErrorMessage("This Component Type Already Exist");
+                JsfUtil.addErrorMessage("This Component Type Already Exist");
                 return;
             }
 
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -172,9 +172,9 @@ public class PaysheetComponentController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -8,7 +8,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.clinical.PrescriptionTemplate;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.facade.PrescriptionTemplateFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +49,7 @@ public class FavouriteController implements Serializable {
     List<PrescriptionTemplate> items;
     private List<MeasurementUnit> availableDoseUnits;
     private List<Item> availableItems;
+    private boolean itemadd = false;
 
     /**
      * Methods
@@ -57,7 +58,17 @@ public class FavouriteController implements Serializable {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
     }
 
+    public String navigateToFavoriteMedicineByAge(){
+       return "/clinical/clinical_favourite_item_by_age?faces-redirect=true"; 
+    }
     
+    public String navigateToFavoriteMedicineByWeight(){
+        return "/clinical/clinical_favourite_item_by_weight?faces-redirect=true";
+    }
+    
+    public String navigateToEmrIndex(){
+        return "/emr/admin/index?faces-redirect=true";
+    }
     
     public void fillFavouriteDisgnosis() {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
@@ -133,6 +144,7 @@ public class FavouriteController implements Serializable {
             JsfUtil.addErrorMessage("No Item Selected");
             return;
         }
+        itemadd = true;
         current = new PrescriptionTemplate();
         current.setForItem(item);
         current.setItem(item);
@@ -199,6 +211,17 @@ public class FavouriteController implements Serializable {
 
     public void listMyFavouriteMedicines() {
 
+    }
+    
+    public void saveFavMedicine(){
+        current.setType(PrescriptionTemplateType.FavouriteMedicine);
+        current.setForItem(item);
+        current.setForWebUser(sessionController.getLoggedUser());
+        current.setOrderNo(getItems().size() + 1.0);
+        favouriteItemFacade.create(current);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        current = null;
+        JsfUtil.addSuccessMessage("Saved");
     }
 
 //    public void removeFavourite() {
@@ -418,5 +441,15 @@ public class FavouriteController implements Serializable {
     public void setAvailableItems(List<Item> availableItems) {
         this.availableItems = availableItems;
     }
+
+    public boolean isItemadd() {
+        return itemadd;
+    }
+
+    public void setItemadd(boolean itemadd) {
+        this.itemadd = itemadd;
+    }
+    
+    
 
 }

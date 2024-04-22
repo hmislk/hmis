@@ -1,16 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+
+                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
-
         <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
-
         <h:form id="bill">
             <p:panel rendered="#{!pharmacyPurchaseController.printPreview}">
                 <p:panel >
@@ -25,7 +24,7 @@
                                         <h:outputText value="Purches Details" />
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-100" >
-                                        <p:outputLabel value="Select Dealor"/>
+                                        <p:outputLabel value="Select Supplier"/>
                                         <p:autoComplete class="w-100 "
                                                         inputStyleClass="w-100"
                                                         converter="deal" 
@@ -34,7 +33,9 @@
                                                         completeMethod="#{dealerController.completeDealor}"
                                                         var="vt" 
                                                         itemLabel="#{vt.name}" 
-                                                        itemValue="#{vt}" />
+                                                        itemValue="#{vt}" >
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:autoComplete>
 
                                         <h:outputLabel value="Purchasing Institution"/>
                                         <p:autoComplete class="w-100 my-1"
@@ -42,13 +43,20 @@
                                                         value="#{pharmacyPurchaseController.bill.referenceInstitution}"
                                                         completeMethod="#{institutionController.completeCompany}" 
                                                         forceSelection="true"
-                                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-
-
+                                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:autoComplete>
                                         <p:outputLabel value="Invoice No "/>
-                                        <p:inputText class="w-100"  autocomplete="off" value="#{pharmacyPurchaseController.bill.invoiceNumber}" />
+                                        <p:inputText class="w-100"  autocomplete="off" 
+                                                     value="#{pharmacyPurchaseController.bill.invoiceNumber}" >
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:inputText>
                                         <p:outputLabel value="Invoice Date"/>
-                                        <p:calendar class="w-100" inputStyleClass="w-100"  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                                        <p:calendar class="w-100" inputStyleClass="w-100"
+                                                    value="#{pharmacyPurchaseController.bill.invoiceDate}"  
+                                                    navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                            <p:ajax event="dateSelect" process="@this" ></p:ajax>
+                                        </p:calendar>
 
                                     </h:panelGrid>
                                 </p:panel>
@@ -175,19 +183,6 @@
                                         <p:column headerText="Code" >
                                             <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Pack Size" >
-                                            <p:outputLabel value=" X #{vt.dblValue}" 
-                                                           rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                        </p:column>
-                                        <p:column headerText="Pack Size" >
-                                            <p:outputLabel value=" X #{vt.dblValue}" 
-                                                           rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                        </p:column>
-                                        <p:column headerText="Pack Size" >
-                                            <p:outputLabel value=" X #{vt.dblValue}" 
-                                                           rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                        </p:column>
-
                                     </p:autoComplete>
                                 </h:panelGrid>
 
@@ -202,7 +197,7 @@
                                     <h:outputLabel value="Wholesale Price"></h:outputLabel>
                                     <h:outputLabel value="Qty Free"></h:outputLabel><!-- newly added-->
                                     <h:outputLabel value="DOE(dd mm yy)"/>
-                                    <h:outputLabel value="Bathch No"/>
+                                    <h:outputLabel value="Batch No"/>
                                     <h:outputLabel/>
 
 
@@ -252,11 +247,12 @@
                                                  id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
 
                                     <p:commandButton id="btnAdd" 
-                                                     value="Add Item" 
+                                                     value="Add Item*" 
                                                      action="#{pharmacyPurchaseController.addItem}"
                                                      icon="fas fa-plus"
                                                      class="ui-button-success"
-                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId}"/>
+                                                     process="acItem txtQty txtFreeQty txtPrate tmpRetail tmpWholesale txtQtyFree calDoe tmp btnAdd" 
+                                                     update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId}"/>
                                 </h:panelGrid>
                             </div>
                         </div>
@@ -363,9 +359,12 @@
                     </p:dataTable>
                 </h:panelGroup>
             </p:panel>
-
-
         </h:form>
+
+        <p:panel rendered="#{!pharmacyPurchaseController.printPreview}">
+            <pharmacy:purhcase_ws bill="#{pharmacyPurchaseController.bill}"/>
+        </p:panel>
+
     </ui:define>  
 
 </ui:composition>

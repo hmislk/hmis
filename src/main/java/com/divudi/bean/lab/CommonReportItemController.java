@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UploadController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
@@ -20,7 +20,7 @@ import com.divudi.entity.lab.ReportFormat;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -222,12 +222,12 @@ public class CommonReportItemController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 //        recreateModel();
 //        getItems();

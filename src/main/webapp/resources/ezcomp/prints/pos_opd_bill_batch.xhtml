@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -272,269 +272,269 @@
 
 
 
+                <!--
+                                <div>
+                
+                                    <table width="100%" style="width: 90%; margin-left: 20px; margin-right: 20px;">
+                                        <tr>
+                                            <td colspan="2" class="billline">
+                                                <hr/>                          
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left;">
+                                                <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
+                                            </td>
+                
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
+                                            </td>
+                                        </tr>
+                
+                                        <tr>
+                                            <td colspan="2" class="billline">
+                
+                                                <hr/>                       
+                                            </td>
+                                        </tr>
+                
+                
+                
+                                        <ui:repeat value="#{ffb.billItems}" var="bip" >
+                
+                                            <tr>
+                                                <td style="text-align: left">
+                                                    <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
+                                                    <h:outputLabel  styleClass="itemsBlock"  value="#{bip.grossValue}"    >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                
+                                            </tr>
+                
+                
+                
+                
+                                        </ui:repeat>
+                
+                
+                
+                
+                                    </table>
+                
+                
+                                </div>-->
 
-                <div>
+                <!--
+                                <div class="billline">
+                                    <h:outputLabel value=""   />                           
+                                </div>
+                -->
 
-                    <table width="100%" style="width: 90%; margin-left: 20px; margin-right: 20px;">
-                        <tr>
-                            <td colspan="2" class="billline">
-                                <hr/>                          
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="text-align: left;">
-                                <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
-                            </td>
-
-                            <td style="text-align: right;">
-                                <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="2" class="billline">
-
-                                <hr/>                       
-                            </td>
-                        </tr>
-
-
-
-                        <ui:repeat value="#{ffb.billItems}" var="bip" >
-
-                            <tr>
-                                <td style="text-align: left">
-                                    <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
-                                    </h:outputLabel>
-                                </td>
-                                <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
-                                    <h:outputLabel  styleClass="itemsBlock"  value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-
-                            </tr>
-
-
-
-
-                        </ui:repeat>
-
-
-
-
-                    </table>
-
-
-                </div>
-
-
-                <div class="billline">
-                    <h:outputLabel value="-------------------------------------------------------------"   />                           
-                </div>
-
-
-
-                <div  >
-
-                    <table style="width: 100%; margin-left:0.5cm; ">
-
-
-                        <h:panelGroup rendered="#{ffb.balance gt 4.0 }" >
-
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;" >
-                                    <h:outputLabel value="Value" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{ffb.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Paid" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{ffb.cashPaid}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="To be Paid" />
-                                </td>
-                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{ffb.balance}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{ffb.balance lt 5.0 }" >
-
-                            <tr>
-                                <td style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{ffb.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>                        
-
-                            <tr>
-                                <td  style="text-align: left;">
-                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                                </td>
-                                <td style="text-align: right!important; ; padding-right: 30px;">
-                                    <h:outputLabel rendered="#{ffb.discount ne 0.0}"   value="#{-ffb.discount}" style="font-weight: bolder!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="Net Total" />
-                                </td>
-                                <td style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="#{ffb.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                          
-                                </td>                        
-                            </tr>
-
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="VAT" />
-                                </td>
-                                <td style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{ffb.vat ne 0.0}"    value="#{ffb.vat}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                          
-                                </td>                        
-                            </tr>
-
-                            <tr>
-
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{ffb.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
-                                </td>
-
-                                <td  style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{ffb.discountPercentPharmacy ne 0.0}"    value="#{ffb.discountPercentPharmacy} %">
-                                        <f:convertNumber pattern="#,##0.0" />
-                                    </h:outputLabel>
-
-
-                                </td>
-                            </tr>
-
-                            <h:panelGroup rendered="#{cc.attrs.billController.bills.size() eq 1}">
-                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                    <tr>
-                                        <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                            <h:outputLabel value="Total" />
-                                        </td>
-                                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                            <h:outputLabel value="#{cc.attrs.billController.batchBill.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </td>
-                                    </tr>
-                                </h:panelGroup>
-
-                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                    <tr>
-                                        <td style="text-align: left; width: 60%;">
-                                            <h:outputLabel value="Cash Paid" />
-                                        </td>
-                                        <td  style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                            <h:outputLabel value="#{cc.attrs.billController.cashPaid}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </td>
-                                    </tr>
-                                </h:panelGroup>
-
-                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                    <tr>
-                                        <td style="text-align: left; width: 60%;">
-                                            <h:outputLabel value="Balance" />
-                                        </td>
-                                        <td style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                            <h:outputLabel value="#{cc.attrs.billController.cashBalance}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </td>
-                                    </tr>
-                                </h:panelGroup>
-
-
-
-                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
-                                    <tr>
-                                        <td  style="text-align: left;">
-                                            <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                                        </td>
-                                        <td  style="text-align: right!important; ; padding-right: 30px;">
-                                            <h:outputLabel rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"   value="#{-cc.attrs.billController.batchBill.discount}" style="font-weight: bolder!important;" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </td>
-                                    </tr>
-                                </h:panelGroup>
-
-                                <tr>
-                                    <td style="text-align: left;">
-                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="Net Total" />
-                                    </td>
-                                    <td   style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td  style="text-align: left;">
-                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="VAT" />
-                                    </td>
-                                    <td  style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.vat}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-
-
-                    </table>
-
-                </div>
+                <!--
+                                <div  >
+                
+                                    <table style="width: 100%; margin-left:0.5cm; ">
+                
+                
+                                        <h:panelGroup rendered="#{ffb.balance gt 4.0 }" >
+                
+                                            <tr>
+                                                <td class="totalsBlock" style="text-align: left; width: 60%;" >
+                                                    <h:outputLabel value="Value" />
+                                                </td>
+                                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                    <h:outputLabel value="#{ffb.total}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>
+                
+                                            <tr>
+                                                <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                    <h:outputLabel value="Paid" />
+                                                </td>
+                                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                    <h:outputLabel value="#{ffb.cashPaid}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>
+                
+                                            <tr>
+                                                <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                    <h:outputLabel value="To be Paid" />
+                                                </td>
+                                                <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                    <h:outputLabel value="#{ffb.balance}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>
+                
+                                        </h:panelGroup>
+                
+                                        <h:panelGroup rendered="#{ffb.balance lt 5.0 }" >
+                
+                                            <tr>
+                                                <td style="text-align: left; width: 60%;">
+                                                    <h:outputLabel value="Total" />
+                                                </td>
+                                                <td style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                    <h:outputLabel value="#{ffb.total}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>                        
+                
+                                            <tr>
+                                                <td  style="text-align: left;">
+                                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
+                                                </td>
+                                                <td style="text-align: right!important; ; padding-right: 30px;">
+                                                    <h:outputLabel rendered="#{ffb.discount ne 0.0}"   value="#{-ffb.discount}" style="font-weight: bolder!important;" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: left;">
+                                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="Net Total" />
+                                                </td>
+                                                <td style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="#{ffb.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>                          
+                                                </td>                        
+                                            </tr>
+                
+                                            <tr>
+                                                <td style="text-align: left;">
+                                                    <h:outputLabel  rendered="#{ffb.discount ne 0.0}"    value="VAT" />
+                                                </td>
+                                                <td style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                    <h:outputLabel  rendered="#{ffb.vat ne 0.0}"    value="#{ffb.vat}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>                          
+                                                </td>                        
+                                            </tr>
+                
+                                            <tr>
+                
+                                                <td style="text-align: left;">
+                                                    <h:outputLabel  rendered="#{ffb.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
+                                                </td>
+                
+                                                <td  style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                    <h:outputLabel  rendered="#{ffb.discountPercentPharmacy ne 0.0}"    value="#{ffb.discountPercentPharmacy} %">
+                                                        <f:convertNumber pattern="#,##0.0" />
+                                                    </h:outputLabel>
+                
+                
+                                                </td>
+                                            </tr>
+                
+                                            <h:panelGroup rendered="#{cc.attrs.billController.bills.size() eq 1}">
+                                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
+                                                    <tr>
+                                                        <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                                            <h:outputLabel value="Total" />
+                                                        </td>
+                                                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                            <h:outputLabel value="#{cc.attrs.billController.batchBill.netTotal}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                
+                                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
+                                                    <tr>
+                                                        <td style="text-align: left; width: 60%;">
+                                                            <h:outputLabel value="Cash Paid" />
+                                                        </td>
+                                                        <td  style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                            <h:outputLabel value="#{cc.attrs.billController.cashPaid}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                
+                                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
+                                                    <tr>
+                                                        <td style="text-align: left; width: 60%;">
+                                                            <h:outputLabel value="Balance" />
+                                                        </td>
+                                                        <td style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                                            <h:outputLabel value="#{cc.attrs.billController.cashBalance}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                
+                
+                
+                                                <h:panelGroup rendered="#{ffb.margin > 0? 'false':'true'}">
+                                                    <tr>
+                                                        <td  style="text-align: left;">
+                                                            <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
+                                                        </td>
+                                                        <td  style="text-align: right!important; ; padding-right: 30px;">
+                                                            <h:outputLabel rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"   value="#{-cc.attrs.billController.batchBill.discount}" style="font-weight: bolder!important;" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                
+                                                <tr>
+                                                    <td style="text-align: left;">
+                                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="Net Total" />
+                                                    </td>
+                                                    <td   style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.netTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+                
+                                                <tr>
+                                                    <td  style="text-align: left;">
+                                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="VAT" />
+                                                    </td>
+                                                    <td  style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                        <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{cc.attrs.billController.batchBill.vat}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                
+                
+                
+                                    </table>
+                
+                                </div>-->
 
                 <div class="billDetails">
                     <h:outputLabel value="Signature :"> </h:outputLabel>  
 
                 </div>
 
-<!--                <div class="footer">
-                    <br/>
-                    The Greatest Wealth is Health!
-                    <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
-                        <br/>
-                    </h:panelGroup>
-                    <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
-                </div>-->
+                <!--                <div class="footer">
+                                    <br/>
+                                    The Greatest Wealth is Health!
+                                    <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+                                </div>-->
 
 
 
@@ -793,12 +793,6 @@
                 </div>
 
 
-                <div class="billline">
-                    <h:outputLabel value="-------------------------------------------------------------"   />                           
-                </div>
-
-
-
                 <div  >
 
                     <table style="width: 100%; margin-left:0.5cm; ">
@@ -842,65 +836,6 @@
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{cc.attrs.billController.batchBill.balance lt 5.0 }" >
-
-<!--                            <tr>
-                                <td style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.billController.batchBill.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>                        
-
-                            <tr>
-                                <td  style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                                </td>
-                                <td style="text-align: right!important; ; padding-right: 30px;">
-                                    <h:outputLabel rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"   value="#{-ffb.discount}" style="font-weight: bolder!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="Net Total" />
-                                </td>
-                                <td style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="#{ffb.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                          
-                                </td>                        
-                            </tr>
-
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discount ne 0.0}"    value="VAT" />
-                                </td>
-                                <td style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.vat ne 0.0}"    value="#{cc.attrs.billController.batchBill.vat}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                          
-                                </td>                        
-                            </tr>
-
-                            <tr>
-
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
-                                </td>
-
-                                <td  style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.billController.batchBill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.billController.batchBill.discountPercentPharmacy} %">
-                                        <f:convertNumber pattern="#,##0.0" />
-                                    </h:outputLabel>
-
-
-                                </td>
-                            </tr>-->
-
 
                             <h:panelGroup rendered="#{cc.attrs.billController.batchBill.margin > 0? 'false':'true'}">
                                 <tr>

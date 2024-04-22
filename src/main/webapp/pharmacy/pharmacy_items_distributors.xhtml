@@ -1,79 +1,117 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/admin/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
-
     <ui:define name="subcontent">
-
-
         <h:form  >
             <p:growl />
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <div><p:outputLabel value="Item Suppliers" class="mt-2"/></div>
 
 
+                    </div>
+                </f:facet>
 
-            <p:panel header="Item Suppliers">
-                <p:defaultCommand target="btnAdd"/>
-                
-                <h:panelGrid columns="7" >
-                    <p:outputLabel value="Supplier "/>
-                    <p:spacer width="30" height="1" ></p:spacer>
-                    <p:autoComplete converter="deal"  id="lstSelect"   
-                                    value="#{itemsDistributorsController.currentInstituion}" 
-                                    forceSelection="true"
-                                    style="min-width: 223px" completeMethod="#{dealerController.completeDealor}"   
-                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
-                        <p:column headerText="Item">
-                            <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
-                        </p:column>
+                <div class="row d-flex gap-2 mb-3">
+                    <div class="d-flex gap-2">
+                        <p:outputLabel value="Select Supplier" style="font-size: 16px;  width: 10em;" class="mt-2"/>
+                        <p:autoComplete 
+                            converter="deal"  
+                            id="lstSelect"   
+                            value="#{itemsDistributorsController.currentInstituion}" 
+                            forceSelection="true" 
+                            completeMethod="#{dealerController.completeDealor}"   
+                            var="myItem" itemValue="#{myItem}"
+                            maxResults="10"
+                            minQueryLength="3"
+                            style="width: 40em;"
+                            inputStyleClass="form-control"
+                            itemLabel="#{myItem.name}" >
+                            <p:column headerText="Item">
+                                <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                            </p:column>
+                            <f:ajax event="itemSelect" render="gpDetail" execute="lstSelect" >
+                            </f:ajax>
+                        </p:autoComplete>
+                        <p:commandButton 
+                            ajax="false"
+                            style="width: 20em;"
+                            value="List Items Supplied by the Supplier" 
+                            action="#{itemsDistributorsController.listItemForDistributer()}">
+                        </p:commandButton>
+                    </div>
 
-                        <f:ajax event="itemSelect" render="gpDetail" execute="lstSelect" >
-                        </f:ajax>
-                    </p:autoComplete>
-                    <p:spacer width="60" height="1" ></p:spacer>
-
-                    <p:autoComplete  value="#{itemsDistributorsController.currentItem}" 
-                                    forceSelection="true" id="acItem"
-                                    completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                        <p:column headerText="Name" >
-                            <h:outputLabel value="#{vt.name}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Code" >
-                            <h:outputLabel value="#{vt.code}" ></h:outputLabel>
-                        </p:column>
-                    </p:autoComplete>  
-                    <p:watermark for="acItem" value="Select Item to Add" ></p:watermark>
-                    <h:commandButton id="btnAdd" value="Add" action="#{itemsDistributorsController.addItemToDistributor()}">
-                    </h:commandButton>
-
-                    <h:commandButton value="List Items" action="#{itemsDistributorsController.listItemForDistributer()}">
-                    </h:commandButton>
-
-                </h:panelGrid>
-
+                </div>
+                <div class="row d-flex gap-2 mb-3">
+                    <div class="d-flex gap-2">
+                        <p:outputLabel value="Item" style="font-size: 16px; width: 10em;" class="mt-2"/>
+                        <p:autoComplete  
+                            value="#{itemsDistributorsController.currentItem}" 
+                            forceSelection="true" 
+                            class="col-md-4"
+                            inputStyleClass="form-control"
+                            id="acItem"
+                            style="width: 40em;"
+                            maxResults="15"
+                            completeMethod="#{itemController.completeAmpItem}" 
+                            var="vt" 
+                            itemLabel="#{vt.name}" 
+                            itemValue="#{vt}" >
+                            <p:column headerText="Name" >
+                                <h:outputLabel value="#{vt.name}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Code" >
+                                <h:outputLabel value="#{vt.code}" ></h:outputLabel>
+                            </p:column>
+                        </p:autoComplete> 
+                        <p:watermark for="acItem" value="Select Item to Add" ></p:watermark>
+                        <p:commandButton 
+                            id="btnAdd" 
+                            class="ui-button-success"
+                            icon="fa fa-plus"
+                            ajax="false"
+                            style="width: 20em;"
+                            value="Add Item to Supplier" 
+                            action="#{itemsDistributorsController.addItemToDistributor()}">
+                        </p:commandButton>
+                        <p:defaultCommand target="btnAdd"/>
+                    </div>
+                </div>
 
                 <h:panelGroup id="gpDetail" >
-                    <p:dataTable  scrollable="true" scrollHeight="450" id="packageItem" 
-                                  value="#{itemsDistributorsController.items}" var="i"
-                                  >
+                    <p:dataTable  
+                        scrollable="true" 
+                        scrollHeight="650" 
+                        id="packageItem" 
+                        value="#{itemsDistributorsController.items}" 
+                        var="i"
+                        >
                         <f:facet name="header" >
                             <h:outputLabel value="Items Supplied by Selected Supplier" ></h:outputLabel>
                         </f:facet>
-                        <p:column headerText="Item Name">
+                        <p:column headerText="Item Name" width="60%" sortBy="#{i.item.name}" filterBy="#{i.item.name}"  filterMatchMode="contains">
                             <h:outputLabel value="#{i.item.name}"/> 
                         </p:column>
-                        <p:column headerText="Item Code">
+                        <p:column headerText="Item Code" width="15%" sortBy="#{i.item.code}" filterBy="#{i.item.code}">
                             <h:outputLabel value="#{i.item.code}"/> 
                         </p:column>
-                        <p:column headerText="Item BarCode">
+                        <p:column headerText="Item Barcode" width="11%">
                             <h:outputLabel value="#{i.item.barcode}"/> 
                         </p:column>
-                        <p:column headerText="Action">
-                            <p:commandButton ajax="false" value="Remove" action="#{itemsDistributorsController.removeFromPackage()}" >
+                        <p:column headerText="Action" width="13%">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Remove" 
+                                icon="fa-solid fa-trash"
+                                class="ui-button-danger"
+                                action="#{itemsDistributorsController.removeFromPackage()}" >
                                 <f:setPropertyActionListener target="#{itemsDistributorsController.current}" value="#{i}"/>
                             </p:commandButton>
                         </p:column>
@@ -81,12 +119,6 @@
                 </h:panelGroup>
             </p:panel>
 
-
-
-
-
         </h:form>
-
     </ui:define>
-
 </ui:composition>

@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <h:outputStylesheet library="css" name="stickerprints.css" />
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Sample Collection" >
+                        <f:facet name="header">
+                            <p:commandButton 
+                                value="To Sampling" 
+                                ajax="false"  
+                                style="float: right;"
+                                action="/lab/sample_management" 
+                                actionListener="#{patientInvestigationController.navigateToSampleManagement()}">
+                            </p:commandButton>
+                        </f:facet>
+                        <div class="d-flex justify-content-end gap-2">
+                            <p:outputLabel value="Enter Bill ID" class="mt-2"></p:outputLabel>
+                            <p:inputText 
+                                value="#{patientInvestigationController.inputBillId}" >
+                            </p:inputText>
+                            <p:commandButton 
+                                value="Collect Sample &amp; Print Barcodes" 
+                                ajax="false" 
+                                action="#{patientInvestigationController.prepareSampleCollection()}" >
+                            </p:commandButton>
+                        </div>
+                        
+                    </p:panel>
+                    
+                    
+                    <ui:repeat value="#{patientInvestigationController.sampleTubeLabels}" var="label" >
+                        <h:outputText escape="false" value="#{label}" ></h:outputText>
+                    </ui:repeat>
+                    
+
+                    <p:commandButton value="Print" ajax="false"  >
+                        <p:printer target="print" ></p:printer>
+                    </p:commandButton>
+                    <h:panelGroup id="print" >
+                        <ui:repeat value="#{patientInvestigationController.patientSamples}" var="ps" >
+                            <div style="page-break-after: always; width: 97vw;height: 97vh;border: none; margin: 0px;overflow: hidden; text-align: center; vertical-align: central" >
+                                <table style="width:100%;height: " >
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="#{ps.bill.patient.person.nameWithTitle}"
+                                                           style="font-size: 8px" ></h:outputLabel>
+
+                                        </td>
+                                        <td rowspan="3">
+
+                                            <p:barcode cache="false" value="#{ps.idStr}" type="code128" width="130px" ></p:barcode>
+
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="ESR"
+                                                           style="font-size: 8px" ></h:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Serum"
+                                                           style="font-size: 8px" ></h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </table>
+
+
+
+
+                            </div>
+                        </ui:repeat>
+                    </h:panelGroup>
+
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

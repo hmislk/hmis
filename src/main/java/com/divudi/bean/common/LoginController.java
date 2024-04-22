@@ -128,7 +128,15 @@ public class LoginController implements Serializable {
                 row.createCell(0).setCellValue(rowNum);
                 row.createCell(1).setCellValue(login.getInstitution().getName());
                 row.createCell(2).setCellValue(login.getDepartment().getName());
-                row.createCell(3).setCellValue(login.getWebUser().getCode());
+
+                if (login.getWebUser().getCode() != null) {
+                    row.createCell(3).setCellValue(login.getWebUser().getCode());
+                }
+
+                if (login.getWebUser().getWebUserPerson().getName() != null) {
+                    row.createCell(3).setCellValue(login.getWebUser().getCode());
+                }
+
                 row.createCell(4).setCellValue(login.getWebUser().getWebUserPerson().getName());
                 String formattedLogedAt = (login.getLogedAt() != null) ? dateFormat.format(login.getLogedAt()) : "";
                 String formattedLogoutAt = (login.getLogoutAt() != null) ? dateFormat.format(login.getLogoutAt()) : "";

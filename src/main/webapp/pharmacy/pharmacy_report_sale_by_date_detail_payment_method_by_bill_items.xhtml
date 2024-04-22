@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="content">
@@ -12,20 +12,20 @@
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <p:panelGrid columns="6" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReportController.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
                     
                 </p:panelGrid>
                 
                 <h:panelGrid columns="3">
                     
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethodDetailBillItems()}"/>
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReportController.createSalePaymentMethodDetailBillItems()}"/>
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <p:dataExporter  type="xlsx" target="sum1,sum2,sum3,fin" fileName="report_grn_detail_by_supplier"  />
                             </p:commandButton>
@@ -35,20 +35,20 @@
                 </h:panelGrid>
                 
                 <h:panelGrid styleClass="printBlock" columns="2">
-                     <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                     <h:outputLabel value="#{pharmacySaleReportController.department.name}"/>
                         <h:outputLabel value="DEPARTMENT SALE REPORT DETAIL"/>
                         <h:outputLabel/>
                         <h:outputLabel value="From Date :  "/>
-                        <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                        <h:outputLabel value="#{pharmacySaleReportController.fromDate}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
                         <h:outputLabel value="To Date"/>
-                        <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                        <h:outputLabel value="#{pharmacySaleReportController.toDate}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>                       
                 </h:panelGrid>
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedDetail.datedBills}" var="i">
+                <p:dataTable id="sum1" value="#{pharmacySaleReportController.billedDetail.datedBills}" var="i">
                     <f:facet name="header">                        
                         <h:outputLabel value="BILLED"/>
                     </f:facet>
@@ -174,30 +174,30 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column footerText="Total" colspan="3"/>                           
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.cashTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.cashTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cashTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.cashTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.creditTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.creditTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.billedDetail.creditTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.billedDetail.creditTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.billedDetail.cardTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.billedDetail.cardTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.billedDetail.cardTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.billedDetail.cardTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -206,7 +206,7 @@
                     </p:columnGroup>
                 </p:dataTable>
                 
-                <p:dataTable id="sum2" value="#{pharmacySaleReport.cancelledDetail.datedBills}" var="i">
+                <p:dataTable id="sum2" value="#{pharmacySaleReportController.cancelledDetail.datedBills}" var="i">
                     <f:facet name="header">                        
                         <h:outputLabel value="CANCELLED"/>
                     </f:facet>
@@ -332,30 +332,30 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column footerText="Total" colspan="3"/>                           
-                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.cancelledDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.discount}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.cashTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.cancelledDetail.cashTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.cashTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.cashTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.creditTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.cancelledDetail.creditTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.creditTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.creditTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.cancelledDetail.cardTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.cancelledDetail.cardTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.cardTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.cancelledDetail.cardTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -364,7 +364,7 @@
                     </p:columnGroup>
                 </p:dataTable>
                 
-                <p:dataTable id="sum3" value="#{pharmacySaleReport.refundedDetail.datedBills}" var="i">
+                <p:dataTable id="sum3" value="#{pharmacySaleReportController.refundedDetail.datedBills}" var="i">
                     <f:facet name="header">                        
                         <h:outputLabel value="REFUNDED"/>
                     </f:facet>
@@ -499,30 +499,30 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column footerText="Total" colspan="3"/>                           
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.cashTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.cashTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cashTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.cashTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.creditTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.creditTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.creditTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.creditTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{pharmacySaleReport.refundedDetail.cardTotal}" style="text-align: right;">
+                            <p:column footerText="#{pharmacySaleReportController.refundedDetail.cardTotal}" style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cardTotal}">
+                                    <h:outputLabel value="#{pharmacySaleReportController.refundedDetail.cardTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -532,16 +532,16 @@
                 </p:dataTable>
                 <p:panelGrid columns="2" id="fin">
                     <p:outputLabel value="Final Cash Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantCashTotal}"/>
+                    <p:outputLabel value="#{pharmacySaleReportController.grantCashTotal}"/>
                     
                     <p:outputLabel value="Final Card Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantCardTotal}"/>
+                    <p:outputLabel value="#{pharmacySaleReportController.grantCardTotal}"/>
                     
                     <p:outputLabel value="Final Credit Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantCreditTotal}"/>
+                    <p:outputLabel value="#{pharmacySaleReportController.grantCreditTotal}"/>
                     
                     <p:outputLabel value="Final Discount Total"/>
-                    <p:outputLabel value="#{pharmacySaleReport.grantDiscount}"/>
+                    <p:outputLabel value="#{pharmacySaleReportController.grantDiscount}"/>
                 </p:panelGrid>
               
 

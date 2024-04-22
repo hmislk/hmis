@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -27,8 +27,8 @@
                                     <p:tab title=" Lab Investigation Without Credit" >
                                         <div class="d-grid gap-2">  
 
-                                            <p:commandButton class="w-100" ajax="false" value="Month end Details without credit" action="report_lab_investigation_month_end_detail_without_credit.xhtml"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Month end Summary without credit" action="report_lab_investigation_month_end_summery_without_credit.xhtml"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Month End Details Without Credit" action="report_lab_investigation_month_end_detail_without_credit.xhtml"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Month End Summary Without Credit" action="report_lab_investigation_month_end_summery_without_credit.xhtml"/>
                                         </div>
                                     </p:tab>
 
@@ -36,7 +36,7 @@
                                         <div class="d-grid gap-2">
 
                                             <p:commandButton class="w-100" ajax="false" 
-                                                             value="Fees for outside institutions" 
+                                                             value="Fees For Outside Institutions" 
                                                              action="#{commonReport.displayOutsideBillFees()}"/>
 
                                             <p:commandButton class="w-100" ajax="false" 

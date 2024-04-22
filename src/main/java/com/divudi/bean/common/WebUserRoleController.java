@@ -8,10 +8,15 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.WebUserRoleFacade;
+import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -32,60 +37,102 @@ public class WebUserRoleController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    WebUserRoleUserController webUserRoleUserController;
     @EJB
     private WebUserRoleFacade ejbFacade;
-    List<WebUserRole> adminRoles;
-    List<WebUserRole> circularEditorRoles;
-    List<WebUserRole> circularAdderRoles;
-    List<WebUserRole> circularViewerRoles;
-    List<WebUserRole> userRoles;
+
     private WebUserRole current;
     private List<WebUserRole> items = null;
-    String selectText = "";
-
-    public List<WebUserRole> getUserRoles() {
-        return userRoles;
+    
+    
+    public String navigateToManageWebUserRoles(){
+        items = findAllItems();
+        return "/admin/users/user_roles?faces-redirect=true";
     }
-
-    public void setUserRoles(List<WebUserRole> userRoles) {
-        this.userRoles = userRoles;
+    
+    public String navigateToManageWebUserRolePrivileges(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select a role");
+            return null;
+        }
+        if(current.getId()==null){
+            JsfUtil.addErrorMessage("Save first");
+            return null;
+        }
+        return "/admin/users/user_role_privileges?faces-redirect=true";
     }
-
-    public List<WebUserRole> getCircularEditorRoles() {
-        circularEditorRoles = getFacade().findByJpql("Select d From WebUserRole d where d.name = 'circular_viewer' or d.name = 'circular_adder' or d.name = 'circular_editor' ");
-        return circularEditorRoles;
+    
+    public String navigateToManageWebUserRoleIcons(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select a role");
+            return null;
+        }
+        if(current.getId()==null){
+            JsfUtil.addErrorMessage("Save first");
+            return null;
+        }
+        return "/admin/users/user_role_icons?faces-redirect=true";
     }
-
-    public void setCircularEditorRoles(List<WebUserRole> circularEditorRoles) {
-        this.circularEditorRoles = circularEditorRoles;
+    
+    public String navigateToManageWebUserRoleUsers(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select a role");
+            return null;
+        }
+        if(current.getId()==null){
+            JsfUtil.addErrorMessage("Save first");
+            return null;
+        }
+        webUserRoleUserController.getCurrent().setWebUserRole(current);
+        return "/admin/users/user_role_users?faces-redirect=true";
     }
-
-    public List<WebUserRole> getCircularAdderRoles() {
-        circularAdderRoles = getFacade().findByJpql("Select d From WebUserRole d where d.name = 'circular_viewer' or d.name = 'circular_adder' ");
-        return circularAdderRoles;
+    
+    public String navigateToManageWebUserTriggerSubscriptions(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select a role");
+            return null;
+        }
+        if(current.getId()==null){
+            JsfUtil.addErrorMessage("Save first");
+            return null;
+        }
+        return "/admin/users/user_role_subscription?faces-redirect=true";
     }
-
-    public void setCircularAdderRoles(List<WebUserRole> circularAdderRoles) {
-        this.circularAdderRoles = circularAdderRoles;
+    
+    public void toAddNewUserRole(){
+        current = new WebUserRole();
     }
-
-    public List<WebUserRole> getCircularViewerRoles() {
-        circularViewerRoles = getFacade().findByJpql("Select d From WebUserRole d where d.name = 'circular_viewer'");
-        return circularViewerRoles;
+    
+    public void saveCurrent(){
+        save(current);
+        items = findAllItems();
+        JsfUtil.addSuccessMessage("Saved");
     }
-
-    public void setCircularViewerRoles(List<WebUserRole> circularViewerRoles) {
-        this.circularViewerRoles = circularViewerRoles;
+    
+    public void save(WebUserRole r){
+        if(r==null){
+            return;
+        }
+        if(r.getId()==null){
+            r.setCreatedAt(new Date());
+            r.setCreater(sessionController.getLoggedUser());
+            getFacade().create(r);
+        }else{
+            getFacade().edit(r);
+        }
     }
-
-    public String getSelectText() {
-        return selectText;
+    
+    private List<WebUserRole> findAllItems(){
+        String jpql = "Select r "
+                + " from WebUserRole r "
+                + " where r.retired=:ret"
+                + " order by r.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
     }
-
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
-    }
-
+    
     public WebUserRoleFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -105,15 +152,7 @@ public class WebUserRoleController implements Serializable {
     public WebUserRoleController() {
     }
 
-    public List<WebUserRole> getAdminRoles() {
-        adminRoles = getFacade().findByJpql("Select d From WebUserRole d");
-        //////// // System.out.println("Count of admins roles is " + adminRoles.size());
-        return adminRoles;
-    }
-
-    public void setAdminRoles(List<WebUserRole> adminRoles) {
-        this.adminRoles = adminRoles;
-    }
+   
 
     public WebUserRole getCurrent() {
         return current;
@@ -129,12 +168,11 @@ public class WebUserRoleController implements Serializable {
 
     public List<WebUserRole> getItems() {
         if (items == null) {
-            String j;
-            j="select r from WebUserRole r where r.retired=false order byr.name";
-            items = getFacade().findByJpql(j);
+            items = findAllItems();
         }
         return items;
     }
+    
 
     /**
      *
@@ -174,7 +212,7 @@ public class WebUserRoleController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + WebUserRoleController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + WebUserRole.class.getName());
             }
         }
     }

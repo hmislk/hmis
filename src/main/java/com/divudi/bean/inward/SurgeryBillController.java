@@ -8,7 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -54,7 +54,7 @@ import javax.inject.Named;
 @SessionScoped
 public class SurgeryBillController implements Serializable {
 
-    private Bill batchBill;
+    private Bill surgeryBill;
     private Bill professionalBill;
     private EncounterComponent proEncounterComponent;
     //////////
@@ -62,7 +62,7 @@ public class SurgeryBillController implements Serializable {
     private List<EncounterComponent> timedEncounterComponents;
     private List<DepartmentBillItems> departmentBillItems;
     //////
-    
+
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
@@ -81,7 +81,7 @@ public class SurgeryBillController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PharmacyBean pharmacyBean;
-    
+
     //////
     @Inject
     private SessionController sessionController;
@@ -93,6 +93,8 @@ public class SurgeryBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    BhtSummeryController bhtSummeryController;
 
     public InwardTimedItemController getInwardTimedItemController() {
         return inwardTimedItemController;
@@ -113,25 +115,25 @@ public class SurgeryBillController implements Serializable {
 
         updateBillFee(bf);
     }
-    
-    public String navigateToAddSurgeriesFromAdmissionProfile(){
-        PatientEncounter pe1 = getBatchBill().getPatientEncounter();
-        makeNull();
-        getBatchBill().setPatientEncounter(pe1);
-        
-        return "/theater/inward_bill_surgery";
+
+    public String navigateToAddSurgeriesFromAdmissionProfile() {
+        PatientEncounter pe1 = getSurgeryBill().getPatientEncounter();
+        resetSurgeryBillValues();
+        getSurgeryBill().setPatientEncounter(pe1);
+
+        return "/theater/inward_bill_surgery?faces-redirect=true";
     }
-    
-    public String navigateToAddSurgeriesFromMenu(){
-        makeNull();
-        return "/theater/inward_bill_surgery";
+
+    public String navigateToAddSurgeriesFromMenu() {
+        resetSurgeryBillValues();
+        return "/theater/inward_bill_surgery?faces-redirect=true";
     }
-    
+
     private void updateBillFee(BillFee bf) {
         getBillFeeFacade().edit(bf);
         updateBillItem(bf.getBillItem());
         updateBill(bf.getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateBatchBill(getSurgeryBill());
     }
 
     public void removeTimeService(PatientItem patientItem) {
@@ -153,7 +155,7 @@ public class SurgeryBillController implements Serializable {
         }
 
         if (encounterComponent.getBillFee().getPaidValue() != 0) {
-            UtilityController.addErrorMessage("Staff Payment Already Paid U cant Remove");
+            JsfUtil.addErrorMessage("Staff Payment Already Paid U cant Remove");
             return;
         }
 
@@ -162,7 +164,7 @@ public class SurgeryBillController implements Serializable {
 
         updateBillItem(encounterComponent.getBillItem());
         updateBill(encounterComponent.getBillItem().getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateBatchBill(getSurgeryBill());
 
     }
 
@@ -217,7 +219,7 @@ public class SurgeryBillController implements Serializable {
 
         updateBillItem(encounterComponent.getBillItem());
         updateBill(encounterComponent.getBillItem().getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateBatchBill(getSurgeryBill());
 
     }
 
@@ -245,8 +247,8 @@ public class SurgeryBillController implements Serializable {
 
     }
 
-    public void makeNull() {
-        batchBill = null;
+    public void resetSurgeryBillValues() {
+        surgeryBill = null;
         professionalBill = null;
         proEncounterComponent = null;
         proEncounterComponents = null;
@@ -259,10 +261,10 @@ public class SurgeryBillController implements Serializable {
 
     public void saveProcedure() {
 
-        PatientEncounter procedure = getBatchBill().getProcedure();
+        PatientEncounter procedure = getSurgeryBill().getProcedure();
 
         if (procedure.getId() == null || procedure.getId() == 0) {
-            procedure.setParentEncounter(getBatchBill().getPatientEncounter());
+            procedure.setParentEncounter(getSurgeryBill().getPatientEncounter());
             procedure.setCreatedAt(new Date());
             procedure.setCreater(getSessionController().getLoggedUser());
 
@@ -273,30 +275,30 @@ public class SurgeryBillController implements Serializable {
 
     }
 
-    private void saveBatchBill() {
-        if (getBatchBill().getId() == null) {
-            getBatchBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.SurgeryBill, BillClassType.BilledBill, BillNumberSuffix.SURG));
-            getBatchBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.SurgeryBill, BillClassType.BilledBill, BillNumberSuffix.SURG));
+    private void saveSurgeryBill() {
+        if (getSurgeryBill().getId() == null) {
+            getSurgeryBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.SurgeryBill, BillClassType.BilledBill, BillNumberSuffix.SURG));
+            getSurgeryBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.SurgeryBill, BillClassType.BilledBill, BillNumberSuffix.SURG));
 
-            getBatchBill().setInstitution(getSessionController().getInstitution());
-            getBatchBill().setDepartment(getSessionController().getDepartment());
-            getBatchBill().setFromDepartment(getBatchBill().getProcedure().getItem().getDepartment());
-            getBatchBill().setCreatedAt(Calendar.getInstance().getTime());
-            getBatchBill().setCreater(getSessionController().getLoggedUser());
+            getSurgeryBill().setInstitution(getSessionController().getInstitution());
+            getSurgeryBill().setDepartment(getSessionController().getDepartment());
+            getSurgeryBill().setFromDepartment(getSessionController().getDepartment());
+            getSurgeryBill().setCreatedAt(Calendar.getInstance().getTime());
+            getSurgeryBill().setCreater(getSessionController().getLoggedUser());
 
-            getBillFacade().create(getBatchBill());
+            getBillFacade().create(getSurgeryBill());
         } else {
-            getBillFacade().edit(getBatchBill());
+            getBillFacade().edit(getSurgeryBill());
         }
     }
 
     private void saveBill(Bill bill, BillNumberSuffix billNumberSuffix) {
         if (bill.getId() == null) {
-            bill.setForwardReferenceBill(getBatchBill());
+            bill.setForwardReferenceBill(getSurgeryBill());
             bill.setCreatedAt(Calendar.getInstance().getTime());
             bill.setCreater(getSessionController().getLoggedUser());
-            bill.setPatientEncounter(getBatchBill().getPatientEncounter());
-            bill.setProcedure(getBatchBill().getProcedure());
+            bill.setPatientEncounter(getSurgeryBill().getPatientEncounter());
+            bill.setProcedure(getSurgeryBill().getProcedure());
             bill.setDepartment(getSessionController().getDepartment());
             bill.setInstitution(getSessionController().getInstitution());
 
@@ -333,8 +335,8 @@ public class SurgeryBillController implements Serializable {
             bf.setFeeValue(value);
             bf.setFeeGrossValue(value);
             bf.setDepartment(getSessionController().getDepartment());
-            bf.setPatienEncounter(getBatchBill().getProcedure());
-            bf.setPatient(getBatchBill().getPatientEncounter().getPatient());
+            bf.setPatienEncounter(getSurgeryBill().getProcedure());
+            bf.setPatient(getSurgeryBill().getPatientEncounter().getPatient());
             bf.setInstitution(getSessionController().getInstitution());
 
             getBillFeeFacade().create(bf);
@@ -348,7 +350,7 @@ public class SurgeryBillController implements Serializable {
         double count = getInwardBean().calCount(timedItemFee, patientItem.getFromTime(), patientItem.getToTime());
 
         patientItem.setServiceValue(count * timedItemFee.getFee());
-        patientItem.setPatientEncounter(getBatchBill().getPatientEncounter());
+        patientItem.setPatientEncounter(getSurgeryBill().getPatientEncounter());
         if (patientItem.getId() == null) {
             patientItem.setCreater(getSessionController().getLoggedUser());
             patientItem.setCreatedAt(Calendar.getInstance().getTime());
@@ -366,7 +368,7 @@ public class SurgeryBillController implements Serializable {
             ec.setBillItem(billItem);
             ec.setCreatedAt(Calendar.getInstance().getTime());
             ec.setCreater(getSessionController().getLoggedUser());
-            ec.setPatientEncounter(getBatchBill().getProcedure());
+            ec.setPatientEncounter(getSurgeryBill().getProcedure());
             if (ec.getBillFee() != null) {
                 ec.setStaff(ec.getBillFee().getStaff());
             }
@@ -436,29 +438,27 @@ public class SurgeryBillController implements Serializable {
         getBillFacade().edit(bill);
     }
 
-    public void save() {
+    public String save() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
 
         if (generalChecking()) {
-            return;
+            return "";
         }
 
         saveProcedure();
-        saveBatchBill();
+        saveSurgeryBill();
 
         if (!getProEncounterComponents().isEmpty()) {
             saveProfessionalBill();
         }
-
-        getBillBean().updateBatchBill(getBatchBill());
-
-        UtilityController.addSuccessMessage("Surgery Detail Successfull Updated");
-
-        makeNull();
+        getBillBean().updateBatchBill(getSurgeryBill());
+        JsfUtil.addSuccessMessage("Surgery Detail Added");
+        bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
+        resetSurgeryBillValues();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Add surgories/Save Surgery Detail(/faces/theater/inward_bill_surgery.xhtml)");
+        return bhtSummeryController.navigateToInpatientProfile();
     }
 
     /**
@@ -467,13 +467,13 @@ public class SurgeryBillController implements Serializable {
     public SurgeryBillController() {
     }
 
-    public Bill getBatchBill() {
-        if (batchBill == null) {
-            batchBill = new BilledBill();
-            batchBill.setBillType(BillType.SurgeryBill);
-            batchBill.setProcedure(new PatientEncounter());
+    public Bill getSurgeryBill() {
+        if (surgeryBill == null) {
+            surgeryBill = new BilledBill();
+            surgeryBill.setBillType(BillType.SurgeryBill);
+            surgeryBill.setProcedure(new PatientEncounter());
         }
-        return batchBill;
+        return surgeryBill;
     }
 
 //    private List<Bill> getBillsByForwardRef(Bill b) {
@@ -489,11 +489,10 @@ public class SurgeryBillController implements Serializable {
 //
 //        return list;
 //    }
-
-//    public void setBatchBill(Bill batchBill) {
-//        makeNull();
-//        this.batchBill = batchBill;
-//        for (Bill b : getBillsByForwardRef(batchBill)) {
+//    public void setBatchBill(Bill surgeryBill) {
+//        resetSurgeryBillValues();
+//        this.surgeryBill = surgeryBill;
+//        for (Bill b : getBillsByForwardRef(surgeryBill)) {
 //            if (b.getSurgeryBillType() == SurgeryBillType.ProfessionalFee) {
 //                // System.err.println(SurgeryBillType.ProfessionalFee);
 //                setProfessionalBill(b);
@@ -507,7 +506,7 @@ public class SurgeryBillController implements Serializable {
 //            }
 //
 //            if (b.getSurgeryBillType() == SurgeryBillType.Service) {
-//                departmentBillItems = getInwardBean().createDepartmentBillItems(batchBill.getPatientEncounter(), getBatchBill());
+//                departmentBillItems = getInwardBean().createDepartmentBillItems(surgeryBill.getPatientEncounter(), getBatchBill());
 //            }
 //
 //            if (b.getSurgeryBillType() == SurgeryBillType.PharmacyItem) {
@@ -516,7 +515,6 @@ public class SurgeryBillController implements Serializable {
 //
 //        }
 //    }
-
     private List<BillItem> pharmacyIssues;
     List<BillItem> storeIssues;
 
@@ -545,7 +543,7 @@ public class SurgeryBillController implements Serializable {
                 + " and (type(b.bill)=:class)"
                 + " order by b.item.name ";
         hm = new HashMap();
-        hm.put("bil", getBatchBill());
+        hm.put("bil", getSurgeryBill());
         hm.put("btp", billType);
         hm.put("class", PreBill.class);
 
@@ -563,7 +561,7 @@ public class SurgeryBillController implements Serializable {
         hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("billedClass", PreBill.class);
-        hm.put("bil", getBatchBill());
+        hm.put("bil", getSurgeryBill());
 //        hm.put("pe", getBatchBill().getPatientEncounter());
 
         List<BillItem> billItems1 = getBillItemFacade().findByJpql(sql, hm);
@@ -602,17 +600,17 @@ public class SurgeryBillController implements Serializable {
     }
 
     private boolean generalChecking() {
-        if (getBatchBill().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Admission ?");
+        if (getSurgeryBill().getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("Admission ?");
             return true;
         }
-        if (getBatchBill().getProcedure().getItem() == null) {
-            UtilityController.addErrorMessage("Select Surgery");
+        if (getSurgeryBill().getProcedure().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Surgery");
             return true;
         }
 
-        if (getBatchBill().getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Final Payment is Finalized");
+        if (getSurgeryBill().getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
             return true;
         }
 
@@ -626,16 +624,16 @@ public class SurgeryBillController implements Serializable {
         }
 
         if (getProEncounterComponent().getBillFee().getStaff() == null) {
-            UtilityController.addErrorMessage("Select Staff ");
+            JsfUtil.addErrorMessage("Select Staff ");
             return;
         }
 
         if (getProEncounterComponent().getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By) {
-            getBatchBill().setStaff(getProEncounterComponent().getBillFee().getStaff());
+            getSurgeryBill().setStaff(getProEncounterComponent().getBillFee().getStaff());
         }
 
-        proEncounterComponent.setPatientEncounter(getBatchBill().getPatientEncounter());
-        proEncounterComponent.setChildEncounter(getBatchBill().getProcedure());
+        proEncounterComponent.setPatientEncounter(getSurgeryBill().getPatientEncounter());
+        proEncounterComponent.setChildEncounter(getSurgeryBill().getProcedure());
         proEncounterComponent.setOrderNo(getProEncounterComponents().size());
         getProEncounterComponents().add(proEncounterComponent);
 
@@ -762,7 +760,7 @@ public class SurgeryBillController implements Serializable {
 
     public List<DepartmentBillItems> getDepartmentBillItems() {
         if (departmentBillItems == null) {
-            departmentBillItems = getInwardBean().createDepartmentBillItems(getBatchBill().getPatientEncounter(), getBatchBill());
+            departmentBillItems = getInwardBean().createDepartmentBillItems(getSurgeryBill().getPatientEncounter(), getSurgeryBill());
         }
         return departmentBillItems;
     }
@@ -787,9 +785,8 @@ public class SurgeryBillController implements Serializable {
         this.commonController = commonController;
     }
 
-    public void setBatchBill(Bill batchBill) {
-        this.batchBill = batchBill;
+    public void setSurgeryBill(Bill surgeryBill) {
+        this.surgeryBill = surgeryBill;
     }
 
 }
-

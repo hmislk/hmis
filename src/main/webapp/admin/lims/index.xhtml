@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -188,12 +188,7 @@
                             </p:tab>
                             <p:tab title="Bulk Transactions">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
-
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
-
+                                    
                                 </div>
                             </p:tab>
                             <p:tab title="Setup">
@@ -205,7 +200,7 @@
                                     <p:commandButton  class="w-100" 
                                                       ajax="false" 
                                                       value="Create New Items for New Institution" 
-                                                      action="create_items_for_new_institution" 
+                                                      action="/admin/items/create_items_for_new_institution" 
                                                       />
 
 

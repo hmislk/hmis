@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -114,6 +114,22 @@
                                             <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
                                         </p:autoComplete>
 
+                                        <p:outputLabel value="User Role" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
+
+                                        <p:selectOneMenu
+                                            id="role"
+                                            styleClass="w-100 mt-1 form-control"
+                                            value="#{webUserController.webUserRole}"
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                            <f:selectItem itemLabel="-- Select Role --" itemValue="" />
+                                            <f:selectItems value="#{webUserRoleController.items}"
+                                                           var="role"
+                                                           itemLabel="#{role.name}"
+                                                           itemValue="#{role}" />
+                                            <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
+                                        </p:selectOneMenu>
+
+
                                         <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
                                         <p:inputText id="txtUsername" class="mt-1  mb-1"
                                                      autocomplete="off" required="true" maxlength="50" 
@@ -130,6 +146,10 @@
                                 </p:tab>
                                 <p:tab title="Advance" >
                                     <h:panelGrid id="pg1" columns="2" style="text-align: left;" >
+                                        <p:outputLabel value="User is Active" class=" m-1"></p:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
+                                        </p:selectBooleanCheckbox>
+                                        
                                         
                                         <p:outputLabel value="Add Only User" style="width: 250px" class=" mb-1"></p:outputLabel>
                                         <p:selectBooleanCheckbox value="#{webUserController.createOnlyUser}" >

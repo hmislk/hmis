@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template_without_menu.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+
+
+
+    <ui:define name="content" >
+
+        <style>
+            @keyframes pulseAnimation {
+                0% {
+                    transform: scale(1); /* Original size */
+                    background-color: yellow; /* Original background color */
+                }
+                50% {
+                    transform: scale(1.1); /* Increase size by 10% */
+                    background-color: #ffff99; /* Lighter yellow */
+                }
+                100% {
+                    transform: scale(1); /* Return to original size */
+                    background-color: yellow; /* Original background color */
+                }
+            }
+
+            .circle {
+                width: 40px; /* Set the width of the circle */
+                height: 40px; /* Set the height of the circle */
+                color: yellow; /* Set the text color */
+                border-radius: 50%; /* Make the element a circle by setting border-radius to 50% */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 1.2em; /* Font size */
+                font-weight: bold; /* Font weight */
+                text-align: center; /* Text alignment */
+                animation: pulseAnimation 2s infinite; /* Apply the animation */
+                transition: transform 0.5s ease-in-out; /* Smooth transition for transform properties */
+            }
+
+
+            .spinner {
+                border: 4px solid rgba(0, 153, 51);
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border-left-color: #ffffb3;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                margin-top: -18px;
+                margin-left: -18px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+
+        </style>
+
+        <body>
+            <h:form id="form">
+                <div class="row">
+                    <div class="col-12" >
+
+                        <nav class="navbar navbar-dark" style="background: #0d503c;">
+
+                            <div class="d-flex justify-content-between align-items-center w-100 ">
+                                <div class="px-2">
+                                    <h3  onclick="toggleFullScreen()"  class="text-white p-1">#{sessionController.institution.name}</h3>
+                                </div>
+                                <div class="mx-2 px-2">
+                                    <div class="text-white">
+                                        <span id="date"></span>
+                                        <span id="time"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </nav>
+
+
+                        <p:imageSwitch effect="wipe" widgetVar="switcher"
+                                       id="manuelSwitcher"
+                                       slideshowAuto="true">
+
+                        </p:imageSwitch>
+                        <p:poll interval="5" 
+                                listener="#{bookingController.loadSessionInstance()}"
+                                update="tblSessions" />
+                        <p:dataGrid
+                            id="tblSessions"
+                            var="s" 
+                            value="#{bookingController.sessionInstances}" 
+                            columns="2" 
+                            layout="grid" 
+                            emptyMessage="No Sessions for Today"
+                            styleClass="ui-datagrid-responsive"
+                            class="m-0 p-0">
+
+                            <h:panelGroup  style="font-size: 8pt" class="p-0 m-0" >
+                                <div class="row w-100 text-white " style="box-sizing: border-box;height: 80px;">
+                                    <div class="col-2 bg-primary d-flex justify-content-center align-items-center text-left">
+                                        <h2><h:outputText value="R&nbsp;#{s.roomNo}"/></h2>
+                                    </div>
+                                    <div class="col-8 bg-dark">
+                                        <div class="p-2">
+                                            <div>
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-size: 16pt"/><br></br>
+                                            </div>
+                                            <div >
+                                                <h:outputText value="#{s.staff.speciality.name}" style="font-size: 2em;
+                                                              text-align: right"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2 bg-dark" style="box-sizing: border-box;border-left: 2px solid yellow">
+                                        <h:panelGroup>
+                                            <div class="text-white">
+                                                <div>
+                                                    <h:panelGroup  rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null}" >
+                                                        <div class="d-flex align-items-center justify-content-center mt-2">
+                                                            <h6 class="text-white mt-4">Awaiting...</h6>
+                                                        </div>
+                                                        <!--                                                            <span class="spinner mt-4 d-flex justify-content-end"></span>-->
+                                                    </h:panelGroup>
+                                                </div>
+                                                <h:panelGroup rendered="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo ne null}">
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <div class=" text-center text-warning" >
+                                                            <h:outputText value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}"
+                                                                          style="font-size: 5em;
+                                                                          font-weight: bold;
+                                                                          text-align: right"/>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                            </h:panelGroup>
+                        </p:dataGrid>
+
+                    </div>
+                </div>
+            </h:form>
+            <script  type="text/javascript">
+                function updateTime() {
+                    const now = new Date();
+                    const dateElement = document.getElementById('date');
+                    const timeElement = document.getElementById('time');
+
+                    const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+                    dateElement.textContent = now.toLocaleDateString('en-US', options);
+
+                    const timeString = now.toLocaleTimeString('en-US');
+                    timeElement.textContent = timeString;
+
+                    dateElement.style.display = 'inline'; // Show date
+                    timeElement.style.display = 'inline'; // Show time
+                }
+
+                // Update time every second
+                setInterval(updateTime, 1000);
+
+                // Hide date and time initially
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.getElementById('date').style.display = 'none';
+                    document.getElementById('time').style.display = 'none';
+                });
+
+                //<![CDATA[
+                function toggleFullScreen() {
+                    var elem = document.documentElement;
+                    if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                            !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                        if (elem.requestFullscreen) {
+                            elem.requestFullscreen();
+                        } else if (elem.msRequestFullscreen) {
+                            elem.msRequestFullscreen();
+                        } else if (elem.mozRequestFullScreen) {
+                            elem.mozRequestFullScreen();
+                        } else if (elem.webkitRequestFullscreen) {
+                            elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.msExitFullscreen) {
+                            document.msExitFullscreen();
+                        } else if (document.mozCancelFullScreen) {
+                            document.mozCancelFullScreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                }
+                //]]>
+            </script>
+        </body>
+    </ui:define>
+</ui:composition>

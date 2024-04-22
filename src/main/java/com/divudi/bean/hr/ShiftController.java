@@ -7,12 +7,12 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.ShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,39 +49,39 @@ public class ShiftController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getRoster() == null) {
-            UtilityController.addErrorMessage("Select Roster");
+            JsfUtil.addErrorMessage("Select Roster");
             return true;
         }
 
         if (getCurrent().getName().trim().isEmpty() && getCurrent().getName().equals("")) {
-            UtilityController.addErrorMessage("Enter Name");
+            JsfUtil.addErrorMessage("Enter Name");
             return true;
         }
 
         if (getCurrent().getDayType() == null) {
-            UtilityController.addErrorMessage("Select Day Type");
+            JsfUtil.addErrorMessage("Select Day Type");
             return true;
         }
 
 //        if (getCurrent().getStartingTime() == null) {
-//            UtilityController.addErrorMessage("Set Start Time");
+//            JsfUtil.addErrorMessage("Set Start Time");
 //            return true;
 //        }
 //
 //        if (getCurrent().getEndingTime() == null) {
-//            UtilityController.addErrorMessage("Set End Time");
+//            JsfUtil.addErrorMessage("Set End Time");
 //            return true;
 //        }
 //        if (getCurrent().getCount() == 0) {
-//            UtilityController.addErrorMessage("Set Staff count correctly");
+//            JsfUtil.addErrorMessage("Set Staff count correctly");
 //            return true;
 //        }
 //        if(getCurrentDayShift().getRepeatedDay()!=0 && getCurrentDayShift().isDayOff()){
-//            UtilityController.addErrorMessage("Repeated day & dayoff can't active at Same  time");
+//            JsfUtil.addErrorMessage("Repeated day & dayoff can't active at Same  time");
 //            return true;
 //        }
 //        if (checkTimeLimit()) {
-//            UtilityController.addErrorMessage("You Cant add more than 24h per Roster");
+//            JsfUtil.addErrorMessage("You Cant add more than 24h per Roster");
 //            return true;
 //        }
         return false;
@@ -136,12 +136,12 @@ public class ShiftController implements Serializable {
         }
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         createShiftList();
         current = null;
@@ -169,7 +169,7 @@ public class ShiftController implements Serializable {
             getFacade().edit(current);
             getCurrentRoster().getShiftList().remove(getCurrent());
             getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         }
         createShiftList();
         current = null;
@@ -256,7 +256,7 @@ public class ShiftController implements Serializable {
 
         shiftList = getFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Entered shift report(/faces/hr/hr_shift_report.xhtml)");
+        
     }
 
     public List<Shift> getShiftList() {

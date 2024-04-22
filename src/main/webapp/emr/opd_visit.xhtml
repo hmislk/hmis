@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
@@ -18,38 +18,41 @@
                 </style>
 
                 <h:form id="formImage" enctype="multipart/form-data" rendered="true">
-
+                    <p:growl id="msg"/>
                     <div class="row" >
                         <div class="col-12 px-4" >
 
                             <p:commandButton 
                                 action="#{patientEncounterController.saveSelected()}"
                                 ajax="false"
+                                class="ui-button-warning p-0 m-1"
                                 icon="pi pi-save"
-                                class="p-0 m-1" 
                                 title="Save"/>
 
                             <p:commandButton 
-                                class="p-0 m-1" 
+                                class="p-0 m-1 ui-button-success" 
                                 action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
+                            <p:commandButton class="p-0 m-1 ui-button-secondary" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
                             </p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
-                            <p:commandButton 
-                                ajax="false" value="To Patient Profile"
-                                action="#{patientController.toEmrPatientProfile()}"
-                                process="panelPt" update="panelPt" ></p:commandButton>
+                            <p:commandButton class="p-0 m-1 ui-button-warning" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
+                            <p:commandButton class="p-0 m-1 ui-button-secondary" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
+
                             <p:commandButton 
                                 id="btnCommentPrint"
                                 ajax="false"
                                 icon="pi pi-print"
-                                class="p-0 m-1" 
+                                class="p-0 m-1 ui-button-info" 
                                 title="Print">
                                 <p:printer target=":formImage:tblView:txeLetterPreview"/>
                             </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-warning"
+                                icon="fas fa-address-card"
+                                ajax="false" value="Patient Profile"
+                                action="#{patientController.toEmrPatientProfile()}"
+                                process="panelPt" update="panelPt" ></p:commandButton>
 
 
                         </div>
@@ -70,7 +73,7 @@
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
-                                                    <h:outputText value="Patient Detail" class="mx-3"></h:outputText>
+                                                    <h:outputText value="Patient Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <emr:patient patient="#{patientController.current}"></emr:patient>
                                             </p:panel>
@@ -90,6 +93,9 @@
                                                     conditions="#{patientEncounterController.patientDiagnoses}"
                                                     editable="true">
                                                 </emr:patient_conditions>
+                                                <emr:patient_procedures
+                                                    procedures="#{patientEncounterController.patientProcedures}"
+                                                    editable="true"/>
                                                 <emr:patient_medicines 
                                                     editable="true"
                                                     medicines="#{patientEncounterController.patientMedicines}">
@@ -124,7 +130,7 @@
                                                                         </div>-->
                                 </p:tab>
 
-                                <p:tab title="Visit Details" class="m-0">
+                                <p:tab title="Visit Details" class="m-0" id="visit">
                                     <div class="ui-g">
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel class="w-100 m-1">
@@ -132,6 +138,7 @@
                                                     <h:outputText styleClass="fas fa-notes-medical"/>
                                                     <h:outputText class="mx-4" value="Clinical Details" ></h:outputText>
                                                 </f:facet>
+                                                <h:outputText value="Presenting Complaints :"/><br/>
                                                 <p:inputTextarea id="txtComments" 
                                                                  queryDelay="0" 
                                                                  placeholder="Write comments here."
@@ -147,7 +154,7 @@
 
                                                 <div class="row my-1" ></div>
                                                 <div class="row" >
-                                                    <div class="col-md-6" >
+                                                    <div class="col-md-7" >
                                                         <p:commandLink 
                                                             value="Weight&nbsp;:&nbsp;"
                                                             action="#{patientEncounterController.createWtChart()}" 
@@ -168,7 +175,7 @@
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
                                                     </div>
-                                                    <div class="col-md-6" >
+                                                    <div class="col-md-5" >
                                                         <p:outputLabel value="Height&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText  
                                                             id="txtHt"
@@ -184,8 +191,8 @@
                                                 </div>
                                                 <div class="row my-1" ></div>
                                                 <div class="row"  >
-                                                    <div class="col-md-6" >
-                                                        <p:commandLink value="BP&nbsp;:&nbsp;" action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
+                                                    <div class="col-md-7" >
+                                                        <p:commandLink value="BP : " action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
                                                         <h:panelGroup >
                                                             <p:inputText
                                                                 id="txtSbp"
@@ -200,7 +207,7 @@
                                                             <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
                                                         </h:panelGroup>
                                                     </div>
-                                                    <div class="col-md-6" >
+                                                    <div class="col-md-5" >
                                                         <p:outputLabel value="BMI&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText 
                                                             id="txtBmi"
@@ -212,7 +219,54 @@
 
                                                     </div>
                                                 </div>
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <p:outputLabel 
+                                                            value="Pulse Rate :&nbsp;"/>
 
+                                                        <p:inputText  
+                                                            id="txtPr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.pr}" >
+                                                        </p:inputText>
+                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="PFR&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtPfr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.pfr}" >
+
+                                                        </p:inputText>
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                    </div>
+                                                </div>
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <h:outputLabel
+                                                            value="Saturation :&nbsp;"
+                                                            />
+                                                        <p:inputText  
+                                                            id="txtsat"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.saturation}" >
+                                                        </p:inputText>
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>-->
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="Resp. Rate&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtRr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.respiratoryRate}" >
+
+                                                        </p:inputText>
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                    </div>
+                                                </div>
                                             </p:panel>
 
                                             <p:panel class="w-100 m-1" >
@@ -239,7 +293,7 @@
                                                                          id="btnAddDx" 
                                                                          action="#{patientEncounterController.addDx}"
                                                                          process="acDx txtDx btnAddDx" 
-                                                                         update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
+                                                                         update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                     </div>
@@ -272,7 +326,7 @@
                                                                              class="ui-button-danger"
                                                                              process="clRemoveDx" 
                                                                              action="#{patientEncounterController.removeEncounterDiagnoses()}"
-                                                                             update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId}">
+                                                                             update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}">
                                                                 <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                             </p:commandButton>
 
@@ -283,36 +337,37 @@
 
                                             </p:panel>
 
-                                            <p:panel header="Tests" class="w-100 m-1">
+                                            <p:panel header="Ordered Tests For Visit" class="w-100 m-1">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-vial"/>
-                                                    <h:outputText class="mx-4" value="Tests"/>
+                                                    <h:outputText class="mx-4" value="Order Tests For Visit"/>
                                                 </f:facet>
                                                 <div class="row" >
                                                     <div class="col-9" >
-                                                        <p:autoComplete id="acIx" 
-                                                                        value="#{patientEncounterController.encounterInvestigation.itemValue}"
-                                                                        completeMethod="#{investigationController.completeInvestigation}"
-                                                                        var="ix" forceSelection="true"
-                                                                        itemLabel="#{ix.name}" 
-                                                                        itemValue="#{ix}"
-                                                                        class="w-100"
-                                                                        inputStyleClass="w-100">
+                                                        <p:autoComplete 
+                                                            id="acIx" 
+                                                            value="#{patientEncounterController.encounterInvestigation.itemValue}"
+                                                            completeMethod="#{investigationController.completeInvestigation}"
+                                                            var="ix" forceSelection="true"
+                                                            itemLabel="#{ix.name}" 
+                                                            itemValue="#{ix}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100">
                                                         </p:autoComplete>
                                                     </div>
                                                     <div class="col-3" >
-                                                        <p:commandButton ajax="true" 
-                                                                         id="btnIx" 
-                                                                         value="Add"
-                                                                         class="ui-button-success"
-                                                                         action="#{patientEncounterController.addEncounterInvestigation()}"
-                                                                         process="acIx txtIx btnIx" 
-                                                                         update="acIx txtIx gpIx"
-                                                                         icon="pi pi-plus">
+                                                        <p:commandButton 
+                                                            ajax="true" 
+                                                            id="btnIx" 
+                                                            value="Add"
+                                                            class="ui-button-success"
+                                                            action="#{patientEncounterController.addEncounterInvestigation()}"
+                                                            process="acIx txtIx btnIx" 
+                                                            update="acIx txtIx gpIx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                            icon="pi pi-plus">
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
-
 
                                                 <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
                                                 <p:inputTextarea class="w-100 my-2" 
@@ -342,7 +397,7 @@
                                                                 id="clRemoveIx"
                                                                 action="#{patientEncounterController.removeEncounterInvestigation()}" 
                                                                 process="clRemoveIx"
-                                                                update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
+                                                                update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                 class="ui-button-danger"
                                                                 icon="fas fa-trash">
                                                                 <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
@@ -354,13 +409,82 @@
 
                                             </p:panel>
 
+                                            <p:panel class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-medkit"/>
+                                                    <h:outputText class="mx-4" value="Follow Up Plan"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acPa" 
+                                                                        value="#{patientEncounterController.encounterPlanOfAction.itemValue}"
+                                                                        completeMethod="#{planController.completePlanOfActions}"
+                                                                        var="pa" forceSelection="true"
+                                                                        itemLabel="#{pa.name}" 
+                                                                        itemValue="#{pa}"
+                                                                        class="w-100"
+
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         value="Add"
+                                                                         class="ui-button-success"
+                                                                         id="btnPr" 
+                                                                         action="#{patientEncounterController.addPlanOfAction()}"
+                                                                         process="acPa btnPr" update="acPa :#{p:resolveFirstComponentWithId('tblPa',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:tooltip value="Add a procedure" for="btnPr" ></p:tooltip>
+                                                    </div>
+                                                </div>
+                                                <!--                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
+                                                                                                                 id="txtSx" 
+                                                                                                                 value="#{patientEncounterController.encounterProcedure.lobValue}">
+                                                                                                </p:inputTextarea>
+                                                
+                                                                                                <p:watermark value="Select Procedure." for="acSx"></p:watermark>
+                                                                                                <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
+                                                -->                                               
+                                                <p:dataTable id="tblPa" 
+                                                             rendered="#{patientEncounterController.encounterPlanOfActions ne null and patientEncounterController.encounterPlanOfActions.size() > 0}"
+                                                             value="#{patientEncounterController.encounterPlanOfActions}"
+                                                             emptyMessage="No Plan Of Action Added" rows="5"
+                                                             paginatorAlwaysVisible="false"
+                                                             paginator="true"
+                                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                             var="pa" >
+                                                    <p:column headerText="Plan Name" >
+                                                        <h:outputLabel value="#{pa.itemValue.name}"></h:outputLabel>
+
+                                                    </p:column>
+
+                                                    <p:column headerText="Action" >
+                                                        <p:commandButton  
+                                                            class="ui-button-danger"
+                                                            icon="fas fa-trash"
+                                                            id="btnRemovePa"
+                                                            ajax="true" 
+                                                            action="#{patientEncounterController.removeCfv}" 
+                                                            process="@this"
+                                                            update="tblPa :#{p:resolveFirstComponentWithId('msg',view).clientId}">
+                                                            <f:setPropertyActionListener value="#{pa}" target="#{patientEncounterController.removingCfv}" />
+                                                        </p:commandButton>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:panel>
                                         </div>
 
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel class="w-100 m-0 p-0">
+                                            <p:panel class="w-100 m-0 p-0" id="medicines">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
+
+                                                    <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
+
                                                 </f:facet>
                                                 <div class="container-fluid m-0 p-0 w-100">
                                                     <div class="d-flex flex-wrap w-100">
@@ -446,7 +570,7 @@
                                                                              id="btnAddRx"
                                                                              icon="pi pi-plus"
                                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
+                                                                             update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
                                                                              action="#{patientEncounterController.addEncounterMedicine}" />
                                                         </div>
                                                     </div>
@@ -462,7 +586,7 @@
                                                         <p:commandButton icon="fas fa-trash" 
                                                                          id="btnRemove"
                                                                          process="btnRemove"
-                                                                         update="tblRxx"
+                                                                         update="tblRxx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          class="ui-button-danger"
                                                                          action="#{patientEncounterController.removeCfv()}">
                                                             <f:setPropertyActionListener value="#{rx}" target="#{patientEncounterController.removingCfv}" ></f:setPropertyActionListener>
@@ -471,9 +595,99 @@
                                                     </p:column>
                                                 </p:dataTable>
                                             </p:panel>
+                                            <p:panel header="Add Test Results" class="w-100 m-1">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-vial-virus"/>
+                                                    <h:outputText class="mx-4" value="Add Test Results"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-9" >
+                                                        <p:autoComplete
+                                                            id="acIxp"
+                                                            value="#{patientEncounterController.encounterInvestigationResult.itemValue}"
+                                                            completeMethod="#{investigationController.completeInvestigation}"
+                                                            var="ix" forceSelection="true"
+                                                            itemLabel="#{ix.name}"
+                                                            itemValue="#{ix}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100">
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-3" >
+                                                        <p:commandButton
+                                                            ajax="true"
+                                                            id="btnIxp"
+                                                            value="Add"
+                                                            class="ui-button-success"
+                                                            action="#{patientEncounterController.addEncounterInvestigationResults()}"
+                                                            process="acIxp txtIxp btnIxp"
+                                                            update="acIxp txtIxp gpIxp :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                            icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
 
 
-                                            <p:panel class="w-100 m-1" >
+                                                <p:tooltip value="Add an Investigation" for="btnIxp" ></p:tooltip>
+                                                <p:inputTextarea class="w-100 my-2"
+                                                                 id="txtIxp"
+                                                                 value="#{patientEncounterController.encounterInvestigationResult.lobValue}">
+                                                </p:inputTextarea>
+                                                <p:watermark value="Select an investigation." for="acIxp"></p:watermark>
+                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtIxp"></p:watermark>
+                                                <h:panelGroup id="gpIxp" >
+                                                    <p:dataTable id="tblIxp"
+                                                                 rendered="#{patientEncounterController.encounterInvestigationResults ne null and patientEncounterController.encounterInvestigationResults.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterInvestigationResults}"
+                                                                 emptyMessage="No Investigations Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="ix" class="w-100">
+                                                        <p:column headerText="Procedure" >
+                                                            <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
+                                                        </p:column>
+                                                        
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column headerText="Action">
+                                                            <div class="d-flex">
+                                                                <p:commandLink id="btnNewReport" ajax="false"
+                                                                               disabled="#{ix.patientInvestigation ne null}"
+                                                                               action="/emr/patient_report">
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.currentEIResult}"></f:setPropertyActionListener>
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientReportController.clinicalFindingValue}"/>
+                                                                    <f:setPropertyActionListener value="#{ix.patientReport}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                                </p:commandLink>
+                                                                <p:commandButton
+                                                                    id="clRemoveIxp"
+                                                                    action="#{patientEncounterController.removeEncounterInvestigationResult()}"
+                                                                    process="clRemoveIxp"
+                                                                    disabled="#{ix.patientInvestigation ne null}"
+                                                                    update=":#{p:resolveFirstComponentWithId('gpIxp',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                    class="mx-2 ui-button-danger"
+                                                                    icon="fas fa-trash">
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
+                                                                </p:commandButton>
+                                                                <div>
+                                                                    <ui:repeat value="#{patientReportController.patientReports(ix.patientInvestigation)}" var="dpr">
+                                                                        <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
+                                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                            <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                                        </p:commandLink>
+                                                                    </ui:repeat>
+                                                                </div>
+
+                                                            </div>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+
+                                            <p:panel class="w-100 m-1" id="procedures">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-medkit"/>
                                                     <h:outputText class="mx-4" value="Procedures"/>
@@ -498,7 +712,7 @@
                                                                          class="ui-button-success"
                                                                          id="btnSx" 
                                                                          action="#{patientEncounterController.addEncounterProcedure}"
-                                                                         process="acSx txtSx btnSx" update="acSx txtSx gpSx"
+                                                                         process="acSx txtSx btnSx" update="acSx txtSx gpSx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                         <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
@@ -535,7 +749,7 @@
                                                                 ajax="true" 
                                                                 action="#{patientEncounterController.removeCfv}" 
                                                                 process="btnRemoveSx"
-                                                                update="tblSx ">
+                                                                update="tblSx :#{p:resolveFirstComponentWithId('msg',view).clientId}">
                                                                 <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
                                                             </p:commandButton>
                                                         </p:column>
@@ -544,24 +758,93 @@
                                             </p:panel>
 
 
+
                                         </div>
+
 
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel id="docPrescreption" >
+                                                <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>
                                                     <h:outputText class="mx-4" value="Prescription"/>
-                                                </f:facet>
-                                                <p:commandButton  class="ui-button-info" ajax="false" value="Print"  icon="pi pi-print" >
-                                                    <p:printer target="txtPrescriptionDoc" ></p:printer>
-                                                </p:commandButton>
-                                                <p:commandButton icon="fas fa-refresh" class="mx-2 ui-button-warning" id="btnRefresh" process="btnRefresh" update="txtPrescriptionDoc" value="refresh" action="#{patientEncounterController.refreshPrescription}"/>
+                                                    <div style="float: right">
+                                                        <p:commandButton
+                                                            icon="fas fa-refresh"
+                                                            class="mx-1 ui-button-warning"
+                                                            id="btnRefresh"
+                                                            ajax="false" 
+                                                            value="refresh" 
+                                                            action="#{patientEncounterController.refreshPrescription}"/>
+                                                        <p:commandButton
+                                                            class="ui-button-info mx-1" 
+                                                            ajax="false" 
+                                                            value="Print" 
+                                                            icon="pi pi-print">
+                                                            <p:printer target="txtPrescriptionDoc" />
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            class="ui-button-info mx-1" 
+                                                            ajax="false" 
+                                                            value="To Print" 
+                                                            action="opd_visit_print"
+                                                            icon="pi pi-print">
+                                                        </p:commandButton>
 
-                                                <p:textEditor class="my-2" id="txtPrescriptionDoc" 
-                                                              toolbarVisible="false"
-                                                              secure='false' widgetVar="textEditorWidget" 
-                                                              value="#{patientEncounterController.encounterPrescreption.lobValue}">
-                                                </p:textEditor>
+
+                                                        
+                                                    </div>
+
+                                                </f:facet>
+
+                                                <style>
+                                                    @media print {
+                                                        /* Target the ui-texteditor container and its children */
+                                                        #docPrescreption .ui-texteditor,
+                                                        #docPrescreption .ui-texteditor *,
+                                                        #docPrescreption .ui-texteditor *::after,
+                                                        #docPrescreption .ui-texteditor *::before {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important; /* Reset box-sizing */
+                                                            /* Additional styles to reset other properties if needed */
+                                                        }
+
+                                                        /* Ensure that the specific ids are targeted */
+                                                        #txtPrescriptionDoc,
+                                                        #txtPrescriptionDoc * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        /* If there are iframes or other embedded elements, target them too */
+                                                        #txtPrescriptionDoc iframe,
+                                                        #txtPrescriptionDoc iframe * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        form, form * {
+                                                            border: none !important;
+                                                        }
+                                                    }
+                                                </style>
+
+
+
+                                                <h:panelGroup id="txtPrescriptionDoc">
+                                                    <p:textEditor
+                                                        styleClass="textEditer"
+                                                        class="my-2"
+                                                        toolbarVisible="false"
+                                                        rendered="#{patientEncounterController.encounterPrescreption ne null}"
+                                                        secure='false'
+                                                        widgetVar="textEditorWidget"
+                                                        value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                        >
+                                                    </p:textEditor>
+                                                </h:panelGroup>
                                             </p:panel>
                                         </div>
 
@@ -588,6 +871,8 @@
                                                 <p:commandButton 
                                                     id="btnGenerateNewDocument"
                                                     value="Generate" 
+                                                    class="ui-button-warning"
+                                                    icon="fas fa-arrows-rotate"
                                                     process="btnGenerateNewDocument somTemplates"
                                                     update="lstEncounterDocs gpReferralDoc"
                                                     action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
@@ -614,34 +899,55 @@
                                         <div class="col-8" >
                                             <p:panelGrid columns="1" id="gpReferralDoc" >
                                                 <f:facet name="header" >
+                                                    <div class="d-flex justify-content-between">
+                                                        <h:outputLabel 
+                                                            rendered="#{patientEncounterController.encounterReferral.stringValue ne null}"
+                                                            id="txtDocName" 
+                                                            value="#{patientEncounterController.encounterReferral.stringValue}">
+                                                        </h:outputLabel>
+                                                        <div class="d-flex gap-2">
+                                                            <p:commandButton 
+                                                                id="btnSaveDoc"
+                                                                value="Save" 
+                                                                class="ui-button-warning"
+                                                                icon="fas fa-save"
+                                                                action="#{patientEncounterController.saveEncounterReferral()}"
+                                                                process="btnSaveDoc "
+                                                                update="lstEncounterDocs">
+                                                            </p:commandButton>
+                                                            <p:commandButton 
+                                                                id="btnDeleteDoc"
+                                                                value="Delete"
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
+                                                                action="#{patientEncounterController.removeEncounterReferral()}"
+                                                                process="btnDeleteDoc"
+                                                                update="lstEncounterDocs txeLetterPreview">
+                                                            </p:commandButton>
+                                                            <p:commandButton 
+                                                                id="btnCommentPrint"
+                                                                ajax="false"
+                                                                icon="pi pi-print"
+                                                                class="ui-button-info" 
+                                                                value="Print">
+                                                                <p:printer target="txeLetterPreview"/>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
 
-                                                    <p:commandButton 
-                                                        id="btnSaveDoc"
-                                                        value="Save" 
-                                                        action="#{patientEncounterController.saveEncounterReferral()}"
-                                                        process="btnSaveDoc txtReferralDoc"
-                                                        update="lstEncounterDocs">
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        id="btnDeleteDoc"
-                                                        value="Delete" 
-                                                        action="#{patientEncounterController.saveEncounterReferral()}"
-                                                        process="btnDeleteDoc"
-                                                        update="lstEncounterDocs txtReferralDoc">
-                                                    </p:commandButton>
-                                                    <h:outputLabel 
-                                                        rendered="#{patientEncounterController.encounterReferral.stringValue ne null}"
-                                                        id="txtDocName" 
-                                                        value="#{patientEncounterController.encounterReferral.stringValue}"></h:outputLabel>
+
                                                 </f:facet>
-                                                <h:panelGroup id="txtReferralDoc" ></h:panelGroup>
+
                                                 <p:textEditor
+                                                    style="width: 210mm;;"
                                                     toolbarVisible="false"
                                                     id="txeLetterPreview"
                                                     rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
                                                     secure="false" 
                                                     value="#{patientEncounterController.encounterReferral.lobValue}" >
                                                 </p:textEditor>
+
+
                                             </p:panelGrid>          
 
                                         </div>
@@ -649,25 +955,15 @@
                                     </div>
 
 
-                                    <p:panel id="panelDocuments" 
-                                             rendered="#{patientEncounterController.userDocumentTemplates ne null}">
-
-
-
-
-
-
-
-
-
-                                        <p:commandButton value="Update" 
-                                                         ajax="false"
-                                                         process="lstEncounterDocs" 
-                                                         update="gpReferralDoc txtReferralDoc" ></p:commandButton>
-
-
-
-
+                                    <p:panel 
+                                        id="panelDocuments" 
+                                        rendered="#{patientEncounterController.userDocumentTemplates ne null}">
+                                        <p:commandButton 
+                                            value="Update" 
+                                            ajax="false"
+                                            process="lstEncounterDocs" 
+                                            update="gpReferralDoc " >
+                                        </p:commandButton>
 
                                     </p:panel>
 
@@ -721,13 +1017,17 @@
                                                                      class="btn btn-primary h-50"/> <!-- Adjust height -->
                                                 </div>
                                                 <div class="col d-flex align-items-center">
-                                                    <p:fileUpload value="#{patientEncounterController.uploadedFile}" 
-                                                                  auto="true"
-                                                                  mode="advanced" 
-                                                                  dragDropSupport="true"
-                                                                  multiple="false" update="imageSwitcher" accept="image/*" 
-                                                                  class="m-2" title="Upload Image"
-                                                                  listener="#{patientEncounterController.uploadPhoto}" />
+                                                    <p:fileUpload 
+                                                        value="#{patientEncounterController.uploadedFile}" 
+                                                        auto="true"
+                                                        mode="advanced" 
+                                                        dragDropSupport="true"
+                                                        multiple="false" 
+                                                        update="imageSwitcher" 
+                                                        accept="image/*" 
+                                                        class="m-2" 
+                                                        title="Upload Image"
+                                                        listener="#{patientEncounterController.uploadPhoto}" />
                                                 </div>
 
                                             </div>
@@ -778,38 +1078,127 @@
 
                                     <div class="card m-1 p-1" >
                                         <div class="card-header" >
-                                            <h4>Past Visits</h4>
+                                            <h:outputText value="Past Visits" style="font-size: 16px; font-weight: bold;"/>
                                         </div>
-                                        <div class="card-body" >
-                                            <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                                <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
+                                        <div>
+                                            <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" 
+                                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                         rowsPerPageTemplate="5,10,15" 
+                                                         currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
+                                                <p:column sortBy="#{visit.encounterDate}" filterMatchMode="date" >
+
                                                     <f:facet name="header">
                                                         <h:outputText value="Date / Time" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.encounterDate}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                                    </h:outputText>
+                                                    <h:commandLink action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" >
+                                                        <i class="fas fa-calendar-alt"></i> <!-- Calendar icon for date -->
+                                                        <h:outputText value="#{visit.encounterDate}" class="m-2">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        </h:outputText>
+                                                        <f:setPropertyActionListener value="#{visit}" target="#{pastPatientEncounterController.current}" />
+                                                    </h:commandLink>
                                                 </p:column>
-                                                <p:column sortBy="#{visit.bp}" filterBy="#{visit.bp}" filterMatchMode="contains">
+                                                <p:column>
                                                     <f:facet name="header">
-                                                        <h:outputText value="BP" />
+                                                        <h:outputText value="Clinical Details" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.bp}"  escape="false" >
-                                                    </h:outputText>
+                                                    <h:panelGroup rendered="#{visit.height ne null}">
+                                                        <h:outputText value="Height - #{visit.height}" escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.weight ne null}">
+                                                        <h:outputText value="Weight - #{visit.weight}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.bmi ne null}">
+                                                        <h:outputText value="BMI - #{visit.bmiFormatted}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                        <br/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.bp ne ''}">
+                                                        <h:outputText value="Blood Pressure - #{visit.bp}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.pr ne null}">
+                                                        <h:outputText value="Pulse Rate - #{visit.pr}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.respiratoryRate ne null}">
+                                                        <h:outputText value="Respiratory Rate - #{visit.respiratoryRate}"   escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.saturation ne null}">
+                                                        <h:outputText value="Saturation - #{visit.saturation}" escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{visit.pfr ne null}">
+                                                        <h:outputText value="PFR - #{visit.pfr}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{not empty visit.comments}">
+                                                        <h:outputText value="Comments - #{visit.comments}"  escape="false" style="font-size: 10pt;font-weight: bold" ></h:outputText>
+                                                        <p:spacer width="20px"/>
+                                                    </h:panelGroup>
+
                                                 </p:column>
-                                                <p:column sortBy="#{visit.bmiFormatted}" filterBy="#{visit.bmiFormatted}" filterMatchMode="contains">
+
+                                                 <p:column>
                                                     <f:facet name="header">
-                                                        <h:outputText value="BMI" />
+                                                        <h:outputText value="Diagnosis" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.bmiFormatted}"  escape="false" >
-                                                    </h:outputText>
+                                                    <ui:repeat value="#{patientEncounterController.fillPastPatientDiagnosisHistory(visit)}" var="diagnosis">
+                                                        <h:outputText value="#{diagnosis.stringValue} - #{diagnosis.lobValue}"/><br/>
+                                                    </ui:repeat>
                                                 </p:column>
-                                                <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
+             
+                                                <p:column>
                                                     <f:facet name="header">
-                                                        <h:outputText value="Comments" />
+                                                        <h:outputText value="Investigations" />
                                                     </f:facet>
-                                                    <h:outputText value="#{visit.comments}" />
+                                                    <ui:repeat value="#{patientEncounterController.fillPastPatientInvestigationsHistory(visit)}" var="investigations">
+                                                        <h:outputText value="#{investigations.itemValue.name} - #{investigations.lobValue}"/><br/>
+                                                    </ui:repeat>
                                                 </p:column>
+
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Medicines" />
+                                                    </f:facet>
+
+                                                    <ul>
+                                                        <ui:repeat value="#{patientEncounterController.fillPastPatientMedicineHistory(visit)}" var="medicine">
+                                                            <li>
+                                                                <p:outputLabel value="#{medicine.prescription.formattedPrescription}" />
+
+                                                            </li>
+                                                        </ui:repeat>
+                                                    </ul>
+                                                </p:column>
+                                                
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Follow Up Plan" />
+                                                    </f:facet>
+                                                    <ui:repeat value="#{patientEncounterController.fillPastPatientPlanOfActionHistory(visit)}" var="pa">
+                                                        <h:outputText value="#{pa.itemValue.name}"/><br/>
+                                                    </ui:repeat>
+                                                </p:column>
+
+                                                <p:column width="12%">
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Action" />
+                                                    </f:facet>
+                                                    <p:commandButton icon="fas fa-file" 
+                                                                     id="move"
+                                                                     value="Move Medicnes" 
+                                                                     action="#{patientEncounterController.fillMedicinesFromPastVisitHistory}"  
+                                                                     disabled="#{empty patientEncounterController.pastPatientMedicineHistory}"
+                                                                     process="@this" class="ui-button-warning" update="#{p:resolveFirstComponentWithId('medicines',view).clientId}" />
+                                                </p:column>
+
+
+
+
                                             </p:dataTable>
                                         </div>
                                     </div>
@@ -831,29 +1220,12 @@
                             <div class="col-4 p-1" >
 
 
-
-
-
-
-
-
-
-
-
-
                             </div>
                             <div class="col-4 p-1" >
-
-
-
-
 
                             </div>
                         </div>
                     </div>
-
-
-
 
                     <div class="container-fluid" >
                         <div class="row"   >
@@ -864,59 +1236,19 @@
 
                                     </div>
 
-
-
                                     <div class="col-md-6"  >
-
-
-
-
-
-
-
-
-
 
 
                                     </div>
 
-
-
-
-
-
                                 </div>
-
-
-
-
 
                             </div>
                             <div class="col-md-4 m-0 p-1" >
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                             </div>
                         </div>
                     </div>
-
-
-
-
-
 
                 </h:form>
 

@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.LeaveType;
@@ -135,7 +135,7 @@ public class SalaryCycleController implements Serializable {
                 + " order by c.id desc";
         salaryCycles = getFacade().findByJpql(sql);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
     }
 
     double brVal = 0.0;
@@ -255,17 +255,17 @@ public class SalaryCycleController implements Serializable {
 
         //Check Salry Date        
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
-            UtilityController.addErrorMessage("Salary Date Already Exist");
+            JsfUtil.addErrorMessage("Salary Date Already Exist");
             return true;
         }
 
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.AdvanceDate, current.getSalaryAdvanceFromDate(), current.getSalaryAdvanceToDate())) {
-            UtilityController.addErrorMessage("Salary Advance Date Already Exist");
+            JsfUtil.addErrorMessage("Salary Advance Date Already Exist");
             return true;
         }
 
 //        if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
-//            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
+//            JsfUtil.addErrorMessage("Salary Over Time Date Already Exist");
 //            return true;
 //        }
         return false;
@@ -279,12 +279,12 @@ public class SalaryCycleController implements Serializable {
         current.processName();
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         //     recreateModel();
@@ -313,9 +313,9 @@ public class SalaryCycleController implements Serializable {
 //            getFacade().remove(current);
 //            getCurrentRoster().getSalaryCycleList().remove(getCurrent());
 //            getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         //   recreateModel();
 
@@ -806,7 +806,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff Payrol(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollNew() {
@@ -816,7 +816,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff Payrol(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollSelectedStaff() {
@@ -826,7 +826,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(false, staffController.getSelectedList());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff over time(/faces/hr/hr_staff_salary_1.xhtml)");
+        
     }
 
     public void fillStaffPayRollDepartmentWise() {
@@ -840,7 +840,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(false, fetchSalaryRosters());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol by roster(/faces/hr/hr_report_staff_payroll_roster.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlocked() {
@@ -850,7 +850,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol(By department)(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlockedNew() {
@@ -860,7 +860,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollNew(true);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol(By department)(/faces/hr/hr_report_staff_payroll.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlockedSelectedStaff() {
@@ -870,7 +870,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRoll(true, staffController.getSelectedList());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff payrol (selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
+        
     }
 
     public void fillStaffPayRollBlockedDepartmentWise() {
@@ -884,7 +884,7 @@ public class SalaryCycleController implements Serializable {
 
         fillStaffPayRollRos(true, fetchSalaryRosters());
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol by roster(/faces/hr/hr_report_staff_payroll_roster.xhtml)");
+        
     }
 
     public void fillStaffPayRoll(boolean blocked) {
@@ -1728,7 +1728,7 @@ public class SalaryCycleController implements Serializable {
         staffSalary = staffSalaryFacade.findByJpql(jpql, m);
         allStaffSalaryTotal(staffSalary);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/(/faces/hr/hr_shift_table.xhtml)");
+        
     }
 
     public List<Department> fetchSalaryDepartment() {
@@ -1989,7 +1989,7 @@ public class SalaryCycleController implements Serializable {
         }
         allStaffSalaryByDepartmentTotal(salaryByDepartments);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/All staff salary summery(By department)(/faces/hr/hr_report_staff_salary_by_department.xhtml");
+        
     }
 
     public Object[] fillStaffSalaryByDepartment(Department d) {

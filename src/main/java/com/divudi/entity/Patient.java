@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -113,7 +114,9 @@ public class Patient implements Serializable {
 
     @Transient
     Bill bill;
-
+    @Transient
+    CommonFunctions commonFunctions;
+            
     @Transient
     private String phoneNumberStringTransient;
 
@@ -583,19 +586,13 @@ public class Patient implements Serializable {
         return phoneNumberStringTransient;
     }
 
-    public Long removeSpecialCharsInPhonenumber(String phonenumber) {
-        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
-        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
-        return convertedPhoneNumber;
-    }
-
     public void setPhoneNumberStringTransient(String phoneNumberStringTransient) {
         try {
             if (this.getPerson() == null) {
                 return;
             }
-            this.getPerson().setPhone(phoneNumberStringTransient);
-            this.patientPhoneNumber = removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
+            this.getPerson().setMobile(phoneNumberStringTransient);
+            this.patientPhoneNumber = commonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
             this.phoneNumberStringTransient = phoneNumberStringTransient;
         } catch (Exception e) {
         }

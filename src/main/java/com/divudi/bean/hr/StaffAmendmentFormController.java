@@ -6,7 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
@@ -16,7 +16,7 @@ import com.divudi.facade.AmendmentFormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -325,7 +325,7 @@ public class StaffAmendmentFormController implements Serializable {
         currAmendmentForm.setRetiredAt(new Date());
         currAmendmentForm.setRetirer(getSessionController().getLoggedUser());
         getAmendmentFormFacade().edit(currAmendmentForm);
-        UtilityController.addSuccessMessage("Deleted");
+        JsfUtil.addSuccessMessage("Deleted");
         clear();
     }
 

@@ -48,7 +48,7 @@ import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -387,12 +387,12 @@ public class ServiceController implements Serializable {
         items = null;
         filterItem = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Service/Service list search(/faces/dataAdmin/opd_service_department_list.xhtml)");
+        
     }
 
     private boolean errorCheck() {
         if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed() == true) {
-            UtilityController.addErrorMessage("Cant tick both User can Change & Discount Allowed");
+            JsfUtil.addErrorMessage("Cant tick both User can Change & Discount Allowed");
             return true;
         }
         return false;
@@ -529,15 +529,15 @@ public class ServiceController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select Department");
+            JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
         if (getCurrent().getInwardChargeType() == null) {
-            UtilityController.addErrorMessage("Please Select Inward Charge type");
+            JsfUtil.addErrorMessage("Please Select Inward Charge type");
             return;
         }
         if (getCurrent().getName() == null || getCurrent().getName().isEmpty()) {
-            UtilityController.addErrorMessage("Please Enter a name");
+            JsfUtil.addErrorMessage("Please Enter a name");
         } else {
             if (getCurrent().getFullName() == null) {
                 getCurrent().setFullName(getCurrent().getName());
@@ -572,11 +572,11 @@ public class ServiceController implements Serializable {
             }
 
             if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
-                UtilityController.addErrorMessage("Service code is alredy used");
+                JsfUtil.addErrorMessage("Service code is alredy used");
                 return;
             } else {
                 getFacade().edit(getCurrent());
-                UtilityController.addSuccessMessage("Saved Old Successfully");
+                JsfUtil.addSuccessMessage("Saved Old Successfully");
             }
 
         } else {
@@ -585,7 +585,7 @@ public class ServiceController implements Serializable {
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
             if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
-                UtilityController.addErrorMessage("Service code is alredy used");
+                JsfUtil.addErrorMessage("Service code is alredy used");
                 return;
             } else {
                 getFacade().create(getCurrent());
@@ -602,7 +602,7 @@ public class ServiceController implements Serializable {
 
             if (checkServiceCodeDuplicate(genaratedServiceCode)) {
                 getFacade().edit(getCurrent());
-                UtilityController.addSuccessMessage("Saved Successfully");
+                JsfUtil.addSuccessMessage("Saved Successfully");
             }
 
         }
@@ -618,7 +618,7 @@ public class ServiceController implements Serializable {
             return;
         }
         if (service == null || service.getName().isEmpty()) {
-            UtilityController.addErrorMessage("Please Enter a name");
+            JsfUtil.addErrorMessage("Please Enter a name");
         } else {
             if (service.getFullName() == null) {
                 service.setFullName(service.getName());
@@ -651,14 +651,14 @@ public class ServiceController implements Serializable {
                 service.setReportedAs(service);
             }
             getFacade().edit(service);
-            UtilityController.addSuccessMessage("Saved Old Successfully");
+            JsfUtil.addSuccessMessage("Saved Old Successfully");
         } else {
             //////// // System.out.println("4");
             service.setCreatedAt(new Date());
             service.setCreater(getSessionController().getLoggedUser());
 
             if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
-                UtilityController.addErrorMessage("Service code is alredy used");
+                JsfUtil.addErrorMessage("Service code is alredy used");
                 return;
             } else {
                 getFacade().create(service);
@@ -674,11 +674,11 @@ public class ServiceController implements Serializable {
             }
 
             if (!checkServiceCodeDuplicate(genaratedServiceCode)) {
-                UtilityController.addErrorMessage("Service code is alredy used");
+                JsfUtil.addErrorMessage("Service code is alredy used");
                 return;
             } else {
                 getFacade().edit(service);
-                UtilityController.addSuccessMessage("Saved Successfully");
+                JsfUtil.addSuccessMessage("Saved Successfully");
             }
         }
         recreateModel();
@@ -739,9 +739,9 @@ public class ServiceController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfull");
+            JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -764,9 +764,9 @@ public class ServiceController implements Serializable {
             currentInactiveService.setRetiredAt(new Date());
             currentInactiveService.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentInactiveService);
-            UtilityController.addSuccessMessage("Deleted Successfull");
+            JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getSelectedRetiredItems();

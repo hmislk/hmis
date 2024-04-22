@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/channel/channel_reports.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="subContent">
@@ -15,7 +15,7 @@
                 <p:panel header="Session Detail Report" >
                     <p:panelGrid columns="2">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
-                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                        <p:autoComplete  forceSelection="true" value="#{channelScheduleController.speciality}" id="acSpeciality"
                                          completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                          >
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
@@ -25,7 +25,7 @@
 
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                         <p:autoComplete   forceSelection="true" value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
-                                          completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                          completeMethod="#{channelScheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           >   
                         </p:autoComplete>  
                     </p:panelGrid>

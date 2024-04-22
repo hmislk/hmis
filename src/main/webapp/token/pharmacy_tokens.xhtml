@@ -9,103 +9,171 @@
     <h:body>
         <ui:composition template="/token/index.xhtml">
             <ui:define name="subcontent">
-                <p:panel >
-                    <f:facet name="header" >
-                        <h:outputLabel value="Pharmacy Token" ></h:outputLabel>
-                    </f:facet>
+                <h:form >
+                    <p:panel id="panel" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Pharmacy Token" ></h:outputLabel>
+                        </f:facet>
 
-                    <p:outputLabel value="Counter" ></p:outputLabel>
-                    <p:selectOneMenu value="#{tokenController.counter}" >
-                        <f:selectItem itemLabel="All" ></f:selectItem>
-                        <f:selectItems 
-                            value="#{sessionController.loggableSubDepartments}" 
-                            var="c" 
-                            itemLabel="#{c.name}" 
-                            itemValue="#{c}" >
-                        </f:selectItems>
-                    </p:selectOneMenu>
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:outputLabel value="Counter" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" value="#{tokenController.counter}" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{sessionController.loggableSubDepartments}" 
+                                    var="c" 
+                                    itemLabel="#{c.name}" 
+                                    itemValue="#{c}" >
+                                </f:selectItems>
+                            </p:selectOneMenu>
 
-                    <p:commandButton
-                        value="Process Tokens" 
-                        ajax="false" 
-                        action="#{tokenController.fillPharmacyTokens()}" >
-                    </p:commandButton>
-
-
-                    <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
-
-                        <!-- Token Number Column -->
-                        <p:column headerText="Token Number">
-                            <h:outputText value="#{token.tokenNumber}" />
-                        </p:column>
-
-                        <!-- Patient Name Column -->
-                        <p:column headerText="Patient Name">
-                            <h:outputText value="#{token.patient.person.name}" />
-                        </p:column>
-
-                        <!-- Status Column -->
-                        <p:column headerText="Status">
-                            <h:outputText value="#{tokenController.getTokenStatus(token)}" />
-                        </p:column>
-
-                        <!-- Actions Column -->
-                        <p:column headerText="Actions" styleClass="text-center">
-                            <!-- Call Token Button -->
-                            <p:commandButton icon="fa fa-phone" update="@form" title="Call Token" rendered="#{not token.called}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.callToken}" update="tbl" />
-                                <p:tooltip value="Call Token" />
+                            <p:commandButton
+                                value="Process Tokens" 
+                                ajax="false"
+                                icon="fas fa-cogs"
+                                class="ui-button-warning"
+                                action="#{tokenController.fillPharmacyTokens()}" >
                             </p:commandButton>
+                        </h:panelGrid>
+                        
 
-                            <!-- Start Token Service Button -->
-                            <p:commandButton icon="fa fa-play" update="@form" title="Start Service" rendered="#{token.called and not token.inProgress}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.startTokenService}" update="tbl" />
-                                <p:tooltip value="Start Token Service" />
-                            </p:commandButton>
+                        <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
 
-                            <!-- Complete Token Service Button -->
-                            <p:commandButton icon="fa fa-check" update="@form" title="Complete Service" rendered="#{token.inProgress}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.completeTokenService}" update="tbl" />
-                                <p:tooltip value="Complete Token Service" />
-                            </p:commandButton>
+                            <!-- Token Number Column -->
+                            <p:column headerText="Token Number">
+                                <h:outputText value="#{token.tokenNumber}" />
+                                
+                            </p:column>
+                            
+                            <!-- Patient Name Column -->
+                            <p:column headerText="Patient Name">
+                                <h:outputText value="#{token.patient.person.name}" />
+                            </p:column>
 
-                            <!-- Reverse Call Token Button -->
-                            <p:commandButton icon="fa fa-undo" update="@form" title="Reverse Call" rendered="#{token.called and not token.inProgress}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.reverseCallToken}" update="tbl" />
-                                <p:tooltip value="Reverse Call Token" />
-                            </p:commandButton>
+                            <!-- Patient Name Column -->
+                            <p:column headerText="Bill">
+                                <h:panelGrid rendered="#{token.bill ne null}" >
+                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
+                                        <h:outputText value="PAYMENT DONE" />
+                                        <br/>
+                                        <h:outputText value="Bill Number : " />
+                                        <h:outputText value="#{token.bill.referenceBill.deptId}" />
+                                    </h:panelGroup>
 
-                            <!-- Recall Token Button -->
-                            <p:commandButton icon="fa fa-refresh" update="@form" title="Recall Token" rendered="#{token.called}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.recallToken}" update="tbl" />
-                                <p:tooltip value="Recall Token" />
-                            </p:commandButton>
+                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
+                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
+                                        
+                                        <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
+                                        <br/>
+                                        <h:outputText value="Bill Number : " />
+                                        <h:outputText value="#{token.bill.deptId}" />
+                                    </h:panelGroup>
+                                    
 
-                            <!-- Restart Token Service Button -->
-                            <p:commandButton icon="fa fa-repeat" update="@form" title="Restart Service" rendered="#{token.inProgress}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.restartTokenService}" update="tbl" />
-                                <p:tooltip value="Restart Token Service" />
-                            </p:commandButton>
-
-                            <!-- Reverse Complete Token Service Button -->
-                            <p:commandButton icon="fa fa-undo" update="@form" title="Reverse Complete Service" rendered="#{token.completed}" process="@this">
-                                <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                <p:ajax listener="#{tokenController.reverseCompleteTokenService}" update="tbl" />
-                                <p:tooltip value="Reverse Complete Token Service" />
-                            </p:commandButton>
-                        </p:column>
-
-                    </p:dataTable>
+                                </h:panelGrid>
 
 
+                            </p:column>
 
-                </p:panel>
+                            <!-- Status Column -->
+                            <p:column headerText="Status">
+    <!--                            <h:outputText value="#{tokenController.getTokenStatus(token)}" />-->
+                                <p:tag value="#{tokenController.getTokenStatus(token) == 'Pending' ? 'Pending' : 
+                                                tokenController.getTokenStatus(token) == 'Called' ? 'Called' :
+                                                tokenController.getTokenStatus(token) == 'In Progress' ? 'In Progress' :
+                                                tokenController.getTokenStatus(token) == 'Completed' ? 'Completed' :
+                                                tokenController.getTokenStatus(token)}" 
+                                       severity="#{tokenController.getTokenStatus(token) == 'Pending' ? 'warning' :
+                                                   tokenController.getTokenStatus(token) == 'Called' ? 'secondary' :
+                                                   tokenController.getTokenStatus(token) == 'In Progress' ? 'info' :
+                                                   tokenController.getTokenStatus(token) == 'Completed' ? 'success' : ''}"
+                                       style="font-size: 14px;"/>
+                            </p:column>
+
+                            <!-- Actions Column -->
+                            <p:column headerText="Actions" styleClass="text-center">
+                                <!-- Toggle Called Status Button -->
+                                <p:commandButton ajax="false"
+                                                 icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                 class="#{token.called ? 'ui-button-warning mx-2' : 'ui-button-success mx-2'}"
+                                                 update="@form"
+                                                 title="#{token.called ? 'Cancel Call' : 'Call Token'}"
+                                                 action="#{tokenController.toggleCalledStatus}"
+                                                 process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
+                                </p:commandButton>
+
+                                <!-- Toggle Completed Status Button -->
+                                <p:commandButton ajax="false"
+                                                 icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                 class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                 update="@form"
+                                                 title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                 action="#{tokenController.toggleCompletedStatus}"
+                                                 process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
+                                </p:commandButton>
+
+
+
+                                <p:commandButton 
+                                    id="btnRetailBillForCashier"
+                                    ajax="false"
+                                    class="ui-button-primary mx-2"
+                                    icon="fa fa-pills" 
+                                    rendered="#{token.bill eq null}"
+                                    title="Pharmacy Bill for Cashier" 
+                                    action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+                                <p:tooltip value="Bill For Cashier" />
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-primary"
+
+                                    icon="fa fa-tablets" 
+
+                                    rendered="#{token.bill eq null}"
+                                    title="Pharmacy Bill for Cashier (WholeSale)" 
+                                    action="#{tokenController.navigateToNewPharmacyBillForCashierWholeSale()}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+
+                                <!-- Pay at Cashier Button -->
+                                <!-- Add icon="fa fa-money" to display a money icon -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-success mx-2"
+                                    disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
+                                    icon="fa fa-money-bill" 
+                                    rendered="#{token.bill ne null}"
+                                    title="Pay at Cashier" 
+                                    action="#{tokenController.navigateToSettlePharmacyPreBill}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fas fa-pen" 
+                                    disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
+                                    rendered="#{token.bill ne null}"
+                                    title="Edit Bill" 
+                                    action="#{tokenController.navigateToSaleForCashier}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+
 
 
             </ui:define>

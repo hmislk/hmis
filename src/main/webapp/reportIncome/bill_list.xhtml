@@ -1,193 +1,114 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+
                 <h:form>
 
-                    <p:panel header="Bill Type Summery" >
+                 
+                    <p:panel header="Selected List of Bills" >
+                        <p:commandButton action="/reportIncome/bill_type_summery" value="Back" ajax="false" icon="pi pi-arrow-left" styleClass="ui-button-secondary"></p:commandButton>
+                        <p:commandButton value="Download" ajax="false" icon="pi pi-download" styleClass="ui-button-success">
+                            <p:dataExporter target="tblBills" fileName="bill_list" type="csv"></p:dataExporter>
+                        </p:commandButton>
 
-                        <p:commandButton ajax="false" action="/reportIncome/bill_type_summery" value="Back"></p:commandButton>
+                        <p:dataTable 
+                            id="tblBills" 
+                            var="bill" 
+                            value="#{billSearch.bills}" 
+                            rowKey="#{bill.id}"
+                            rowIndexVar="n"
+                            reflow="true" 
+                            resizableColumns="true"
+                            rows="10"
+                            paginator="true"
+                            class="condensedTable"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,50">
 
-                        <p:panelGrid columns="2" styleClass="alignTop" >
-                            <p:panel header="Data" >
-                                <p:commandButton value="Download" ajax="false" >
-                                    <p:dataExporter target="tblBills" fileName="bill list" type="xlsx" ></p:dataExporter>
-                                </p:commandButton>
-                                <p:dataTable id="tblBills" 
-                                             value="#{billSearch.bills}" 
-                                             var="bill" rowKey="#{bill.id}"
-                                             rowIndexVar="n"
+                            <f:facet name="header">
+                                Bill Summaries
+                            </f:facet>
 
-                                             reflow="true"
-                                             resizableColumns="true"
+                            <p:column headerText="No" width="10">
+                                <h:outputText value="#{n + 1}"/>
+                            </p:column>
 
-                                             rows="10"
-                                             paginator="true"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                             rowsPerPageTemplate="5,10,50"
+                            <p:column headerText="Ind Id" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains">
+                                <p:commandLink id="billNo" value="#{bill.insId}" actionListener="#{searchController.viewOPD(bill)}" ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.selectedBill}"/>
+                                </p:commandLink>
+                            </p:column>
 
-                                             >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bill Summeries"/>
-                                    </f:facet>
-                                    <p:column headerText="No" >
-                                        <h:outputLabel value="#{n+1}"/>
-                                    </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
-                                        <p:commandLink id="billNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
-                                        </p:commandLink>
-                                        <p:tooltip for="billNo">
-                                            <p:panel header="Bill Details - Click to View" >
-                                                <p:panelGrid columns="2" >
-                                                    <p:outputLabel value="Billed Date" ></p:outputLabel>
-                                                    <h:outputLabel value="#{bill.createdAt}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                                    </h:outputLabel>
+                            <p:column headerText="Dep Id" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.deptId}"/>
+                            </p:column>
 
-                                                    <p:outputLabel value="Billed Time" ></p:outputLabel>
-                                                    <h:outputLabel value="#{bill.createdAt.time}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                                    </h:outputLabel>
+                            <p:column headerText="Billed At" sortBy="#{bill.billTime}">
+                                <h:outputText value="#{bill.billTime}" >
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
 
-                                                    <p:outputLabel value="Billed By" ></p:outputLabel>
-                                                    <h:outputLabel value="#{bill.creater.webUserPerson.nameWithTitle}" >
-                                                    </h:outputLabel>
+                            <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" filterBy="#{bill.toDepartment.name}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.toDepartment.name}"/>
+                            </p:column>
 
-                                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
-                                                    <p:outputLabel rendered="#{!bill.cancelled}" value="Not Cancelled" ></p:outputLabel>
-                                                    <h:panelGroup rendered="#{bill.cancelled}" >
-                                                        <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                        </h:outputLabel>
-                                                    </h:panelGroup>
+                            <p:column headerText="Billed At" sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.department.name}"/>
+                            </p:column>
 
-                                                    <p:outputLabel value="Refunds" ></p:outputLabel>
-                                                    <p:outputLabel rendered="#{!bill.refunded}" value="Not Refunded" ></p:outputLabel>
-                                                    <h:panelGroup rendered="#{bill.refunded}" >
-                                                        <h:outputLabel style="color: red;" value="Refunded at " />
-                                                        <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                        </h:outputLabel>
-                                                    </h:panelGroup>
+                            <p:column headerText="Billed by" sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.creater.name}"/>
+                            </p:column>  
 
+                            <p:column headerText="Client" sortBy="#{bill.patient.person.name}" filterBy="#{bill.patient.person.name}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.patient.person.name}"/>
+                            </p:column>
 
-                                                </p:panelGrid>
-                                            </p:panel>
+                            <p:column headerText="Credit Company" sortBy="#{bill.creditCompany.name}" filterBy="#{bill.creditCompany.name}" filterMatchMode="contains">
+                                <h:outputText value="#{bill.creditCompany.name}"/>
+                            </p:column>
 
-                                        </p:tooltip>
-                                    </p:column>
+                            <p:column headerText="Gross Value" sortBy="#{bill.total}" styleClass="averageNumericColumn">
+                                <h:outputText value="#{bill.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
 
-                                    <p:column headerText="Billed At"  sortBy="#{bill.billTime}"  >
-                                        <p:outputLabel id="billTime" value="#{bill.billTime}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                                        </p:outputLabel>
-                                    </p:column>
+                            <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                <h:outputText value="#{bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
 
-                                    <p:column headerText="Bill No" rendered="false"
-                                              sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
-                                        <h:outputLabel   value="#{bill.deptId}"/>
-                                    </p:column> 
-                                    <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
-                                        <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
-                                    </p:column>
-                                    <p:column headerText="Billed At"  sortBy="#{bill.department.name}" filterBy="#{bill.department.name}"  >                                
-                                        <h:outputLabel value="#{bill.department.name}" />
-                                    </p:column>
-                                    <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
-                                        <h:outputLabel value="#{bill.creater.name}" >                                      
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>    
-                                    <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" filterBy="#{bill.patient.person.name}" >                               
-                                        <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patient.person.nameWithTitle}" target="#{patientController.current}"/>
-                                            </h:commandLink>
-                                            <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <p:tooltip for="pt">
-                                            <p:panel header="Patient Details" >
-                                                <p:panelGrid columns="2" >
-                                                    <p:outputLabel value="Name" ></p:outputLabel>
-                                                    <p:outputLabel value="#{bill.patient.person.nameWithTitle}" ></p:outputLabel>
-                                                    <p:outputLabel value="Address" ></p:outputLabel>
-                                                    <p:outputLabel value="#{bill.patient.person.address}" ></p:outputLabel>
-                                                    <p:outputLabel value="ID" ></p:outputLabel>
-                                                    <p:outputLabel value="#{bill.patient.phn}" ></p:outputLabel>
-                                                    <p:outputLabel value="Phone" ></p:outputLabel>
-                                                    <p:outputLabel value="#{bill.patient.person.phone}" ></p:outputLabel>
-                                                    <p:outputLabel value="Email" ></p:outputLabel>
-                                                    <p:outputLabel value="#{bill.patient.person.email}" ></p:outputLabel>
-                                                    <p:outputLabel value="Gender" ></p:outputLabel>
-                                                    <p:outputLabel value="#{bill.patient.person.sex}" ></p:outputLabel>
+                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" styleClass="averageNumericColumn">
+                                <h:outputText value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
 
-                                                </p:panelGrid>
-                                            </p:panel>
-                                        </p:tooltip>
-                                    </p:column>
-                                    <p:column headerText="Phone"  sortBy="#{bill.patient.person.phone}" filterBy="#{bill.patient.person.phone}" >                              
-                                        <h:outputLabel value="#{bill.patient.person.phone}" />
-                                    </p:column>
-                                    <p:column headerText="Payment" rendered="false" >                                
-                                        <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                        <h:outputLabel value="#{bill.paymentScheme.name}" />
-                                    </p:column>
-                                    <p:column headerText="Gross Value" sortBy="#{bill.total}" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.total}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Net Value" sortBy="#{bill.netTotal}" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>  
-                                    <p:column headerText="Cancelled" 
-                                              sortBy="#{bill.cancelled}" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.cancelled?'Yes':'No'}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column> 
-                                    <p:column headerText="Refunded" 
-                                              sortBy="#{bill.netTotal}" 
-                                              styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.refunded?'Yes':'No'}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column> 
+                            <p:column headerText="Cancelled" sortBy="#{bill.cancelled}" styleClass="averageNumericColumn">
+                                <h:outputText value="#{bill.cancelled ? 'Yes' : 'No'}"/>
+                            </p:column>
+
+                            <p:column headerText="Refunded" sortBy="#{bill.refunded}" styleClass="averageNumericColumn">
+                                <h:outputText value="#{bill.refunded ? 'Yes' : 'No'}"/>
+                            </p:column>
+                        </p:dataTable>
 
 
-                                </p:dataTable>
-                            </p:panel>
 
-                        </p:panelGrid>
+
                     </p:panel>
 
                 </h:form>

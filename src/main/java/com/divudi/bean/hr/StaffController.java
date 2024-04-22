@@ -11,7 +11,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.data.hr.EmployeeStatus;
@@ -42,7 +42,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffSalaryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -127,15 +127,15 @@ public class StaffController implements Serializable {
         itemsToRemove = null;
         items = null;
     }
-    
+
     public void deleteStaff() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
-            return ;
+            return;
         }
         current.setRetired(true);
         getFacade().edit(current);
-        fillItems() ;
+        fillItems();
     }
 
     public FormItemValue formItemValue(ReportItem ri, Person p) {
@@ -378,7 +378,7 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff payrol(selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
+        
     }
 
     public void createResignedStaffTable() {
@@ -503,7 +503,7 @@ public class StaffController implements Serializable {
         ////System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
 
     }
 
@@ -699,6 +699,7 @@ public class StaffController implements Serializable {
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm, 20);
         }
+        
         return suggestions;
     }
     Roster roster;
@@ -775,11 +776,11 @@ public class StaffController implements Serializable {
             return "";
         }
         if (file == null) {
-            UtilityController.addErrorMessage("Please select an image");
+            JsfUtil.addErrorMessage("Please select an image");
             return "";
         }
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
-            UtilityController.addErrorMessage("Please select staff member");
+            JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
         //////System.out.println("file name is not null");
@@ -901,12 +902,12 @@ public class StaffController implements Serializable {
         if (selectText.trim().equals("")) {
             sql = "select c from Staff c "
                     + " where c.retired=false "
-//                    + " and type(c)!=:class"
+                    //                    + " and type(c)!=:class"
                     + " order by c.person.name";
         } else {
             sql = "select c from Staff c"
                     + " where c.retired=false "
-//                    + " and type(c)!=:class"
+                    //                    + " and type(c)!=:class"
                     + " and ((c.person.name) like :q or (c.code) like :p) "
                     + " order by c.person.name";
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
@@ -1002,17 +1003,17 @@ public class StaffController implements Serializable {
     public void delete() {
         if (current != null) {
             if (current.getId() == null) {
-                UtilityController.addSuccessMessage("Nothing To Delete");
+                JsfUtil.addSuccessMessage("Nothing To Delete");
             } else {
 
                 current.setRetired(true);
                 current.setRetiredAt(new Date());
                 current.setRetirer(getSessionController().getLoggedUser());
                 getFacade().edit(current);
-                UtilityController.addSuccessMessage("Deleted Successfully");
+                JsfUtil.addSuccessMessage("Deleted Successfully");
             }
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -1036,35 +1037,35 @@ public class StaffController implements Serializable {
 
     public void saveSelected() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson() == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getSpeciality() == null) {
-            UtilityController.addErrorMessage("Plaese Select Speciality.");
+            JsfUtil.addErrorMessage("Plaese Select Speciality.");
             return;
         }
 
         if (current.getPerson().getLastName() == null || current.getPerson().getLastName().isEmpty()) {
-            UtilityController.addErrorMessage("Last Name Requied To Save");
+            JsfUtil.addErrorMessage("Last Name Requied To Save");
             return;
         }
 
         if (current.getPerson().getInitials() == null || current.getPerson().getInitials().isEmpty()) {
-            UtilityController.addErrorMessage("Initials Requied To Save");
+            JsfUtil.addErrorMessage("Initials Requied To Save");
             return;
         }
 
         if (current.getPerson().getFullName() == null || current.getPerson().getFullName().isEmpty()) {
-            UtilityController.addErrorMessage("Full Name Requied To Save");
+            JsfUtil.addErrorMessage("Full Name Requied To Save");
             return;
         }
 
         if (current.getPerson().getNameWithInitials() == null) {
-            UtilityController.addErrorMessage("Name With Initials Requied To Save");
+            JsfUtil.addErrorMessage("Name With Initials Requied To Save");
             return;
         }
 
@@ -1073,7 +1074,7 @@ public class StaffController implements Serializable {
             removeResign = false;
         } else {
             if (tempRetireDate != null && checkDateBetwenSalaryCycle(tempRetireDate)) {
-                UtilityController.addErrorMessage("This Retire Date Inside in Salary Cycle. Please Check and add Retire date");
+                JsfUtil.addErrorMessage("This Retire Date Inside in Salary Cycle. Please Check and add Retire date");
                 tempRetireDate = null;
                 return;
             }
@@ -1124,7 +1125,7 @@ public class StaffController implements Serializable {
 //            current.getPerson().setEditedAt(new Date());
             getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Staff Details Updated");
+            JsfUtil.addSuccessMessage("Staff Details Updated");
         } else {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -1133,7 +1134,7 @@ public class StaffController implements Serializable {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("New Staff Created");
+            JsfUtil.addSuccessMessage("New Staff Created");
         }
 
         updateStaffEmployment();
@@ -1356,13 +1357,13 @@ public class StaffController implements Serializable {
         }
         return items;
     }
-    
+
     public void fillItems() {
-            String temSql;
-            temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
-            items = getFacade().findByJpql(temSql);
+        String temSql;
+        temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
+        items = getFacade().findByJpql(temSql);
     }
-    
+
     public Staff findStaffByName(String name) {
         String jpql = "select c "
                 + " from Staff c "
@@ -1514,11 +1515,11 @@ public class StaffController implements Serializable {
             }
         }
     }
-    
-    public String navigateToManageStaff(){
+
+    public String navigateToManageStaff() {
         return "/admin/staff/admin_manage_staff_index.xhtml";
     }
-  
+
     public CommonController getCommonController() {
         return commonController;
     }

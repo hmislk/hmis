@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -24,7 +24,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Reset Item Session Number Type" 
                                                              action="#{pharmacyItemExcelManager.resetSessionBillNumberType()}"  />
                                             <p:commandButton class="w-100" ajax="false" value="Reset Channel Session Number" 
-                                                             action="#{sheduleController.resetSessionNumbers()}"  />
+                                                             action="#{channelScheduleController.resetSessionNumbers()}"  />
                                             <p:commandButton class="w-100" ajax="false"
                                                              value="Set Dept ID To Bills" 
                                                              action="#{pharmacyItemExcelManager.updateBillDeptID()}"  />
@@ -34,12 +34,12 @@
                                     <p:tab title=" Pharmacy " >
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton class="w-100" ajax="false" value="1) Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}"  />
-                                            <p:commandButton class="w-100" ajax="false" value="2) Reset Transfer Issue Value" action="#{pharmacyItemExcelManager.resetTransferIssueValue()}"  />
-                                            <p:commandButton class="w-100" ajax="false"  value="3) Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}"  />
-                                            <p:commandButton class="w-100" ajax="false" value="4) Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}"  />
-                                            <p:commandButton class="w-100" ajax="false" value="5) Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}"  />
-                                            <p:commandButton class="w-100" ajax="false" value="6) Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="Reset Transfer Issue Value" action="#{pharmacyItemExcelManager.resetTransferIssueValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false"  value="Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}"  />
                                         </div>
                                     </p:tab>
 
@@ -77,7 +77,7 @@
                                                              action="#{pharmacyItemExcelManager.removeStoreItem()}"  rendered="false" />
 
                                             <p:commandButton class="w-100" ajax="false"
-                                                             value="Update Cancel Grn Net Totals" 
+                                                             value="Update Cancel GRN Net Totals" 
                                                              action="#{pharmacyItemExcelManager.updateCancelGRN()}"  />
                                         </div>
                                     </p:tab>
@@ -115,11 +115,11 @@
 
 
                                             <p:commandButton class="w-100" ajax="false"
-                                                             value="Active Vat For All Channel Sessions" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
+                                                             value="Active VAT For All Channel Sessions" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
                                                              action="#{dataAdministrationController.createAllSessionAsVatable()}" 
                                                              />
                                             <p:commandButton class="w-100" ajax="false"
-                                                             value="Mark All Channel Sessions as Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
+                                                             value="Mark All Channel Sessions As Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
                                                              action="#{dataAdministrationController.createAllSessionAsChannel()}" 
                                                              />
                                         </div>

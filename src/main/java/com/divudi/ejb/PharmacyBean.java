@@ -52,7 +52,8 @@ import com.divudi.facade.StoreItemCategoryFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.bean.common.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -237,9 +238,9 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Bill Already Cancelled");
             return null;
         }
-
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
 
@@ -413,19 +414,14 @@ public class PharmacyBean {
         if (stock.getId() == null) {
             return false;
         }
-
         stock = getStockFacade().find(stock.getId());
-
-        addToStockHistory(ph, stock, department);
-
         stock.setStock(qty);
         getStockFacade().edit(stock);
+        addToStockHistory(ph, stock, department);
         return true;
     }
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
-
-        //System.err.println("Adding Staff QTY " + qty);
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
@@ -437,28 +433,24 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
-
         if (s.getId() == null || s.getId() == 0) {
             s.setStock(s.getStock() + qty);
             getStockFacade().create(s);
         } else {
-//            addToStockHistory(pharmaceuticalBillItem, s, staff);
-            //            addToStockHistory(pharmaceuticalBillItem, s, staff);
             s.setStock(s.getStock() + qty);
             getStockFacade().edit(s);
         }
+        addToStockHistory(pharmaceuticalBillItem, s, staff);
         return s;
     }
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
-        //System.err.println("Adding Stock : ");
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
         hm.put("bch", pharmaceuticalBillItem.getItemBatch());
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstByJpql(sql, hm);
-//        //System.err.println("ss" + s);
         if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
@@ -466,18 +458,14 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
         if (s.getId() == null || s.getId() == 0) {
-            //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
             s.setCode(pharmaceuticalBillItem.getCode());
-            //System.err.println("Initial Stock After Updation" + s.getStock());
             getStockFacade().create(s);
             addToStockHistoryInitial(pharmaceuticalBillItem, s, department);
         } else {
-            addToStockHistory(pharmaceuticalBillItem, s, department);
-            //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() + qty);
-            //System.err.println("After Stock Updation " + s.getStock());
             getStockFacade().edit(s);
+            addToStockHistory(pharmaceuticalBillItem, s, department);
         }
         return s;
     }
@@ -508,18 +496,13 @@ public class PharmacyBean {
     }
 
     public boolean deductFromStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
-        //System.err.println("Diduct From Staff ");
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s from Stock s where s.itemBatch=:batch "
                 + "and s.staff=:stf";
-        //System.err.println("1 " + pharmaceuticalBillItem);
-        //System.err.println("2 " + pharmaceuticalBillItem.getItemBatch());
-        //System.err.println("3 " + staff);
         hm.put("batch", pharmaceuticalBillItem.getItemBatch());
         hm.put("stf", staff);
         Stock s = getStockFacade().findFirstByJpql(sql, hm);
-        //System.err.println("4");
         if (s == null) {
             s = new Stock();
             s.setStaff(staff);
@@ -530,17 +513,13 @@ public class PharmacyBean {
         }
 
         if (s.getId() == null || s.getId() == 0) {
-            //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() - qty);
-            //System.err.println("Initial Stock After Updation" + s.getStock());
             getStockFacade().create(s);
         } else {
-//            addToStockHistory(pharmaceuticalBillItem, s, staff);
-            //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() - qty);
-            //System.err.println("After Stock Updation " + s.getStock());
             getStockFacade().edit(s);
         }
+        addToStockHistory(pharmaceuticalBillItem, s, staff);
         return true;
     }
 
@@ -599,10 +578,79 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-        if (item instanceof Ampp) {
-            item = ((Ampp) item).getAmp();
+        if (qty <= 0) {
+            return new ArrayList<>();
         }
+        String sql = "";
+        Map m = new HashMap();
 
+        m.put("d", department);
+        m.put("q", 1.0);
+        if (item instanceof Amp) {
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item=:amp "
+                    + " and s.department=:d and s.stock >=:q "
+                    + " and s.itemBatch.dateOfExpire > :doe "
+                    + " order by s.itemBatch.dateOfExpire ";
+            m.put("amp", item);
+            m.put("doe", new Date());
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item in :amps "
+                    + " and s.itemBatch.dateOfExpire > :doe"
+                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+            m.put("amps", amps);
+        } else {
+            JsfUtil.addErrorMessage("Not supported yet");
+            return new ArrayList<>();
+        }
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
+        List<StockQty> list = new ArrayList<>();
+        double toAddQty = qty;
+        for (Stock s : stocks) {
+            if (s.getStock() >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - s.getStock();
+                list.add(new StockQty(s, s.getStock()));
+            }
+        }
+        return list;
+    }
+
+    public List<StockQty> getStockByQty(Vmp item, double qty, Department department) {
+        List<StockQty> stocks = new ArrayList<>();
+        if (item == null) {
+            return stocks;
+        }
+        List<Amp> amps = findAmpsForVmp(item);
+        if (amps == null) {
+            return stocks;
+        }
+        for (Amp a : amps) {
+            List<StockQty> sq = getStockByQty(a, qty, department);
+
+        }
+        return stocks;
+    }
+
+    public List<Amp> findAmpsForVmp(Vmp vmp) {
+        String jpql;
+        Map m = new HashMap();
+        m.put("vmp", vmp);
+        m.put("ret", false);
+        jpql = "select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " and amp.vmp=:vmp";
+        return ampFacade.findByJpql(jpql, m);
+    }
+
+    public List<StockQty> getStockByQty(Amp item, double qty, Department department) {
         if (qty <= 0) {
             return new ArrayList<>();
         }
@@ -641,17 +689,14 @@ public class PharmacyBean {
         if (stock.getStock() < qty) {
             return false;
         }
-
-        addToStockHistory(pbi, stock, d);
-
         stock = getStockFacade().find(stock.getId());
-
         stock.setStock(stock.getStock() - qty);
         getStockFacade().edit(stock);
-
+        addToStockHistory(pbi, stock, d);
         return true;
     }
 
+    @Deprecated
     public boolean deductFromStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -664,37 +709,12 @@ public class PharmacyBean {
         if (stock.getStock() < qty) {
             return false;
         }
-
-//        addToStockHistory(pbi, stock, d);
         stock = getStockFacade().find(stock.getId());
-
-        //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
-        //System.err.println("After  Update " + stock.getStock());
         getStockFacade().edit(stock);
-
         return true;
     }
 
-//    public boolean deductFromStockStaff(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
-//        if (stock == null) {
-//            return false;
-//        }
-//
-//        if (stock.getId() == null) {
-//            return false;
-//        }
-//
-//        addToStockHistory(pbi, d);
-//        stock = getStockFacade().find(stock.getId());
-//
-//        //System.err.println("Before Update " + stock.getStock());
-//        stock.setStock(stock.getStock() - qty);
-//        //System.err.println("After  Update " + stock.getStock());
-//        getStockFacade().edit(stock);
-//
-//        return true;
-//    }
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
         if (phItem == null) {
             return;
@@ -733,18 +753,17 @@ public class PharmacyBean {
         sh.setInstitution(d.getInstitution());
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
-
         sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
-
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
+        } else {
+            getStockHistoryFacade().edit(sh);
         }
-
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().edit(phItem);
-
     }
 
     public void addToStockHistoryInitial(PharmaceuticalBillItem phItem, Stock stock, Department d) {
@@ -789,9 +808,12 @@ public class PharmacyBean {
         sh.setStockQty(0.0);
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getDepartment()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
+        } else {
+            getStockHistoryFacade().edit(sh);
         }
 
         phItem.setStockHistory(sh);
@@ -837,11 +859,14 @@ public class PharmacyBean {
         Stock fetchedStock = getStockFacade().find(stock.getId());
 
         sh.setStockQty(fetchedStock.getStock());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getDepartment()));
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
+        } else {
+            getStockHistoryFacade().edit(sh);
         }
 
         phItem.setStockHistory(sh);
@@ -858,23 +883,17 @@ public class PharmacyBean {
         if (stock.getStock() == null) {
             return false;
         }
-
         if (stock.getId() == null) {
             return false;
         }
-
-        addToStockHistory(pbi, stock, d);
-
         stock = getStockFacade().find(stock.getId());
-
-        //System.err.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
-        //System.err.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
-
+        addToStockHistory(pbi, stock, d);
         return true;
     }
 
+    @Deprecated
     public boolean addToStockWithoutHistory(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -886,15 +905,9 @@ public class PharmacyBean {
         if (stock.getId() == null) {
             return false;
         }
-
-//        addToStockHistory(pbi, stock, d);
         stock = getStockFacade().find(stock.getId());
-
-        //System.err.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
-        //System.err.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
-
         return true;
     }
 
@@ -1193,7 +1206,7 @@ public class PharmacyBean {
         name = name.replaceAll("\'", "");
         name = name.replaceAll("\"", "");
         String j = "SELECT c FROM PharmaceuticalItemCategory c Where (c.name)=:name ";
-        
+
         try {
             cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql(j, m);
         } catch (Exception e) {
@@ -1231,16 +1244,14 @@ public class PharmacyBean {
         String j = "SELECT c FROM PharmaceuticalItemType c Where (c.name) = :n";
         Map m = new HashMap();
         m.put("n", name.trim().toUpperCase());
-        try{
-             cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j,m);
-        
-        }catch(Exception e){
+        try {
+            cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j, m);
+
+        } catch (Exception e) {
             return null;
         }
-        
-        
-        
-       if (cat == null && createNew == true) {
+
+        if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemType();
             cat.setName(name);
             pharmaceuticalItemTypeFacade.create(cat);
@@ -1313,14 +1324,14 @@ public class PharmacyBean {
     @EJB
     VmpFacade vmpFacade;
     @EJB
-    VtmsVmpsFacade vtmsVmpsFacade;
+    VirtualProductIngredientFacade virtualProductIngredientFacade;
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
-        return vtmsVmpsFacade;
+    public VirtualProductIngredientFacade getVirtualProductIngredientFacade() {
+        return virtualProductIngredientFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmsVmpsFacade) {
-        this.vtmsVmpsFacade = vtmsVmpsFacade;
+    public void setVirtualProductIngredientFacade(VirtualProductIngredientFacade virtualProductIngredientFacade) {
+        this.virtualProductIngredientFacade = virtualProductIngredientFacade;
     }
 
     public VmpFacade getVmpFacade() {
@@ -1405,37 +1416,42 @@ public class PharmacyBean {
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
         String sql;
-        if (strength == 0 || strengthUnit == null || cat == null) {
-            return null;
+        String vmpName = "";
+
+        if (vtm != null && vtm.getName() != null) {
+            vmpName += vtm.getName();
         }
+
+        if (strength < 0.00000001) {
+            vmpName += " " + strength;
+        }
+
+        if (strengthUnit != null && strengthUnit.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + strengthUnit.getName();
+        }
+
+        if (cat != null && cat.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + cat.getName();
+        }
+
+        vmpName = vmpName.trim();
+
         Map m = new HashMap();
-        m.put("vtm", vtm);
-        m.put("s", strength);
-        m.put("su", strengthUnit);
-        m.put("c", cat);
-        sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
-        ////System.out.println("m = " + m);
-        Vmp vmp;
-        if (v == null) {
-            ////System.out.println("new created");
+        m.put("n", vmpName);
+        m.put("v", vtm);
+        sql = "select v "
+                + "from Vmp v "
+                + "where v.name=:n "
+                + " and v.vtm=:v";
+        Vmp vmp = vmpFacade.findFirstByJpql(sql, m);
+        if (vmp == null) {
             vmp = new Vmp();
-
-            vmp.setName(vtm.getName() + " " + strength + " " + strengthUnit.getName() + " " + cat.getName());
-
+            vmp.setName(vmpName);
+            vmp.setVtm(vtm);
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
-
-            v = new VirtualProductIngredient();
-            v.setStrength(strength);
-            v.setStrengthUnit(strengthUnit);
-            v.setVtm(vtm);
-            v.setVmp(vmp);
-            v.setPharmaceuticalItemCategory(cat);
-            getVtmsVmpsFacade().create(v);
         }
-        v.getVmp().setRetired(false);
-        return v.getVmp();
+        return vmp;
     }
 
     public Vtm getVtmByName(String name, boolean createNew) {

@@ -26,7 +26,15 @@
                         <p>Select Department</p>
                     </div>
                     <div>
-                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" class="w-100 form-select form-select-lg p-1">
+                        <p:selectOneMenu
+                            value="#{sessionController.department}" 
+                            filter="true" 
+                            filterPlaceholder="Department" 
+                            filterMatchMode="contains" 
+                            required="true" 
+                            var="d" 
+                            class="w-100 form-select form-select-lg p-1"
+                            requiredMessage="Please select the Department you have to log.">
                             <f:selectItems value="#{sessionController.departments}"
                                            var="dept"
                                            itemLabel="#{dept.name}"

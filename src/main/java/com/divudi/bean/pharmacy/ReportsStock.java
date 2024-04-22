@@ -7,7 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
@@ -104,7 +104,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -128,7 +128,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock report by batch(/faces/pharmacy/pharmacy_report_department_stock_by_batch.xhtml or /faces/pharmacy/pharmacy_department_stock_report_by_batch.xhtml)");
+        
     }
 
     public String fillDepartmentNonEmptyStocksByVmp() {
@@ -162,7 +162,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock report of single product(/faces/pharmacy/pharmacy_report_department_stock_by_single_product.xhtml)");
+        
 
         return "pharmacy_report_department_stock_by_single_product";
 
@@ -205,7 +205,7 @@ public class ReportsStock implements Serializable {
         }
         pharmacyStockRows = lsts;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock report by product(/faces/pharmacy/pharmacy_report_department_stock_by_product.xhtml)");
+        
     }
 
     public void fillDepartmentNonEmptyItemStocks() {
@@ -214,7 +214,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -232,7 +232,7 @@ public class ReportsStock implements Serializable {
         m.put("z", 0.0);
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
-        stockSaleValue += 0.0;
+        stockSaleValue = 0.0;
         for (PharmacyStockRow r : lsts) {
             stockPurchaseValue += r.getPurchaseValue();
             stockSaleValue += r.getSaleValue();
@@ -240,12 +240,12 @@ public class ReportsStock implements Serializable {
         }
         pharmacyStockRows = lsts;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock report by item(/faces/pharmacy/pharmacy_report_department_stock_by_item.xhtml)");
+        
     }
 
     public void fillDepartmentInventryStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -272,7 +272,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -287,7 +287,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/department stock by batch minus(/faces/pharmacy/pharmacy_report_department_stock_by_batch_minus.xhtml)");
+        
     }
 
     @EJB
@@ -377,7 +377,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -483,7 +483,7 @@ public class ReportsStock implements Serializable {
 
         stocks = stk;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/error detection report(/faces/pharmacy/pharmacy_report_department_error.xhtml)");
+        
 
     }
 
@@ -493,7 +493,7 @@ public class ReportsStock implements Serializable {
         Date startTime = new Date();
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -517,13 +517,13 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock Report by expir(/faces/pharmacy/pharmacy_report_department_stock_by_batch_expiary.xhtml)");
+        
     }
 
     public void addComment(Stock st) {
         if (st != null) {
             getStockFacade().edit(st);
-            UtilityController.addSuccessMessage("Edit Successful");
+            JsfUtil.addSuccessMessage("Edit Successful");
         } else {
             return;
         }
@@ -546,7 +546,7 @@ public class ReportsStock implements Serializable {
         Date startTime = new Date();
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -591,7 +591,7 @@ public class ReportsStock implements Serializable {
 
         Collections.sort(items);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Non moving(Process)(/faces/pharmacy/pharmacy_report_department_non_moving.xhtml)");
+        
     }
 
     public void fillStaffStocks() {
@@ -600,7 +600,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (staff == null) {
-            UtilityController.addErrorMessage("Please select a staff member");
+            JsfUtil.addErrorMessage("Please select a staff member");
             return;
         }
         Map m = new HashMap();
@@ -615,7 +615,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Transfer Report/Staff stock reports(/faces/pharmacy/pharmacy_report_staff_stock_by_batch.xhtml)");
+        
     }
     
     public void fillAllStaffStocks() {
@@ -637,7 +637,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Transfer Report/All Staff stock reports(/faces/pharmacy/pharmacy_report_staff_stock_by_batch.xhtml)");
+        
     }
 
     public String fillDistributorStocks() {
@@ -646,7 +646,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null || institution == null) {
-            UtilityController.addErrorMessage("Please select a department && Dealor");
+            JsfUtil.addErrorMessage("Please select a department && Dealor");
             return "";
         }
         Map m;
@@ -674,7 +674,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Supplier Stock report(/faces/pharmacy/pharmacy_report_supplier_stock_by_batch.xhtml)");
+        
 
         return "/pharmacy/pharmacy_report_supplier_stock_by_batch";
     }
@@ -685,7 +685,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null || category == null) {
-            UtilityController.addErrorMessage("Please select a department && Category");
+            JsfUtil.addErrorMessage("Please select a department && Category");
             return;
         }
         Map m;
@@ -703,27 +703,28 @@ public class ReportsStock implements Serializable {
                 + " and s.itemBatch.item.category=:cat "
                 + " order by s.itemBatch.item.name";
         stocks = getStockFacade().findByJpql(sql, m);
+        totalQty = 0.0;
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
 
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-            totalQty = totalQty + ts.getStock();
+            totalQty += ts.getStock();
             totalPurchaseRate += ts.getItemBatch().getPurcahseRate();
             totalRetailSaleRate += ts.getItemBatch().getRetailsaleRate();
             totalPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
             totalRetailSaleValue += ts.getItemBatch().getRetailsaleRate() * ts.getStock();
         }
         getReportKeyWord().setBool1(false);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Category stock report(/faces/pharmacy/pharmacy_report_category_stock_by_batch.xhtml)");
+        
 
     }
 
     public void fillCategoryStocksNew() {
 
         if (department == null || category == null) {
-            UtilityController.addErrorMessage("Please select a department && Category");
+            JsfUtil.addErrorMessage("Please select a department && Category");
             return;
         }
         Map m;
@@ -859,7 +860,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m;
@@ -891,7 +892,7 @@ public class ReportsStock implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Supplier Stock  summery(/faces/pharmacy/pharmacy_report_all_supplier_stock.xhtml)");
+        
 
     }
 
@@ -1042,7 +1043,7 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Non moving(Three Months Nonmoving)(/faces/pharmacy/pharmacy_report_department_non_moving.xhtml)");
+        
     }
 
     public void fillSixMonthsNonmoving() {
@@ -1054,7 +1055,7 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Non moving(Six Months Nonmoving)(/faces/pharmacy/pharmacy_report_department_non_moving.xhtml)");
+        
     }
 
     public void fillOneYearNonmoving() {
@@ -1066,7 +1067,7 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Non moving(One Year Nonmoving)(/faces/pharmacy/pharmacy_report_department_non_moving.xhtml)");
+        
     }
 
     public void setToDate(Date toDate) {

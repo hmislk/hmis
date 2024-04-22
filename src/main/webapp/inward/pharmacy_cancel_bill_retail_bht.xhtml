@@ -1,57 +1,72 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy/inward"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" rendered="#{pharmacyBillSearch.printPreview}">
-                        <f:facet name="header" >
-                            <h:outputLabel value="BHT Issue Cancel" ></h:outputLabel>
-                               
-                            <hr/>
-                            <p:commandButton value="Print" ajax="false">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            
-                        </f:facet>
 
-
-                    </p:panel>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">                           
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStockBht()}" >
-                            </h:commandButton>                            
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Cancellation"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{pharmacyBillSearch.bill.comments}" style="float: right" class="p-2 w-100"/> 
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel Bill" 
+                                        icon="fa fa-cancel"
+                                        style="float: right"
+                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStockBht()}" >
+                                    </p:commandButton>  
+                                </h:panelGrid>
+
+                            </f:facet>
+
                         </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Dealor Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
+                        <div class="row">
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                        <h:outputLabel value="Supplier Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                    <h:outputLabel value="Supplier ​Name:" ></h:outputLabel>
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <p:panel header="Bill Item Details">
                             <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
@@ -67,50 +82,69 @@
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{pharmacyBillSearch.bill.comments}"/>                            
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
+                        <p:panel header="Reprint" >
+                            <f:facet name="header" >
+                                <h:outputLabel value="BHT Issue Cancel" ></h:outputLabel>
+
+                                <p:commandButton value="Print" ajax="false" style="float: right;" class="ui-button-info" icon="fas fa-print">
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                            </f:facet>
+
+
+                            <div class="d-flex m-2">
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}"/>
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1"></p:commandButton>
+                            </div>
+                                
+                            <h:panelGroup id="gpBillPreview">
+                                
+                                <h:panelGroup  rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                            <pharmacy:issueBill bill="#{pharmacyBillSearch.bill.cancelledBill}" />
+                                        </h:panelGroup>
+                                    </div>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                                    <div >
+                                        <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
+                                            <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_prabodha>
+                                        </h:panelGroup>
+                                    </div>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup  rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                            <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_five_five>
+                                        </h:panelGroup>
+                                    </div>
+
+                                </h:panelGroup>                            
+
+                            </h:panelGroup>
+
                         </p:panel>
                     </h:panelGroup>
 
 
-<!--                    <h:panelGroup  id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:issueBill bill="#{pharmacyBillSearch.bill.cancelledBill}" />
 
-                    </h:panelGroup>-->
-                    
-                    <h:panelGroup   id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" > 
 
-                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                                        <pharmacy:issueBill bill="#{pharmacyBillSearch.bill.cancelledBill}" />
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_prabodha>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_five_five>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>                            
-
-                        </h:panelGroup>  
 
 
                 </h:form>                

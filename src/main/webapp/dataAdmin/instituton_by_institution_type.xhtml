@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -14,25 +14,25 @@
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Institution Report (#{creditCompanyController.institutionType})" >
+                    <p:panel header="Institution Report #{creditCompanyController.institutionType}" >
 
-                        <h:panelGrid columns="2">
+                        <h:panelGrid columns="2" class="my-2">
                             <h:outputText id="lblType" value=" Institution Type" ></h:outputText>
-                            <p:selectOneMenu value="#{creditCompanyController.institutionType}">
+                            <p:selectOneMenu class="w-100 mx-4" autoWidth="false" value="#{creditCompanyController.institutionType}">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{institutionController.institutionTypes}"/>
                             </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Fill" action="#{creditCompanyController.fillInstitutions()}"  ></p:commandButton>
-                            <h:panelGrid columns="2">
-                                <p:commandButton value="Print" ajax="false" action="#" >
+                        </h:panelGrid>
+                        <h:panelGrid columns="6">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{creditCompanyController.fillInstitutions()}"  ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                                     <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_#{creditCompanyController.institutionType}_List"  />
                                 </p:commandButton>
                             </h:panelGrid>
-                        </h:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
@@ -122,7 +122,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        <h:outputLabel value="Creater"/>
+                                        <h:outputLabel value="Creator"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
                                     </h:outputLabel>

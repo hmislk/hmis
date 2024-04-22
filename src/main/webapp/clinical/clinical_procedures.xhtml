@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/inward/inward_administration.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -125,7 +125,7 @@
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:outputLabel class=" w-100 mt-2 mb-2 form-control"  value="#{procedureController.current.department.name}" ></p:outputLabel>
 
-                                    <h:outputText value="Creater" ></h:outputText>
+                                    <h:outputText value="Creator" ></h:outputText>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:outputLabel class=" w-100 form-control"  value="#{procedureController.current.creater.staff.person.name}" ></p:outputLabel>
 

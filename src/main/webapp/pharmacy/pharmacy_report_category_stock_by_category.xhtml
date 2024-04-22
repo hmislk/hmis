@@ -1,19 +1,19 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Category Stock Summery" >
+                    <p:panel header="Category Stock Summary" >
 
                         <h:panelGrid columns="8" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
@@ -33,7 +33,7 @@
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl"  value="#{reportsStock.stockRecords}" var="i" style="width: 500px;" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Category Stock Summery - #{reportsStock.department.name} "/>   <br/>                                 
+                                    <h:outputLabel value="Category Stock Summary - #{reportsStock.department.name} "/>   <br/>                                 
                                 </f:facet> 
 
                                 <p:column headerText="Category"

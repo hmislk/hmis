@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -15,8 +15,8 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h:outputStylesheet library="css" name="token_pos.css" ></h:outputStylesheet>
-        <div class="posbillBreak" style="text-align: center;">
+        <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
+        <div class="posbill" style="text-align: center;">
 
             <div class="institutionName" style="text-align: center!important;
                  font-weight: bold!important;
@@ -50,76 +50,45 @@
                     #{cc.attrs.token.tokenNumber}
                 </h1>                         
             </div>
-
+            
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div class="">
+            
+            <div class="billline d-flex justify-content-center">
                 <p:barcode value="#{cc.attrs.token.idStr}" 
                            width="400"
                            height="100"
                            type="code128"  >
                 </p:barcode>
             </div>
+            
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
+
             <div class="billDetails" >
-                <table style="width: 100%; margin-left:0.5cm;" >
+                <table >
                     <tr>
                         <td style="width: 15%; text-align: left;" >
                             <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 85%" >
-                            <h:outputLabel value="#{cc.attrs.token.createdAt}" class="billDetails" >
+                            <h:outputLabel value="#{cc.attrs.token.tokenDate}" class="billDetails" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
-
-                        </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
-                        </td>
-
-                        <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-<!--                            <h:outputLabel value="#{cc.attrs.token.createdAt}" class="billDetails">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                            </h:outputLabel>-->
-                        </td>
-
                     </tr>
-
                     <tr>
-                        <td style="width: 15%; text-align: left;" >
-                            <h:outputLabel value="Time" class="billDetails" ></h:outputLabel>
-                        </td>
-                        <td>:</td>
                         <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.token.createdAt}" class="billDetails" >
+                            <h:outputLabel value="#{cc.attrs.token.createdAt}" class="billDetails">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
-
-                        </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
-                        </td>
-
-                        <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-<!--                            <h:outputLabel value="#{cc.attrs.token.createdAt}" class="billDetails">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                            </h:outputLabel>-->
-                        </td>
-
                     </tr>
 
 
@@ -132,12 +101,6 @@
                             <td style="width: 30%;" >
                                 <h:outputLabel value="#{cc.attrs.token.patient.person.nameWithTitle}"  >
                                 </h:outputLabel>
-                            </td>
-                            <td style="width: 10%" >
-                            </td>
-                            <td style="width: 15%" >
-                            </td>
-                            <td style="width: 30%" >
                             </td>
                         </tr>
                     </h:panelGroup>
@@ -152,19 +115,7 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-         
            
-
-            
-
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
-         
-
-
-
-
         </div>
     </cc:implementation>
 </html>

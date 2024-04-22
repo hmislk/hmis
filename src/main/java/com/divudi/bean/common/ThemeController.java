@@ -13,7 +13,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Buddhika
@@ -84,7 +84,7 @@ public class ThemeController implements Serializable {
         if (getSessionController().getLoggedUser() != null) {
             getSessionController().getLoggedUser().setPrimeTheme(theme);
             getFacade().edit(getSessionController().getLoggedUser());
-            UtilityController.addSuccessMessage("Theme updated");
+            JsfUtil.addSuccessMessage("Theme updated");
         }
     }
     

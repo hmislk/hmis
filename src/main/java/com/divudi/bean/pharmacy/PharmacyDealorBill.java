@@ -9,7 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -93,19 +93,19 @@ public class PharmacyDealorBill implements Serializable {
 
     private boolean errorCheckForAdding() {
         if (getCurrentBillItem().getReferenceBill().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("U cant add without credit company name");
+            JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
         }
 
         if (!isPaidAmountOk(getCurrentBillItem())) {
-            UtilityController.addSuccessMessage("U cant add more than ballance");
+            JsfUtil.addSuccessMessage("U cant add more than ballance");
             return true;
         }
 
         for (BillItem b : getBillItems()) {
             if (b.getReferenceBill() != null && b.getReferenceBill().getFromInstitution() != null) {
                 if (!Objects.equals(getCurrentBillItem().getReferenceBill().getFromInstitution().getId(), b.getReferenceBill().getFromInstitution().getId())) {
-                    UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
+                    JsfUtil.addErrorMessage("U can add only one type Credit companies at Once");
                     return true;
                 }
             }
@@ -187,7 +187,7 @@ public class PharmacyDealorBill implements Serializable {
 
         if (!isPaidAmountOk(billItem)) {
             billItem.setNetValue(0);
-//            UtilityController.addSuccessMessage("U cant add more than ballance");
+//            JsfUtil.addSuccessMessage("U cant add more than ballance");
 //            return;
         }
 
@@ -254,12 +254,12 @@ public class PharmacyDealorBill implements Serializable {
 
     private boolean errorCheck() {
         if (getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Bill Item ");
+            JsfUtil.addErrorMessage("No Bill Item ");
             return true;
         }
 
         if (getCurrent().getToInstitution() == null) {
-            UtilityController.addErrorMessage("Select Cant settle without Dealor");
+            JsfUtil.addErrorMessage("Select Cant settle without Dealor");
             return true;
         }
 
@@ -336,10 +336,10 @@ public class PharmacyDealorBill implements Serializable {
             
         }
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Payments(/faces/dealorPayment/bill_dealor.xhtml)");
+        
     }
 
     public void settleBillAll() {
@@ -352,7 +352,7 @@ public class PharmacyDealorBill implements Serializable {
         }
 
         if (getSelectedBillItems() == null || getSelectedBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("There is No Bills seected to settle");
+            JsfUtil.addErrorMessage("There is No Bills seected to settle");
             return;
         }
 
@@ -368,10 +368,10 @@ public class PharmacyDealorBill implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Payments/By dealer(/faces/dealorPayment/bill_dealor_all.xhtml)");
+        
     }
 
     private void saveBillItem() {

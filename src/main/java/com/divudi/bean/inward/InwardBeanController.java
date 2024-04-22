@@ -93,7 +93,7 @@ public class InwardBeanController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
 
-    private CommonFunctions commonFunctions;
+    
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -107,6 +107,8 @@ public class InwardBeanController implements Serializable {
     @Inject
     SessionController sessionController;
 
+    private CommonFunctions commonFunctions;
+    
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
         Map<String, String> replaceables = CommonFunctions.getReplaceables(b);
@@ -1457,7 +1459,7 @@ public class InwardBeanController implements Serializable {
             return null;
         }
 
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         }
 
@@ -1509,7 +1511,7 @@ public class InwardBeanController implements Serializable {
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
 
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         }
 
@@ -1628,22 +1630,36 @@ public class InwardBeanController implements Serializable {
 
     public String getBhtText(AdmissionType admissionType) {
         String bhtText;
-        String sql = "SELECT count(a.id) FROM Admission a "
-                + " where a.admissionType.admissionTypeEnum=:adType ";
-
         HashMap hm = new HashMap();
-        hm.put("adType", admissionType.getAdmissionTypeEnum());
-        long temp = getAdmissionFacade().countByJpql(sql, hm);
+        Long temp = 0l;
+        String sql;
 
-        temp = temp + admissionType.getAdditionToCount();
+        if (admissionType != null) {
+            sql = "SELECT count(a.id) FROM Admission a ";
+            sql += " where a.admissionType.admissionTypeEnum=:adType ";
+            hm.put("adType", admissionType.getAdmissionTypeEnum());
+            temp += admissionType.getAdditionToCount();
+            temp += admissionFacade.countByJpql(sql, hm);
+        } else {
+            sql = "SELECT count(a.id) FROM Admission a ";
+            sql += " where a.admissionType.admissionTypeEnum=:adType ";
+            hm.put("adType", admissionType);
+            temp += admissionFacade.countByJpql(sql);
+        }
 
-        bhtText = admissionType.getCode().trim() + Long.toString(temp);
+        if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
+            bhtText = "BHT" + Long.toString(temp);
+        } else {
+            bhtText = admissionType.getCode().trim();
+        }
 
-        if (getSessionController().getLoggedPreference().isBhtNumberWithYear()) {
+        if (getSessionController().getApplicationPreference().isBhtNumberWithYear()) {
             Calendar c = Calendar.getInstance();
 
             bhtText = bhtText + "/" + c.get(Calendar.YEAR);
         }
+
+        bhtText += "/" + Long.toString(temp);
         return bhtText;
     }
 
@@ -1844,8 +1860,18 @@ public class InwardBeanController implements Serializable {
 
         double duration = tif.getDurationHours() * 60;
         double consumeTimeM = 0L;
+        
+        if(admittedAt==null){
+            admittedAt = new Date();
+        }
 
-        consumeTimeM = getCommonFunctions().calculateDurationMin(admittedAt, dischargedAt);
+        if(dischargedAt==null){
+            dischargedAt=new Date();
+        }
+        
+        
+        
+        consumeTimeM = CommonFunctions.calculateDurationMin(admittedAt, dischargedAt);
 
         double count = 0;
 
@@ -1879,7 +1905,7 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
-        if (consumeTime==0){
+        if (consumeTime == 0) {
             return 0;
         }
         double count = 0;

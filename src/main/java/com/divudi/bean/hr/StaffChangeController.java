@@ -5,7 +5,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
@@ -86,7 +86,7 @@ public class StaffChangeController implements Serializable {
     
     public void update() {
         if (getFromDate() == null) {
-            UtilityController.addErrorMessage("Select Active Date");
+            JsfUtil.addErrorMessage("Select Active Date");
             return;
         }
         getStaffFacade().edit(getStaff());

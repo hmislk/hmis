@@ -10,7 +10,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
@@ -105,7 +105,7 @@ public class FingerPrintRecordController implements Serializable {
         
         createFingerPrintRecordTable(true);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
+        
     }
 
     public void createFingerPrintRecordTableSiftDate() {
@@ -113,7 +113,7 @@ public class FingerPrintRecordController implements Serializable {
         
         createFingerPrintRecordTable(false);
         
-         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
+         
     }
 
     public void viewStaffFinger(FingerPrintRecord fpr) {
@@ -145,7 +145,7 @@ public class FingerPrintRecordController implements Serializable {
     public void saveStaffFinger(){
         if (fingerPrintRecord!=null) {
             getFacade().create(fingerPrintRecord);
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 
@@ -185,12 +185,12 @@ public class FingerPrintRecordController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -247,9 +247,9 @@ public class FingerPrintRecordController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

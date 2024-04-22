@@ -56,14 +56,14 @@ public class PriceMatrixController implements Serializable {
             category = billItem.getItem().getCategory();
         }
 
-        if (sessionController.getLoggedPreference() != null && sessionController.getLoggedPreference().isPaymentMethodAllowedInInwardMatrix()) {
+        if (sessionController.getApplicationPreference() != null && sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
         }
 
         if (inwardPriceAdjustment == null && category != null) {
-            if (sessionController.getLoggedPreference().isPaymentMethodAllowedInInwardMatrix()) {
+            if (sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
             } else {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
@@ -284,6 +284,17 @@ public class PriceMatrixController implements Serializable {
         return imsd;
     }
 
+    public PriceMatrix getChannellingDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department) {
+        PriceMatrix channellingPriceMatrix = null;
+        if (channellingPriceMatrix == null) {
+            channellingPriceMatrix = fetchChannellingMemberShipDiscount(membershipScheme, paymentMethod, department);
+        }
+
+        return channellingPriceMatrix;
+    }
+    
+    
+    
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 

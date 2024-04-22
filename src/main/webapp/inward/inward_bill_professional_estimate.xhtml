@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://java.sun.com/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
 
 
 
@@ -26,17 +26,21 @@
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                             value="#{inwardProfessionalBillController.current.patientEncounter}" 
                                             completeMethod="#{admissionController.completePatient}"
-                                            var="apt2" itemLabel="#{apt2.bhtNo}"
-                                            itemValue="#{apt2}" size="30"  class=" mx-2" >
-
-
+                                            var="apt2" 
+                                            itemLabel="#{apt2.bhtNo}"
+                                            itemValue="#{apt2}" 
+                                            size="30"  
+                                            class="mx-2">
                                 <p:column >
-                                    <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                    <h:outputLabel value="#{apt2.bhtNo}"/>
                                 </p:column>
                                 <p:column >
                                     <h:outputLabel value="#{apt2.patient.person.name}"/>
                                 </p:column>
-                            </p:autoComplete>  
+                                <p:column>
+                                    <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:commandButton
                                 id="btnSelect"
@@ -57,43 +61,57 @@
 
             <p:panel rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa fa-money-bill-wave fa-lg" />
-                    <h:outputLabel class="m-2" value="Inward Estimated Professional Charges" /> 
-                    
+                    <div class="row">
+                        <div class="col-9">
+                            <h:outputText styleClass="fa fa-money-bill-wave fa-lg" />
+                            <h:outputLabel class="m-2" value="Inward Estimated Professional Charges" />
+                        </div>
+                        <div class="col-3">
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                style="float: right"
+                                class="ui-button-secondary" 
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                ><f:setPropertyActionListener 
+                                    target="#{admissionController.current.patient}" 
+                                    value="#{inwardProfessionalBillController.current.patient}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{inwardProfessionalBillController.current.patient}" 
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+
+                            <p:commandButton class=" ui-button-success "
+                                             style="float: right"
+                                             value="New Bill" 
+                                             icon="fa fa-plus"
+                                             ajax="false" 
+                                             actionListener="#{inwardProfessionalBillController.makeNull()}" >
+                            </p:commandButton>
+
+                        </div>
+                    </div>
+
+
                 </f:facet>
 
-                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
-                    <h:panelGrid columns="3">
-                        <p:commandButton class="w-100 ui-button-success m-2 "
-                                         style="float: right"
-                                         value="New Bill" 
-                                         icon="fa fa-plus"
-                                         ajax="false" 
-                                         actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                        </p:commandButton>
-                        <p:commandButton 
-                            style="float: right;"
-                            value="Lookup" 
-                            ajax="false"
-                            icon="fa fa-search"
-                            class="ui-button-warning " 
-                            action="#{patientController.navigateToSearchPatients()}" 
-                            >
-                        </p:commandButton>
-                        <p:commandButton 
-                            style="float: right;"
-                            value="Profile" 
-                            ajax="false"
-                            icon="fa fa-user"
-                            class="ui-button-warning mx-1" 
-                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{inwardProfessionalBillController.current.patient}" 
-                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                    </h:panelGrid>
-                </div>
+
 
                 <div class="row">
                     <div class="col-5" >
@@ -182,18 +200,21 @@
                                             <h:outputLabel value="Fee At"/>
                                         </div>
                                         <div class="col-8">
-                                            <p:calendar styleClass="dateTimePicker" 
+                                            <p:datePicker styleClass="dateTimePicker" 
                                                         id="feeAt" 
                                                         value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
                                                         size="50"
-                                                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                                        showTime="true"
+                                                        showButtonBar="true"
+                                                        timeInput="true"
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                                 <f:ajax event="dateSelect"  render="feeAt"/>
-                                            </p:calendar>
+                                            </p:datePicker>
                                         </div>
                                     </div>
                                     <div class="row m-1">
                                         <div class="col-4">
-                                            <p:commandButton value="Add" id="btn" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" />
+                                            <p:commandButton value="Add" id="btn" class="ui-button-success w-50" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" />
                                         </div>
                                     </div>
                                 </div>

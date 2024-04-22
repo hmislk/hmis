@@ -7,7 +7,7 @@
 package com.divudi.facade;
 
 import com.divudi.entity.inward.InwardService;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

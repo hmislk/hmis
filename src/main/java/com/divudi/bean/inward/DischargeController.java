@@ -9,7 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.inward.Admission;
@@ -82,9 +82,9 @@ public class DischargeController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         makeNull();
         getItems();
@@ -114,7 +114,7 @@ public class DischargeController implements Serializable {
 
     public void discharge() {
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
-            UtilityController.addSuccessMessage("No Patient Data Found");
+            JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
             //  getCurrent().setLastPatientRoom(getPatientRoom().get(getPatientRoom().size() - 1));
             getCurrent().setDischarged(Boolean.TRUE);
@@ -122,7 +122,7 @@ public class DischargeController implements Serializable {
                 getCurrent().setDateOfDischarge(new Date());
             }
             getEjbFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Discharged");
+            JsfUtil.addSuccessMessage("Discharged");
 
         }
         makeNull();

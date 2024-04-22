@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -26,7 +26,7 @@
                                     <h:outputLabel value="Receving Samples and Printing Worksheets" />
                                 </div>                      
                                 <div class="d-flex justify-content-end w-100">
-                                    <p:commandButton class="mx-2" ajax="false" value="Refresh" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets() }"   ></p:commandButton>
+                                    <p:commandButton class="mx-2" ajax="false" value="Process" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets() }"   ></p:commandButton>
                                     <p:commandButton value="Print Worksheets"  >
                                         <f:ajax execute="@this" listener="#{patientInvestigationController.markSelectedAsReceived}" />
                                         <p:printer  target="pPrintWorksheet" />

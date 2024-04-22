@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -26,112 +26,68 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{dealorDueController.toDate}" navigator="false" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                             class="w-100" inputStyleClass="w-100">
+                                            class="w-100" inputStyleClass="w-100">
 
                                 </p:calendar>
-                                <p:commandButton value="Process Pharmacy Due" action="#{dealorDueController.fillPharmacyDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100 ui-button-warning" />
-                                <p:commandButton value="Process Store Due" action="#{dealorDueController.fillStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100 ui-button-warning" />
-                                <p:commandButton value="Process All Due" action="#{dealorDueController.fillPharmacyStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100 ui-button-warning" />
+
+                                <p:commandButton 
+                                    value="List GRNs to Settle Payment" 
+                                    action="#{dealorDueController.fillUnsettledCreditPharmacyBills}" 
+                                    ajax="false"  
+                                    icon="fas fa-search" 
+                                    class="my-1 w-100 ui-button-success" />
+                                <p:commandButton 
+                                    value="List GRNs to Settle Payment (Old Method)" 
+                                    action="#{dealorDueController.fillPharmacyDue}" 
+                                    ajax="false"  
+                                    icon="fas fa-search" 
+                                    class="my-1 w-100 ui-button-secondary" />
+                                <hl/>
+
+
+                                <p:commandButton value="Process Store Due" action="#{dealorDueController.fillStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100  ui-button-secondary" />
+                                <p:commandButton value="Process All Due" action="#{dealorDueController.fillPharmacyStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100  ui-button-secondary" />
 
                             </div>
                             <div class="col-10">
-                                <p:dataTable 
-                                    id="lst" 
-                                    value="#{dealorDueController.items}" 
-                                    rowIndexVar="i"
-                                    rows="10"
-                                    style="width: 100%;"
-                                    paginatorPosition="bottom"
-                                    paginator="true"
-                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
-                                    >
-                                    <p:columnGroup type="header">
-                                        <p:row>
-                                            <p:column headerText="GRN No">                                    
-                                            </p:column>                               
-                                            <p:column headerText="Billed Amount">                                    
-                                            </p:column>
-                                            <p:column headerText="Returned Amount">                                    
-                                            </p:column>
-                                            <p:column headerText="Paid Amount">                                    
-                                            </p:column>
-                                            <p:column headerText="Net Amount">                                    
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                    <p:subTable value="#{i.bills}" var="b" >
-                                        <f:facet name="header">
-                                            <h:outputLabel  value="#{i.institution.name}"/>
-                                        </f:facet>
-                                        <p:column>        
-                                            <h:panelGroup rendered="#{b.transBoolean}">
-                                                <h:outputLabel value="#{b.deptId}" />   
-                                                <h:outputText value="( #{b.billType} )"></h:outputText>
-                                            </h:panelGroup>
-                                        </p:column>                           
-                                        <p:column style="text-align: right;">   
-                                            <h:panelGroup rendered="#{b.transBoolean}">
-                                                <h:outputLabel value="#{b.netTotal}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>   
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column style="text-align: right;">     
-                                            <h:panelGroup rendered="#{b.transBoolean}">
-                                                <h:outputLabel value="#{b.tmpReturnTotal}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>    
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column style="text-align: right;">    
-                                            <h:panelGroup rendered="#{b.transBoolean}">
-                                                <h:outputLabel value="#{b.paidAmount}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column style="text-align: right;">    
-                                            <h:panelGroup rendered="#{b.transBoolean}">
-                                                <h:outputLabel value="#{b.tmpReturnTotal+b.netTotal+b.paidAmount}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:columnGroup type="footer">
-                                            <p:row>
-                                                <p:column footerText="Total" colspan="1" />
-                                                <p:column style="text-align: right;">
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="#{i.total}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column style="text-align: right;">
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="#{i.returned}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column style="text-align: right;" >
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="#{i.paidTotal}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column style="text-align: right;" >
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="#{i.total+i.paidTotal+i.returned}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </f:facet>
-                                                </p:column>
-                                            </p:row>
-                                        </p:columnGroup>
-                                    </p:subTable>
+                                <p:dataTable value="#{dealorDueController.bills}" var="b" >
+
+                                    <p:column headerText="Bill No" >
+                                        <h:outputText value="#{b.deptId}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Date" >
+                                        <h:outputText value="#{b.billDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Supplier" >
+                                        <h:outputText value="#{b.fromInstitution.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type" >
+                                        <h:outputText value="#{b.billTypeAtomic.label}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Total" >
+                                        <h:outputText value="#{b.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Returned" >
+                                        <h:outputText value="#{b.refundAmount}" >
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Paid Total" >
+                                        <h:outputText value="#{b.paidAmount}" >
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Balance" >
+                                        <h:outputText value="#{b.balance}" >
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                                        </h:outputText>
+                                    </p:column>
+
 
                                 </p:dataTable>
                             </div>

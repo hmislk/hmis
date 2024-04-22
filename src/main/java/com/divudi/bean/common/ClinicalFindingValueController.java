@@ -8,7 +8,9 @@
  */
 package com.divudi.bean.common;
 
-
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.clinical.ClinicalFindingValueType;
+import com.divudi.entity.Patient;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import java.io.Serializable;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -27,8 +30,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -42,7 +45,6 @@ public class ClinicalFindingValueController implements Serializable {
     private ClinicalFindingValue current;
     private List<ClinicalFindingValue> items = null;
 
-    
     public void prepareAdd() {
         current = new ClinicalFindingValue();
     }
@@ -54,10 +56,10 @@ public class ClinicalFindingValueController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -98,9 +100,9 @@ public class ClinicalFindingValueController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -113,13 +115,22 @@ public class ClinicalFindingValueController implements Serializable {
     }
 
     public List<ClinicalFindingValue> getItems() {
+        return items;
+    }
+    
+    public List<ClinicalFindingValue> findClinicalFindingValues(Patient pt, ClinicalFindingValueType type) {
         if (items == null) {
             String j;
             j = "select a "
                     + " from ClinicalFindingValue a "
-                    + " where a.retired=false "
-                    + " order by a.name";
-            items = getFacade().findByJpql(j);
+                    + " where a.retired=:ret "
+                    + " and a.patient=:pt "
+                    + " and a.clinicalFindingValueType=:type";
+            Map params = new HashMap();
+            params.put("ret", false);
+            params.put("pt", pt);
+            params.put("type", type);
+            items = getFacade().findByJpql(j,params);
         }
         return items;
     }

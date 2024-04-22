@@ -6,6 +6,7 @@ package com.divudi.entity;
 
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
@@ -104,6 +105,8 @@ public class Bill implements Serializable {
     // Bank Detail
     String creditCardRefNo;
     String chequeRefNo;
+
+    private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution bank;
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -119,6 +122,8 @@ public class Bill implements Serializable {
     //Enum
     @Enumerated(EnumType.STRING)
     BillType billType;
+    @Enumerated(EnumType.STRING)
+    private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -147,6 +152,7 @@ public class Bill implements Serializable {
 
     double billTotal;
     double paidAmount;
+    private double refundAmount;
     double balance;
     double serviceCharge;
     Double tax = 0.0;
@@ -204,6 +210,7 @@ public class Bill implements Serializable {
     String insId;
     String catId;
     String sessionId;
+    @Deprecated
     String bookingId;
     String invoiceNumber;
     @Transient
@@ -731,7 +738,7 @@ public class Bill implements Serializable {
         hospitalFee = 0 - bill.getHospitalFee();
         margin = 0 - bill.getMargin();
         grnNetTotal = 0 - bill.getGrnNetTotal();
-
+        billTotal = 0 - bill.getBillTotal();
     }
 
     public void invertValue() {
@@ -754,6 +761,7 @@ public class Bill implements Serializable {
         hospitalFee = 0 - getHospitalFee();
         grnNetTotal = 0 - getGrnNetTotal();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
+        billTotal = 0 - getBillTotal();
     }
 
     public void copy(Bill bill) {
@@ -787,7 +795,7 @@ public class Bill implements Serializable {
         invoiceNumber = bill.getInvoiceNumber();
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
-        sessionId=bill.getSessionId();
+        sessionId = bill.getSessionId();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -800,6 +808,7 @@ public class Bill implements Serializable {
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
         this.vat = bill.getVat();
+        this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
     }
 
@@ -903,7 +912,6 @@ public class Bill implements Serializable {
     }
 
     public double getBalance() {
-
         return balance;
     }
 
@@ -1541,10 +1549,12 @@ public class Bill implements Serializable {
         this.billedBill = billedBill;
     }
 
+    @Deprecated
     public String getBookingId() {
         return bookingId;
     }
 
+    @Deprecated
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }
@@ -2080,6 +2090,30 @@ public class Bill implements Serializable {
         }
 
         return ageAtBilledDate;
+    }
+
+    public int getCreditDuration() {
+        return creditDuration;
+    }
+
+    public void setCreditDuration(int creditDuration) {
+        this.creditDuration = creditDuration;
+    }
+
+    public double getRefundAmount() {
+        return refundAmount;
+    }
+
+    public void setRefundAmount(double refundAmount) {
+        this.refundAmount = refundAmount;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
 }

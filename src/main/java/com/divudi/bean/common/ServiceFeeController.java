@@ -29,7 +29,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -122,11 +122,11 @@ public class ServiceFeeController implements Serializable {
 
     public void saveCharge() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         currentFee.setItem(currentIx);
@@ -134,10 +134,10 @@ public class ServiceFeeController implements Serializable {
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getItemFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
         currentIx.setTotal(calTot());
 
@@ -203,16 +203,16 @@ public class ServiceFeeController implements Serializable {
 
     public void removeFee() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a investigation");
+            JsfUtil.addErrorMessage("Please select a investigation");
             return;
         }
         if (getRemovedItemFee() == null) {
-            UtilityController.addErrorMessage("Please select one to remove");
+            JsfUtil.addErrorMessage("Please select one to remove");
             return;
         }
 
         if (getRemovedItemFee().getId() == null || getRemovedItemFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedItemFee().setRetired(true);
@@ -236,9 +236,9 @@ public class ServiceFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;

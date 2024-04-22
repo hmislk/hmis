@@ -6,7 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -123,7 +123,7 @@ public class PharmacyPurchaseController implements Serializable {
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Fill All)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
+        
     }
 
     public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
@@ -133,7 +133,7 @@ public class PharmacyPurchaseController implements Serializable {
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Purchase Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
+        
     }
 
     public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment() {
@@ -143,7 +143,7 @@ public class PharmacyPurchaseController implements Serializable {
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(GRN Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
+        
     }
 
     public void fillItemVicePurchaseAndGoodReceive() {
@@ -187,7 +187,7 @@ public class PharmacyPurchaseController implements Serializable {
 
         rows = lsts;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Purchase Reports/Item-vise purchase /good receive(/faces/pharmacy/report_item_vice_purchase_and_good_receive.xhtml)");
+        
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
@@ -255,6 +255,12 @@ public class PharmacyPurchaseController implements Serializable {
         billItems = null;
     }
 
+    public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill(){
+        makeNull();
+        getBill();
+        return "/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true";
+    }
+    
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
 
@@ -295,13 +301,13 @@ public class PharmacyPurchaseController implements Serializable {
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(0);
-            UtilityController.addErrorMessage("You cant set retail price below purchase rate");
+            JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
 
         if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
             if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
                 tmp.getPharmaceuticalBillItem().setDoe(null);
-                UtilityController.addErrorMessage("Check Date of Expiry");
+                JsfUtil.addErrorMessage("Check Date of Expiry");
                 //    return;
             }
         }
@@ -364,7 +370,7 @@ public class PharmacyPurchaseController implements Serializable {
     public void calSaleRte() {
         saleRate = 0.0;
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Bill Item is Null");
+            JsfUtil.addErrorMessage("Bill Item is Null");
         }
         double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
         saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
@@ -399,29 +405,29 @@ public class PharmacyPurchaseController implements Serializable {
         Date toDate = null;
 
         if (getBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Method");
+            JsfUtil.addErrorMessage("Select Payment Method");
             return;
         }
         if (getBill().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Dealor");
+            JsfUtil.addErrorMessage("Select Dealer");
             return;
         }
         if (getBill().getReferenceInstitution() == null) {
-            UtilityController.addErrorMessage("Select Reference Institution");
+            JsfUtil.addErrorMessage("Select Reference Institution");
         }
         if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
-            UtilityController.addErrorMessage("Please Fill Invoice Number");
+            JsfUtil.addErrorMessage("Please Fill Invoice Number");
             return;
         }
         if (getBill().getInvoiceDate() == null) {
-            UtilityController.addErrorMessage("Please Fill Invoice Date");
+            JsfUtil.addErrorMessage("Please Fill Invoice Date");
             return;
         }
 
         //Need to Add History
         String msg = errorCheck();
         if (!msg.isEmpty()) {
-            UtilityController.addErrorMessage(msg);
+            JsfUtil.addErrorMessage(msg);
             return;
         }
 
@@ -440,9 +446,17 @@ public class PharmacyPurchaseController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getBill());
-            getBillItemFacade().create(i);
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            } else {
+                getBillItemFacade().edit(i);
+            }
 
-            getPharmaceuticalBillItemFacade().create(tmpPh);
+            if (tmpPh.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            } else {
+                getPharmaceuticalBillItemFacade().edit(tmpPh);
+            }
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
@@ -466,11 +480,11 @@ public class PharmacyPurchaseController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
-        UtilityController.addSuccessMessage("Successfully Billed");
+        JsfUtil.addSuccessMessage("Successfully Billed");
         printPreview = true;
         //   recreate();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase (settle)(/faces/pharmacy/pharmacy_purchase.xhtml)");
+        
     }
 
     public void removeItem(BillItem bi) {
@@ -551,7 +565,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void addItemWithLastRate() {
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select and item from the list");
+            JsfUtil.addErrorMessage("Please select and item from the list");
             return;
         }
 
@@ -571,23 +585,23 @@ public class PharmacyPurchaseController implements Serializable {
             getBillFacade().create(getBill());
         }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
-            UtilityController.addErrorMessage("Please enter a purchase rate");
+            JsfUtil.addErrorMessage("Please enter a purchase rate");
             return;
         }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
-            UtilityController.addErrorMessage("Please set the date of expiry");
+            JsfUtil.addErrorMessage("Please set the date of expiry");
             return;
         }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
-            UtilityController.addErrorMessage("Please enter the purchase quantity");
+            JsfUtil.addErrorMessage("Please enter the purchase quantity");
             return;
         }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {
-            UtilityController.addErrorMessage("Please enter the sale rate");
+            JsfUtil.addErrorMessage("Please enter the sale rate");
             return;
         }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
-            UtilityController.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
+            JsfUtil.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
             return;
         }
 

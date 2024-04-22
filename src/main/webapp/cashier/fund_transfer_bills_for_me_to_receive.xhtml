@@ -10,14 +10,14 @@
 
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
-                <p:panel header="Fund Transfers To Receive" >
+                
+                <p:panel >
                     <p:panel header="Funds" >
-
-
                         <p:commandButton 
-                            value="To Receie"
+                            value="To Receive"
                             action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
                             ajax="false"
+                            class="my-2 ui-button-success"
                             >
 
                         </p:commandButton>
@@ -31,19 +31,22 @@
                             selectionMode="single"
                             selection="#{financialTransactionController.selectedBill}">
                             <p:column headerText="Staff" >
-                                <h:outputText value="#{bp.staff.person.nameWithInitials}" ></h:outputText>
+                                <h:outputText value="#{bp.staff.person.nameWithTitle}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Created At" >
                                 <h:outputText value="#{bp.createdAt}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Payment Method" >
-                                <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                <h:outputText value="#{bp.paymentMethod.label}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Total" >
                                 <h:outputText value="#{bp.total}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Net Total" >
                                 <h:outputText value="#{bp.netTotal}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="payments" >
+                                <h:outputText value="#{bp.payments.size()}" ></h:outputText>
                             </p:column>
                         </p:dataTable>
 

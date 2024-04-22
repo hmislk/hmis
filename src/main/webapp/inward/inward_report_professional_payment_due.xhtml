@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -31,7 +31,10 @@
 
                             <h:outputLabel value="Doctor Name"/>      
 
-                            <p:inputText autocomplete="off" class="mx-4 w-100" inputStyleClass="w-100" value="#{searchController.searchKeyword.staffName}" />
+                            <p:inputText 
+                                autocomplete="off" 
+                                class="mx-4 w-100" 
+                                value="#{searchController.searchKeyword.staffName}" />
 
 
                             <h:outputLabel value="Admission Type"/>
@@ -83,34 +86,34 @@
 
                         </h:panelGrid>
 
-                       
+
                         <h:panelGrid columns="3" class="my-4">
-                          
-                                <p:commandButton class="ui-button-primary" icon="fas fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}"  />
 
-                                <p:defaultCommand target="btnSearch" />
+                            <p:commandButton class="ui-button-primary" icon="fas fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}"  />
 
-                                <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" style="float: right;">
-                                    <p:dataExporter type="xlsx" target="tblFee" fileName="doctor_payment_due_report_inward"/>
-                                </p:commandButton>
-                            
+                            <p:defaultCommand target="btnSearch" />
+
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" style="float: right;">
+                                <p:dataExporter type="xlsx" target="tblFee" fileName="doctor_payment_due_report_inward"/>
+                            </p:commandButton>
+
                         </h:panelGrid>
 
 
 
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
-                            
-                            
-                <f:facet name="header">
-                     <h:outputLabel value="Doctor Dayment Due inward Deport : "/>
-                    <h:outputLabel value="#{searchController.fromDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
-                    <h:outputLabel value="--"/>
-                    <h:outputLabel value="#{searchController.toDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
-                </f:facet>
+
+
+                            <f:facet name="header">
+                                <h:outputLabel value="Doctor Dayment Due inward Deport : "/>
+                                <h:outputLabel value="#{searchController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="--"/>
+                                <h:outputLabel value="#{searchController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputLabel>
+                            </f:facet>
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <f:facet name="header">

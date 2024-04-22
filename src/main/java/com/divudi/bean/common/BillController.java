@@ -55,9 +55,20 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.HistoryType;
+import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.data.dataStructure.DailyCash;
+import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.entity.AppEmail;
+import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,6 +124,10 @@ public class BillController implements Serializable {
     PaymentFacade PaymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    BillItemFacade billItemFacede;
     /**
      * Controllers
      */
@@ -128,6 +143,11 @@ public class BillController implements Serializable {
     private EnumController enumController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
+    @Inject
+    private WebUserController webUserController;
+    @Inject
+    private OpdBillController opdBillController;
+
     /**
      * Class Vairables
      */
@@ -277,11 +297,11 @@ public class BillController implements Serializable {
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > opdBill.getBalance()) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -341,16 +361,78 @@ public class BillController implements Serializable {
 
     }
 
-    public void save(Bill sb) {
+    public boolean hasRefunded(BillFee bf) {
+        boolean refunded = false;
+        if (bf == null) {
+            return refunded;
+        }
+        String jpql = "select bf "
+                + " from BillFee bf "
+                + " where bf.retired=:ret "
+                + " and bf.referenceBillFee=:bf "
+                + " and bf.billItem.retired=:ret "
+                + " and bf.bill.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bf", bf);
+        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
+        if (rbf != null) {
+            refunded = true;
+        }
+        return refunded;
+    }
+
+    public boolean hasPaidToStaff(BillFee bf) {
+        boolean paid = false;
+        if (bf == null) {
+            return paid;
+        }
+        if (bf.getPaidValue() > 0.0) {
+            paid = true;
+        }
+        return paid;
+    }
+
+    public void save(Bill savingBill) {
+        if (savingBill == null) {
+            return;
+        }
+        if (savingBill.getId() == null) {
+            savingBill.setCreatedAt(new Date());
+            savingBill.setCreater(sessionController.getLoggedUser());
+            try {
+                getFacade().create(savingBill);
+            } catch (Exception e) {
+                getFacade().edit(savingBill);
+            }
+        } else {
+            getFacade().edit(savingBill);
+        }
+    }
+
+    public void saveBillItem(BillItem sb) {
         if (sb == null) {
             return;
         }
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
-            getFacade().create(sb);
-        }else{
-            getFacade().edit(sb);
+            getBillItemFacade().create(sb);
+        } else {
+            getBillItemFacade().edit(sb);
+        }
+    }
+
+    public void saveBillFee(BillFee sb) {
+        if (sb == null) {
+            return;
+        }
+        if (sb.getId() == null) {
+            sb.setCreatedAt(new Date());
+            sb.setCreater(sessionController.getLoggedUser());
+            getBillFeeFacade().create(sb);
+        } else {
+            getBillFeeFacade().edit(sb);
         }
     }
 
@@ -359,11 +441,11 @@ public class BillController implements Serializable {
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -835,7 +917,7 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml?faces-redirect=true)");
+        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -874,7 +956,7 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+        
     }
 
     public void getPharmacySaleBills() {
@@ -922,7 +1004,7 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Bill Lists/List of pharmacy bill(/faces/pharmacy/list_of_all_sale_bills.xhtml)");
+        
     }
 
     public Double getGrosTotal() {
@@ -975,7 +1057,7 @@ public class BillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy wholesale report/Pharmacy wholeale credit bills(/faces/pharmacy_wholesale/pharmacy_report_credit.xhtml)");
+        
     }
 
     public void getPharmacyBills() {
@@ -1020,7 +1102,7 @@ public class BillController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml?faces-redirect=true)");
+        
     }
 
     public void getPharmacyBillsBilled() {
@@ -1033,7 +1115,7 @@ public class BillController implements Serializable {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+        
     }
 
     public void getPharmacyWholeBills() {
@@ -1077,7 +1159,7 @@ public class BillController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml?faces-redirect=true)");
+        
     }
 
     public BillEjb getBillEjb() {
@@ -1243,7 +1325,7 @@ public class BillController implements Serializable {
                 }
             }
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
             }
 
@@ -1298,7 +1380,7 @@ public class BillController implements Serializable {
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
                 if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
@@ -1329,19 +1411,19 @@ public class BillController implements Serializable {
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             staffBean.updateStaffCredit(toStaff, netPlusVat);
-            UtilityController.addSuccessMessage("User Credit Updated");
+            JsfUtil.addSuccessMessage("User Credit Updated");
         }
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
 
-        commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
+        
     }
 
     public boolean checkBillValues(Bill b) {
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             return false;
         }
 
@@ -1408,7 +1490,7 @@ public class BillController implements Serializable {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
 
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -1460,7 +1542,7 @@ public class BillController implements Serializable {
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+            getBillSearch().cancelOpdBill();
         }
 
         tmp.copy(billedBill);
@@ -1480,13 +1562,196 @@ public class BillController implements Serializable {
         return billFacade.findByJpql(jpql, m);
     }
 
+    public List<BillItem> billItemsOfBill(Bill bill) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bi "
+                + " from BillItem bi"
+                + " where bi.retired=:ret"
+                + " and bi.bill=:b ";
+        m.put("b", bill);
+        m.put("ret", false);
+        return billItemFacade.findByJpql(jpql, m);
+    }
+
+    public List<BillFee> billFeesOfBill(Bill bill) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.bill=:b ";
+        m.put("b", bill);
+        m.put("ret", false);
+        return billFeeFacade.findByJpql(jpql, m);
+    }
+
+    public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
+        List<BillFee> tmpFees;
+        String jpql;
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btcs.add(BillTypeAtomic.CC_BILL);
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.bill.billTime between :fromDate and :toDate "
+                + " and bf.staff=:staff "
+                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and bf.bill.billTypeAtomic in :btcs "
+                + " and bf.fee.feeType=:ft ";
+        m.put("btcs", btcs);
+        m.put("staff", staff);
+        m.put("ret", false);
+        m.put("ft", FeeType.Staff);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+        tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : tmpFees) {
+            m = new HashMap();
+            jpql = "SELECT bi FROM BillItem bi where "
+                    + " bi.retired=false"
+                    + " and bi.bill.cancelled=false "
+                    + " and type(bi.bill)=:class "
+                    + " and bi.referanceBillItem=:rbi";
+            m.put("class", RefundBill.class);
+            m.put("rbi", bf.getBillItem());
+            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        tmpFees.removeAll(removeingBillFees);
+
+        return tmpFees;
+    }
+
+    public List<BillFee> billFeesOfBillItem(BillItem billItem) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.billItem=:bi ";
+        m.put("bi", billItem);
+        m.put("ret", false);
+        return billFeeFacade.findByJpql(jpql, m);
+    }
+
+    public String navigateToCancelOpdBatchBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("No Batch bill is selected");
+            return "";
+        }
+        bills = billsOfBatchBill(batchBill);
+        paymentMethod = batchBill.getPaymentMethod();
+        comment = null;
+        printPreview = false;
+        return "/opd/batch_bill_cancel?faces-redirect=true;";
+    }
+
+    public String cancelBatchBill() {
+        if (getBatchBill() == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return "";
+        }
+        if (getBatchBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Saved bill");
+            return "";
+        }
+
+        if (errorsPresentOnOpdBatchBillCancellation()) {
+            return "";
+        }
+
+        if (!getWebUserController().hasPrivilege("OpdCancel")) {
+            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
+            return "";
+        }
+
+        Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.setDepartment(sessionController.getDepartment());
+        cancellationBatchBill.setInstitution(sessionController.getInstitution());
+        cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
+        cancellationBatchBill.setToDepartment(batchBill.getToDepartment());
+        cancellationBatchBill.setFromInstitution(batchBill.getFromInstitution());
+        cancellationBatchBill.setToInstitution(batchBill.getToInstitution());
+
+        cancellationBatchBill.setBillType(BillType.OpdBathcBill);
+        cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getDepartment(), cancellationBatchBill.getToDepartment(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+        String insId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getInstitution(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+
+        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setInsId(insId);
+        cancellationBatchBill.setCreatedAt(new Date());
+        cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
+
+        cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
+        cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
+        cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
+        cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
+        cancellationBatchBill.setPaymentMethod(paymentMethod);
+
+        cancellationBatchBill.setForwardReferenceBill(batchBill);
+        batchBill.setCancelled(true);
+        batchBill.setCancelledBill(cancellationBatchBill);
+        getBillFacade().edit(batchBill);
+
+        getBillFacade().create(cancellationBatchBill);
+
+        for (Bill originalBill : bills) {
+            cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
+        }
+        
+        cancellationBatchBill.copy(batchBill);
+        cancellationBatchBill.setBilledBill(batchBill);
+
+        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
+        opdBillController.setBills(bills);
+        opdBillController.setBatchBill(batchBill);
+        getSessionController().setLoggedUser(wb);
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
+    }
+
+    private boolean errorsPresentOnOpdBatchBillCancellation() {
+        if (getBatchBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (getBatchBill().isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
+            return true;
+        }
+
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+
+        return false;
+    }
+
     public void cancellAllBillsOfBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return;
         }
         bills = billsOfBatchBill(batchBill);
-
         if (bills == null) {
             JsfUtil.addErrorMessage("No bills to cancel");
             return;
@@ -1497,24 +1762,290 @@ public class BillController implements Serializable {
             return;
         }
 
-        Bill tmp = new CancelledBill();
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        getBillFacade().create(tmp);
+        Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.setDepartment(sessionController.getDepartment());
+        cancellationBatchBill.setInstitution(sessionController.getInstitution());
+        cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
+        cancellationBatchBill.setToDepartment(batchBill.getToDepartment());
+        cancellationBatchBill.setFromInstitution(batchBill.getFromInstitution());
+        cancellationBatchBill.setToInstitution(batchBill.getToInstitution());
 
-        for (Bill b : bills) {
-            getBillSearch().setBill((BilledBill) b);
-            getBillSearch().setPaymentMethod(b.getPaymentMethod());
-            getBillSearch().setComment("Batch Cancell");
-            //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelBill();
+        cancellationBatchBill.setBillType(BillType.OpdBathcBill);
+        cancellationBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getDepartment(), cancellationBatchBill.getToDepartment(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+        String insId = getBillNumberGenerator().generateBillNumber(cancellationBatchBill.getInstitution(), cancellationBatchBill.getBillType(), cancellationBatchBill.getBillClassType());
+
+        cancellationBatchBill.setInsId(deptId);
+        cancellationBatchBill.setInsId(insId);
+        cancellationBatchBill.setCreatedAt(new Date());
+        cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
+
+        cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
+        cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
+        cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
+        cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
+        cancellationBatchBill.setPaymentMethod(paymentMethod);
+
+        cancellationBatchBill.setForwardReferenceBill(batchBill);
+        batchBill.setCancelled(true);
+        batchBill.setCancelledBill(cancellationBatchBill);
+        getBillFacade().edit(batchBill);
+
+        getBillFacade().create(cancellationBatchBill);
+
+        for (Bill originalBill : bills) {
+            cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
 
-        tmp.copy(batchBill);
-        tmp.setBilledBill(batchBill);
+        cancellationBatchBill.copy(batchBill);
+        cancellationBatchBill.setBilledBill(batchBill);
 
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
+        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
+
         getSessionController().setLoggedUser(wb);
+    }
+
+    public void cancelSingleBillWhenCancellingOpdBatchBill(Bill originalBill, Bill cancellationBatchBill) {
+        if (originalBill == null && originalBill == null) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.copy(originalBill);
+        cancellationBill.invertValue(originalBill);
+
+        cancellationBill.setBillType(BillType.OpdBill);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        if (cancellationBill.getId() == null) {
+            getBillFacade().create(cancellationBill);
+        } else {
+            getBillFacade().edit(cancellationBill);
+        }
+        createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
+
+        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
+        String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
+
+        cancellationBill.setDeptId(deptId);
+        cancellationBill.setInsId(insId);
+
+        cancellationBill.setBalance(0.0);
+        cancellationBill.setPaymentMethod(cancellationBatchBill.getPaymentMethod());
+        cancellationBill.setBilledBill(cancellationBatchBill);
+        cancellationBill.setBillDate(new Date());
+        cancellationBill.setBillTime(new Date());
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setCreater(getSessionController().getLoggedUser());
+        cancellationBill.setDepartment(getSessionController().getDepartment());
+        cancellationBill.setInstitution(getSessionController().getInstitution());
+        cancellationBill.setForwardReferenceBill(cancellationBatchBill);
+        cancellationBill.setComments(comment);
+        if (cancellationBill.getId() == null) {
+            getBillFacade().create(cancellationBill);
+        } else {
+            getBillFacade().edit(cancellationBill);
+        }
+        List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, cancellationBill);
+        try {
+            cancellationBill.setBillItems(list);
+        } catch (Exception e) {
+
+        }
+        if (cancellationBill.getId() == null) {
+            billFacade.create(cancellationBill);
+        } else {
+            billFacade.edit(cancellationBill);
+        }
+        originalBill.setCancelled(true);
+        originalBill.setCancelledBill(cancellationBill);
+        getBillFacade().edit(originalBill);
+        JsfUtil.addSuccessMessage("Cancelled");
+
+        if (originalBill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (originalBill.getToStaff() != null) {
+                staffBean.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBill.setFromStaff(originalBill.getToStaff());
+                getBillFacade().edit(cancellationBill);
+            }
+        }
+    }
+
+    public List<Payment> createPaymentForOpdBatchBillCancellation(Bill cancellationBatchBill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(cancellationBatchBill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(cancellationBatchBill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+            p.setPaidValue(cancellationBatchBill.getNetTotal());
+
+            switch (pm) {
+                case Card:
+                    p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(getPaymentMethodData().getCheque().getDate());
+                    p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
+            ps.add(p);
+        }
+        return ps;
+    }
+
+    private List<BillItem> createBillItemsForOpdBatchBillCancellation(Bill originalBill, Bill cancellationBill) {
+        List<BillItem> list = new ArrayList<>();
+        for (BillItem originalBillItem : originalBill.getBillItems()) {
+            BillItem newBillItem = new BillItem();
+            newBillItem.setBill(cancellationBill);
+            newBillItem.setItem(originalBillItem.getItem());
+            newBillItem.setNetValue(0 - originalBillItem.getNetValue());
+            newBillItem.setGrossValue(0 - originalBillItem.getGrossValue());
+            newBillItem.setRate(0 - originalBillItem.getRate());
+            newBillItem.setVat(0 - originalBillItem.getVat());
+            newBillItem.setVatPlusNetValue(0 - originalBillItem.getVatPlusNetValue());
+            newBillItem.setCatId(originalBillItem.getCatId());
+            newBillItem.setDeptId(originalBillItem.getDeptId());
+            newBillItem.setInsId(originalBillItem.getInsId());
+            newBillItem.setDiscount(0 - originalBillItem.getDiscount());
+            newBillItem.setQty(1.0);
+            newBillItem.setRate(originalBillItem.getRate());
+            newBillItem.setCreatedAt(new Date());
+            newBillItem.setCreater(getSessionController().getLoggedUser());
+            newBillItem.setPaidForBillFee(originalBillItem.getPaidForBillFee());
+            newBillItem.setReferanceBillItem(originalBillItem);
+            billItemFacede.create(newBillItem);
+
+            cancelBillComponents(originalBill, cancellationBill, originalBillItem, newBillItem);
+
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
+            List<BillFee> originalBillFees = getBillFeeFacade().findByJpql(sql);
+            cancelBillFee(originalBill, cancellationBill, originalBillItem, newBillItem, originalBillFees);
+
+            list.add(newBillItem);
+
+        }
+
+        return list;
+    }
+
+    public void cancelBillFee(Bill originalBill, Bill cancellationBill, BillItem originalBillItem, BillItem cancellationBillItem, List<BillFee> originalBillFees) {
+        for (BillFee originalBillFee : originalBillFees) {
+            BillFee newBillFee = new BillFee();
+            newBillFee.setFee(originalBillFee.getFee());
+            newBillFee.setPatienEncounter(originalBillFee.getPatienEncounter());
+            newBillFee.setPatient(originalBillFee.getPatient());
+            newBillFee.setDepartment(originalBillFee.getDepartment());
+            newBillFee.setInstitution(originalBillFee.getInstitution());
+            newBillFee.setSpeciality(originalBillFee.getSpeciality());
+            newBillFee.setStaff(originalBillFee.getStaff());
+            newBillFee.setReferenceBillFee(originalBillFee);
+            newBillFee.setBill(cancellationBill);
+            newBillFee.setBillItem(originalBillItem);
+            newBillFee.setFeeValue(0 - originalBillFee.getFeeValue());
+            newBillFee.setFeeGrossValue(0 - originalBillFee.getFeeGrossValue());
+            newBillFee.setFeeDiscount(0 - originalBillFee.getFeeDiscount());
+            newBillFee.setSettleValue(0 - originalBillFee.getSettleValue());
+            newBillFee.setFeeVat(0 - originalBillFee.getFeeVat());
+            newBillFee.setFeeVatPlusValue(0 - originalBillFee.getFeeVatPlusValue());
+            newBillFee.setCreatedAt(new Date());
+            newBillFee.setCreater(getSessionController().getLoggedUser());
+            getBillFeeFacade().create(newBillFee);
+        }
+    }
+
+    private void cancelBillComponents(Bill originalBill, Bill cancellationBill, BillItem originalBillItem, BillItem newBillItem) {
+        String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + originalBill.getId();
+        List<BillComponent> billComponents = billComponentFacade.findByJpql(sql);
+        if (billComponents == null) {
+            billComponents = new ArrayList<>();
+        }
+        for (BillComponent originalBillComponent : billComponents) {
+            BillComponent newBillComponent = new BillComponent();
+            newBillComponent.setCatId(originalBillComponent.getCatId());
+            newBillComponent.setDeptId(originalBillComponent.getDeptId());
+            newBillComponent.setInsId(originalBillComponent.getInsId());
+            newBillComponent.setDepartment(originalBillComponent.getDepartment());
+            newBillComponent.setDeptId(originalBillComponent.getDeptId());
+            newBillComponent.setInstitution(originalBillComponent.getInstitution());
+            newBillComponent.setItem(originalBillComponent.getItem());
+            newBillComponent.setName(originalBillComponent.getName());
+            newBillComponent.setPackege(originalBillComponent.getPackege());
+            newBillComponent.setSpeciality(originalBillComponent.getSpeciality());
+            newBillComponent.setStaff(originalBillComponent.getStaff());
+            newBillComponent.setBill(cancellationBill);
+            newBillComponent.setBillItem(newBillItem);
+            newBillComponent.setCreatedAt(new Date());
+            newBillComponent.setCreater(getSessionController().getLoggedUser());
+            billComponentFacade.create(newBillComponent);
+
+        }
+
     }
 
     public void dateChangeListen() {
@@ -1604,11 +2135,11 @@ public class BillController implements Serializable {
     private boolean checkPatientAgeSex() {
         if (getPatientTabId().equals("tabNewPt")) {
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
             if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
+                JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
                 return true;
             }
         }
@@ -1631,39 +2162,39 @@ public class BillController implements Serializable {
 
     private boolean errorCheck() {
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No Items are added to the bill to settle");
+            JsfUtil.addErrorMessage("No Items are added to the bill to settle");
             return true;
         }
 
         if (getPatientTabId().equals("tabSearchPt")) {
             if (getSearchedPatient() == null) {
-                UtilityController.addErrorMessage("Plese Select Patient");
+                JsfUtil.addErrorMessage("Plese Select Patient");
                 return true;
             }
         }
 
         if (getPatientTabId().equals("tabNewPt")) {
             if (getNewPatient() == null) {
-                UtilityController.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
+                JsfUtil.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
                 return true;
             }
             if (getNewPatient().getPerson() == null) {
-                UtilityController.addErrorMessage("New Patient's Person is NULL. Programming Error. Contact Developer.");
+                JsfUtil.addErrorMessage("New Patient's Person is NULL. Programming Error. Contact Developer.");
                 return true;
             }
             if (getNewPatient().getPerson().getName() == null
                     || getNewPatient().getPerson().getName().trim().equals("")) {
-                UtilityController.addErrorMessage("Can not bill without a name for the new Patient !");
+                JsfUtil.addErrorMessage("Can not bill without a name for the new Patient !");
                 return true;
             }
 
             if (!sessionController.getApplicationPreference().isOpdSettleWithoutPatientPhoneNumber()) {
                 if (getNewPatient().getPerson().getPhone() == null) {
-                    UtilityController.addErrorMessage("Please Enter a Phone Number");
+                    JsfUtil.addErrorMessage("Please Enter a Phone Number");
                     return true;
                 }
                 if (getNewPatient().getPerson().getPhone().trim().equals("")) {
-                    UtilityController.addErrorMessage("Please Enter a Phone Number");
+                    JsfUtil.addErrorMessage("Please Enter a Phone Number");
                     return true;
                 }
             }
@@ -1675,18 +2206,18 @@ public class BillController implements Serializable {
 //            for (BillEntry be : getLstBillEntries()) {
 //                if (be.getBillItem().getItem() instanceof Investigation) {
 //                    if (referredBy == null && referredByInstitution == null) {
-//                        UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+//                        JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
 //                        return true;
 //                    }
 //                }
 //            }
 //        }
 //            if (getStrTenderedValue() == null) {
-//                UtilityController.addErrorMessage("Please Enter Tenderd Amount");
+//                JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
 //                return true;
 //            }
 //            if (cashPaid < (vat + netTotal)) {
-//                UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
+//                JsfUtil.addErrorMessage("Please Enter Correct Tenderd Amount");
 //                return true;
 //            }
 //        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
@@ -1714,7 +2245,7 @@ public class BillController implements Serializable {
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Scheme");
+            JsfUtil.addErrorMessage("Select Payment Scheme");
             return true;
         }
 
@@ -1724,29 +2255,29 @@ public class BillController implements Serializable {
 
         if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
             if (toStaff == null && creditCompany == null && collectingCentre == null) {
-                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
                 return true;
             }
             if (toStaff != null && creditCompany != null) {
-                UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
                 return true;
             }
             if (toStaff != null) {
                 if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    UtilityController.addErrorMessage("No enough walfare credit.");
+                    JsfUtil.addErrorMessage("No enough walfare credit.");
                     return true;
                 }
             }
         }
 
 //        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-//            UtilityController.addErrorMessage("Check Payment method");
+//            JsfUtil.addErrorMessage("Check Payment method");
 //            return true;
 //        }
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
 
             if (cashPaid == 0.0) {
-                UtilityController.addErrorMessage("Please enter the paid amount");
+                JsfUtil.addErrorMessage("Please enter the paid amount");
                 return true;
             }
 
@@ -1797,6 +2328,208 @@ public class BillController implements Serializable {
         }
     }
 
+    public List<BillLight> listBillsLights(
+            BillType bt,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        if (bt == null) {
+            return null;
+        }
+//        List<BillType> bts = new ArrayList<>();
+//        bts.add(bt);
+//        System.out.println("listBillsLights = ");
+//        return listBillsLights(bts, ins, dep, fd, td);
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType=:bt ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("bt", bt);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return lst;
+
+    }
+
+    public List<BillLight> listBillsLights(
+            List<BillType> billTypes,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType in :billTypes ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("billTypes", billTypes);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return lst;
+    }
+
+    public List<Bill> listBills(
+            BillType bt,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        if (bt == null) {
+            return null;
+        }
+        List<BillType> bts = new ArrayList<>();
+        bts.add(bt);
+        return listBills(bts, ins, dep, fd, td);
+
+    }
+
+    @Deprecated
+    public List<Bill> findUnpaidBillsOld(Date frmDate, Date toDate, List<BillType> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        String jpql;
+        HashMap hm;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) > :val) ";
+            hm.put("val", balanceGraterThan);
+        }
+        if (pm != null) {
+            hm.put("pm", pm);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billType in :bts";
+        }
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
+        String jpql;
+        HashMap hm;
+        jpql = "Select b "
+                + " From Bill b "
+                + " where b.retired=:ret "
+                + " and b.cancelled=:can "
+                + " and b.createdAt between :frm and :to ";
+        hm = new HashMap();
+        hm.put("frm", frmDate);
+        hm.put("ret", false);
+        hm.put("can", false);
+        hm.put("to", toDate);
+
+        if (balanceGraterThan != null) {
+            jpql += " and (abs(b.balance) > :val) ";
+            hm.put("val", balanceGraterThan);
+        }
+        if (pm != null) {
+            hm.put("pm", pm);
+            jpql += " and b.paymentMethod=:pm ";
+        }
+        if (billTypes != null) {
+            hm.put("bts", billTypes);
+            jpql += " and b.billTypeAtomic in :bts";
+        }
+        return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> listBills(
+            List<BillType> billTypes,
+            Institution ins,
+            Department dep,
+            Date fd,
+            Date td) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret ";
+
+        sql += " and bill.createdAt between :fromDate and :toDate ";
+
+        sql += " and bill.billType in :billTypes ";
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        sql += " order by bill.createdAt desc  ";
+
+        temMap.put("ret", false);
+
+        temMap.put("billTypes", billTypes);
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return lst;
+    }
+    
+    public Bill findBillbyID( Long id){
+        if (id == null) {
+            return null;
+        }
+        Bill tb = getBillFacade().find(id);
+        if (tb == null) {
+            return null;
+        }
+        //System.out.println("tb = " + tb);
+        return tb;
+    }
+
     public ServiceSessionFunctions getServiceSessionBean() {
         return serviceSessionBean;
     }
@@ -1820,25 +2553,25 @@ public class BillController implements Serializable {
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an Item");
+            JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please corect item fee");
+            JsfUtil.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set Department to Item");
+            JsfUtil.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please set Category to Item");
+            JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
         if (getCurrentBillItem().getItem().getPriority() != null) {
@@ -1876,12 +2609,12 @@ public class BillController implements Serializable {
             calTotals();
 
             if (bi.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
+                JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
         }
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -2079,7 +2812,7 @@ public class BillController implements Serializable {
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
 
-        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////// // System.out.println("cashPaid = " + cashPaid);
             ////// // System.out.println("billNet = " + billNet);
             if (cashPaid >= (billNet + billVat)) {
@@ -2250,8 +2983,59 @@ public class BillController implements Serializable {
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment createdPayment = null;
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return createdPayment;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("No Saved Bill");
+            return createdPayment;
+        }
+        if (pm == null) {
+            JsfUtil.addErrorMessage("No payment Method");
+            return createdPayment;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Atomic Bill Type");
+            return createdPayment;
+        }
+        switch (bill.getBillTypeAtomic().getBillFinanceType()) {
+            case CASH_IN:
+                createdPayment = createPaymentForCashInBills(bill, pm);
+                break;
+            case CASH_OUT:
+                createdPayment = createPaymentForCashOutBills(bill, pm);
+                break;
+            case NO_FINANCE_TRANSACTIONS:
+                createdPayment = createPaymentForNoCashBills(bill, pm);
+                break;
+            default:
+                throw new AssertionError();
+        }
+        return createdPayment;
+    }
+
+    public Payment createPaymentForCashOutBills(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public Payment createPaymentForNoCashBills(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(0);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public Payment createPaymentForCashInBills(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(0 + Math.abs(bill.getNetTotal()));
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -2282,7 +3066,7 @@ public class BillController implements Serializable {
 
         for (BillEntry be : billEntrys) {
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
 
@@ -2295,7 +3079,7 @@ public class BillController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
 
-            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
@@ -2920,6 +3704,22 @@ public class BillController implements Serializable {
 
     public void setBatchBill(Bill batchBill) {
         this.batchBill = batchBill;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
+    }
+
+    public OpdBillController getOpdBillController() {
+        return opdBillController;
+    }
+
+    public void setOpdBillController(OpdBillController opdBillController) {
+        this.opdBillController = opdBillController;
     }
 
     /**

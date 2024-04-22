@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/admin/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="subcontent">
 
@@ -21,7 +21,7 @@
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                             </p:selectOneMenu>
-                            <p:outputLabel value="Select Dealor"/>
+                            <p:outputLabel value="Select Supplier"/>
                             <p:autoComplete converter="deal" value="#{pharmacyPurchaseController.bill.fromInstitution}" 
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
@@ -58,7 +58,7 @@
                         <h:outputLabel value="Sale Rate"></h:outputLabel>
                         <h:outputLabel id="lblPr" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate *.85 }"></h:outputLabel>
                         <h:outputLabel value="DOE(dd mm yy)"/>
-                        <h:outputLabel value="Bathch No"/>
+                        <h:outputLabel value="Batch No"/>
 
                         <h:outputLabel/>
 

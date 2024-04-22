@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head >
     </h:head>
@@ -14,47 +14,71 @@
             <ui:define name="content">
                 <h:form id="form">
                     <p:panel header="Admissions" style="height: 100vh" >
-                        <div class="d-flex">
-                            <h:panelGrid columns="1">
+                        <div class="row">
+                            <div class="col-3">
                                 <p:outputLabel value="From Date"></p:outputLabel>
-                                <p:calendar
+                                <p:datePicker
                                     value="#{admissionController.fromDate}" 
+                                    class="w-100"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
+                                    inputStyleClass="form-control"
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
                                 <p:outputLabel value="To Date"></p:outputLabel>
-                                <p:calendar 
+                                <p:datePicker 
+                                    class="w-100"
+                                    showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
+                                    inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
 
-                                <p:commandButton ajax="false"
-                                                 value="Search"
-                                                 action="#{admissionController.searchAdmissions}"
-                                                 class="mt-2 w-100 mb-3"></p:commandButton>
-
-
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Search"
+                                    icon="fas fa-search"
+                                    action="#{admissionController.searchAdmissions}"
+                                    class="mt-2 w-100 mb-3 ui-button-warning">
+                                </p:commandButton>
 
                                 <p:outputLabel value="BHT No" ></p:outputLabel>
-                                <p:inputText value="#{admissionController.bhtNumberForSearch}" ></p:inputText>
+                                <p:inputText 
+                                    class="w-100"
+                                    value="#{admissionController.bhtNumberForSearch}" >
+                                </p:inputText>
 
                                 <p:outputLabel value="Patient Name" ></p:outputLabel>
-                                <p:inputText value="#{admissionController.patientNameForSearch}" ></p:inputText>
+                                <p:inputText 
+                                    class="w-100"
+                                    value="#{admissionController.patientNameForSearch}" >
+                                </p:inputText>
 
                                 <p:outputLabel value="Patient Phone" ></p:outputLabel>
-                                <p:inputText value="#{admissionController.patientPhoneNumberForSearch}" ></p:inputText>
+                                <p:inputText 
+                                    class="w-100"
+                                    value="#{admissionController.patientPhoneNumberForSearch}" >
+                                </p:inputText>
 
                                 <p:outputLabel value="Patient NIC" ></p:outputLabel>
-                                <p:inputText value="#{admissionController.patientIdentityNumberForSearch}" ></p:inputText>
+                                <p:inputText 
+                                    class="w-100"
+                                    value="#{admissionController.patientIdentityNumberForSearch}" >
+                                </p:inputText>
 
                                 <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                <p:autoComplete forceSelection="true"
-                                                id="cmbDoc"
-                                                value="#{admissionController.referringDoctorForSearch}"
-                                                completeMethod="#{doctorController.completeDoctor}"
-                                                var="ix"
-                                                inputStyleClass="form-control">
+                                <p:autoComplete 
+                                    forceSelection="true"
+                                    id="cmbDoc"
+                                    value="#{admissionController.referringDoctorForSearch}"
+                                    completeMethod="#{doctorController.completeDoctor}"
+                                    var="ix"
+                                    class="w-100"
+                                    inputStyleClass="form-control">
                                     <p:column headerText="Name">
                                         <h:outputLabel value="#{ix.person.nameWithTitle}"></h:outputLabel>
                                     </p:column>
@@ -64,116 +88,131 @@
                                 </p:autoComplete>
 
                                 <p:outputLabel value="Status" ></p:outputLabel>
-                                <p:selectOneMenu value="#{admissionController.admissionStatusForSearch}" style="width: 200px">
-                                    <f:selectItems value="#{enumController.admissionStatuses}" var="status" itemValue="#{status}" itemLabel="#{status}" />
+                                <p:selectOneMenu 
+                                    class="w-100"
+                                    value="#{admissionController.admissionStatusForSearch}" >
+                                    <f:selectItems value="#{enumController.admissionStatuses}"
+                                                   var="status"
+                                                   itemValue="#{status}" itemLabel="#{status.label}" />
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Institution"></p:outputLabel>
-                                <p:selectOneMenu id="cmbFromInstitution"
-                                                 value="#{admissionController.institutionForSearch}"
-                                                 filter="true"
-                                                 style="width: 200px">
+                                <p:selectOneMenu 
+                                    class="w-100"
+                                    id="cmbFromInstitution"
+                                    value="#{admissionController.institutionForSearch}"
+                                    filter="true"
+                                    autoWidth="false"
+                                    >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.managaeInstitutionIndex}"
-                                                   var="i"
-                                                   itemLabel="#{i.name}"
-                                                   itemValue="#{i}"></f:selectItems>
+                                    <f:selectItems 
+                                        value="#{institutionController.items}"
+                                        var="i"
+                                        itemLabel="#{i.name}"
+                                        itemValue="#{i}">
+                                    </f:selectItems>
                                 </p:selectOneMenu>
 
-                            </h:panelGrid> 
-
-
-                            <div class="p-1" >
-                                <p:dataTable id="tblBills" 
-                                             value="#{admissionController.items}" 
-                                             var="a"
-                                             emptyMessage="No records found"
-                                             rowKey="#{a.id}"
-                                             paginator="true"
-                                             rows="10"
-                                             paginatorAlwaysVisible="false"
-                                             paginatorPosition="bottom"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                             rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                             >  
-
-
-                                    <p:column headerText="BHT No" >
-                                        <h:outputText value="#{a.bhtNo}"></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Patient Name"  >
-                                        <h:outputText value="#{a.patient.person.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Phone/Mobile" >
-                                        <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
-                                        <h:outputText value="&nbsp;&nbsp;" ></h:outputText>
-                                        <h:outputText value=", #{a.patient.person.mobile}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Address" >
-                                        <h:outputText value="#{a.patient.person.address}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Status" >
-                                        <h:panelGroup>
-                                            <!-- Discharge Status -->
-                                            <h:panelGroup rendered="#{a.discharged}">
-                                                <i class="fa fa-fw fa-bed" title="Discharged"></i>
-                                                <i class="fa fa-check" title="Discharged"></i>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{not a.discharged}">
-                                                <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
-                                                <i class="fa fa-times" title="Not Discharged"></i>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
-                                        <p:spacer width="20" ></p:spacer>
-                                        <h:panelGroup>
-                                            <!-- Bill Status -->
-                                            <h:panelGroup rendered="#{a.billSession}">
-                                                <i class="fa fa-fw fa-money" title="Payment Finalized"></i>
-                                                <i class="fa fa-check" title="Payment Finalized"></i>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{not a.paymentFinalized}">
-                                                <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
-                                                <i class="fa fa-times" title="Payment Pending"></i>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
-                                    </p:column>
-
-                                    <p:column headerText="Current Room" >
-                                        <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Admission Date" >
-                                        <h:outputLabel value="#{a.dateOfAdmission}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Discharge Date" >
-                                        <h:outputText value="#{a.dateOfDischarge}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Actions" >
-                                        <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                        <p:commandButton ajax="false" 
-                                                         class="m-1"
-                                                         icon="fa fa-fw fa-bed" 
-                                                         action="#{admissionController.navigateToAdmissionProfilePage}">
-                                            <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
-                                        </p:commandButton>
-
-                                        <p:commandButton ajax="false" 
-                                                         class="m-1"
-                                                         icon="fa fa-user-md" 
-                                                         action="#{patientController.navigateToOpdPatientProfile()}">
-                                            <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
-                                        </p:commandButton>
-
-                                    </p:column>
-
-                                </p:dataTable>
 
                             </div>
+                            <div class="col-9">
+                                <div class="p-1" >
+                                    <p:dataTable id="tblBills" 
+                                                 value="#{admissionController.items}" 
+                                                 var="a"
+                                                 emptyMessage="No records found"
+                                                 rowKey="#{a.id}"
+                                                 paginator="true"
+                                                 rows="10"
+                                                 paginatorAlwaysVisible="false"
+                                                 paginatorPosition="bottom"
+                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                                 >  
+
+
+                                        <p:column headerText="BHT No" >
+                                            <h:outputText value="#{a.bhtNo}"></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Patient Name"  >
+                                            <h:outputText value="#{a.patient.person.name}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Phone/Mobile" >
+                                            <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
+                                            <h:outputText value="&nbsp;&nbsp;" ></h:outputText>
+                                            <h:outputText value=", #{a.patient.person.mobile}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Address" >
+                                            <h:outputText value="#{a.patient.person.address}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Status" >
+                                            <h:panelGroup class="my-1">
+                                                <!-- Discharge Status -->
+                                                <h:panelGroup rendered="#{a.discharged}" >
+                                                    <p:tag severity="success" style="font-size: 15px" class="my-1 w-75" >
+                                                        <i class="fa fa-fw fa-bed" title="Discharged"></i>
+                                                        &nbsp;<i class="fa fa-check" title="Discharged"></i></p:tag>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{not a.discharged}">
+                                                    <p:tag severity="danger" style="font-size: 15px"  class="my-1 w-75" >
+                                                        <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
+                                                        &nbsp;<i class="fa fa-times" title="Not Discharged"></i></p:tag>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                            <p:spacer width="20" ></p:spacer>
+                                            <h:panelGroup>
+                                                <!-- Bill Status -->
+                                                <h:panelGroup rendered="#{a.paymentFinalized}">
+                                                    <p:tag severity="success" style="font-size: 15px"  class="my-1 w-75">
+                                                        <i class="fa fa-fw fa-money-bill-alt" title="Payment Finalized"></i>
+                                                        &nbsp;<i class="fa fa-check" title="Payment Finalized"></i></p:tag>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{not a.paymentFinalized}">
+                                                    <p:tag severity="danger" style="font-size: 15px"  class="my-1 w-75">
+                                                        <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
+                                                        &nbsp;<i class="fa fa-times" title="Payment Pending"></i></p:tag>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Current Room" >
+                                            <h:outputText value="#{a.currentPatientRoom.roomFacilityCharge.name}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Admission Date" >
+                                            <h:outputLabel value="#{a.dateOfAdmission}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Discharge Date" >
+                                            <h:outputText value="#{a.dateOfDischarge}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Actions" >
+                                            <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
+                                            <p:commandButton ajax="false" 
+                                                             class="m-1"
+                                                             icon="fa fa-fw fa-bed" 
+                                                             action="#{admissionController.navigateToAdmissionProfilePage}">
+                                                <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton ajax="false" 
+                                                             class="m-1"
+                                                             icon="fa fa-user-md" 
+                                                             action="#{patientController.navigateToOpdPatientProfile()}">
+                                                <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
+                                            </p:commandButton>
+
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </div>
+                            </div>
                         </div>
+
                     </p:panel>
                 </h:form>
             </ui:define>

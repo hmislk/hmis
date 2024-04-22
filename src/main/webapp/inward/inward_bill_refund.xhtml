@@ -1,109 +1,167 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:bill="http://java.sun.com/jsf/composite/inward/bill">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
 
     <ui:define name="content">
 
         <h:panelGroup >
             <h:form  >
-                <p:panel rendered="#{!inwardRefundController.printPreview}">
-                    <f:facet name="header">
-                        <p:outputLabel value="Inward Refund Payment"/>
+                <h:panelGroup  class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo eq null}"> 
+                    <div class="col-12">
+                        <h:panelGroup>
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                                    <p:outputLabel value="Inward Refund Payment" class="m-2"/>
+                                </f:facet>
+                                <h:outputLabel value="Type Patient Name or BHT : "/>
 
-                    </f:facet>
-                    <p:panel header="BHT">
-                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                        value="#{inwardRefundController.current.patientEncounter}" 
-                                        completeMethod="#{admissionController.completePatientAll}"
-                                        var="apt2" itemLabel="#{apt2.bhtNo}" 
-                                        itemValue="#{apt2}" size="30"  style="width: 400px;">
-                            <p:ajax event="itemSelect" process="@this" update="panSearch2 paid amount" 
-                                    listener="#{inwardRefundController.selectBhtListener}"/>
-                            <p:column>
-                                #{apt2.bhtNo}
-                            </p:column>
-                            <p:column>
-                                #{apt2.patient.person.nameWithTitle}
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="Discharged"  rendered="#{apt2.discharged}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="Payment Finalized"  rendered="#{apt2.paymentFinalized}"/>
-                            </p:column>
-                        </p:autoComplete>   
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                required="true" requiredMessage="Please select a patient"
+                                                value="#{inwardRefundController.current.patientEncounter}"
+                                                completeMethod="#{admissionController.completePatientAll}" 
+                                                var="myItem" itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.bhtNo}" 
+                                                class="mx-2" size="30">
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.bhtNo}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                                    </p:column>
+                                </p:autoComplete> 
+
+                                <p:commandButton
+                                    id="btnSelect"
+                                    ajax="false"
+                                    value="Select"
+                                    action="#{inwardRefundController.selectBhtListener}"
+                                    />
+
+                                <!--                                <h:commandButton
+                                                                    id="btnSelectJsf"
+                                                                    value="Select**"
+                                                                    action="#{admissionController.navigateToAdmitFromMenu()}"
+                                                                    />-->
 
 
-                        <h:panelGroup id="panSearch2">
-                            <in:bhtDetail admission="#{inwardRefundController.current.patientEncounter}"/>
+
+                            </p:panel>
                         </h:panelGroup>
+
+                    </div>
+
+                </h:panelGroup>
+
+                <h:panelGroup class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo ne null}">
+                    <p:panel rendered="#{!inwardRefundController.printPreview}">
+                        <f:facet name="header">
+                            <p:outputLabel value="Inward Refund Payment"/>
+
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel header="BHT">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-circle"></h:outputText>
+                                        <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <h:panelGroup id="panSearch2">
+                                        <in:bhtDetail admission="#{inwardRefundController.current.patientEncounter}"/>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel id="paid">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100" rendered="#{inwardRefundController.current.patientEncounter.paymentFinalized}">
+                                        <h:outputLabel value="Due Amount" rendered="#{inwardRefundController.paidAmount gt 0}" style="color: red"/>
+                                        <h:outputLabel value="Refundable Amount" rendered="#{inwardRefundController.paidAmount lt 0 or inwardRefundController.paidAmount eq 0}" style="color: green"/>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardRefundController.paidAmount}">                              
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                           
+
+                                        <h:outputLabel value="Final Bill Total"/>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardRefundController.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                    </h:panelGrid>
+                                    <h:panelGrid columns="3" class="w-100" rendered="#{!inwardRefundController.current.patientEncounter.paymentFinalized}">
+                                        <p:spacer/>
+                                        <h:outputLabel value="No Record Found" style="font-size: 1.3em; text-align: center" />
+                                          <h:outputLabel value="" />
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel id="amount" class="my-2">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-money-bill-wave"></h:outputText>
+                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100" >
+                                        <h:outputLabel value="Payment Method"/>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <p:selectOneMenu class="w-45" autoWidth="false" id="cmbPs" value="#{inwardRefundController.current.paymentMethod}"  >
+                                            <f:selectItem itemLabel="Select Payment Method" />
+                                            <f:selectItems value="#{inwardRefundController.paymentMethods}"  />
+                                            <p:ajax process="cmbPs" update="creditCard cheque slip  " event="change" />
+                                        </p:selectOneMenu>
+                                        <h:panelGroup id="creditCard" style="display: #{inwardRefundController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                            <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="cheque" style="display: #{inwardRefundController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" style="display: #{inwardRefundController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <p:outputLabel class="mt-1" value="Amount"/>
+                                        <h:outputLabel class="mt-1" value=":" ></h:outputLabel>
+                                        <p:inputText class="w-45 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}" disabled="#{inwardRefundController.paidAmount gt 0 or inwardRefundController.paidAmount eq 0}"/>
+                                    </h:panelGrid>
+                                    <h:panelGrid columns="6" class="my-2">
+                                        <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" ajax="false" value="Refund" 
+                                                         action="#{inwardRefundController.pay}" />
+                                        <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" />
+                                        <p:defaultCommand target="btnRefund"/>
+                                    </h:panelGrid>
+                                </p:panel>
+
+                            </div>
+                        </div>
                     </p:panel>
-
-                    <p:panel header="Paid Amount" id="paid" >
-                        <p:panelGrid columns="2" rendered="#{inwardRefundController.current.patientEncounter.paymentFinalized}">
-                            <h:outputLabel value="Due Amount" rendered="#{inwardRefundController.paidAmount gt 0}" style="color: red"/>
-                            <h:outputLabel value="Refundable Amount" rendered="#{inwardRefundController.paidAmount lt 0 or inwardRefundController.paidAmount eq 0}" style="color: green"/>
-                            <h:outputLabel value="#{inwardRefundController.paidAmount}">                              
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>                           
-                            
-                            <h:outputLabel value="Final Bill Total"/>
-                            <h:outputLabel value="#{inwardRefundController.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                            
-                        </p:panelGrid>
-                    </p:panel>
-                   
-
-                    <p:panel header="Payment Detail" id="amount">
-                        <h:panelGrid columns="7">                        
-                            <p:selectOneMenu   id="cmbPs" value="#{inwardRefundController.current.paymentMethod}"  >
-                                <f:selectItem itemLabel="Select Payment Method" />
-                                <f:selectItems value="#{inwardRefundController.paymentMethods}"  />
-                                <p:ajax process="cmbPs" update="creditCard cheque slip  " event="change" />
-                            </p:selectOneMenu>
-                            <h:panelGroup id="creditCard" style="display: #{inwardRefundController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display: #{inwardRefundController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display: #{inwardRefundController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="2">
-                            <p:outputLabel value="Amount"/>
-                            <p:inputText autocomplete="off" value="#{inwardRefundController.current.total}" disabled="#{inwardRefundController.paidAmount gt 0 or inwardRefundController.paidAmount eq 0}"/>
-                            <p:commandButton id="btnRefund" ajax="false" value="Refund" 
-                                            action="#{inwardRefundController.pay}" />
-                            <p:commandButton ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" />
-                            <p:defaultCommand target="btnRefund"/>
-                        </h:panelGrid>
-                    </p:panel>
-
-                </p:panel>
+                </h:panelGroup>    
                 <p:panel rendered="#{inwardRefundController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" action="#{inwardRefundController.makeNull}" />
-                    <bill:paymentRefund bill="#{inwardRefundController.current}"/>
+                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                    <bill:paymentRefund_1 bill="#{inwardRefundController.current}"/>
                 </p:panel>
+
             </h:form>
 
         </h:panelGroup>

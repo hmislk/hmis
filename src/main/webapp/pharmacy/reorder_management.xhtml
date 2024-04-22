@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Ordering Managemenet" >
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <p:panel header="Reorder Manage By Institution " class="w-100">
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="Institution" ></h:outputLabel>
+                                        <p:autoComplete id="refIns" 
+                                                        forceSelection="true" 
+                                                        value="#{reorderController.institution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ri" 
+                                                        itemLabel="#{ri.name}" 
+                                                        itemValue="#{ri}"
+                                                        size="10"
+                                                        inputStyleClass="form-control"
+                                                        class="w-100">
+                                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                                            <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
+                                            <p:column headerText="Code">#{ri.institutionCode}</p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton value="Create Reorders" action="#{reorderController.createReOrdersByInstituion}"/>
+                                        <p:commandButton id="lir" process="lir" update="tbl" value="List Reorders by Institution" action="#{reorderController.fillReordersBySelectedInstitution()}"/>
+                                    </h:panelGrid>
+
+                                </p:panel>  
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel header="Reorder Manage By Department " class="w-100">
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="Department" ></h:outputLabel>
+                                        <p:autoComplete id="refDept" 
+                                                        forceSelection="true" 
+                                                        value="#{reorderController.department}"
+                                                        completeMethod="#{departmentController.completeDept}"
+                                                        var="ri" 
+                                                        itemLabel="#{ri.name}" 
+                                                        itemValue="#{ri}"
+                                                        size="10"
+                                                        inputStyleClass="form-control"
+                                                        class="w-100">
+                                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                                            <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
+
+                                        </p:autoComplete>
+                                        <p:commandButton value="Create Reorders" action="#{reorderController.createReOrdersByDepartment()}"/>
+                                        <p:commandButton id="ldr" process="ldr" update="tbl" value="List Reorders by Department" action="#{reorderController.fillReordersBySelectedDepartment()}"/>
+                                    </h:panelGrid>
+
+                                </p:panel>  
+                            </div>
+                        </div>
+
+                        <div class="row" >
+
+                            <p:dataTable id="tbl"
+                                         styleClass="noBorder" value="#{reorderController.reorders}" var="ro"
+                                         rows="20"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20,50,100"
+                                         editable="true"
+                                         editMode="cell"
+                                         paginatorPosition="bottom"
+                                         >
+                                <f:facet name="header">
+                                    Ordering Analysis
+                                    //Eventone-C Tablets
+                                </f:facet>
+                                <p:column style="text-align: left;" sortBy="#{ro.item.name}" filterBy="#{ro.item.name}" filterMatchMode="contains">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Item Name" >
+                                        </p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ro.item.name}"> 
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: left;" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Reorder Level" >
+                                        </p:outputLabel>
+                                    </f:facet>
+                                    <p:inputText  id="txtRol" value="#{ro.rol}"> 
+                                        <p:ajax event="blur" process="txtRol" update="txtRol" listener="#{reorderController.updateReorder(ro)}" ></p:ajax>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column style="text-align: left;" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Reorder Quantity" >
+                                        </p:outputLabel>
+                                    </f:facet>
+                                    <p:inputText id="txtRoq" value="#{ro.roq}"> 
+                                        <p:ajax event="blur" process="txtRoq" update="txtRoq" listener="#{reorderController.updateReorder(ro)}" ></p:ajax>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column style="text-align: left;" >
+                                    <p:commandButton id="rem" process="rem" update="@this" action="#{reorderController.removeReOrder(ro)}"  icon="fas fa-trash" class="ui-button-danger" />
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </p:panel>
+                </h:form> 
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

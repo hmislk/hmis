@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://java.sun.com/jsf/facelets"
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       template="/resources/template/template.xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
       >
@@ -29,8 +29,10 @@
                         placeholder="Department"
                         value="#{userIconController.department}" 
                         class="w-100"
+                        required="true"
+                        requiredMessage="Select a department"
                         filter="true">
-                        <f:selectItem itemLabel="All" ></f:selectItem>
+                        <f:selectItem itemLabel="Select" ></f:selectItem>
                         <f:selectItems 
                             value="#{userIconController.departments}"
                             var="d"
@@ -51,8 +53,15 @@
                     </p:commandButton>
 
                     <p:outputLabel value="Icon to add" ></p:outputLabel>
-                    <p:selectOneMenu value="#{userIconController.icon}" class="w-100">
-                        <f:selectItems value="#{userIconController.icons}" />
+                    <p:selectOneMenu 
+                        value="#{userIconController.icon}" 
+                        filter="true"
+                        filterMatchMode="contains"
+                        class="w-100">
+                        <f:selectItems value="#{userIconController.icons}" 
+                                       var="i"
+                                       itemLabel="#{i.label}"
+                                       itemValue="#{i}"/>
                     </p:selectOneMenu>
                     <p:commandButton 
                         value="Add Icon" 

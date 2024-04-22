@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
 
@@ -26,7 +26,7 @@ import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Calendar;
@@ -292,14 +292,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void calLeaveCount() {
         if (getCurrentLeaveForm().getStaff() == null) {
-            UtilityController.addErrorMessage("Please Select Staff");
+            JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
 
         LeaveType leaveTypeLocal = getCurrentLeaveForm().getLeaveType();
 
         if (leaveTypeLocal == null) {
-            UtilityController.addErrorMessage("Please Select Leave Type");
+            JsfUtil.addErrorMessage("Please Select Leave Type");
             return;
         }
 
@@ -315,7 +315,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         ////System.out.println("leaveTypeLocal.isExceptionalLeave() = " + leaveTypeLocal.isExceptionalLeave());
 
         if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
-            UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
+            JsfUtil.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
             return;
         }
 
@@ -676,7 +676,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Leave(/faces/hr/hr_staff_leave_edit_search.xhtml)");
+        
 
     }
 
@@ -757,14 +757,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
         staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
+        
 
     }
 
     public void saveStaffLeave() {
         if (staffLeave != null) {
             getStaffLeaveFacade().edit(staffLeave);
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 

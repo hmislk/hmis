@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Person;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
@@ -45,6 +45,10 @@ public class PersonController implements Serializable {
     public List<Person> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
+    }
+    
+    public Person findPerson(Long id){
+        return getFacade().find(id);
     }
 
     public List<Person> completePerson(String qry) {
@@ -87,12 +91,12 @@ public class PersonController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -136,9 +140,9 @@ public class PersonController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -158,7 +162,7 @@ public class PersonController implements Serializable {
     /**
      *
      */
-    @FacesConverter("personCon")
+    @FacesConverter(forClass = Person.class)
     public static class PersonControllerConverter implements Converter {
 
         @Override
@@ -193,7 +197,7 @@ public class PersonController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PersonController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Person.class.getName());
             }
         }
     }

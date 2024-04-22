@@ -9,8 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.inward.AdmissionTypeController;
+import com.divudi.bean.common.util.JsfUtil;import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -1010,7 +1009,7 @@ public class BookKeepingSummery implements Serializable {
         opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/investigation summery fee type(/faces/reportLab/report_investigation_summery_by_feetype.xhtml)");
+        
     }
 
     public void createOPdLabListWithProDayEndTableWithCredit() {
@@ -1269,7 +1268,7 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalWithCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Investigation summery fee type with credit(/faces/reportLab/report_investigation_summery_by_feetype_with_credit.xhtml)");
+        
     }
 
     public long calCountTotal(long count) {
@@ -1446,7 +1445,7 @@ public class BookKeepingSummery implements Serializable {
 
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/Lab Summery Inward/Investigation Summery Inward(/faces/reportLab/report_investigation_summery_by_inward.xhtml)");
+        
 
     }
 
@@ -1603,7 +1602,7 @@ public class BookKeepingSummery implements Serializable {
         cans = getBillTotalbyDateBill(getFromDate(), getToDate(), institution, department, btps, BillClassType.CancelledBill, false, false);
         refs = getBillTotalbyDateBill(getFromDate(), getToDate(), institution, department, btps, BillClassType.RefundBill, false, false);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD by date(/faces/reportLab/report_investigation_summery_by_date_inward_opd.xhtml)");
+        
     }
 
     public void createInwardOpdFee() {
@@ -1624,7 +1623,7 @@ public class BookKeepingSummery implements Serializable {
 //        bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
 //        //// // System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
 //        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD(/faces/reportLab/report_investigation_summery_by_inward_opd.xhtml)");
+        
     }
 
     public void createInwardOpdCount() {
@@ -1639,7 +1638,7 @@ public class BookKeepingSummery implements Serializable {
 
         countTotals = (long) getCountTotal(bookKeepingSummeryRowsInward);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD count(/faces/reportLab/report_investigation_summery_by_inward_opd_count.xhtml)");
+        
 
     }
 
@@ -1994,7 +1993,7 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalByPayMethod = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), paymentMethod);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Investigation summery regent fee  by payment method(/faces/reportLab/report_investigation_summery_by_regent_fee_by_pay_method.xhtml)");
+        
     }
 
     public void createOPdLabListWithProDayEndTablebyInward() {
@@ -3016,7 +3015,7 @@ public class BookKeepingSummery implements Serializable {
         bksr.setProFee(profeTotal);
         bksr.setReagentFee(regentTot);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/summery inward by date(/faces/reportLab/report_lab_by_date_summery_inward.xhtml)");
+        
 
     }
 
@@ -3876,7 +3875,7 @@ public class BookKeepingSummery implements Serializable {
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
 //        if (Math.abs(lng) > 2) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement};
@@ -3939,7 +3938,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with out professional)/By category day end(/faces/reportInstitution/report_cash_category_without_pro_day.xhtml)");
+        
     }
 
     public void createDoctorPaymentChannelling() {
@@ -4256,7 +4255,7 @@ public class BookKeepingSummery implements Serializable {
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
+            JsfUtil.addErrorMessage("Date Range is too Long");
             return;
         }
 
@@ -4325,7 +4324,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with professional)/By category day end(/faces/reportInstitution/report_cash_category_with_pro_day.xhtml)");
+        
     }
 
     Institution creditCompany;
@@ -4358,7 +4357,7 @@ public class BookKeepingSummery implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Credit company break down(/faces/reportInstitution/report_credit_category.xhtml)");
+        
     }
 
     public void processCreditPaidItems() {
@@ -4380,7 +4379,7 @@ public class BookKeepingSummery implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Credit company break down/Process Credit Items Paid(/faces/reportInstitution/report_credit_category.xhtml)");
+        
     }
 
     public void createCashCategoryWithoutProMonth() {
@@ -4389,7 +4388,7 @@ public class BookKeepingSummery implements Serializable {
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
 //        if (Math.abs(lng) > 32) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
@@ -4431,7 +4430,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with out professional)/By category montj end(/faces/reportInstitution/report_cash_category_without_pro_month.xhtml)");
+        
     }
 
     public void createCashCategoryWithProMonth() {
@@ -4488,7 +4487,7 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with professional)/By category month end(/faces/reportInstitution/report_cash_category_with_pro_month.xhtml)");
+        
     }
 
     public void createCashCategoryWithProMonth2() {

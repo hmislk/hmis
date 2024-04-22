@@ -7,7 +7,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -22,7 +22,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -96,13 +96,13 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void addItem() {
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select and item from the list");
+            JsfUtil.addErrorMessage("Please select and item from the list");
             return;
         }
 
         for (BillItem bi : getBillItems()) {
             if (getCurrentBillItem().getItem().equals(bi.getItem())) {
-                UtilityController.addErrorMessage("Already added this item");
+                JsfUtil.addErrorMessage("Already added this item");
                 return;
             }
         }
@@ -149,7 +149,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 //        if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
 //            if (bi.getTmpQty() != 1) {
 //                bi.setTmpQty(1);
-//                UtilityController.addErrorMessage("Asset Item Count Reset to 1");
+//                JsfUtil.addErrorMessage("Asset Item Count Reset to 1");
 //            }
 //        }
 
@@ -238,7 +238,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void createOrderWithItems() {
         if (getCurrentBill().getToInstitution() == null) {
-            UtilityController.addErrorMessage("Please Select Dealor");
+            JsfUtil.addErrorMessage("Please Select Dealor");
 
         }
 
@@ -252,7 +252,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         Date toDate = null;
 
         if (getCurrentBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please Select Paymntmethod");
+            JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
 
@@ -268,7 +268,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
 //
 //        if (checkItemPrice()) {
-//            UtilityController.addErrorMessage("Please enter purchase price for all");
+//            JsfUtil.addErrorMessage("Please enter purchase price for all");
 //            return;
 //        }
         calTotal();
@@ -276,11 +276,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
         saveBill();
         saveBillComponent();
 
-        UtilityController.addSuccessMessage("Request Succesfully Created");
+        JsfUtil.addSuccessMessage("Request Succesfully Created");
 
         recreate();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Purchase orders(Request)(/faces/store/store_purhcase_order_request.xhtml)");
+        
 
     }
 

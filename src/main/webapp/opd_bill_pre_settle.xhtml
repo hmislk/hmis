@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:prints="http://java.sun.com/jsf/composite/ezcomp/prints"
-      xmlns:common="http://java.sun.com/jsf/composite/ezcomp/common"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
 
@@ -26,15 +26,8 @@
                                              style="float: right;"
                                              icon="fa fa-arrow-left"
                                              actionListener="#{searchController.createOpdPreTable}"
-                                             action="opd_search_pre_bill"/>
+                                             action="/opd/opd_search_pre_bill"/>
                             <p:defaultCommand target="settle"/>
-                            <p:commandButton ajax= "false"  
-                                             value="Settle and Accept Payment"
-                                             style="float: right;"
-                                             class="ui-button-success mx-2"
-                                             icon="fa fa-check"
-                                             id="settle"
-                                             action="#{opdPreSettleController.settleBillWithPay2}" />
                         </f:facet>
 
                         <h:panelGrid columns="20">
@@ -45,7 +38,7 @@
                                 value="#{opdPreSettleController.preBill.paymentMethod}"  
                                 disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet " event="change" />
+                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet MultiplePaymentMethods" event="change" />
                             </p:selectOneMenu>
 
                             <h:panelGroup id="creditCard" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
@@ -65,13 +58,16 @@
                             </h:panelGroup>
                             
                             <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                
-                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" class="w-100"/>
+                                <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
 
-                            
-
-
+                             <p:commandButton ajax= "false"  
+                                              value="Accept Payment &amp; Settle"
+                                             style="float: right;"
+                                             class="ui-button-success mx-2"
+                                             icon="fa fa-check"
+                                             id="settle"
+                                             action="#{opdPreSettleController.settleBillWithPay2}" />
 
                         </h:panelGrid>
 
@@ -89,7 +85,7 @@
                                 <p:panel >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
@@ -107,7 +103,7 @@
                                 <p:panel id="pBillDetails"  >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
                                     <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
@@ -138,7 +134,7 @@
 
 
 
-                        <p:panel header="Bill Item Detail">
+                        <p:panel header="Bill Item Details">
                             <p:dataTable rowIndexVar="rowIndex" value="#{opdPreSettleController.preBill.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
@@ -167,14 +163,20 @@
 
 
                     <p:panel rendered="#{opdPreSettleController.billPreview}">
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
+                        <f:facet name="header" >
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="OPD Bill Print" />
+                                </div>
+                                <div>
+                                    <p:commandButton ajax="false" value="Print" class="ui-button-info m-1" icon="fas fa-print">
                             <p:printer target="gpBillPreview" />
                         </p:commandButton>
 
                         <p:commandButton  
                             id="btnSearch" 
                             icon="fas fa-search" 
-                            class="ui-button-primary m-1" 
+                            class="ui-button-success m-1" 
                             ajax="false" 
                             value="Search All"
                             action="#{searchController.createOpdPreTable}"/>
@@ -187,22 +189,22 @@
                         <p:commandButton
                             ajax="false"
                             icon="fas fa-search"
-                            class="m-1 ui-button-success" 
+                            class="m-1 ui-button-warning" 
                             value="Search Paid Only"
                             action="#{searchController.createOpdPreTablePaid}"/>
-
-
+                                </div>
+                            </div>
+                            
+                        </f:facet>
 
                         <!-- Controls Section -->
-                        <div class="d-flex m-2">
+                        <div class="d-flex m-2" style="float: right">
                             <p:outputLabel value="Paper Type" class="fs-5 m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
                                 <f:selectItem itemLabel="Please Select Paper Type" />
                                 <f:selectItems value="#{enumController.paperTypes}" />
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-
-
                         </div>
 
                         <h:panelGroup id="gpBillPreview" >

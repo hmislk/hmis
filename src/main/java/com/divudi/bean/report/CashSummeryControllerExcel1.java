@@ -200,7 +200,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
         tmp.add(dd);
 
         dd = new String1Value1();
-        dd.setString("B/F Cash Ballance");
+        dd.setString("B/F Cash Balance");
         tmp.add(dd);
 
         return tmp;
@@ -607,7 +607,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
 //        long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 //
 //        if (Math.abs(lng) > 2) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
 //

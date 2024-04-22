@@ -9,7 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.store.StoreIssueController;
 import com.divudi.data.BillNumberSuffix;
@@ -40,7 +40,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -136,7 +136,7 @@ public class PharmacyIssueController implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-
+   
     public void makeNull() {
         selectedAlternative = null;
         preBill = null;
@@ -201,7 +201,7 @@ public class PharmacyIssueController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return true;
         }
 
@@ -211,7 +211,7 @@ public class PharmacyIssueController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
 
@@ -221,7 +221,7 @@ public class PharmacyIssueController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+            JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
             return true;
         }
 
@@ -269,7 +269,7 @@ public class PharmacyIssueController implements Serializable {
 
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         this.qty = qty;
@@ -388,7 +388,7 @@ public class PharmacyIssueController implements Serializable {
 
     private boolean errorCheckForPreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Items added to bill to sale");
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
             return true;
         }
         return false;
@@ -537,11 +537,18 @@ public class PharmacyIssueController implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
+        
+        if(storeIssueController.getPreBill().getComments() == null){
+            JsfUtil.addErrorMessage("Write the Comment..");
+            return;
+        }
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
+        getPreBill().setComments(storeIssueController.getPreBill().getComments());
+        getPreBill().setInvoiceNumber(storeIssueController.getPreBill().getInvoiceNumber());
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
@@ -553,7 +560,7 @@ public class PharmacyIssueController implements Serializable {
 
         billPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Issue(/faces/pharmacy/pharmacy_issue.xhtml)");
+        
 
     }
 
@@ -584,7 +591,7 @@ public class PharmacyIssueController implements Serializable {
 
         if (getToDepartment() == null) {
             errorMessage = "Please Select To Department";
-            UtilityController.addErrorMessage("Please Select To Department");
+            JsfUtil.addErrorMessage("Please Select To Department");
             return;
         }
 
@@ -592,18 +599,18 @@ public class PharmacyIssueController implements Serializable {
 
         if (issueRateMargins == null) {
             errorMessage = "Set Issue Margin";
-            UtilityController.addErrorMessage("Set Issue Margin");
+            JsfUtil.addErrorMessage("Set Issue Margin");
             return;
         }
 
         if (getStock() == null) {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
 
@@ -611,24 +618,24 @@ public class PharmacyIssueController implements Serializable {
 
         if (getQty() > fetchStock.getStock()) {
             errorMessage = "No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
         
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
-//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
+//            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
 //            return;
 //        }
 
@@ -788,7 +795,7 @@ public class PharmacyIssueController implements Serializable {
         IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
 
         if (issueRateMargins == null) {
-            UtilityController.addErrorMessage("Please select to department");
+            JsfUtil.addErrorMessage("Please select to department");
             return;
         }
 
@@ -800,7 +807,7 @@ public class PharmacyIssueController implements Serializable {
 
         bi.setMarginRate(calculateBillItemAdditionToPurchaseRate(bi, issueRateMargins));
         bi.setDiscount(0.0);
-        bi.setNetRate(bi.getRate() + bi.getMarginRate());
+        bi.setNetRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() + bi.getMarginRate());
     }
 
     public double calculateBillItemAdditionToPurchaseRate(BillItem bi, IssueRateMargins issueRateMargins) {
@@ -1137,5 +1144,4 @@ public class PharmacyIssueController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 }

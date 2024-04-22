@@ -8,7 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -128,7 +128,7 @@ public class ServiceFeeEdit implements Serializable {
 
         if (billFee.getFee().getFeeType() == FeeType.Staff) {
             if (billFee.getPaidValue() != 0) {
-                UtilityController.addErrorMessage("Staff Fee Allready Paid");
+                JsfUtil.addErrorMessage("Staff Fee Allready Paid");
                 return;
             }
         }
@@ -138,7 +138,7 @@ public class ServiceFeeEdit implements Serializable {
         }
 
         if (billFee.getBill().getCheckedBy() != null) {
-            UtilityController.addErrorMessage("This Bill Already Checked");
+            JsfUtil.addErrorMessage("This Bill Already Checked");
             return;
         }
 

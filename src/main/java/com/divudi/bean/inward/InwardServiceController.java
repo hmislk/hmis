@@ -8,10 +8,9 @@
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.dataStructure.ServiceFee;
@@ -204,7 +203,7 @@ public class InwardServiceController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().isUserChangable() && getCurrent().isDiscountAllowed() == true) {
-            UtilityController.addErrorMessage("Cant tick both User can Change & Discount Allowed");
+            JsfUtil.addErrorMessage("Cant tick both User can Change & Discount Allowed");
             return true;
         }
         return false;
@@ -213,11 +212,11 @@ public class InwardServiceController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getDepartment() == null) {
-               UtilityController.addErrorMessage("Please Select Department");
+               JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
         if (getCurrent().getInwardChargeType() == null) {
-            UtilityController.addErrorMessage("Please Select Inward Charge type");
+            JsfUtil.addErrorMessage("Please Select Inward Charge type");
             return;
         }
 
@@ -239,7 +238,7 @@ public class InwardServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
@@ -254,7 +253,7 @@ public class InwardServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -315,9 +314,9 @@ public class InwardServiceController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -365,23 +364,17 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> getItems() {
-        String sql = "select c from InwardService c where c.retired=false order by c.category.name,c.department.name";
-        //////// // System.out.println(sql);
-        items = getFacade().findByJpql(sql);
-
-        for (InwardService i : items) {
-
-            List<ItemFee> tmp = getFees(i);
-            for (ItemFee itf : tmp) {
-                i.setItemFee(itf);
-            }
-        }
-
         if (items == null) {
-            items = new ArrayList<InwardService>();
+            items = findInwardServices();
         }
         return items;
     }
+    
+    public List<InwardService> findInwardServices() {
+        String sql = "select c from InwardService c where c.retired=false order by c.name";
+        return getFacade().findByJpql(sql);
+    }
+    
 
     public List<InwardService> getItem() {
         String sql;

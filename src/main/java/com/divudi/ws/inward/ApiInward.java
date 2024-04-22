@@ -8,7 +8,7 @@ package com.divudi.ws.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -434,12 +434,12 @@ public class ApiInward {
 
     private boolean errorCheck(Bill bill, PaymentMethodData pmd) {
         if (bill.getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
         if (bill.getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Method");
+            JsfUtil.addErrorMessage("Select Payment Method");
             return true;
         }
 

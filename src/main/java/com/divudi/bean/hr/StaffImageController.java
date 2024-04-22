@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffFacade;
@@ -79,11 +79,11 @@ public class StaffImageController implements Serializable {
             return "";
         }
         if (file == null) {
-            UtilityController.addErrorMessage("Please select an image");
+            JsfUtil.addErrorMessage("Please select an image");
             return "";
         }
         if (getStaffController().getCurrent().getId() == null || getStaffController().getCurrent().getId() == 0) {
-            UtilityController.addErrorMessage("Please select staff member");
+            JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
         //////System.out.println("file name is not null");

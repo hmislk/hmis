@@ -5,8 +5,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -26,7 +27,8 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +74,8 @@ public class TransferRequestController implements Serializable {
     @Inject
     private PharmacyCalculation pharmacyBillBean;
     private boolean printPreview;
+    @Inject
+    NotificationController notificationController;
 
     public void recreate() {
         Date startTime = new Date();
@@ -83,12 +87,12 @@ public class TransferRequestController implements Serializable {
         dealor = null;
         billItems = null;
         printPreview = false;
+
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(New Bill)(/faces/theater/theater_transfer_request.xhtml)");
-        
+
     }
-    
-    public void changeDepartment(){
+
+    public void changeDepartment() {
         billItems = null;
         bill.setToDepartment(null);
     }
@@ -104,32 +108,32 @@ public class TransferRequestController implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().getToDepartment() == null) {
-            UtilityController.addErrorMessage("Select Department");
+            JsfUtil.addErrorMessage("Select Department");
             return true;
         }
 
         if (getBill().getToDepartment().getId() == getSessionController().getDepartment().getId()) {
-            UtilityController.addErrorMessage("U can't request same department");
+            JsfUtil.addErrorMessage("U can't request same department");
             return true;
         }
 
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Select Item");
+            JsfUtil.addErrorMessage("Select Item");
             return true;
         }
 
         if (getCurrentBillItem().getTmpQty() == 0) {
-            UtilityController.addErrorMessage("Set Ordering Qty");
+            JsfUtil.addErrorMessage("Set Ordering Qty");
             return true;
         }
 
         if (checkItems(getCurrentBillItem().getItem())) {
-            UtilityController.addErrorMessage("Item is Already Added");
+            JsfUtil.addErrorMessage("Item is Already Added");
             return true;
         }
-        
-        if (getBillItems().size()>=10) {
-            UtilityController.addErrorMessage("You Can Only Add 10 Items For this Request.");
+
+        if (getBillItems().size() >= 10) {
+            JsfUtil.addErrorMessage("You Can Only Add 10 Items For this Request.");
             return true;
         }
 
@@ -215,20 +219,39 @@ public class TransferRequestController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-
+        
+        if (getBillItems() == null) {
+            JsfUtil.addErrorMessage("No Item Selected to Request");
+            return;
+        }
+        
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Item Selected to Request");
+            return;
+        }
+        
         if (getBill().getToDepartment() == null) {
-            UtilityController.addErrorMessage("Select Requested Department");
+            JsfUtil.addErrorMessage("Select Requested Department");
+            return;
+        }
+        getBill().setToInstitution(getBill().getToDepartment().getInstitution());
+
+        getBill().setFromDepartment(getSessionController().getDepartment());
+        getBill().setFromInstitution(getSessionController().getInstitution());
+
+        if (getBill().getToDepartment().equals(getBill().getFromDepartment())) {
+            JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
         }
 
-        if (getBill().getToDepartment() == getSessionController().getDepartment()) {
-            UtilityController.addErrorMessage("U cant request ur department itself");
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items Requested");
             return;
         }
 
         for (BillItem bi : getBillItems()) {
             if (bi.getQty() == 0.0) {
-                UtilityController.addErrorMessage("Check Items Qty");
+                JsfUtil.addErrorMessage("Some Items Have Zero Quantities");
                 return;
             }
         }
@@ -265,14 +288,13 @@ public class TransferRequestController implements Serializable {
 
             getBill().getBillItems().add(b);
         }
-
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         getBillFacade().edit(getBill());
-
-        UtilityController.addSuccessMessage("Transfer Request Succesfully Created");
-
+        JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
         printPreview = true;
+        notificationController.createNotification(bill);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(/faces/theater/theater_transfer_request.xhtml)");
+        
 
     }
 

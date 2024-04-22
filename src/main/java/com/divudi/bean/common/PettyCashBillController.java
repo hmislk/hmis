@@ -21,7 +21,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -95,12 +95,12 @@ public class PettyCashBillController implements Serializable {
 
 //        //Edited 2014.10.04 p
 //        if (getCurrent().getStaff() == null && getCurrent().getPerson() == null && getNewPerson() == null) {
-//            UtilityController.addErrorMessage("Can't settle without Person");
+//            JsfUtil.addErrorMessage("Can't settle without Person");
 //            return true;
 //        }
         if (getCurrent().getPaymentMethod() != null && getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
             if (getCurrent().getBank() == null || getCurrent().getChequeRefNo() == null || getCurrent().getChequeDate() == null) {
-                UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
+                JsfUtil.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
 
@@ -111,12 +111,12 @@ public class PettyCashBillController implements Serializable {
         }
 
         if (getCurrent().getNetTotal() < 1) {
-            UtilityController.addErrorMessage("Type Amount");
+            JsfUtil.addErrorMessage("Type Amount");
             return true;
         }
 
         if (checkInvoice()) {
-            UtilityController.addErrorMessage("Invoice Number Already Exist");
+            JsfUtil.addErrorMessage("Invoice Number Already Exist");
             return true;
         }
 
@@ -272,10 +272,10 @@ public class PettyCashBillController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Petty Cash/ Petty Cash payment(/faces/petty_cash_bill.xhtml)");
+        
 
     }
 

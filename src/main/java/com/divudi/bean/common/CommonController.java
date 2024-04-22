@@ -166,39 +166,15 @@ public class CommonController implements Serializable {
         return pat.matcher(email).matches();
     }
 
-    public void printReportDetails(Date fromDate, Date toDate, Date startTime, String url) {
-
-        String s;
-        s = "***************";
-        s += "\n Report User :" + getSessionController().getLoggedUser().getWebUserPerson().getName();
-        s += "\n Report Description : " + url;
-        if (fromDate != null) {
-            s += "\n Report Form :" + fromDate;
-        }
-        if (toDate != null) {
-            s += " To :" + toDate;
-        }
-        s += "\n Report Start Time : " + startTime + " End Time :" + new Date();
-        if (fromDate != null && toDate != null) {
-            s += "\n Time Defferent : " + dateDifferenceInMinutes(fromDate, toDate);
-        }
-        if (startTime != null) {
-            s += "\n Report Time Defferent(Miniuts) : " + dateDifferenceInMinutes(startTime, new Date());
-            s += "\n Report Time Defferent(Seconds) : " + dateDifferenceInSeconds(startTime, new Date());
-        }
-        s += "\n ***************";
-
-    }
-
-    //----------Date Time Formats
-    public String getDateFormat(Date date) {
+   
+    public static String getDateFormat(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
         s = d.format(date);
         return s;
     }
 
-    public String getDateFormat(Date date, String formatString) {
+    public static String getDateFormat(Date date, String formatString) {
         String s = "";
         DateFormat d = new SimpleDateFormat(formatString);
         s = d.format(date);

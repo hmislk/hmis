@@ -5,7 +5,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
@@ -32,7 +32,7 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -1080,22 +1080,22 @@ public class StaffSalaryController implements Serializable {
 
     private boolean dateCheck() {
         if (getSalaryCycle() == null) {
-            UtilityController.addErrorMessage("Please Select Salary Cycle");
+            JsfUtil.addErrorMessage("Please Select Salary Cycle");
             return true;
         }
 
         if (getSalaryCycle().getSalaryFromDate() == null || getSalaryCycle().getSalaryToDate() == null) {
-            UtilityController.addErrorMessage("Please Select Salary Date");
+            JsfUtil.addErrorMessage("Please Select Salary Date");
             return true;
         }
 
         if (getSalaryCycle().getWorkedFromDate() == null || getSalaryCycle().getWorkedToDate() == null) {
-            UtilityController.addErrorMessage("Please Select Over time Date");
+            JsfUtil.addErrorMessage("Please Select Over time Date");
             return true;
         }
 
 //        if (getHumanResourceBean().checkExistingSalary(getSalaryCycle().getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff())) {
-//            UtilityController.addErrorMessage("There is Already defined Salary for this salary cycle please edit");
+//            JsfUtil.addErrorMessage("There is Already defined Salary for this salary cycle please edit");
 //            return true;
 //        }
         return false;
@@ -1311,7 +1311,7 @@ public class StaffSalaryController implements Serializable {
 
         }
 
-        UtilityController.addSuccessMessage("Record Succesfully Deleted");
+        JsfUtil.addSuccessMessage("Record Succesfully Deleted");
     }
 
     public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime, double toTime, Double shiftCount) {

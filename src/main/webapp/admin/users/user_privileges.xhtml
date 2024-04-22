@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
       >
@@ -34,8 +34,10 @@
                                 placeholder="Department"
                                 value="#{userPrivilageController.department}" 
                                 style="width: 500px"
+                                required="true"
+                                requiredMessage="Please select a department"
                                 filter="true">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItem itemLabel="Select Department" ></f:selectItem>
                                 <f:selectItems 
                                     value="#{userPrivilageController.departments}"
                                     var="d"
@@ -75,11 +77,11 @@
                             value="#{userPrivilageController.rootTreeNode}" 
                             var="node" 
                             propagateSelectionDown="true"
-                            propagateSelectionUp="true"
-                            >  
-                            <p:treeNode>  
+                            propagateSelectionUp="true"  
+                            >
+                            <p:treeNode >
                                 <h:outputText value="#{node}" />  
-                            </p:treeNode>  
+                            </p:treeNode>
                         </p:tree>
                     </p:panel>
                 </h:form>

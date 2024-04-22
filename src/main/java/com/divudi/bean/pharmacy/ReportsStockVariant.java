@@ -7,7 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -126,7 +126,7 @@ public class ReportsStockVariant implements Serializable {
         Date toDate = null;
 
         if (department == null || category == null) {
-            UtilityController.addErrorMessage("Please select a department && Category");
+            JsfUtil.addErrorMessage("Please select a department && Category");
             return;
         }
 
@@ -149,7 +149,7 @@ public class ReportsStockVariant implements Serializable {
             systemStockValue += (r.getSystemStock() * r.getPurchaseRate());
         }
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant report(/faces/pharmacy/pharmacy_variant_category_stock_by_item.xhtml)");
+        
 
     }
 
@@ -211,7 +211,7 @@ public class ReportsStockVariant implements Serializable {
 
         getBillFacade().edit(getRecordedBill());
 
-        UtilityController.addSuccessMessage("Succesfully Saved");
+        JsfUtil.addSuccessMessage("Succesfully Saved");
 
         return "";
     }
@@ -246,7 +246,7 @@ public class ReportsStockVariant implements Serializable {
 
         getBillFacade().edit(getRecordedBillAfter());
 
-        UtilityController.addSuccessMessage("Succesfully Saved");
+        JsfUtil.addSuccessMessage("Succesfully Saved");
 
         return "";
     }

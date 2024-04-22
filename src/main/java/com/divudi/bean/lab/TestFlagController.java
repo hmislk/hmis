@@ -9,7 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.entity.lab.Investigation;
@@ -96,12 +96,12 @@ public class TestFlagController implements Serializable {
 
     public void removeFlag() {
         if (removingFlag == null) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         }
         getFacade().remove(removingFlag);
         items = null;
-        UtilityController.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void setFromValue(double fromValue) {
@@ -161,15 +161,15 @@ public class TestFlagController implements Serializable {
     public void addFlag() {
         //////// // System.out.println("adding flag");
         if (investigation == null) {
-            UtilityController.addErrorMessage("Select an investigation");
+            JsfUtil.addErrorMessage("Select an investigation");
             return;
         }
         if (investigationItemOfValueType == null) {
-            UtilityController.addErrorMessage("Select a field");
+            JsfUtil.addErrorMessage("Select a field");
             return;
         }
         if (investigationItemofFlagType == null) {
-            UtilityController.addErrorMessage("Select a flag");
+            JsfUtil.addErrorMessage("Select a flag");
             return;
         }
 
@@ -204,7 +204,7 @@ public class TestFlagController implements Serializable {
         f.setToVal(toValue);
         getEjbFacade().create(f);
         clearForNew();
-        UtilityController.addErrorMessage("Added");
+        JsfUtil.addErrorMessage("Added");
     }
 
     private void clearForNew() {
@@ -367,9 +367,9 @@ public class TestFlagController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

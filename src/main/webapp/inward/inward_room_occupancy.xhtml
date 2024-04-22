@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -19,10 +19,11 @@
                         <p:commandButton ajax="false" 
                                          action="#{roomOccupancyController.createPatientRoom}"
                                          value="Fill"
-                                         class="w-25"/>
+                                         icon="fas fa-fill"
+                                         class="w-25 ui-button-warning"/>
                         <p:commandButton ajax="false" 
                                          action="#{roomOccupancyController.createPatientRoomAll}"
-                                         value="Fill All"  class="w-25 m-1" 
+                                         value="Fill All" icon="fas fa-fill"  class="w-25 m-1 ui-button-warning" 
                                          />
                     </div>
 
@@ -60,11 +61,11 @@
                             headerText="BHT No" 
                             sortBy="#{pr.patientEncounter.bhtNo}"
                             filterBy="#{pr.patientEncounter.bhtNo}"
-                            filterMatchMode="contains">
+                            filterMatchMode="contains" class="text-center">
                             <p:commandLink 
                                 value="#{pr.patientEncounter.bhtNo}"
                                 ajax="false"
-                                action="#{bhtSummeryController.navigateToInpatientProfile()}" >
+                                action="#{bhtSummeryController.navigateToInpatientProfile}" >
                                 <f:setPropertyActionListener 
                                     value="#{pr.patientEncounter}" 
                                     target="#{admissionController.current}" >
@@ -76,30 +77,30 @@
                             sortBy="#{pr.patientEncounter.patient.person.name}"
                             filterBy="#{pr.patientEncounter.patient.person.name}"
                             filterMatchMode="contains" >
-                            #{pr.patientEncounter.patient.person.name}
+                            &nbsp;<h:outputLabel class="ml-2" value="#{pr.patientEncounter.patient.person.name}" />
                         </p:column>
                         <p:column 
                             headerText="Guardian"
                             sortBy="#{pr.patientEncounter.guardian.name}"
                             filterBy="#{pr.patientEncounter.guardian.name}"
                             filterMatchMode="contains" >
-                            #{pr.patientEncounter.guardian.name}
+                            &nbsp; <h:outputLabel class="ml-2" value="#{pr.patientEncounter.guardian.name}" />
                         </p:column>
                         <p:column headerText="Guardian Phone" 
                                   sortBy="#{pr.patientEncounter.guardian.phone}"
                                   filterBy="#{pr.patientEncounter.guardian.phone}"
                                   filterMatchMode="contains" >
-                            #{pr.patientEncounter.guardian.phone}
+                            &nbsp; <h:outputLabel class="ml-2" value="#{pr.patientEncounter.guardian.phone}" />
                         </p:column>
                         <p:column 
                             headerText="Credit Company Name"
                             sortBy="#{pr.patientEncounter.creditCompany.name}"
                             filterBy="#{pr.patientEncounter.creditCompany.name}"
                             filterMatchMode="contains" >
-                            #{pr.patientEncounter.creditCompany.name}
+                             &nbsp;<h:outputLabel class="ml-2" value="#{pr.patientEncounter.creditCompany.name}" />
                         </p:column>
-                        <p:column headerText="Payment&nbsp;Mode" class="text-center">
-                            #{pr.patientEncounter.paymentMethod}
+                        <p:column headerText="Payment&nbsp;Method" class="text-center">
+                             <h:outputLabel class="ml-2" value="#{pr.patientEncounter.paymentMethod}" />
                         </p:column>
                         <!--                    <p:column headerText="Room No" class="w-100">
                                                 <h:outputLabel value="#{pr.roomFacilityCharge.room.name}"/>

@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/channel/channel_reports.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
 
-                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier">
     <ui:define name="subContent">
         <h:panelGroup rendered="true" >
             <h:form>
@@ -24,7 +24,7 @@
                         <h:outputLabel value="Created Date"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
 
-                        <h:outputLabel value="Summery"/>
+                        <h:outputLabel value="Summary"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.summery}" >
                             <f:ajax event="change" execute="@this" render="p1" />
                         </p:selectBooleanCheckbox>
@@ -38,7 +38,7 @@
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{!channelReportController.summery}" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="hr_bill_list"   />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel(Summery)" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{channelReportController.summery}" >
+                        <p:commandButton ajax="false" value="Excel(Summary)" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{channelReportController.summery}" >
                             <p:dataExporter type="xlsx" target="tbl2" fileName="hr_bill_list" />
                         </p:commandButton>
                     </h:panelGrid>

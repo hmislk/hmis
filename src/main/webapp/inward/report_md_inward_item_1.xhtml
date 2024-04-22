@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/inward/inward_reports.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="subcontent">
@@ -126,21 +126,21 @@
                     <h:panelGrid columns="7" class="my-2">
                         <p:commandButton ajax="false" value="Process by Bill Created Date" class="ui-button-warning"  icon="fas fa-cogs"
                                          action="#{mdInwardReportController.createItemWithFeeByAddedDate1}"  />
-                        <p:commandButton ajax="false" value="Process by Discharge Date" class="ui-button-warning"  icon="fas fa-cogs"
+                        <p:commandButton ajax="false" value="Process by Discharge Date" class="ui-button-warning mx-1"  icon="fas fa-cogs"
                                          action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}"  />
                         <p:commandButton ajax="false" value="Process by Added Date" class="ui-button-warning"  icon="fas fa-cogs" 
                                          action="#{mdInwardReportController.createItemWithFeeByAddedDate2}" />
 
-                        <p:commandButton icon="fas fa-file-excel" actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate1}" ajax="false" value="Excel by Added Date" class="ui-button-success" >
+                        <p:commandButton icon="fas fa-file-excel" actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate1}" ajax="false" value="Excel by Added Date" class="ui-button-success mx-1" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="item_report_added_date"    />
                         </p:commandButton>
                         <p:commandButton icon="fas fa-file-excel" actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" ajax="false" value="Excel by Discharge Date" class="ui-button-success" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
                         </p:commandButton>
-                        <p:commandButton icon="fas fa-file-excel" actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate2}" ajax="false" value="Excel by Discharge Date 2" class="ui-button-success" >
+                        <p:commandButton icon="fas fa-file-excel" actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate2}" ajax="false" value="Excel by Created Date" class="ui-button-success mx-1" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
                         </p:commandButton>
-                        <p:commandButton  icon="fas fa-print" ajax="false" value="Print" class="ui-button-info" style="padding: 10px" >
+                        <p:commandButton  icon="fas fa-print" ajax="false" value="Print" class="ui-button-info" >
                             <p:printer target="reportPrint"/>
                         </p:commandButton> 
                     </h:panelGrid>                    
@@ -201,7 +201,7 @@
                         </p:column>   
                         <p:column headerText="Service Date" sortBy="#{i.billItem.billTime}" rendered="#{mdInwardReportController.showServiceDate eq true}">
                             <f:facet name="header">
-                                <p:outputLabel value="Created Date" />
+                                <p:outputLabel value="Service Date" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.billTime}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
@@ -209,7 +209,7 @@
                         </p:column>
                         <p:column headerText="Discharge Date" sortBy="#{i.bill.patientEncounter.dateOfDischarge}" rendered="#{mdInwardReportController.showDischargeDate eq true}">
                             <f:facet name="header">
-                                <p:outputLabel value="Created Date" />
+                                <p:outputLabel value="Discharge Date" />
                             </f:facet>
                             <h:outputLabel value="#{i.bill.patientEncounter.dateOfDischarge}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
@@ -217,7 +217,7 @@
                         </p:column>
                         <p:column headerText="Categoy" sortBy="#{i.billItem.item.category.name}" rendered="#{mdInwardReportController.showCategory eq true}">
                             <f:facet name="header">
-                                <p:outputLabel value="Categoy" />
+                                <p:outputLabel value="Category" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.item.category.name}"/>
                         </p:column>   

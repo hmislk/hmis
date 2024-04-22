@@ -5,13 +5,13 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -124,7 +124,7 @@ public class StorePurchaseOrderController implements Serializable {
 
     public void approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Paymentmethod");
+            JsfUtil.addErrorMessage("Select Paymentmethod");
             return ;
         }
 

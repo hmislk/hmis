@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
                 >
     <ui:define name="content">
         <h:form >
@@ -329,7 +329,7 @@
                                         <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
                                             <f:convertNumber  pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                        <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                        <h:outputLabel id="ballance3" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                         <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ;">
                                             <f:convertNumber  pattern="#,##0.00"/>
                                         </h:outputLabel>
@@ -939,7 +939,7 @@
                                     <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance5" value=" Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance6" value="#{channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="settleBallance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="settleBallance3" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="settleBallance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <p:commandButton id="setBtn"  value="Settle Credit"
                                                      process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
@@ -1079,15 +1079,15 @@
                                 <h:panelGrid columns="2">
                                     <p:panel header="Selected Session">
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Nurse View " action="#{bookingController.nurse}"   >                                       
+                                            <p:commandButton value="Nurse View " action="#{bookingController.navigateToNurseView}"   >                                       
                                             </p:commandButton>
-                                            <p:commandButton value="Doctor View " action="#{bookingController.doctor}" ajax="false" >                                        
+                                            <p:commandButton value="Doctor View " action="#{bookingController.navigateToDoctorView}" ajax="false" >                                        
                                             </p:commandButton>
-                                            <p:commandButton value="Session View " action="#{bookingController.session}" ajax="false" >                                        
+                                            <p:commandButton value="Session View " action="#{bookingController.navigateToSessionView}" ajax="false" >                                        
                                             </p:commandButton>
-                                            <p:commandButton value="Phone View " action="#{bookingController.phone}" ajax="false" >                                        
+                                            <p:commandButton value="Phone View " action="#{bookingController.navigateToPhoneView}" ajax="false" >                                        
                                             </p:commandButton>
-                                            <p:commandButton value="User View " action="#{bookingController.user}" ajax="false" >                                        
+                                            <p:commandButton value="User View " action="#{bookingController.navigateToUserView}" ajax="false" >                                        
                                             </p:commandButton>
                                         </h:panelGrid>
 

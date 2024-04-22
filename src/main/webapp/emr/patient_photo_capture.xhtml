@@ -1,64 +1,91 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content" >
-                <h:form >
-                    <h:panelGrid columns="10" >
-                        <p:commandButton value="Edit" action="#{patientController.navigateToEmrEditPatient()}" ajax="false" styleClass="mx-2">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="OPD Visit" 
-                            action="#{patientController.navigateToNewOpdVisitFromSearch}" 
-                            ajax="false" styleClass="mx-2">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Profile" 
-                            action="#{patientController.toEmrPatientProfile()}"
-                            ajax="false" 
-                            styleClass="mx-2">
-                        </p:commandButton>
-                    </h:panelGrid>
-                </h:form>
-                <h:form id="formImage" enctype="multipart/form-data" rendered="true">
-                    <p:photoCam listener="#{patientController.oncapturePhoto}" 
-                                widgetVar="pc" width="400" height="300"
-                                photoWidth="800" photoHeight="600" />
-                    <p:commandButton id="btnCaptureImage" 
-                                     onclick="PF('pc').capture();" 
-                                     icon="pi pi-camera"
-                                     update="image" 
-                                     class="btn btn-primary h-50"/> <!-- Adjust height -->
-                    <p:fileUpload value="#{patientController.uploadedFile}" 
-                                  auto="true"
-                                  mode="advanced" 
-                                  dragDropSupport="true"
-                                  multiple="false" update="image" accept="image/*" 
-                                  class="m-2" title="Upload Image"
-                                  listener="#{patientController.uploadPhoto}" />
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputLabel value="Patient Profile Picture" />
+                            </div>
+                            <div>
+                                <h:form >
+                                    <h:panelGrid columns="10" >
+                                        <p:commandButton value="Edit" action="#{patientController.navigateToEmrEditPatient()}" ajax="false" >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="OPD Visit"
+                                            action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                            ajax="false" class="mx-2">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Profile"
+                                            action="#{patientController.toEmrPatientProfile()}"
+                                            ajax="false"
+                                            >
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                </h:form>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <p:panel>
+                        <h:form id="formImage" enctype="multipart/form-data" rendered="true">
+                            <div class="row">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Capture Live Photo" />
+                                        </f:facet>
+                                        <p:photoCam listener="#{patientController.oncapturePhoto}"
+                                                    widgetVar="pc" width="400" height="300"
+                                                    photoWidth="800" photoHeight="600" style="border: 1px" />
+                                        <p:commandButton id="btnCaptureImage"
+                                                         onclick="PF('pc').capture();"
+                                                         icon="pi pi-camera"
+                                                         value="Capture"
+                                                         update="image"
+                                                         class="btn btn-primary "/> <!-- Adjust height -->
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Current Patient Profile Picture" />
+                                        </f:facet>
+                                        <p:graphicImage
+                                        id="image"
+                                        value="#{patientController.image}"
+                                        cache="false" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </p:graphicImage>
+                                     </p:panel>
+                                </div>
+                            </div>
 
+                            <p:panel class="my-2">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Choose a Photo From Computer" />
+                                </f:facet>
+                                <p:fileUpload value="#{patientController.uploadedFile}"
+                                          auto="true"
+                                          mode="advanced"
+                                          dragDropSupport="true"
+                                          multiple="false" update="image" accept="image/*"
+                                          class="m-2" title="Upload Image"
+                                          listener="#{patientController.uploadPhoto}" />
 
-                    <p:graphicImage
-                        id="image"
-                        value="#{patientController.image}" 
-                        cache="false" style="width: 100%; height: 100%; object-fit: cover;">
-                    </p:graphicImage>
-                </h:form>
-
-
-
-
-
-
-
-
+                            </p:panel>
+                        </h:form>
+                    </p:panel>
+                </p:panel>
             </ui:define>
         </ui:composition>
 

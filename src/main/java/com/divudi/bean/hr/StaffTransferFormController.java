@@ -14,7 +14,7 @@ import com.divudi.entity.hr.TransferForm;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.TransferFormFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;

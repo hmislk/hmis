@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:bil="http://java.sun.com/jsf/composite/bill"
-                xmlns:phe="http://java.sun.com/jsf/composite/pharmacy/inward"
-                xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-                xmlns:bill="http://java.sun.com/jsf/composite/inward">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
 
 
 
@@ -32,8 +32,9 @@
                             <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
                             <p:outputLabel value="Patient Details" class="m-2"/>
                         </f:facet>
-                        <h:outputLabel value="Type Patinet Name or BHT : " style="margin-right: 10px"/>
+                        <h:outputLabel value="Type Patient Name or BHT : " style="margin-right: 10px"/>
                         <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
+                                        required="true" requiredMessage="Please select a patient"
                                         value="#{pharmacySaleBhtController.patientEncounter}" 
                                         completeMethod="#{admissionController.completePatient}"
                                         var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -43,7 +44,7 @@
                                 <h:outputLabel value="#{apt2.bhtNo}"/> 
                             </p:column>
                             <p:column >
-                                <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/> 
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
@@ -65,7 +66,7 @@
                     <f:facet name="header">
                         <div class="row">
                             <div class="col-md-4">
-                                <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" />  FontAwesome Icon 
+                                <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> 
                                 <p:outputLabel value="BHT Issue" class="mx-1"/>
                             </div>
                             <div class="col-md-8">
@@ -153,26 +154,31 @@
                                     <div class="col-8">
                                         <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                         value="#{pharmacySaleBhtController.stock}" 
-                                                        completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
+                                                        completeMethod="#{stockController.completeAvailableStocks}" 
                                                         var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                         >
-                                            <p:column headerText="Item">
-                                                <h:outputLabel value="#{i.itemBatch.item.name}" 
-                                                               style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
-                                                                        commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
+                                            <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.itemBatch.item.name}">
+                                                &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Code">
+                                            <p:column headerText="Code" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Stocks">
+                                            <p:column headerText="Stocks" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputLabel value="#{i.stock}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
-                                                                        commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
+                                            <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Price" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:ajax event="focus" process="acStock" ></p:ajax>
@@ -218,8 +224,12 @@
                                     <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEdit}"/> 
 
 
-                                    <p:column headerText="Item">
-                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                    <p:column headerText="Item" style="width: 30%">
+                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" >
+                                        &nbsp;<p:tag rendered="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'warning':''}" />
+                                        </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Quantity">
                                         <p:cellEditor>  
@@ -247,7 +257,7 @@
 
                                     </p:column>
                                     <p:column headerText="Remove">
-                                        <p:commandButton value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false"   >
+                                        <p:commandButton class="ui-button-danger" icon="fas fa-trash" value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false"   >
 
                                         </p:commandButton>
                                     </p:column>
@@ -351,40 +361,65 @@
                                 </div>
                             </div>
                         </f:facet>
-                        
+                        <div class="d-flex m-2">
+                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" />
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                        </div>
 
-                        <h:panelGroup   id="gpBillPreview" > 
+                        <h:panelGroup id="gpBillPreview" > 
 
-                            <h:panelGroup   id="gpBillPreviewSingle" >
+                            <!--                            <h:panelGroup   id="gpBillPreviewSingle" >
+                            
+                                                            <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                            
+                                                        </h:panelGroup>-->
 
-                                <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+<!--                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
 
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq true}"> 
+                               <div >
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
 
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                         <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                                     </h:panelGroup>
                                 </div>
 
+                            </h:panelGroup>-->
+
+                            <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                                    </h:panelGroup>
+                                </div>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
 
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_five_five>
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_five_five_1 bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_five_five_1>
                                     </h:panelGroup>
                                 </div>                                
-                            </h:panelGroup>                            
+                            </h:panelGroup>    
+                            
+                            <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'A4Paper'}">
+                                
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phe:A4_paper_with_headings bill="#{pharmacySaleBhtController.printBill}"/>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
 
                         </h:panelGroup>
                     </p:panel>

@@ -1,11 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <h:body>
 
@@ -13,94 +15,106 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Payment Reprint" >
-                        <h:panelGrid columns="2">
-                            <p:panel>
-                                <p:commandButton ajax="false" value="Cancel"
-                                                action="inward_cancel_bill_payment" 
-                                                 disabled="#{inwardSearch.bill.cancelled}"  >                           
-                                </p:commandButton>
-                                
-                                <p:commandButton value="RePrint" ajax="false" action="#" >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                            </p:panel>
-                            
-                             <p:panel>
-                                <p:commandButton ajax="false" value="Mark As Checked"
-                                                action="#{inwardSearch.markAsChecked()}"
-                                                 rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                                <p:commandButton ajax="false" value="Mark As Un Check"
-                                                action="#{inwardSearch.markAsUnChecked()}"
-                                                 rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                               
-                                <p:commandButton ajax="false" value="Back To Interim" action="/inward/inward_bill_intrim" 
-                                                actionListener="#{bhtSummeryController.createTables()}"
-                                                  />
-                            </p:panel>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <div class=" d-flex justify-content-between ">
+                                <div><h:outputLabel value="Payment Reprint" class="mt-2"></h:outputLabel></div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton ajax="false" value="To Cancel"
+                                                     class="ui-button-danger"
+                                                     icon="fa fa-ban"
+                                                     action="inward_cancel_bill_payment" 
+                                                     disabled="#{inwardSearch.bill.cancelled}"  >                           
+                                    </p:commandButton>
 
+                                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info"
+                                                     icon="fas fa-print">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" value="Mark As Checked"
+                                                     icon="fa fa-check-square"
+                                                     class="ui-button-success"
+                                                     action="#{inwardSearch.markAsChecked()}"
+                                                     rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                                    <p:commandButton ajax="false" value="Mark As Un Check"
+                                                     icon="fa fa-square"
+                                                     class="ui-button-warning"
+                                                     action="#{inwardSearch.markAsUnChecked()}"
+                                                     rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
 
-                        </h:panelGrid>
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Patient Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
-                                        <h:outputLabel value="Bht No:" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo }" ></h:outputLabel>
-                                        <h:outputLabel value="Age" />
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
-                                        <h:outputLabel value="Sex" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Phone" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
-                                        </h:outputLabel>
-                                    </p:panelGrid>
+                                    <p:commandButton ajax="false" value="Back To Interim"
+                                                     icon="fa fa-backward"
+                                                     action="/inward/inward_bill_intrim" 
+                                                     actionListener="#{bhtSummeryController.createTables()}"
+                                                     />
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-6">
+                                <h:panelGroup id="panSearch2" class="d-flex align-items-center justify-content-center p-1 w-100" >
+                                    <p:panel class="w-100">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
+                                    </p:panel>
+
+                                </h:panelGroup>
+                            </div>
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:dataTable rowIndexVar="rowIndex"
+                                                 value="#{inwardSearch.billItems}" var="bip" >                                    
+                                        <p:column>
+                                            <f:facet name="header">No</f:facet>
+                                            <h:outputLabel value="#{rowIndex+1}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">Fee</f:facet>
+                                            <h:outputLabel value="#{bip.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>  
+
+                                    </p:dataTable>
                                 </p:panel>
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>
-                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}" ></h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </p:panelGrid>
+                            </div>
+                        </div>
+                        <p:panel >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <p:outputLabel value="Bill Preview" class="m-2"></p:outputLabel>
+                                    <div class="d-flex gap-3">
+                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper}" class="m-1" style="width: 18em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
 
-                            <p:panel header="Bill Item Detail">
-                                <p:dataTable rowIndexVar="rowIndex"
-                                             value="#{inwardSearch.billItems}" var="bip" >                                    
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>
+                            <div class="d-flex justify-content-center">
+                                <h:panelGroup id="gpBillPreview" >
 
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
-                                        <h:outputLabel value="#{bip.netValue}"/>
-                                    </p:column>  
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
+                                        <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>                        
+                                    </h:panelGroup>
 
-                                </p:dataTable>
-                            </p:panel>
+                                </h:panelGroup>
+                            </div>
                         </p:panel>
                     </p:panel>
-
-                    <h:panelGroup id="gpBillPreview">
-                        <bi:payment bill="#{inwardSearch.bill}" dup="true" rendered="#{sessionController.currentPreference.applicationInstitution ne 'Cooperative'}" />
-                        <bi:payment_coop bill="#{inwardSearch.bill}" dup="true"  rendered="#{sessionController.currentPreference.applicationInstitution eq 'Cooperative'}" />
-                    </h:panelGroup>
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

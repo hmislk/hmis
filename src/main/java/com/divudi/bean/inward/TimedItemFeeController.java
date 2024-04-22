@@ -9,14 +9,14 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.entity.Department;
 import com.divudi.entity.inward.TimedItem;
 import com.divudi.entity.inward.TimedItemFee;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.TimedItemFacade;
 import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,11 +71,11 @@ public class TimedItemFeeController implements Serializable {
 
     public void saveCharge() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         currentFee.setItem(currentIx);
@@ -83,10 +83,10 @@ public class TimedItemFeeController implements Serializable {
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getTimedItemFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getTimedItemFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
         currentIx.setTotal(calTot());
 
@@ -134,11 +134,11 @@ public class TimedItemFeeController implements Serializable {
 
     public void updateFee(TimedItemFee tif) {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a Time Item");
+            JsfUtil.addErrorMessage("Please select a Time Item");
             return;
         }
         if (tif.getName() == null) {
-            UtilityController.addErrorMessage("Please Enter Fee Name.");
+            JsfUtil.addErrorMessage("Please Enter Fee Name.");
             return;
         }
         tif.setEditedAt(new Date());
@@ -152,16 +152,16 @@ public class TimedItemFeeController implements Serializable {
 
     public void removeFee() {
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a investigation");
+            JsfUtil.addErrorMessage("Please select a investigation");
             return;
         }
         if (getRemovedTimedItemFee() == null) {
-            UtilityController.addErrorMessage("Please select one to remove");
+            JsfUtil.addErrorMessage("Please select one to remove");
             return;
         }
 
         if (getRemovedTimedItemFee().getId() == null || getRemovedTimedItemFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedTimedItemFee().setRetired(true);
@@ -185,9 +185,9 @@ public class TimedItemFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;

@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
-                xmlns:ia="http://java.sun.com/jsf/composite/inward/bht_1">
+                xmlns:ia="http://xmlns.jcp.org/jsf/composite/inward/bht_1">
 
 
 
@@ -21,12 +21,10 @@
             <h:form id="form">
 
                 <h:panelGroup rendered="#{!appointmentController.printPreview}"  >
-                    <p:panel header="Inward Appointments" style="height: 100vh"> 
-                        <div class="row">
-                            <div class="col-12 d-flex justify-content-end align-items-center">
-
-
-
+                    <p:panel header="" style="height: 100vh"> 
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Appointments"/>
+                            <div class="d-flex" style="float: right;">
                                 <p:commandButton  
                                     value="Make Appointment" 
                                     action="#{appointmentController.settleBill}" 
@@ -43,7 +41,7 @@
                                     action="#{opdBillController.navigateToSearchPatients()}"
                                     class="ui-button-warning mx-1 ">
                                 </p:commandButton>
-                                
+
                                 <p:commandButton 
                                     value="Profile"
                                     ajax="false" 
@@ -53,9 +51,17 @@
                                     <f:setPropertyActionListener 
                                         target="#{patientController.current}" 
                                         value="#{appointmentController.searchedPatient}">
-                                        
+
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
+                            </div>
+
+
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-end align-items-center">
+
+
 
                             </div>
 
@@ -134,13 +140,16 @@
                                         </p:autoComplete>
 
                                         <p:outputLabel value="Appointment Date"/>
-                                        <p:calendar 
+                                        <p:datePicker 
                                             inputStyleClass="w-100"
                                             class="w-100 my-1"
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
                                             value="#{appointmentController.currentAppointment.appointmentDate}" 
                                             pattern="#{sessionController.applicationPreference.longDateFormat}"
                                             >                            
-                                        </p:calendar>
+                                        </p:datePicker>
                                         <h:outputLabel value="Amount" ></h:outputLabel>
                                         <p:inputText autocomplete="off"
                                                      id="pBillDetails"

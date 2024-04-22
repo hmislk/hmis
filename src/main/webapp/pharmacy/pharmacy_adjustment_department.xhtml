@@ -1,21 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
-
                 <h:form>
-
                     <p:panel header="Department Stock Adjustment : Quantity" rendered="#{!pharmacyAdjustmentController.printPreview}">
                         <div class="row">
                             <div class="col-md-6">
@@ -24,43 +20,71 @@
                                         <h:outputText styleClass="fa-solid fa-syringe"></h:outputText>
                                         <h:outputLabel value="Select Item" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="2" class="w-100">
+                                    <p:panelGrid columns="1" class="w-100">
                                         <h:outputLabel value="Item" ></h:outputLabel>
-                                        <p:autoComplete   forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.stock}" 
-                                                          completeMethod="#{pharmacyController.completeAllStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" class="w-100" inputStyleClass="w-100">
-                                            <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 300px!important;">
-                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
-                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                         severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                </h:outputLabel>
+                                        <p:autoComplete 
+                                            id="acAmp"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            completeMethod="#{ampController.completeAmp}"
+                                            var="amp"
+                                            itemLabel="#{amp.name}"
+                                            itemValue="#{amp}"
+                                            value="#{pharmacyAdjustmentController.amp}"
+                                            maxResults="10"
+                                            minQueryLength="3"
+                                            >
+                                            <p:ajax 
+                                                process="acAmp" 
+                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                                update="tblStocks" ></p:ajax>
+                                            <p:column headerText="Item"  style="padding: 3px;" >
+                                                <h:outputText value="#{amp.name}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Rate" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
+                                            <p:column headerText="Stock" style="padding: 3px;" >
+                                                <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Stocks" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.stock}" >
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <f:ajax event="itemSelect" execute="@this"  render="det"/>
                                         </p:autoComplete>
-                                        <h:outputLabel value="New Quentity" ></h:outputLabel>
-                                        <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"></p:inputText>
-                                        <h:outputLabel value="Comment" ></h:outputLabel>
-                                        <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
-                                        <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="w-75 my-1 ui-button-warning" icon="fa-solid fa-sliders"
-                                                         action="#{pharmacyAdjustmentController.adjustDepartmentStock()}" ></p:commandButton>
-                                        <p:defaultCommand target="btnAdjust"/>
-                                    </h:panelGrid>
+                                        <h:outputLabel value="Batches" ></h:outputLabel>
+                                        <p:dataTable 
+                                            id="tblStocks"
+                                            value="#{pharmacyAdjustmentController.ampStock}"
+                                            var="i"
+                                            rows="10"
+                                            selectionMode="single"
+                                            rowKey="#{i.id}"
+                                            selection="#{pharmacyAdjustmentController.stock}">
+                                            <p:column 
+                                                headerText="Rate" 
+                                                sortBy="#{i.itemBatch.retailsaleRate}"
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column 
+                                                sortBy="#{i.stock}"
+                                                headerText="Stocks" 
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.stock}" >
+                                                    <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Expiry" 
+                                                sortBy="#{i.itemBatch.dateOfExpire}"
+                                                styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
+                                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                            <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                        </p:dataTable>
+
+                                    </p:panelGrid>
                                 </p:panel>
 
                             </div>
@@ -70,7 +94,6 @@
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="3" class="w-100"></h:panelGrid>
                                     <div>
                                         <div class="row">
                                             <div class="col-md-3">
@@ -95,6 +118,13 @@
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel></div>
                                         </div>
                                         <div class="row">
+                                            <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
+                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.purcahseRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel></div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
@@ -102,13 +132,12 @@
                                                 </h:outputLabel></div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
+                                            <div class="col-md-3"> <h:outputLabel value="Wholesale Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.purcahseRate}" >
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.wholesaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel></div>
                                         </div>
-
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
@@ -120,17 +149,32 @@
                                         <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Expiry"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7 align-items-center"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
+                                            <div class="col-md-7 align-items-center">
+                                                <h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
-                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                         severity="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
+                                                    &nbsp;<p:tag 
+                                                        rendered="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
+                                                                             commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                 severity="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
                                                 </h:outputLabel></div>
                                         </div>
                                     </div>
 
+                                </p:panel>
+                                <p:panel >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Adjust" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="New Quantity" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100">
+                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                    </p:inputText>
+                                    <h:outputLabel value="Comment" ></h:outputLabel>
+                                    <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
-
+                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
+                                                     action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" ></p:commandButton>
+                                    <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>
                             </div>
                         </div>
@@ -138,21 +182,30 @@
                     </p:panel>
 
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
-                        <p:commandButton class="ui-button-success" icon="fas fa-plus" ajax="false" action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment"/>
-                        <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print">
-                            <p:printer target="print"/>
-                        </p:commandButton>
-                        <p:panel id="print">
-                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.bill}" />
-                        </p:panel>
+                        <div class="d-flex gap-2 m-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                action="#{pharmacyAdjustmentController.makeNull()}" 
+                                value="New Adjustment"/>
+                            <p:commandButton 
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                ajax="false" 
+                                value="Print">
+                                <p:printer target="print"/>
+                            </p:commandButton>
+                        </div>
+                        
+                        <h:panelGroup id="print">
+                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                        </h:panelGroup>
+                        
                     </p:panel>
 
                 </h:form>
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
