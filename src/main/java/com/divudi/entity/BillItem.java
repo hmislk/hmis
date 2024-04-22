@@ -146,6 +146,10 @@ public class BillItem implements Serializable {
     private UserStock transUserStock;
     @Transient
     private BillItem transBillItem;
+    @Transient
+    private double previousRecieveQtyInUnit;
+    @Transient
+    private double previousRecieveFreeQtyInUnit;
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
@@ -681,7 +685,6 @@ public class BillItem implements Serializable {
         } else {
             this.tmpFreeQty = tmpFreeQty;
         }
-
         if (getPharmaceuticalBillItem() != null) {
             getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
         }
@@ -878,6 +881,22 @@ public class BillItem implements Serializable {
             billFees = new ArrayList<>();
         }
         return billFees;
+    }
+
+    public double getPreviousRecieveQtyInUnit() {
+        return previousRecieveQtyInUnit;
+    }
+
+    public void setPreviousRecieveQtyInUnit(double previousRecieveQtyInUnit) {
+        this.previousRecieveQtyInUnit = previousRecieveQtyInUnit;
+    }
+
+    public double getPreviousRecieveFreeQtyInUnit() {
+        return previousRecieveFreeQtyInUnit;
+    }
+
+    public void setPreviousRecieveFreeQtyInUnit(double previousRecieveFreeQtyInUnit) {
+        this.previousRecieveFreeQtyInUnit = previousRecieveFreeQtyInUnit;
     }
 
    

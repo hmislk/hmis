@@ -1587,7 +1587,6 @@ public class BillController implements Serializable {
     }
 
     public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
-        System.out.println("findBillFees");
         List<BillFee> tmpFees;
         String jpql;
         List<BillTypeAtomic> btcs = new ArrayList<>();
@@ -1708,7 +1707,6 @@ public class BillController implements Serializable {
         getBillFacade().create(cancellationBatchBill);
 
         for (Bill originalBill : bills) {
-            System.out.println("originalBills = " + originalBill);
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
         
@@ -1796,7 +1794,6 @@ public class BillController implements Serializable {
         getBillFacade().create(cancellationBatchBill);
 
         for (Bill originalBill : bills) {
-            System.out.println("originalBills = " + originalBill);
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
 
@@ -1811,8 +1808,6 @@ public class BillController implements Serializable {
     }
 
     public void cancelSingleBillWhenCancellingOpdBatchBill(Bill originalBill, Bill cancellationBatchBill) {
-        System.out.println("cancellationBatchBill = " + cancellationBatchBill);
-        System.out.println("cancellationBatchBill = " + cancellationBatchBill);
         if (originalBill == null && originalBill == null) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -1964,8 +1959,6 @@ public class BillController implements Serializable {
     }
 
     private List<BillItem> createBillItemsForOpdBatchBillCancellation(Bill originalBill, Bill cancellationBill) {
-        System.out.println("cancellationBill = " + cancellationBill);
-        System.out.println("originalBill = " + originalBill);
         List<BillItem> list = new ArrayList<>();
         for (BillItem originalBillItem : originalBill.getBillItems()) {
             BillItem newBillItem = new BillItem();
@@ -2374,7 +2367,6 @@ public class BillController implements Serializable {
         temMap.put("bt", bt);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
-        System.out.println("sql = " + sql);
         List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return lst;
 
@@ -2411,7 +2403,6 @@ public class BillController implements Serializable {
         temMap.put("billTypes", billTypes);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
-        System.out.println("sql = " + sql);
         List<BillLight> lst = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return lst;
     }
@@ -2523,9 +2514,20 @@ public class BillController implements Serializable {
         temMap.put("billTypes", billTypes);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
-        System.out.println("sql = " + sql);
         List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return lst;
+    }
+    
+    public Bill findBillbyID( Long id){
+        if (id == null) {
+            return null;
+        }
+        Bill tb = getBillFacade().find(id);
+        if (tb == null) {
+            return null;
+        }
+        //System.out.println("tb = " + tb);
+        return tb;
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {

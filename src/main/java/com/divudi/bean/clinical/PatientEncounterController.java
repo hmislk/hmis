@@ -1129,7 +1129,7 @@ public class PatientEncounterController implements Serializable {
 
         List<ClinicalFindingValue> tmpCli = fillCurrentPatientClinicalFindingValues(patient, temp);
         if (tmpCli == null || tmpCli.isEmpty()) {
-            JsfUtil.addErrorMessage("No medications found on Patient Details");
+            JsfUtil.addErrorMessage("No medications found on Patient Profile");
             return;
         }
 
@@ -1156,7 +1156,7 @@ public class PatientEncounterController implements Serializable {
         }
         updateOrGeneratePrescription();
     }
-
+   
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
         return fillCurrentPatientClinicalFindingValues(patient, null);
     }
@@ -1629,7 +1629,6 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select Surgery");
             return;
         }
-        System.out.println("get = " + getPatientProcedure().getItemValue().getName());
         getPatientProcedure().setPatient(patient);
         getPatientProcedure().setClinicalFindingValueType(ClinicalFindingValueType.PatientProcedure);
         clinicalFindingValueFacade.create(getPatientProcedure());

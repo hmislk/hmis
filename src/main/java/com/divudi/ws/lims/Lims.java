@@ -26,6 +26,8 @@ import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -189,11 +191,8 @@ public class Lims {
             @PathParam("username") String username,
             @PathParam("password") String password) {
 
-        // Validation
-//        System.out.println("generateSamplesFromBill");
-//        System.out.println("billId = " + billId);
-        String validationError = validateInput(billId, username, password);
-//        System.out.println("validationError = " + validationError);
+// Validation
+                String validationError = validateInput(billId, username, password);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }
@@ -202,7 +201,6 @@ public class Lims {
         WebUser requestSendingUser = findRequestSendingUser(username, password);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
-
         // Check if necessary data is present
         if (requestSendingUser == null) {
             return constructErrorJson(1, "Username / password mismatch.", billId);
@@ -212,7 +210,7 @@ public class Lims {
         }
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
-        if (ptSamples != null || !ptSamples.isEmpty()) {
+        if (ptSamples == null || ptSamples.isEmpty()) {
             for (Bill b : patientBills) {
                 JSONObject j = constructPatientSampleJson(b);
                 if (j != null) {
@@ -274,8 +272,8 @@ public class Lims {
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", ps.getPatient().getId() != null ? ps.getPatient().getId() : "");
-            
+            jSONObject.put("barcode", ps.getIdStr() != null ? ps.getIdStr() : "");
+
             Bill bill = ps.getBill();
             if (bill == null) {
                 return null;
@@ -315,12 +313,12 @@ public class Lims {
         return jSONObject;
     }
 
-    private JSONObject constructPatientSampleJson(Bill b) {
+    private JSONObject constructPatientSampleJson(Bill bill) {
         JSONObject jSONObject = new JSONObject();
-        if (b == null) {
+        if (bill == null) {
             return null;
         } else {
-            Patient patient = b.getPatient();
+            Patient patient = bill.getPatient();
             if (patient == null) {
                 return null;
             } else {
@@ -331,19 +329,16 @@ public class Lims {
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", b.getIdStr() != null ? b.getIdStr() : "");
-            Bill bill = b;
-            if (bill == null) {
-                return null;
-            } else {
-                jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
-                jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
-            }
-            jSONObject.put("id", b.getIdStr() != null ? b.getIdStr() : "");
+            jSONObject.put("barcode", bill.getIdStr() != null ? bill.getIdStr() : "");
+
+            jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
+            jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
+            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+
+            jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }
 
-        List<BillItem> bis = findBillItems(b);
+        List<BillItem> bis = findBillItems(bill);
 
         String tbis = "";
         String temTube = "";
@@ -618,7 +613,6 @@ public class Lims {
     }
 
     public List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
-        //// // System.out.println("strBillId = " + strBillId);
         Long billId = stringToLong(strBillId);
         List<Bill> temBills;
         if (billId != null) {
@@ -630,14 +624,28 @@ public class Lims {
     }
 
     public List<Bill> prepareSampleCollectionByBillId(Long bill) {
-        //// // System.out.println("prepareSampleCollectionByBillId = ");
         Bill b = billFacade.find(bill);
-        List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
-        if (bs == null || bs.isEmpty()) {
-            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+        if (b == null) {
             return null;
         }
-        return bs;
+        List<Bill> bs = new ArrayList<>();
+        if (b.getBillTypeAtomic() != null) {
+            if (b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+            } else {
+                bs.add(b);
+                return bs;
+            }
+        }
+        if (b.getBillType() == BillType.OpdBathcBill) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+        }else{
+            bs.add(b);
+            return bs;
+        }
     }
 
     public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
@@ -650,17 +658,21 @@ public class Lims {
         }
         List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
-            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+//            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
             return null;
         }
         return bs;
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb "
+                + " and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findByJpql(j, m);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {

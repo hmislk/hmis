@@ -174,7 +174,6 @@ public class ChannelScheduleController implements Serializable {
         }
         for (BillSession bs : billSessions) {
             if (bs.getBill() == null) {
-                System.err.println("No Billl for Bill Session");
                 continue;
             }
             if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
@@ -382,43 +381,34 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void addAdditionalItems() {
-        System.out.println("addAdditionalItems");
-        System.out.println("current = " + current);
         if (current == null) {
             JsfUtil.addErrorMessage("No Session Selected yet");
             return;
         }
-        System.out.println("current.getId() = " + current.getId());
         if (current.getId() == null) {
             saveSelected();
         }
-        System.out.println("additionalItemToAdd = " + additionalItemToAdd);
         if (additionalItemToAdd == null) {
             JsfUtil.addErrorMessage("No Item Selected to add");
             return;
         }
-        System.out.println("additionalItemsAddedForCurrentSession = " + additionalItemsAddedForCurrentSession);
         if (getAdditionalItemsAddedForCurrentSession() == null) {
             JsfUtil.addErrorMessage("No Items List");
             return;
         }
         ItemForItem aii = itemForItemController.findItemForItem(current, additionalItemToAdd);
-        System.out.println("1 aii = " + aii);
         if (aii != null) {
             JsfUtil.addErrorMessage("Item is already added");
             return;
         } else {
             aii = itemForItemController.addItemForItem(current, additionalItemToAdd);
         }
-        System.out.println("2 aii = " + aii);
         if (aii == null) {
             JsfUtil.addErrorMessage("Error in adding");
             return;
         }
-        System.out.println("3 aii = " + aii);
         getAdditionalItemsAddedForCurrentSession().add(aii);
         additionalItemToAdd = null;
-        System.out.println("getAdditionalItemsAddedForCurrentSession = " + getAdditionalItemsAddedForCurrentSession());
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -770,7 +760,6 @@ public class ChannelScheduleController implements Serializable {
     
     public void fillSessionInstance(){
         sessionInstances=fetchCreatedSessionsInstances(current);
-        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
@@ -897,7 +886,6 @@ public class ChannelScheduleController implements Serializable {
                             && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {
-                        System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());

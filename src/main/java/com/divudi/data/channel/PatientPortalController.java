@@ -214,7 +214,6 @@ public class PatientPortalController {
             m.put("os", selectedConsultant);
 
             sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
-            System.out.println("sessionInstances = " + sessionInstances.size());
         }
     }
 

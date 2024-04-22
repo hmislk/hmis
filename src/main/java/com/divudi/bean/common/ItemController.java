@@ -930,7 +930,6 @@ public class ItemController implements Serializable {
                 + " and d.institution=:ins "
                 + " order by d.name";
         departments = departmentFacade.findByJpql(sql, m);
-        System.out.println("dep = " + departments.size());
         return departments;
     }
 

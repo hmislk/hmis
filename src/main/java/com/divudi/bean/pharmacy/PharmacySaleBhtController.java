@@ -1015,6 +1015,10 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Quantity?");
             return;
         }
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+            return;
+        }
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
@@ -1154,7 +1158,6 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
 //        billItem.setBill(getPreBill());
-        System.out.println("bill items = " + getBillItems().size());
         billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(billItem);
 
@@ -1368,7 +1371,6 @@ public class PharmacySaleBhtController implements Serializable {
             if (stockQtys != null && !stockQtys.isEmpty()) {
 
                 for (StockQty sq : stockQtys) {
-                    System.out.println("sq = " + sq);
                     if (sq.getQty() == 0) {
                         continue;
                     }
@@ -1383,8 +1385,6 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                     billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
-                    System.out.println("sq = " + sq.getStock());
-                    System.out.println("sq = " + sq.getStock().getItemBatch().getItem().getName());
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
 
                     billItem.setItem(sq.getStock().getItemBatch().getItem());

@@ -49,7 +49,6 @@
                 <p:tabView id="detail">
                     <p:tab title="Booking" id="booking">
                         <h:panelGrid columns="2" >
-
                             <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance ne 0.0}">
                                 <div class="ui-message-error ui-widget ui-corner-all">
                                     <span class="ui-message-error-icon"/>
@@ -254,9 +253,9 @@
                                 </h:panelGrid>                            
                             </p:panel>
 
-                            <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                            <p:panel header="Settling" class="mx-4" style="margin-bottom: 40%" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                 <h:panelGrid columns="2">
-                                    <p:outputLabel value="Bill Id"/>
+                                    <p:outputLabel value="Bill ID"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}"/>
                                     <p:outputLabel value="Payment Method"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
@@ -273,7 +272,6 @@
                                     </p:outputLabel>
                                 </h:panelGrid>                            
                             </p:panel>
-
                         </h:panelGrid>
 
                     </p:tab>
@@ -397,7 +395,7 @@
                                     <p:outputLabel value="#{bi.feeValue}"/> 
                                 </p:column>
                                 <p:column headerText="Return Value">
-                                    <p:inputText value="#{bi.tmpChangedValue}" disabled="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                    <p:inputText value="#{bi.tmpChangedValue}">
                                         <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
                                         <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
                                     </p:inputText>
@@ -657,20 +655,22 @@
                     </p:tab>
 
 
-                    <p:tab title="Search">
+                    <p:tab title="Search" rendered="false">
 
                         <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" pattern="dd MMMM yyyy" >   
                             <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                         </p:calendar>
-                        <p:calendar id="calTo"  value="#{channelSearchController.toDate}" pattern="dd MMMM yyyy" >   
+                        <p:calendar class="mx-2" id="calTo"  value="#{channelSearchController.toDate}" pattern="dd MMMM yyyy" >
                             <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                         </p:calendar>
 
                         <p:inputText id="txtBsSearch" value="#{channelSearchController.txtSearch}" placeholder="ID" >
                         </p:inputText>
 
-                        <p:commandButton id="btnBsSearch" 
-                                         value="Search" action="#{channelSearchController.searchForBillSessions}" 
+                        <p:commandButton id="btnBsSearch"
+                                         class="ui-button-warning mx-2" icon="fas fa-search"
+                                         value="Search" action="#{channelSearchController.searchForBillSessions}"
+                                         ajax="false"
                                          process="txtBsSearch calFrom calTo btnBsSearch" 
                                          update="bSessionSearch">
 
@@ -681,7 +681,7 @@
                                      filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
-                            <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
+                            <p:column headerText="Booking ID" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
                                 <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> #{bs.bill.bookingId}
                                     <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                     <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
@@ -689,7 +689,7 @@
                                     <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Sepeciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
+                            <p:column headerText="Speciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
                                 <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">#{bs.serviceSession.staff.speciality.name}
                                     <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                     <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>

@@ -77,36 +77,31 @@
                                 </p:tab>
                                 <p:tab title="Preferences" >
                                     <div class="d-grid gap-2">
+                                        <!-- Application Preferences Button with PF icon, now with a less alarming deprecation indicator -->
+                                        <p:commandButton styleClass="linkButton ui-button-warning" ajax="false" value="Application Preferences"
+                                                         action="#{sessionController.toManageApplicationPreferences}" icon="pi pi-cog"/>
 
+                                        <!-- Department Preferences Button with PF icon, now with a less alarming deprecation indicator -->
+                                        <p:commandButton styleClass="linkButton ui-button-warning" ajax="false" value="Department Preferences" icon="pi pi-wrench"
+                                                         action="#{sessionController.toManageDepartmentPreferences()}"/>
 
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Application Preferences" action="#{sessionController.toManageApplicationPreferences}" icon="bi bi-gear-fill"/>
-<!--                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />-->
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" icon="fa-solid fa-wrench" action="#{sessionController.toManageDepartmentPreferences()}" />
+                                        <!-- Application Options Button with emphasized color and icon for high importance -->
+                                        <p:commandButton styleClass="linkButton ui-button-success" ajax="false" value="Application Options" icon="pi pi-sliders-h"
+                                                         action="#{configOptionController.navigateToApplicationOptions()}"/>
 
+                                        <!-- Institution Options Button - still under development, less prominent color -->
+                                        <p:commandButton styleClass="linkButton ui-button-info" ajax="false" value="Institution Options" icon="pi pi-building"
+                                                         action="#{configOptionController.navigateToInstitutionOptions()}"/>
 
-                                        <p:commandButton  styleClass="linkButton" 
-                                                          ajax="false" 
-                                                          value="Application Options"
-                                                          icon="fa-solid fa-wrench" 
-                                                          action="#{configOptionController.navigateToApplicationOptions()}" />
-                                        <p:commandButton  styleClass="linkButton" 
-                                                          ajax="false" 
-                                                          value="Institution Options"
-                                                          icon="fa-solid fa-wrench" 
-                                                          action="#{configOptionController.navigateToInstitutionOptions()}" />
-                                        <p:commandButton  styleClass="linkButton" 
-                                                          ajax="false" 
-                                                          value="Department Options"
-                                                          icon="fa-solid fa-wrench" 
-                                                          action="#{configOptionController.navigateToDepartmentOptions()}" />
-                                        <p:commandButton  styleClass="linkButton" 
-                                                          ajax="false" 
-                                                          value="User Options"
-                                                          icon="fa-solid fa-wrench" 
-                                                          action="#{configOptionController.navigateToUserOptions()}" />
+                                        <!-- Department Options Button - still under development, less prominent color -->
+                                        <p:commandButton styleClass="linkButton ui-button-info" ajax="false" value="Department Options" icon="pi pi-sitemap"
+                                                         action="#{configOptionController.navigateToDepartmentOptions()}"/>
 
-
+                                        <!-- User Options Button - still under development, less prominent color -->
+                                        <p:commandButton styleClass="linkButton ui-button-info" ajax="false" value="User Options" icon="pi pi-users"
+                                                         action="#{configOptionController.navigateToUserOptions()}"/>
                                     </div>
+
                                 </p:tab>
                                 <p:tab title="Developer" >
                                     <div class="d-grid gap-2">
