@@ -241,11 +241,14 @@
                                                 <div class="card-body p-2">
                                                     <div class="square-image">
                                                         <p:graphicImage url="#{activity.imageLink}" styleClass="w-100" />
+                                                        #{bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}
                                                     </div>
                                                     <p:commandButton value="Mark"
+                                                                     ajax="false"
                                                                      action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
                                                                      id="markBtn#{status.index}" />
                                                     <p:commandButton value="Unmark"
+                                                                     ajax="false"
                                                                      action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
                                                                      id="unmarkBtn#{status.index}" />
                                                     <p:commandButton value="View List"
