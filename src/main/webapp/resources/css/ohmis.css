@@ -128,3 +128,11 @@ th.align-right-header .ui-column-title {
     height: 100%;
     object-fit: cover; /* cover, so it fills the area, cropping if necessary */
 }
+
+.img-prominent {
+    filter: none; /* No filter for marked activities, image is clear */
+}
+
+.img-light {
+    filter: brightness(50%); /* Dim the image for unmarked activities */
+}

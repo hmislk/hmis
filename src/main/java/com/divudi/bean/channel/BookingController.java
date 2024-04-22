@@ -228,6 +228,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private Patient patient;
     private PaymentMethod paymentMethod;
     PaymentMethodData paymentMethodData;
+    private AppointmentActivity appointmentActivity;
 
     private ScheduleModel eventModel;
     boolean patientDetailsEditable;
@@ -468,6 +469,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         fillBillSessions();
         fillSessionActivities();
+        return "/channel/channel_queue_session?faces-redirect=true";
+    }
+    
+    public String navigateBackToManageSessionQueueAtConsultantRoom() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Not Selected");
+            return null;
+        }
         return "/channel/channel_queue_session?faces-redirect=true";
     }
 
@@ -1769,6 +1778,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Instance is Selected");
             return null;
         }
+        appointmentActivity = activity;
         return "/channel/channel_session_activities?faces-redirect=true";
     }
 
@@ -3211,4 +3221,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
         this.selectedAppointmentActivities = selectedAppointmentActivities;
     }
 
+    public AppointmentActivity getAppointmentActivity() {
+        return appointmentActivity;
+    }
+
+    public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
+        this.appointmentActivity = appointmentActivity;
+    }
+
+    
+    
 }
