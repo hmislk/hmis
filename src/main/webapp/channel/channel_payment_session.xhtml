@@ -231,7 +231,7 @@
 
                 <h:form>
                     <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
+                        <p:commandButton ajax="false" class="ui-button-success mx-1 my-2" icon="fas fa-plus" style="float: right" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
                         <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                     </h:panelGroup>
                 </h:form>
