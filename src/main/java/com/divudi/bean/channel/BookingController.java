@@ -458,6 +458,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageSessionQueueAtConsultantRoom() {
+        System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
             return null;
@@ -1682,13 +1683,16 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillSessionActivities() {
+        System.out.println("fillSessionActivities");
+        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         } else {
+            System.out.println("selectedSessionInstance.getOriginatingSession().getActivities() = " + selectedSessionInstance.getOriginatingSession().getActivities());
             if (selectedSessionInstance.getOriginatingSession().getActivities() == null || selectedSessionInstance.getOriginatingSession().getActivities().trim().equals("")) {
                 return;
             }
-            selectedAppointmentActivities = appointmentActivityController.findActivitiesByCodesOrNames(errorText);
+            selectedAppointmentActivities = appointmentActivityController.findActivitiesByCodesOrNames(selectedSessionInstance.getOriginatingSession().getActivities());
         }
     }
 

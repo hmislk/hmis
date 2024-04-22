@@ -116,7 +116,7 @@ public class AppointmentActivityController implements Serializable {
         return getFacade().findByJpql(jpql, params);
     }
 
-        // Method to return the codes of AppointmentActivities based on a search query
+    // Method to return the codes of AppointmentActivities based on a search query
     public List<String> completeAppointmentActivityCodes(String query) {
         String jpql = "SELECT a FROM AppointmentActivity a WHERE a.retired = :ret AND (LOWER(a.name) LIKE :searchTerm OR LOWER(a.code) LIKE :searchTerm) ORDER BY a.name";
         Map<String, Object> params = new HashMap<>();
@@ -132,16 +132,18 @@ public class AppointmentActivityController implements Serializable {
         }
         return codes;
     }
-    
-    
+
     public List<AppointmentActivity> findActivitiesByCodesOrNames(String input) {
+        System.out.println("findActivitiesByCodesOrNames");
+        System.out.println("input = " + input);
         List<AppointmentActivity> activities = new ArrayList<>();
         if (input == null || input.trim().equals("")) {
             return activities;
         }
         String[] lines = input.split("\\r?\\n"); // Split input into lines, supporting both UNIX and Windows line endings
-
+        System.out.println("lines = " + lines);
         for (String line : lines) {
+            System.out.println("input = " + input);
             if (line.trim().isEmpty()) {
                 continue; // Skip empty lines
             }
@@ -150,7 +152,10 @@ public class AppointmentActivityController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("ret", false);
             params.put("searchTerm", "%" + searchTerm + "%");
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
             List<AppointmentActivity> results = getFacade().findByJpql(jpql, params);
+            System.out.println("results = " + results);
             activities.addAll(results);
         }
         return activities;
