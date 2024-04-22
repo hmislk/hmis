@@ -228,9 +228,68 @@
                                         <h:outputText value="|" style="margin-right: 16px;"/>
                                         <h:outputText value="Patient" style="margin-right: 4px;"/>
                                         <h:outputText value=":" style="margin-right: 16px;"/>
-                                        <h:outputText value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" />
+                                        <h:outputText value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" style="margin-right: 16px;"/>
+                                        <h:outputText value="|" style="margin-right: 16px;"/>
+
+                                        <!-- Conditionally render Font Awesome icons and labels -->
+                                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToCancel}">
+                                            <i class="fas fa-ban" style="color: red; font-size: 16px; margin-right: 4px;"></i>
+                                            <h:outputText value="Marked to Cancel" style="color: red;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToRefund}">
+                                            <i class="fas fa-undo-alt" style="color: green; font-size: 16px; margin-right: 4px;"></i>
+                                            <h:outputText value="Marked to Refund" style="color: green;" />
+                                        </h:panelGroup>
                                     </f:facet>
+
+
+
                                     <div class="row">
+                                        <div class="col-sm-6 col-md-4 col-lg-3">
+                                            <p:commandButton 
+                                                value="Mark to Cancel"
+                                                process="@this"
+                                                update="groupSelectionBillSessionDetails"
+                                                icon="fas fa-ban"
+                                                iconPos="left"
+                                                styleClass="w-100 ui-button-Danger m-2"
+                                                rendered="#{bookingController.selectedBillSession.markedToCancel ne true and bookingController.selectedBillSession.markedToRefund ne true}"
+                                                action="#{bookingController.markToCancel()}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Mark to Refund"
+                                                process="@this"
+                                                update="groupSelectionBillSessionDetails"
+                                                icon="fas fa-undo-alt"
+                                                iconPos="left"
+                                                styleClass="w-100 ui-button-Danger m-2"
+                                                rendered="#{bookingController.selectedBillSession.markedToRefund ne true and bookingController.selectedBillSession.markedToCancel ne true}"
+                                                action="#{bookingController.markToRefund()}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Reverse Mark to Cancel"
+                                                process="@this"
+                                                update="groupSelectionBillSessionDetails"
+                                                icon="fas fa-reply"
+                                                iconPos="left"
+                                                styleClass="w-100 ui-button-Danger m-2"
+                                                rendered="#{bookingController.selectedBillSession.markedToCancel eq true}"
+                                                action="#{bookingController.markToCancelReversed()}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Reverse Mark to Refund"
+                                                process="@this"
+                                                update="groupSelectionBillSessionDetails"
+                                                icon="fas fa-redo-alt"
+                                                iconPos="left"
+                                                styleClass="w-100 ui-button-Danger m-2"
+                                                rendered="#{bookingController.selectedBillSession.markedToRefund eq true}"
+                                                action="#{bookingController.markToRefundReversed()}">
+                                            </p:commandButton>
+                                        </div>
+
+
+
                                         <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" varStatus="status">
                                             <div class="col-sm-6 col-md-4 col-lg-3">
                                                 <div class="card" >
