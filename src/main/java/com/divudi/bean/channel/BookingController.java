@@ -1696,6 +1696,39 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public void markActivity(AppointmentActivity activity, BillSession session) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return;
+        }
+        if (session == null) {
+            JsfUtil.addErrorMessage("No Session Selected");
+            return;
+        }
+    }
+
+    public void unmarkActivity(AppointmentActivity activity, BillSession session) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return;
+        }
+        if (session == null) {
+            JsfUtil.addErrorMessage("No Session Selected");
+            return;
+        }
+    }
+
+    public String navigateToListSessionInstanceActivities(AppointmentActivity activity, SessionInstance instance) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return null;
+        }
+        if (instance == null) {
+            JsfUtil.addErrorMessage("No Instance is Selected");
+            return null;
+        }
+    }
+
     public void fillBillSessions() {
         selectedBillSession = null;
         BillType[] billTypes = {

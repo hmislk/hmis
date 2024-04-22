@@ -4,14 +4,15 @@
  */
 package com.divudi.entity.channel;
 
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -24,14 +25,23 @@ public class SessionInstanceActivity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    
     @ManyToOne
     private SessionInstance sessionInstance;
-    
-    
     @ManyToOne
     private AppointmentActivity appointmentActivity;
+    Boolean activityCompleted;
+    //Created Properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public Long getId() {
         return id;
@@ -41,6 +51,8 @@ public class SessionInstanceActivity implements Serializable {
         this.id = id;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -66,8 +78,6 @@ public class SessionInstanceActivity implements Serializable {
         return "com.divudi.entity.channel.SessionInstanceActivity[ id=" + id + " ]";
     }
 
-    
-    
     public SessionInstance getSessionInstance() {
         return sessionInstance;
     }
@@ -83,5 +93,5 @@ public class SessionInstanceActivity implements Serializable {
     public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
         this.appointmentActivity = appointmentActivity;
     }
-    
+
 }
