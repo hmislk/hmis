@@ -62,13 +62,25 @@ public class SessionInstanceActivityController implements Serializable {
     }
 
     // Base method with all parameters for returning a list
-    public List<SessionInstanceActivity> findSessionInstanceActivities(SessionInstance si, AppointmentActivity appointmentActivity, BillSession billSession) {
+    public List<SessionInstanceActivity> findSessionInstanceActivities(SessionInstance si, AppointmentActivity aa, BillSession bs) {
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("si", si);
-        params.put("aa", appointmentActivity);
-        params.put("bs", billSession);
-        String jpql = buildJpqlQuery(si != null, appointmentActivity != null, billSession != null);
+
+        String jpql = "select a from SessionInstanceActivity a where a.retired=:ret ";
+
+        if (si != null) {
+            jpql += "and a.sessionInstance=:si ";
+            params.put("si", si);
+        }
+        if (aa != null) {
+            jpql += "and a.appointmentActivity=:aa ";
+            params.put("aa", aa);
+        }
+        if (bs != null) {
+            jpql += "and a.billSession=:bs ";
+            params.put("bs", bs);
+        }
+
         return getFacade().findByJpql(jpql, params);
     }
 
@@ -117,51 +129,59 @@ public class SessionInstanceActivityController implements Serializable {
         return jpql;
     }
 
-    
-    
-// Base method with all parameters
-    public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si, AppointmentActivity appointmentActivity, BillSession billSession) {
+    // Method to find a single SessionInstanceActivity
+    public SessionInstanceActivity findSessionInstanceActivity(SessionInstance si, AppointmentActivity aa, BillSession bs) {
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("si", si);
-        params.put("aa", appointmentActivity);
-        params.put("bs", billSession);
-        String jpql = buildJpqlQuery(si != null, appointmentActivity != null, billSession != null);
+
+        String jpql = "select a from SessionInstanceActivity a where a.retired=:ret ";
+
+        if (si != null) {
+            jpql += "and a.sessionInstance=:si ";
+            params.put("si", si);
+        }
+        if (aa != null) {
+            jpql += "and a.appointmentActivity=:aa ";
+            params.put("aa", aa);
+        }
+        if (bs != null) {
+            jpql += "and a.billSession=:bs ";
+            params.put("bs", bs);
+        }
 
         return getFacade().findFirstByJpql(jpql, params);
     }
 
     // Overloaded method for SessionInstance and AppointmentActivity only
     public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si, AppointmentActivity appointmentActivity) {
-        return findSessionInstanceActivityByName(si, appointmentActivity, null);
+        return findSessionInstanceActivity(si, appointmentActivity, null);
     }
 
     // Overloaded method for SessionInstance and BillSession only
     public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si, BillSession billSession) {
-        return findSessionInstanceActivityByName(si, null, billSession);
+        return findSessionInstanceActivity(si, null, billSession);
     }
 
     // Overloaded method for AppointmentActivity and BillSession only
     public SessionInstanceActivity findSessionInstanceActivityByName(AppointmentActivity appointmentActivity, BillSession billSession) {
-        return findSessionInstanceActivityByName(null, appointmentActivity, billSession);
+        return findSessionInstanceActivity(null, appointmentActivity, billSession);
     }
 
     // Overloaded method for SessionInstance only
     public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si) {
-        return findSessionInstanceActivityByName(si, null, null);
+        return findSessionInstanceActivity(si, null, null);
     }
 
     // Overloaded method for AppointmentActivity only
     public SessionInstanceActivity findSessionInstanceActivityByName(AppointmentActivity appointmentActivity) {
-        return findSessionInstanceActivityByName(null, appointmentActivity, null);
+        return findSessionInstanceActivity(null, appointmentActivity, null);
     }
 
     // Overloaded method for BillSession only
     public SessionInstanceActivity findSessionInstanceActivityByName(BillSession billSession) {
-        return findSessionInstanceActivityByName(null, null, billSession);
+        return findSessionInstanceActivity(null, null, billSession);
     }
 
-    
     public List<SessionInstanceActivity> completeSessionInstanceActivity(String qry) {
         List<SessionInstanceActivity> list;
         String sql;
