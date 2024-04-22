@@ -105,7 +105,8 @@
                                 <p:column headerText="Stock" style="width:4em; text-align: right; padding: 0;">
                                     <p:commandLink value="#{stockController.findStock(bi.item)}"
                                                    oncomplete="PF('stockDetailsDialog').show();"
-                                                   update=":stockDetailsForm:stockList"
+                                                   process="itemList"
+                                                   update="stockDetailsForm"
                                                    actionListener="#{stockController.listStocksOfSelectedItem(bi.item)}">
                                     </p:commandLink>
                                 </p:column>
@@ -113,7 +114,8 @@
                                 <p:column headerText="Expiry" style="width:4em; text-align: right; padding: 0;">
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
-                                                   update=":expStockDetailsForm:expStockList"
+                                                  process="itemList"
+                                                   update="expStockDetailsForm"
                                                    actionListener="#{stockController.listExpiaringStocks(bi.item)}"
                                                    style="#{stockController.findExpiaringStock(bi.item) > 0 ? 'color: red;' : 'color: #02e05f;'}">
                                     </p:commandLink>
@@ -130,7 +132,8 @@
                                     <p:commandButton 
                                         class="ui-button-danger" 
                                         icon="fas fa-trash"
-                                        ajax="false" 
+                                        process="itemList"
+                                        update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                         tabindex="-1"
                                         style="padding: 0;"
                                         action="#{purchaseOrderRequestController.removeItem(bi)}"/>
