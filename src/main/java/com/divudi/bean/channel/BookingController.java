@@ -1748,7 +1748,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return;
         }
-        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(billSession.getSessionInstance(), activity, billSession);
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(session.getSessionInstance(), activity, session);
         if (sia == null) {
             sia = new SessionInstanceActivity();
             sia.setBillSession(billSession);
