@@ -217,47 +217,49 @@
                     </div>
                 </div>
                 <div class="row">
-                    <h:panelGroup id="groupSelectionBillSessionDetails">
-                        <p:panel class="w-100">
-                            <f:facet name="header">
-                                <h:outputText value="Manage Booking"></h:outputText>
-                            </f:facet>
-                            <p:panelGrid columns="2" class="w-100">
-                                <h:outputText value="Serial Number"></h:outputText>
-                                <h:outputText value="#{bookingController.selectedBillSession.serialNo}"></h:outputText>
 
-                                <h:outputText value="Patient"></h:outputText>
-                                <h:outputText value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"></h:outputText>
-                            </p:panelGrid>
-                            <div class="row">
-                                <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" varStatus="status">
-                                    <div class="col-sm-6 col-md-4 col-lg-3">
-                                        <div class="card" id="activityCard#{status.index}">
-                                            <div class="card-header">
-                                                <p:outputLabel value="#{activity.name}"></p:outputLabel>
-                                            </div>
-                                            <div class="card-body p-2">
-                                                <div class="square-image">
-                                                    <p:graphicImage url="#{activity.imageLink}" styleClass="w-100"></p:graphicImage>
+                    <div class="row">
+                        <h:panelGroup id="groupSelectionBillSessionDetails">
+                            <p:panel class="w-100">
+                                <f:facet name="header">
+                                    <h:outputText value="Manage Booking" />
+                                </f:facet>
+                                <p:panelGrid columns="2" class="w-100">
+                                    <h:outputText value="Serial Number" />
+                                    <h:outputText value="#{bookingController.selectedBillSession.serialNo}" />
+
+                                    <h:outputText value="Patient" />
+                                    <h:outputText value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" />
+                                </p:panelGrid>
+                                <div class="row">
+                                    <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" varStatus="status">
+                                        <div class="col-sm-6 col-md-4 col-lg-3">
+                                            <div class="card" id="card#{status.index}">
+                                                <div class="card-header">
+                                                    <p:outputLabel value="#{activity.name}" />
                                                 </div>
-                                                <h:outputText id="statusText#{status.index}" value="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession) ? 'Completed' : 'Pending'}" styleClass="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession) ? 'text-success' : 'text-danger'}" />
-                                            </div>
-                                            <div class="card-footer p-2">
-                                                <p:commandButton 
-                                                    value="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession) ? 'Unmark' : 'Mark'}" 
-                                                    actionListener="#{bookingController.toggleActivityStatus(activity, bookingController.selectedBillSession)}"
-                                                    update="statusText#{status.index}" />
-                                                <p:commandButton 
-                                                    value="View List" 
-                                                    action="#{bookingController.navigateToListSessionInstanceActivities(activity, bookingController.selectedBillSession)}" />
+                                                <div class="card-body p-2">
+                                                    <div class="square-image">
+                                                        <p:graphicImage url="#{activity.imageLink}" styleClass="w-100" />
+                                                    </div>
+                                                    <p:commandButton value="Mark"
+                                                                     action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
+                                                                     id="markBtn#{status.index}" />
+                                                    <p:commandButton value="Unmark"
+                                                                     action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
+                                                                     id="unmarkBtn#{status.index}" />
+                                                    <p:commandButton value="View List"
+                                                                     action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
+                                                                     id="viewListBtn#{status.index}" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </ui:repeat>
-                            </div>
-                        </p:panel>
+                                    </ui:repeat>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </div>
 
-                    </h:panelGroup>
                 </div>
 
             </p:panel>
