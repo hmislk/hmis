@@ -4,14 +4,16 @@
  */
 package com.divudi.entity.channel;
 
+import com.divudi.entity.BillSession;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -24,14 +26,24 @@ public class SessionInstanceActivity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    
     @ManyToOne
     private SessionInstance sessionInstance;
-    
-    
     @ManyToOne
     private AppointmentActivity appointmentActivity;
+    private Boolean activityCompleted;
+    private BillSession billSession;
+    //Created Properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public Long getId() {
         return id;
@@ -41,6 +53,8 @@ public class SessionInstanceActivity implements Serializable {
         this.id = id;
     }
 
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -66,8 +80,6 @@ public class SessionInstanceActivity implements Serializable {
         return "com.divudi.entity.channel.SessionInstanceActivity[ id=" + id + " ]";
     }
 
-    
-    
     public SessionInstance getSessionInstance() {
         return sessionInstance;
     }
@@ -83,5 +95,71 @@ public class SessionInstanceActivity implements Serializable {
     public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
         this.appointmentActivity = appointmentActivity;
     }
+
+    public Boolean getActivityCompleted() {
+        return activityCompleted;
+    }
+
+    public void setActivityCompleted(Boolean activityCompleted) {
+        this.activityCompleted = activityCompleted;
+    }
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public BillSession getBillSession() {
+        return billSession;
+    }
+
+    public void setBillSession(BillSession billSession) {
+        this.billSession = billSession;
+    }
     
+    
+
 }
