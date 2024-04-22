@@ -36,7 +36,6 @@
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                                 </p:calendar>
 
-
                                 <h:outputLabel value="Bill No" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class=" w-100"/>
                                 <h:outputLabel value="Patient Name" />
@@ -93,7 +92,7 @@
                                     <p:column  headerText="No" styleClass="alignTop" width="50px;">
                                         <p:outputLabel value="#{i+1}" />
                                     </p:column>
-                                    <p:column  headerText="Bill" styleClass="alignTop" width="150px;">
+                                    <p:column headerText="Bill" width="150px;" styleClass="alignTop" filterBy="#{pi.billItem.bill.insId}" filterMatchMode="contains">
                                         <h:commandLink  
                                             id="lblBillNo" 
                                             value="#{pi.billItem.bill.insId}" 
@@ -166,7 +165,7 @@
                                     </p:column>
 
 
-                                    <p:column  headerText="Patient " filterBy="#{pi.billItem.bill.patient.person.nameWithTitle}" style="display: flex; align-items: center;" filterMatchMode="contains" class="gap-2">
+                                    <p:column  headerText="Patient" width="350px;" filterBy="#{pi.billItem.bill.patient.person.nameWithTitle}" filterMatchMode="contains" >
                                         <h:commandLink 
                                             id="colPtDetail"                                        
                                             value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
@@ -188,7 +187,7 @@
                                         </p:tooltip>
                                     </p:column>
 
-                                    <p:column headerText="Investigation"  styleClass="alignTop" >
+                                    <p:column headerText="Investigation" width="300px;" filterBy="#{pi.billItem.item.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{pi.billItem.item.name}" >
                                         </h:outputLabel>
 
@@ -201,21 +200,19 @@
 
                                     <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
-                                        <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"  styleClass="noBorderGrid" style="border: none;">
+                                        <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}" >
                                             <h:column >
-                                                <h:panelGrid columns="6" styleClass="noBorderGrid">
-                                                    <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
-                                                                    style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" >
-                                                    </p:graphicImage>
 
-                                                    <p:commandLink disabled="#{!dpr.approved}" id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
+                                                <h:panelGrid columns="6" styleClass="noBorderGrid">
+                                                    <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
                                                         <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                         <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                     </p:commandLink>
 
+                                                    <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
+                                                                    style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                                     <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
-                                                                    style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" >
-                                                    </p:graphicImage>
+                                                                    style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                                 </h:panelGrid>
 
                                                 <p:tooltip for="imgApproved" >
@@ -230,7 +227,6 @@
                                                     <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                                     </h:outputLabel>
                                                 </p:tooltip>
-
                                             </h:column>
                                         </h:dataTable>
                                     </p:column>
