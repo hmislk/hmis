@@ -179,12 +179,10 @@ public class ChannelSearchController implements Serializable {
         m.put("class", BilledBill.class);
 
         if (getFromDate() != null && getToDate() != null) {
-            System.out.println("getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP));
             searchedBillSessions = getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
             searchedBillSessions = getBillSessionFacade().findByJpql(sql, m);
         }
-        System.out.println("searchedBillSessions = " + searchedBillSessions);
 
     }
 
