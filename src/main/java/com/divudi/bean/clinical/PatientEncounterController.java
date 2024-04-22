@@ -1629,7 +1629,6 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select Surgery");
             return;
         }
-        System.out.println("get = " + getPatientProcedure().getItemValue().getName());
         getPatientProcedure().setPatient(patient);
         getPatientProcedure().setClinicalFindingValueType(ClinicalFindingValueType.PatientProcedure);
         clinicalFindingValueFacade.create(getPatientProcedure());

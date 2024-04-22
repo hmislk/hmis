@@ -505,7 +505,6 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
         for (Bill selected : selectedBills) {
-            System.out.println("bill = " + selected.getId());
             setBill(selected);
             if (getBill() == null) {
                 JsfUtil.addErrorMessage("No bill");
@@ -1783,7 +1782,6 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
             for (BillItem i : getBill().getBillItems()) {
-                System.out.println("i = " + i.getItem().getName());
                 i.getPharmaceuticalBillItem().setQty((double) (double) i.getQty());
                 if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                     continue;
@@ -1793,10 +1791,8 @@ public class PharmacyBillSearch implements Serializable {
                 i.setCreater(getSessionController().getLoggedUser());
                 //   i.getBillItem().setQty(i.getPharmaceuticalBillItem().getQty());
                 double value = i.getNetRate() * i.getQty();
-                System.out.println("value = " + value);
                 i.setGrossValue(0 - value);
                 i.setNetValue(0 - value);
-                System.out.println("i.getNet = " + i.getNetValue());
 
                 PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
                 i.setPharmaceuticalBillItem(null);

@@ -107,7 +107,6 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public String navigateToCreateNewPurchaseOrder() {
-        System.out.println("navigateToCreateNewPurchaseOrder");
         resetBillValues();
         getCurrentBill();
         return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
@@ -492,7 +491,6 @@ public class PurchaseOrderRequestController implements Serializable {
             currentBill.setBillType(BillType.PharmacyOrder);
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
             PaymentMethod pm = optionController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method", PaymentMethod.class, OptionScope.APPLICATION, null, null, null); 
-            System.out.println("pm = " + pm);
             currentBill.setPaymentMethod(pm);
         }
         return currentBill;

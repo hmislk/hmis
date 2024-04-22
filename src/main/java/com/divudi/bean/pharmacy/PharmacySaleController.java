@@ -937,7 +937,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateAllRates() {
-        System.out.println("Calculating all rates");
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
 //            calculateBillItemForEditing(tbi);
@@ -945,7 +944,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateRates(BillItem bi) {
-        System.out.println("Calculating rates");
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
@@ -973,7 +971,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
         }
 
-        System.out.println("Total discount: " + discountTotal);
         getPreBill().setNetTotal(netTotal);
         getPreBill().setTotal(grossTotal);
         getPreBill().setGrantTotal(grossTotal);
@@ -1059,7 +1056,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public void addBillItemMultipleBatches() {
         editingQty = null;
         errorMessage = null;
-       
 
         if (billItem == null) {
             return;
@@ -1072,7 +1068,19 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense?");
             return;
         }
-         Stock userSelectedStock = stock;
+        Stock userSelectedStock = stock;
+//        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+//            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+//            return;
+//        }
+//        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+//            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+//            return;
+//        }
+//        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+//            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+//            return;
+//        }
 //        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
 //            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
 //            return;
@@ -1111,7 +1119,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        System.out.println("stock = " + userSelectedStock);
 //        System.out.println("stock item batch = " + userSelectedStock.getItemBatch());
 //        System.out.println("stock item batch item= " + userSelectedStock.getItemBatch().getItem());
-
         List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
         for (Stock s : availableStocks) {
             stock = s;
