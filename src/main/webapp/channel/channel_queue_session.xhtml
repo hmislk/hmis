@@ -211,6 +211,14 @@
                             </div>
                         </h:panelGroup>
 
+                        <h1>Activities</h1>
+                        <h2>
+                            #{bookingController.selectedSessionInstance.originatingSession.activities}
+                        </h2>      
+                        <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
+                            <p:outputLabel value="#{activity.name}" ></p:outputLabel>
+                        </ui:repeat>
+                        
                     </div>
                 </div>
 

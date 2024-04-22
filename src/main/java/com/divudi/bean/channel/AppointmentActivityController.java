@@ -53,7 +53,7 @@ public class AppointmentActivityController implements Serializable {
 
     public void addAppointmentActivity() {
         current = new AppointmentActivity();
-        
+
     }
 
     public void save(AppointmentActivity aa) {
@@ -105,7 +105,55 @@ public class AppointmentActivityController implements Serializable {
                 + " order by a.name";
         Map m = new HashMap();
         m.put("ret", false);
-        items= getFacade().findByJpql(jpql, m);
+        items = getFacade().findByJpql(jpql, m);
+    }
+
+    public List<AppointmentActivity> completeAppointmentActivity(String query) {
+        String jpql = "SELECT a FROM AppointmentActivity a WHERE (a.retired = :ret AND (LOWER(a.name) LIKE :searchTerm OR LOWER(a.code) LIKE :searchTerm)) ORDER BY a.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("searchTerm", "%" + query.toLowerCase() + "%");
+        return getFacade().findByJpql(jpql, params);
+    }
+
+        // Method to return the codes of AppointmentActivities based on a search query
+    public List<String> completeAppointmentActivityCodes(String query) {
+        String jpql = "SELECT a FROM AppointmentActivity a WHERE a.retired = :ret AND (LOWER(a.name) LIKE :searchTerm OR LOWER(a.code) LIKE :searchTerm) ORDER BY a.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("searchTerm", "%" + query.toLowerCase() + "%");
+
+        List<AppointmentActivity> activities = getFacade().findByJpql(jpql, params);
+        List<String> codes = new ArrayList<>();
+        for (AppointmentActivity activity : activities) {
+            if (activity.getCode() != null && !activity.getCode().isEmpty()) {
+                codes.add(activity.getCode());
+            }
+        }
+        return codes;
+    }
+    
+    
+    public List<AppointmentActivity> findActivitiesByCodesOrNames(String input) {
+        List<AppointmentActivity> activities = new ArrayList<>();
+        if (input == null || input.trim().equals("")) {
+            return activities;
+        }
+        String[] lines = input.split("\\r?\\n"); // Split input into lines, supporting both UNIX and Windows line endings
+
+        for (String line : lines) {
+            if (line.trim().isEmpty()) {
+                continue; // Skip empty lines
+            }
+            String searchTerm = line.trim().toLowerCase();
+            String jpql = "SELECT a FROM AppointmentActivity a WHERE a.retired = :ret AND (LOWER(a.name) LIKE :searchTerm OR LOWER(a.code) LIKE :searchTerm) ORDER BY a.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("searchTerm", "%" + searchTerm + "%");
+            List<AppointmentActivity> results = getFacade().findByJpql(jpql, params);
+            activities.addAll(results);
+        }
+        return activities;
     }
 
     public List<AppointmentActivity> getItems() {

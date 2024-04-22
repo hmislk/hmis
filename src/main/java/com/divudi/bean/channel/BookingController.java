@@ -72,6 +72,7 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
+import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
@@ -145,6 +146,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     PaymentFacade paymentFacade;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private SmsFacade smsFacade;
     /**
      * Controllers
      */
@@ -180,7 +183,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     SessionInstanceController sessionInstanceController;
     @Inject
     ItemForItemController itemForItemController;
-
+    @Inject
+    AppointmentActivityController appointmentActivityController;
     /**
      * Properties
      */
@@ -192,9 +196,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     boolean settleSucessFully;
     Bill printingBill;
 
-    @EJB
-    private SmsFacade smsFacade;
-
     @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
     @Deprecated
@@ -204,6 +205,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private List<ItemFee> sessionFees;
     private List<ItemFee> addedItemFees;
     private BillSession selectedBillSession;
+    private List<AppointmentActivity> selectedAppointmentActivities;
     @Deprecated
     private BillSession managingBillSession;
     private List<SessionInstance> sessionInstances;
@@ -461,6 +463,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return null;
         }
         fillBillSessions();
+        fillSessionActivities();
         return "/channel/channel_queue_session?faces-redirect=true";
     }
 
@@ -661,10 +664,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (selectedBillSession == null) {
             return;
         }
-        if(selectedBillSession.getId()==null){
+        if (selectedBillSession.getId() == null) {
             billSessionFacade.create(selectedBillSession);
-        }else{
-             billSessionFacade.edit(selectedBillSession);
+        } else {
+            billSessionFacade.edit(selectedBillSession);
         }
     }
 
@@ -1676,6 +1679,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
 
         sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void fillSessionActivities() {
+        if (selectedSessionInstance == null) {
+            return;
+        } else {
+            if (selectedSessionInstance.getOriginatingSession().getActivities() == null || selectedSessionInstance.getOriginatingSession().getActivities().trim().equals("")) {
+                return;
+            }
+            selectedAppointmentActivities = appointmentActivityController.findActivitiesByCodesOrNames(errorText);
+        }
     }
 
     public void fillBillSessions() {
@@ -3107,6 +3121,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setFeeTotalForSelectedBill(Double feeTotalForSelectedBill) {
         this.feeTotalForSelectedBill = feeTotalForSelectedBill;
+    }
+
+    public List<AppointmentActivity> getSelectedAppointmentActivities() {
+        return selectedAppointmentActivities;
+    }
+
+    public void setSelectedAppointmentActivities(List<AppointmentActivity> selectedAppointmentActivities) {
+        this.selectedAppointmentActivities = selectedAppointmentActivities;
     }
 
 }
