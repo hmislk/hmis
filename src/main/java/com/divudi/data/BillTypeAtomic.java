@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
  * @author Buddhika
  */
 public enum BillTypeAtomic {
-
+    //INWARD
+    INWARD_PHARMACY_REQUEST("Inward Request Medicines From Pharmacy",BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
     // Pharmacy
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN),
     PHARMACY_RETAIL_SALE_PRE("Pharmacy Retail Sale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS),
