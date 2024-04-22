@@ -47,6 +47,7 @@ public class AppointmentActivityController implements Serializable {
     private Date date;
 
     public String navigateToManageAppointmentActivities() {
+        fillAppointmentActivities();
         return "/channel/channel_scheduling/appointment_activity_management?faces-redirect=true";
     }
 
@@ -98,7 +99,6 @@ public class AppointmentActivityController implements Serializable {
     }
 
     public void fillAppointmentActivities() {
-        List<AppointmentActivity> items=new ArrayList<>();
         String jpql = "select a "
                 + " from AppointmentActivity a"
                 + " where a.retired=:ret"
