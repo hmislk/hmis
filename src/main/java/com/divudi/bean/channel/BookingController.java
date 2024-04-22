@@ -657,6 +657,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Patient Updated");
     }
 
+    public void updateSelectedBillSessionPatient() {
+        if (selectedBillSession == null) {
+            return;
+        }
+        if(selectedBillSession.getId()==null){
+            billSessionFacade.create(selectedBillSession);
+        }else{
+             billSessionFacade.edit(selectedBillSession);
+        }
+    }
+
     public boolean patientErrorPresent(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
@@ -2993,11 +3004,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String changePatient() {
-        if(selectedBillSession==null){
+        if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("No Session Selected");
             return null;
         }
-        if(patient==null){
+        if (patient == null) {
             JsfUtil.addErrorMessage("No Session Selected");
             return null;
         }
@@ -3006,7 +3017,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Patient Changed");
         return navigateToManageBooking();
     }
-    
+
     public void changeListener() {
         getSelectedSessionInstance().getOriginatingSession().setTotalFee(0.0);
         getSelectedSessionInstance().getOriginatingSession().setTotalFfee(0.0);
