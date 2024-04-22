@@ -142,6 +142,8 @@ public class GrnController implements Serializable {
         pos = null;
         printPreview = false;
         billItems = null;
+        difference = 0;
+        insTotal = 0;
         createGrnWholesale();
         return "/pharmacy/pharmacy_grn_wh?faces-redirect=true";
     }
