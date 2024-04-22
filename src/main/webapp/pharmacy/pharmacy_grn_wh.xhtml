@@ -271,8 +271,47 @@
                     </p:panelGrid>
                 </p:panel>
             </p:panel>
-
+            
+            
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <h:outputLabel value="GRN Preview " class="mt-2"/>
+                        <div class="d-flex gap-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_purchase_order_list_for_recieve"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}" 
+                                value="Back to PO List"> 
+                            </p:commandButton>                   
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
+                        <ph:grn_wholesale bill="#{grnController.grnBill}"/>
+                    </h:panelGroup>
+                    
+                </h:panelGroup>
+            </p:panel>
+            
+            
+            
+            
+
+<!--            <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">
                         <h:outputLabel value="GRN Preview " class="mt-2"/>
@@ -299,16 +338,12 @@
 
                 <p:panel   id="gpBillPreview"   style="border: none;">
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                        <ph:grn_wh bill="#{grnController.grnBill}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                        <ph:grn_detail_wh bill="#{grnController.grnBill}"/>
-                    </h:panelGroup>
-
+                    <ph:grn_wh bill="#{grnController.grnBill}"/>
+                    
+                    <ph:grn_detail_wh bill="#{grnController.grnBill}"/>
+                    
                 </p:panel>
-            </p:panel>
+            </p:panel>-->
 
         </h:form>
     </ui:define>  
