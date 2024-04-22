@@ -237,17 +237,34 @@
                         value="Token Management" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
-                    <p:menuitem ajax="false" action="/lab/report_for_opd_print?faces-redirect=true" value="Lab Report print" icon="fa fa-file-medical" rendered="true" />
-                    <p:menuitem ajax="false" action="#{cashierReportController.navigateToOpdSummeries()}" value="OPD Analytics" icon="fa fa-list-alt"></p:menuitem>
-                    <p:menuitem ajax="false"
-                                rendered="false"
-                                action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
-                                value="Analytics" icon="fa fa-list-alt"></p:menuitem>
-                    <p:menuitem ajax="false"
-                                styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
-                                rendered="#{webUserController.hasPrivilege('Opd') and sessionController.applicationPreference.opdBillingAftershiftStart eq true}"
-                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
-                                value="Financial Transaction Manager" icon="fa fa-list-alt"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{reportController.navigatetoOPDLabReportByMenu()}" 
+                        value="Lab Report Print" 
+                        icon="fa fa-file-medical" 
+                        rendered="#{webUserController.hasPrivilege('OpdLabReportSearch')}"
+                         />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{cashierReportController.navigateToOpdSummeries()}" 
+                        value="OPD Analytics" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        rendered="false"
+                        action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
+                        value="Analytics" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
+                        rendered="#{webUserController.hasPrivilege('Opd') and sessionController.applicationPreference.opdBillingAftershiftStart eq true}"
+                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                        value="Financial Transaction Manager" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
