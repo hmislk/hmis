@@ -7,12 +7,15 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.channel;
+
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Area;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Institution;
+import com.divudi.entity.channel.AppointmentActivity;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.channel.SessionInstanceActivity;
-import com.divudi.facade.AreaFacade;
+import com.divudi.facade.SessionInstanceActivityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,8 +33,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -41,48 +44,129 @@ public class SessionInstanceActivityController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private AreaFacade ejbFacade;
-    private Area current;
-    private List<Area> items = null;
-    
-      public void save(Area area) {
-        if (area == null) {
+    private SessionInstanceActivityFacade ejbFacade;
+    private SessionInstanceActivity current;
+    private List<SessionInstanceActivity> items = null;
+
+    public void save(SessionInstanceActivity sessionInstanceActivity) {
+        if (sessionInstanceActivity == null) {
             return;
         }
-        if (area.getId() != null) {
-            getFacade().edit(area);
-            JsfUtil.addSuccessMessage("Updated Successfully.");
+        if (sessionInstanceActivity.getId() != null) {
+            getFacade().edit(sessionInstanceActivity);
         } else {
-            area.setCreatedAt(new Date());
-            area.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(area);
-            JsfUtil.addSuccessMessage("Saved Successfully");
+            sessionInstanceActivity.setCreatedAt(new Date());
+            sessionInstanceActivity.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(sessionInstanceActivity);
         }
-    }
-    
-     public Area findAreaByName(String name) {
-         
-        if (name == null) {
-            return null;
-        }
-        if (name.trim().equals("")) {
-            return null;
-        }
-        String jpql = "select a "
-                + " from Area a "
-                + " where a.retired=:ret "
-                + " and a.name=:n";
-        Map m = new HashMap<>();
-        m.put("ret", false);
-        m.put("n", name);
-        return getFacade().findFirstByJpql(jpql, m);
     }
 
-    public List<Area> completeArea(String qry) {
-        List<Area> list;
+    // Base method with all parameters for returning a list
+    public List<SessionInstanceActivity> findSessionInstanceActivities(SessionInstance si, AppointmentActivity appointmentActivity, BillSession billSession) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("si", si);
+        params.put("aa", appointmentActivity);
+        params.put("bs", billSession);
+        String jpql = buildJpqlQuery(si != null, appointmentActivity != null, billSession != null);
+        return getFacade().findByJpql(jpql, params);
+    }
+
+    // Overloaded method for SessionInstance and AppointmentActivity only
+    public List<SessionInstanceActivity> findSessionInstanceActivities(SessionInstance si, AppointmentActivity appointmentActivity) {
+        return findSessionInstanceActivities(si, appointmentActivity, null);
+    }
+
+    // Overloaded method for SessionInstance and BillSession only
+    public List<SessionInstanceActivity> findSessionInstanceActivities(SessionInstance si, BillSession billSession) {
+        return findSessionInstanceActivities(si, null, billSession);
+    }
+
+    // Overloaded method for AppointmentActivity and BillSession only
+    public List<SessionInstanceActivity> findSessionInstanceActivities(AppointmentActivity appointmentActivity, BillSession billSession) {
+        return findSessionInstanceActivities(null, appointmentActivity, billSession);
+    }
+
+    // Overloaded method for SessionInstance only
+    public List<SessionInstanceActivity> findSessionInstanceActivities(SessionInstance si) {
+        return findSessionInstanceActivities(si, null, null);
+    }
+
+    // Overloaded method for AppointmentActivity only
+    public List<SessionInstanceActivity> findSessionInstanceActivities(AppointmentActivity appointmentActivity) {
+        return findSessionInstanceActivities(null, appointmentActivity, null);
+    }
+
+    // Overloaded method for BillSession only
+    public List<SessionInstanceActivity> findSessionInstanceActivities(BillSession billSession) {
+        return findSessionInstanceActivities(null, null, billSession);
+    }
+
+    // Helper method to build JPQL query dynamically based on parameters availability
+    private String buildJpqlQuery(boolean hasSI, boolean hasAA, boolean hasBS) {
+        String jpql = "select a from SessionInstanceActivity a where a.retired=:ret ";
+        if (hasSI) {
+            jpql += "and a.sessionInstance=:si ";
+        }
+        if (hasAA) {
+            jpql += "and a.appointmentActivity=:aa ";
+        }
+        if (hasBS) {
+            jpql += "and a.billSession=:bs ";
+        }
+        return jpql;
+    }
+
+    
+    
+// Base method with all parameters
+    public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si, AppointmentActivity appointmentActivity, BillSession billSession) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("si", si);
+        params.put("aa", appointmentActivity);
+        params.put("bs", billSession);
+        String jpql = buildJpqlQuery(si != null, appointmentActivity != null, billSession != null);
+
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    // Overloaded method for SessionInstance and AppointmentActivity only
+    public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si, AppointmentActivity appointmentActivity) {
+        return findSessionInstanceActivityByName(si, appointmentActivity, null);
+    }
+
+    // Overloaded method for SessionInstance and BillSession only
+    public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si, BillSession billSession) {
+        return findSessionInstanceActivityByName(si, null, billSession);
+    }
+
+    // Overloaded method for AppointmentActivity and BillSession only
+    public SessionInstanceActivity findSessionInstanceActivityByName(AppointmentActivity appointmentActivity, BillSession billSession) {
+        return findSessionInstanceActivityByName(null, appointmentActivity, billSession);
+    }
+
+    // Overloaded method for SessionInstance only
+    public SessionInstanceActivity findSessionInstanceActivityByName(SessionInstance si) {
+        return findSessionInstanceActivityByName(si, null, null);
+    }
+
+    // Overloaded method for AppointmentActivity only
+    public SessionInstanceActivity findSessionInstanceActivityByName(AppointmentActivity appointmentActivity) {
+        return findSessionInstanceActivityByName(null, appointmentActivity, null);
+    }
+
+    // Overloaded method for BillSession only
+    public SessionInstanceActivity findSessionInstanceActivityByName(BillSession billSession) {
+        return findSessionInstanceActivityByName(null, null, billSession);
+    }
+
+    
+    public List<SessionInstanceActivity> completeSessionInstanceActivity(String qry) {
+        List<SessionInstanceActivity> list;
         String sql;
         HashMap hm = new HashMap();
-        sql = "select c from Area c "
+        sql = "select c from SessionInstanceActivity c "
                 + " where c.retired=false "
                 + " and (c.name) like :q "
                 + " order by c.name";
@@ -96,7 +180,7 @@ public class SessionInstanceActivityController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = new Area();
+        current = new SessionInstanceActivity();
     }
 
     public void recreateModel() {
@@ -104,10 +188,6 @@ public class SessionInstanceActivityController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
-            JsfUtil.addErrorMessage("Please enter Value");
-            return;
-        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -122,12 +202,12 @@ public class SessionInstanceActivityController implements Serializable {
         getItems();
     }
 
-    public AreaFacade getEjbFacade() {
+    private SessionInstanceActivityFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(AreaFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
+    private SessionInstanceActivityFacade getFacade() {
+        return ejbFacade;
     }
 
     public SessionController getSessionController() {
@@ -141,14 +221,14 @@ public class SessionInstanceActivityController implements Serializable {
     public SessionInstanceActivityController() {
     }
 
-    public Area getCurrent() {
+    public SessionInstanceActivity getCurrent() {
         if (current == null) {
-            current = new Area();
+            current = new SessionInstanceActivity();
         }
         return current;
     }
 
-    public void setCurrent(Area current) {
+    public void setCurrent(SessionInstanceActivity current) {
         this.current = current;
     }
 
@@ -169,15 +249,11 @@ public class SessionInstanceActivityController implements Serializable {
         getCurrent();
     }
 
-    private AreaFacade getFacade() {
-        return ejbFacade;
-    }
-
-    public List<Area> getItems() {
+    public List<SessionInstanceActivity> getItems() {
         if (items == null) {
             String j;
             j = "select a "
-                    + " from Area a "
+                    + " from SessionInstanceActivity a "
                     + " where a.retired=false "
                     + " order by a.name";
             items = getFacade().findByJpql(j);
@@ -218,8 +294,8 @@ public class SessionInstanceActivityController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Area) {
-                Area o = (Area) object;
+            if (object instanceof SessionInstanceActivity) {
+                SessionInstanceActivity o = (SessionInstanceActivity) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "

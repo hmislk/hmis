@@ -73,6 +73,7 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.channel.AppointmentActivity;
+import com.divudi.entity.channel.SessionInstanceActivity;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
@@ -185,6 +186,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     ItemForItemController itemForItemController;
     @Inject
     AppointmentActivityController appointmentActivityController;
+    @Inject
+    SessionInstanceActivityController sessionInstanceActivityController;
     /**
      * Properties
      */
@@ -1696,15 +1699,44 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public void markActivity(AppointmentActivity activity, BillSession session) {
+    public boolean getActivityStatus(AppointmentActivity activity, BillSession billSession) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return false;
+        }
+        if (billSession == null) {
+            JsfUtil.addErrorMessage("No Session Selected");
+            return false;
+        }
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivityByName(billSession.getSessionInstance(), activity, billSession);
+        if (sia == null) {
+            return false;
+        }
+        if(sia.getActivityCompleted()==null){
+            return false;
+        }
+        return sia.getActivityCompleted();
+    }
+    
+    public void markActivity(AppointmentActivity activity, BillSession billSession) {
         if (activity == null) {
             JsfUtil.addErrorMessage("No Activity Selected");
             return;
         }
-        if (session == null) {
+        if (billSession == null) {
             JsfUtil.addErrorMessage("No Session Selected");
             return;
         }
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivityByName(billSession.getSessionInstance(), activity, billSession);
+        if (sia == null) {
+            sia = new SessionInstanceActivity();
+            sia.setBillSession(billSession);
+            sia.setSessionInstance(billSession.getSessionInstance());
+            sia.setAppointmentActivity(activity);
+        }
+        sia.setActivityCompleted(true);
+        sessionInstanceActivityController.save(sia);
+        JsfUtil.addSuccessMessage("Marked");
     }
 
     public void unmarkActivity(AppointmentActivity activity, BillSession session) {
@@ -1716,6 +1748,16 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return;
         }
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivityByName(billSession.getSessionInstance(), activity, billSession);
+        if (sia == null) {
+            sia = new SessionInstanceActivity();
+            sia.setBillSession(billSession);
+            sia.setSessionInstance(billSession.getSessionInstance());
+            sia.setAppointmentActivity(activity);
+        }
+        sia.setActivityCompleted(false);
+        sessionInstanceActivityController.save(sia);
+        JsfUtil.addSuccessMessage("Un Marked");
     }
 
     public String navigateToListSessionInstanceActivities(AppointmentActivity activity, SessionInstance instance) {
@@ -1727,6 +1769,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Instance is Selected");
             return null;
         }
+        return "/channel/channel_session_activities?faces-redirect=true";
     }
 
     public void fillBillSessions() {

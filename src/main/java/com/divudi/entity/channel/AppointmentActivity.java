@@ -33,18 +33,18 @@ public class AppointmentActivity implements Serializable {
     @Lob
     private String imageLink;
 
-        //Created Properties
-        @ManyToOne
-        private WebUser creater;
-        @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-        private Date createdAt;
-        //Retairing properties
-        private boolean retired;
-        @ManyToOne
-        private WebUser retirer;
-        @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-        private Date retiredAt;
-        private String retireComments;
+    //Created Properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public Long getId() {
         return id;
