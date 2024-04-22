@@ -28,7 +28,7 @@
                 <table class="mx-4" style="width: 98%;" >
                     <tr >
                         <td colspan="3" style="text-align: center;">
-                            <h:outputLabel value="PAYMENT VOUCHER" style="font-size: 2em"  /><br/>
+                            <b><h:outputLabel value="PAYMENT VOUCHER" style="font-size: 1.6em"  /><br/></b>
                             <h:outputLabel value="**Cancelled**" style="font-size: 1.5em" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  />
                             <h:outputLabel value="  **Duplicate**" 
                                            rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" style="font-size: 1.5em" />
@@ -107,7 +107,7 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize; "  />
+                            <h:outputLabel value="#{cc.attrs.bill.singleBillSession.staff.person.nameWithTitle}" style="text-transform: capitalize; "  />
 
                         </td>
                     </tr>
@@ -142,12 +142,12 @@
                                 </h:column>
                                 <f:facet name="footer" >
                                     <h:panelGrid columns="7" class="w-100" >
-                                        <h:outputLabel value="&emsp;&emsp;"/>
-                                         <h:outputLabel value="&emsp;&emsp;"/>
-                                         <h:outputLabel value="&emsp;&emsp;"/>
-                                         <h:outputLabel value="&emsp;"/>
-                                         <h:outputLabel value="TOTAL"/>
-                                     <h:outputLabel value=":"/>
+                                        <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;"/>
+                                        <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;"/>
+                                        <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;"/>
+                                        <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;"/>
+                                        <h:outputLabel value="TOTAL" style="text-align: right"/>
+                                         <h:outputLabel value=":"/>
                                     
                                  <h:outputLabel value="&emsp;#{-cc.attrs.bill.netTotal}"  style="text-align: right!important; font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" /></h:outputLabel>
