@@ -1708,7 +1708,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return false;
         }
-        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivityByName(billSession.getSessionInstance(), activity, billSession);
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(billSession.getSessionInstance(), activity, billSession);
         if (sia == null) {
             return false;
         }
@@ -1727,7 +1727,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return;
         }
-        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivityByName(billSession.getSessionInstance(), activity, billSession);
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(billSession.getSessionInstance(), activity, billSession);
         if (sia == null) {
             sia = new SessionInstanceActivity();
             sia.setBillSession(billSession);
@@ -1748,7 +1748,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return;
         }
-        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivityByName(billSession.getSessionInstance(), activity, billSession);
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(billSession.getSessionInstance(), activity, billSession);
         if (sia == null) {
             sia = new SessionInstanceActivity();
             sia.setBillSession(billSession);
