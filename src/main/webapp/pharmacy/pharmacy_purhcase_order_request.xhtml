@@ -130,7 +130,8 @@
                                     <p:commandButton 
                                         class="ui-button-danger" 
                                         icon="fas fa-trash"
-                                        ajax="false" 
+                                        process="itemList"
+                                        update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                         tabindex="-1"
                                         style="padding: 0;"
                                         action="#{purchaseOrderRequestController.removeItem(bi)}"/>
@@ -294,7 +295,7 @@
                                     value="Add" 
                                     action="#{purchaseOrderRequestController.addItem}" 
                                     process="exItem @this" 
-                                    update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                                    update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('exDItem',view).clientId} tot" />
 
                             </p:panel>
                         </div>
@@ -469,7 +470,7 @@
         <p:dialog widgetVar="stockDetailsDialog" modal="true" header="Stock Details" width="50%" height="auto">
             <h:form id="stockDetailsForm">
 
-                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s">
+                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s" scrollable="true" scrollHeight="250px;">
 
                     <f:facet name="header">
                         <h:outputText id="stockItemName" value="Item: #{stockController.selectedItem.name}" />

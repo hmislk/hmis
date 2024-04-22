@@ -101,7 +101,10 @@ public class StockController implements Serializable {
 
     public void listStocksOfSelectedItem(Item item) {
         selectedItemStocks = null;
-        item = item;
+        if(selectedItemStocks == null){
+            selectedItemStocks = new ArrayList<>();
+        }
+        selectedItem = item;
         if (item == null) {
             return;
         }
