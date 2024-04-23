@@ -41,7 +41,7 @@ public class BillSession implements Serializable {
     Date createdAt;
     //Completed Properties
     private Boolean markedToCancel;
-    private Boolean markToRefund;
+    private Boolean markedToRefund;
     private Boolean nextInLine;
     private Boolean currentlyConsulted;
     private boolean completed;
@@ -481,12 +481,12 @@ public class BillSession implements Serializable {
         this.markedToCancel = markedToCancel;
     }
 
-    public Boolean getMarkToRefund() {
-        return markToRefund;
+    public Boolean getMarkedToRefund() {
+        return markedToRefund;
     }
 
-    public void setMarkToRefund(Boolean markToRefund) {
-        this.markToRefund = markToRefund;
+    public void setMarkedToRefund(Boolean markedToRefund) {
+        this.markedToRefund = markedToRefund;
     }
 
     public Boolean getNextInLine() {

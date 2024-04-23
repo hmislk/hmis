@@ -72,6 +72,8 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
+import com.divudi.entity.channel.AppointmentActivity;
+import com.divudi.entity.channel.SessionInstanceActivity;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
@@ -145,6 +147,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     PaymentFacade paymentFacade;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private SmsFacade smsFacade;
     /**
      * Controllers
      */
@@ -180,7 +184,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
     SessionInstanceController sessionInstanceController;
     @Inject
     ItemForItemController itemForItemController;
-
+    @Inject
+    AppointmentActivityController appointmentActivityController;
+    @Inject
+    SessionInstanceActivityController sessionInstanceActivityController;
     /**
      * Properties
      */
@@ -192,9 +199,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     boolean settleSucessFully;
     Bill printingBill;
 
-    @EJB
-    private SmsFacade smsFacade;
-
     @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
     @Deprecated
@@ -204,6 +208,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private List<ItemFee> sessionFees;
     private List<ItemFee> addedItemFees;
     private BillSession selectedBillSession;
+    private List<AppointmentActivity> selectedAppointmentActivities;
     @Deprecated
     private BillSession managingBillSession;
     private List<SessionInstance> sessionInstances;
@@ -223,6 +228,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private Patient patient;
     private PaymentMethod paymentMethod;
     PaymentMethodData paymentMethodData;
+    private AppointmentActivity appointmentActivity;
 
     private ScheduleModel eventModel;
     boolean patientDetailsEditable;
@@ -456,11 +462,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageSessionQueueAtConsultantRoom() {
+        System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
             return null;
         }
         fillBillSessions();
+        fillSessionActivities();
+        return "/channel/channel_queue_session?faces-redirect=true";
+    }
+
+    public String navigateBackToManageSessionQueueAtConsultantRoom() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Not Selected");
+            return null;
+        }
         return "/channel/channel_queue_session?faces-redirect=true";
     }
 
@@ -655,6 +671,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void updatePatient() {
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
         JsfUtil.addSuccessMessage("Patient Updated");
+    }
+
+    public void updateSelectedBillSessionPatient() {
+        if (selectedBillSession == null) {
+            return;
+        }
+        if (selectedBillSession.getId() == null) {
+            billSessionFacade.create(selectedBillSession);
+        } else {
+            billSessionFacade.edit(selectedBillSession);
+        }
     }
 
     public boolean patientErrorPresent(Patient p) {
@@ -1447,6 +1474,70 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fpFacade.edit(arrivalRecord);
     }
 
+    public void markToCancel() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (selectedBillSession.getMarkedToRefund()) {
+            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            return;
+        }
+        selectedBillSession.setMarkedToCancel(true);
+        selectedBillSession.setMarkedToCancelAt(new Date());
+        selectedBillSession.setMarkedToCancelBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Cancelled");
+    }
+
+    public void markToCancelReversed() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (!selectedBillSession.getMarkedToCancel()) {
+            JsfUtil.addErrorMessage("Error. Not a session marked to cancel.");
+            return;
+        }
+        selectedBillSession.setMarkedToCancel(false);
+        selectedBillSession.setMarkedToCancelAt(new Date());
+        selectedBillSession.setMarkedToCancelBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Cancelle Reversed");
+    }
+
+    public void markToRefund() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to refund");
+            return;
+        }
+        if (selectedBillSession.getMarkedToCancel()) {
+            JsfUtil.addErrorMessage("Cannot refund a session marked for cancellation.");
+            return;
+        }
+        selectedBillSession.setMarkedToRefund(true);
+        selectedBillSession.setMarkedToRefundAt(new Date());
+        selectedBillSession.setMarkedToRefundBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Refund");
+    }
+
+    public void markToRefundReversed() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (!selectedBillSession.getMarkedToRefund()) {
+            JsfUtil.addErrorMessage("Error. Not a session marked to refund.");
+            return;
+        }
+        selectedBillSession.setMarkedToRefund(false);
+        selectedBillSession.setMarkedToRefundAt(new Date());
+        selectedBillSession.setMarkedToRefundBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Refund was reversed.");
+    }
+
     public void markCurrentCompleteAndCallNext() {
         BillSession lastCompletedSession = null;
         BillSession currentSession = null;
@@ -1667,6 +1758,94 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
+    public void fillSessionActivities() {
+        System.out.println("fillSessionActivities");
+        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
+        if (selectedSessionInstance == null) {
+            return;
+        } else {
+            System.out.println("selectedSessionInstance.getOriginatingSession().getActivities() = " + selectedSessionInstance.getOriginatingSession().getActivities());
+            if (selectedSessionInstance.getOriginatingSession().getActivities() == null || selectedSessionInstance.getOriginatingSession().getActivities().trim().equals("")) {
+                return;
+            }
+            selectedAppointmentActivities = appointmentActivityController.findActivitiesByCodesOrNames(selectedSessionInstance.getOriginatingSession().getActivities());
+        }
+    }
+
+    public boolean getActivityStatus(AppointmentActivity activity, BillSession billSession) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return false;
+        }
+        if (billSession == null) {
+            JsfUtil.addErrorMessage("No Session Selected");
+            return false;
+        }
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(billSession.getSessionInstance(), activity, billSession);
+        if (sia == null) {
+            return false;
+        }
+        if (sia.getActivityCompleted() == null) {
+            return false;
+        }
+        return sia.getActivityCompleted();
+    }
+
+    public void markActivity(AppointmentActivity activity, BillSession billSession) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return;
+        }
+        if (billSession == null) {
+            JsfUtil.addErrorMessage("No Session Selected");
+            return;
+        }
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(billSession.getSessionInstance(), activity, billSession);
+        if (sia == null) {
+            sia = new SessionInstanceActivity();
+            sia.setBillSession(billSession);
+            sia.setSessionInstance(billSession.getSessionInstance());
+            sia.setAppointmentActivity(activity);
+        }
+        sia.setActivityCompleted(true);
+        sessionInstanceActivityController.save(sia);
+        JsfUtil.addSuccessMessage("Marked");
+    }
+
+    public void unmarkActivity(AppointmentActivity activity, BillSession session) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return;
+        }
+        if (session == null) {
+            JsfUtil.addErrorMessage("No Session Selected");
+            return;
+        }
+        SessionInstanceActivity sia = sessionInstanceActivityController.findSessionInstanceActivity(session.getSessionInstance(), activity, session);
+        if (sia == null) {
+            sia = new SessionInstanceActivity();
+            sia.setBillSession(billSession);
+            sia.setSessionInstance(billSession.getSessionInstance());
+            sia.setAppointmentActivity(activity);
+        }
+        sia.setActivityCompleted(false);
+        sessionInstanceActivityController.save(sia);
+        JsfUtil.addSuccessMessage("Un Marked");
+    }
+
+    public String navigateToListSessionInstanceActivities(AppointmentActivity activity, SessionInstance instance) {
+        if (activity == null) {
+            JsfUtil.addErrorMessage("No Activity Selected");
+            return null;
+        }
+        if (instance == null) {
+            JsfUtil.addErrorMessage("No Instance is Selected");
+            return null;
+        }
+        appointmentActivity = activity;
+        return "/channel/channel_session_activities?faces-redirect=true";
+    }
+
     public void fillBillSessions() {
         selectedBillSession = null;
         BillType[] billTypes = {
@@ -1695,20 +1874,38 @@ public class BookingController implements Serializable, ControllerWithPatient {
         long paidPatientCount = 0;
         long completedPatientCount = 0;
 
+        if (billSessions == null) {
+            selectedSessionInstance.setBookedPatientCount(0l);
+            selectedSessionInstance.setPaidPatientCount(0l);
+            selectedSessionInstance.setCompletedPatientCount(0l);
+            selectedSessionInstance.setRemainingPatientCount(0l);
+            sessionInstanceController.save(selectedSessionInstance);
+            return;
+        }
+
         // Loop through billSessions to calculate counts
         for (BillSession bs : billSessions) {
             if (bs != null) {
-                // Booked count increments for every BillSession instance
-                bookedPatientCount++;
+                bookedPatientCount++; // Always increment if bs is not null
 
-                // Check if the bill session is completed
-                if (bs.isCompleted()) {
-                    completedPatientCount++;
+                // Additional check for completion status
+                try {
+                    if (bs.isCompleted()) {
+                        completedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+                    System.out.println("Null pointer encountered in isCompleted check for BillSession: " + bs);
                 }
 
-                // Check if the bill session is paid
-                if (bs.getPaidBillSession() != null) {
-                    paidPatientCount++;
+                // Additional check for paid status
+                try {
+                    if (bs.getPaidBillSession() != null) {
+                        paidPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+                    System.out.println("Null pointer encountered in getPaidBillSession check for BillSession: " + bs);
                 }
             }
         }
@@ -2993,11 +3190,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String changePatient() {
-        if(selectedBillSession==null){
+        if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("No Session Selected");
             return null;
         }
-        if(patient==null){
+        if (patient == null) {
             JsfUtil.addErrorMessage("No Session Selected");
             return null;
         }
@@ -3006,7 +3203,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Patient Changed");
         return navigateToManageBooking();
     }
-    
+
     public void changeListener() {
         getSelectedSessionInstance().getOriginatingSession().setTotalFee(0.0);
         getSelectedSessionInstance().getOriginatingSession().setTotalFfee(0.0);
@@ -3096,6 +3293,22 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setFeeTotalForSelectedBill(Double feeTotalForSelectedBill) {
         this.feeTotalForSelectedBill = feeTotalForSelectedBill;
+    }
+
+    public List<AppointmentActivity> getSelectedAppointmentActivities() {
+        return selectedAppointmentActivities;
+    }
+
+    public void setSelectedAppointmentActivities(List<AppointmentActivity> selectedAppointmentActivities) {
+        this.selectedAppointmentActivities = selectedAppointmentActivities;
+    }
+
+    public AppointmentActivity getAppointmentActivity() {
+        return appointmentActivity;
+    }
+
+    public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
+        this.appointmentActivity = appointmentActivity;
     }
 
 }
