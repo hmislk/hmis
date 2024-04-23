@@ -63,17 +63,16 @@
                                                 <p:column>
                                                     #{ix.total}
                                                 </p:column>
-
+                                                <p:ajax event="itemSelect" process="acIx" ></p:ajax>
                                             </p:autoComplete>
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
+                                                process="acIx btnAddIx"
+                                                update="tblBillItem pBillDetails pIxAdd"
                                                 icon="fa fa-plus"
                                                 class=" mx-1 ui-button-success my-2"
                                                 action="#{billPackageController.addToBill()}" >
-                                                <f:ajax 
-                                                    execute="acIx btnAddIx" 
-                                                    render="focusIx tblBillItem pBillDetails pIxAdd" />
                                             </p:commandButton>
                                         </p:panel>
                                     </div>
@@ -543,7 +542,7 @@
                                 <p:commandButton value="Print Without Totals" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview1" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton value="New Lab Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
+                                <p:commandButton value="New Lab Bill" ajax="false" action="/opd/opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billPackageController.cancellAll}"/>
                                 <h:panelGroup id="gpBillPreview">
