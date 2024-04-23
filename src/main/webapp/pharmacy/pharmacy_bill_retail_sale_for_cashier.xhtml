@@ -142,7 +142,7 @@
                                                         accesskey="a" id="btnAdd" value="Add" 
                                                         icon="fa fa-plus"
                                                         class="w-100 ui-button-success"
-                                                        action="#{pharmacySaleController.addBillItemNew()}" 
+                                                        action="#{pharmacySaleController.addBillItem()}" 
                                                         process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
                                                         update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('det',view).clientId} :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" >
                                                     </p:commandButton>
@@ -564,29 +564,61 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                         <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol" class="w-100 h5" >
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel id="total" value="#{pharmacySaleController.preBill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                        <h:outputLabel id="dis" value="#{pharmacySaleController.preBill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel id="netTotal" value="#{pharmacySaleController.preBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel  value="Tendered" ></h:outputLabel>
-                                        <p:inputText accesskey="t" autocomplete="off" id="paid" value="#{pharmacySaleController.cashPaid}" >
-                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
-                                        </p:inputText>
-                                        <h:outputLabel  value="Balance " ></h:outputLabel>
-                                        <h:outputLabel id="balance" value="#{pharmacySaleController.balance}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </h:panelGrid>
+                                    <div class="row h5">
+                                        <div class="col-6">
+                                            <h:outputLabel value="Total" ></h:outputLabel>
+                                        </div>
+                                        <div class="col-6">
+                                            <h:outputLabel id="total" value="#{pharmacySaleController.preBill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+                                    <div class="row h5">
+                                        <div class="col-6">
+                                            <h:outputLabel value="Discount" ></h:outputLabel>
+                                        </div>
+                                        <div class="col-6">
+                                            <h:outputLabel id="dis" value="#{pharmacySaleController.preBill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                                <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+                                    <div class="row h5">
+                                        <div class="col-6">
+                                            <h:outputLabel value="Net Total" ></h:outputLabel>
+                                        </div>
+                                        <div class="col-6">
+                                            <h:outputLabel id="netTotal" value="#{pharmacySaleController.preBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier')}" class="w-100">
+                                        <div class="row h5">
+                                            <div class="col-6">
+                                                <h:outputLabel  value="Tendered" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-6">
+                                                <p:inputText accesskey="t" autocomplete="off" id="paid" value="#{pharmacySaleController.cashPaid}">
+                                                    <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                        <div class="row h5">
+                                            <div class="col-6">
+                                                <h:outputLabel  value="Balance " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-6">
+                                                <h:outputLabel id="balance" value="#{pharmacySaleController.balance}" style=" my-2">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+
                                 </p:panel>
                             </div>
                         </div>
@@ -631,7 +663,7 @@
                                     action="#" >
                                     <p:printer target="TokenPreview" ></p:printer>
                                 </p:commandButton>
-                                
+
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                 <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
                                     <f:selectItem itemLabel="Please Select Paper Type" />
@@ -649,7 +681,7 @@
                                     action="#{tokenController.navigateToManagePharmacyTokens()}" >
                                 </p:commandButton>
 
-                                
+
                             </div>
                         </div>
 
@@ -669,18 +701,18 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
-                            
+
                         </h:panelGroup>
 
                         <h:panelGroup   id="gpBillPreview"> 
 
-<!--                            <h:panelGroup   id="gpBillPreviewSingle">
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>-->
+                            <!--                            <h:panelGroup   id="gpBillPreviewSingle">
+                                                            <div >
+                                                                <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                                                    <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                        </h:panelGroup>-->
 
                             <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                 <div >
