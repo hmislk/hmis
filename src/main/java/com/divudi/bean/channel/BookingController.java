@@ -286,6 +286,36 @@ public class BookingController implements Serializable, ControllerWithPatient {
             }
         }
     }
+    
+    public void reopenSessionInstance() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        selectedSessionInstance.setStarted(false);
+        selectedSessionInstance.setStartedAt(new Date());
+        selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
+        sessionInstanceController.save(selectedSessionInstance);
+        JsfUtil.addSuccessMessage("Session Re-Started");
+        for (BillSession bs : billSessions) {
+            if (!bs.isCompleted()) {
+                bs.setNextInLine(true);
+                billSessionFacade.edit(bs);
+                selectedSessionInstance.setNextInLineBillSession(bs);
+                sessionInstanceFacade.edit(selectedSessionInstance);
+                return;
+            }
+        }
+    }
+    
+    public void reloadSessionInstance() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        fillBillSessions();
+        fillSessionActivities();
+    }
 
     public void markSessionInstanceAsCompleted() {
         if (selectedSessionInstance == null) {
