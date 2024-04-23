@@ -85,16 +85,21 @@ public class NotificationController implements Serializable {
     }
 
     public void createNotification(Bill bill) {
+        System.out.println("createNotification");
         if (bill == null) {
             return;
         }
+        System.out.println("bill = " + bill.getBillTypeAtomic());
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
+             case INWARD_PHARMACY_REQUEST:
+                 createInwardBHTIssueFromPharmacyRequestNotifications(bill);
+                break;
             case PHARMACY_TRANSFER_REQUEST:
                 createPharmacyTransferRequestNotifications(bill);
                 break;
             case PHARMACY_ORDER:
-                createPharmacyReuestForInpatients(bill);
+                createPharmacyOrderRequest(bill);
                 break;
             case OPD_BILL_CANCELLATION:
                 createOpdBillCancellationNotification(bill);
@@ -108,11 +113,14 @@ public class NotificationController implements Serializable {
             case PHARMACY_DIRECT_ISSUE:
                 createPharmacyDirectIssueNotifications(bill);
                 break;
+            case PHARMACY_ORDER_APPROVAL:
+                createPharmacyPurcheseOrderApprovelNotifications(bill);
+                break;
             default:
                 throw new AssertionError();
         }
     }
-
+    
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
@@ -126,10 +134,38 @@ public class NotificationController implements Serializable {
             userNotificationController.createUserNotifications(nn);
         }
     }
-    
+
+    private void createInwardBHTIssueFromPharmacyRequestNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INPATIENT_ORDER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
     private void createPharmacyDirectIssueNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_ISSUE)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+    
+    private void createPharmacyPurcheseOrderApprovelNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.PURCHASE_ORDER_APPROVAL)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setBill(bill);
@@ -325,9 +361,9 @@ public class NotificationController implements Serializable {
         }
     }
 
-    private void createPharmacyReuestForInpatients(Bill bill) {
+    private void createPharmacyOrderRequest(Bill bill) {
         Date date = new Date();
-        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INPATIENT_ORDER_REQUEST)) {
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.PURCHASE_ORDER_REQUEST)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setBill(bill);
@@ -336,6 +372,7 @@ public class NotificationController implements Serializable {
             nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
+            System.out.println("Created Notification");
         }
     }
 
