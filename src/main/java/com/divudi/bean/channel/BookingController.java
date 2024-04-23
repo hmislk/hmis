@@ -1707,10 +1707,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         billSessionFacade.edit(currentSession);
 
         selectedSessionInstance.setCurrentlyConsultingBillSession(currentSession);
-        if (selectedSessionInstance.getNextInLineBillSession().equals(currentSession)) {
+        if (selectedSessionInstance.getNextInLineBillSession() != null && selectedSessionInstance.getNextInLineBillSession().equals(currentSession)) {
             selectedSessionInstance.setNextInLineBillSession(null);
         }
-        if (selectedSessionInstance.getLastCompletedBillSession().equals(currentSession)) {
+        if (selectedSessionInstance.getLastCompletedBillSession() != null && selectedSessionInstance.getLastCompletedBillSession().equals(currentSession)) {
             selectedSessionInstance.setLastCompletedBillSession(null);
         }
         sessionInstanceFacade.edit(selectedSessionInstance);
@@ -1725,10 +1725,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         billSessionFacade.edit(lastCompletedSession);
 
         selectedSessionInstance.setLastCompletedBillSession(lastCompletedSession);
-        if (selectedSessionInstance.getCurrentlyConsultingBillSession().equals(lastCompletedSession)) {
+        if (selectedSessionInstance.getCurrentlyConsultingBillSession() != null && selectedSessionInstance.getCurrentlyConsultingBillSession().equals(lastCompletedSession)) {
             selectedSessionInstance.setCurrentlyConsultingBillSession(null);
         }
-        if (selectedSessionInstance.getNextInLineBillSession().equals(lastCompletedSession)) {
+        if (selectedSessionInstance.getNextInLineBillSession() != null && selectedSessionInstance.getNextInLineBillSession().equals(lastCompletedSession)) {
             selectedSessionInstance.setNextInLineBillSession(null);
         }
         sessionInstanceFacade.edit(selectedSessionInstance);
@@ -1743,10 +1743,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         billSessionFacade.edit(nextInLineSession);
 
         selectedSessionInstance.setNextInLineBillSession(nextInLineSession);
-        if (selectedSessionInstance.getCurrentlyConsultingBillSession().equals(nextInLineSession)) {
+        if (selectedSessionInstance.getCurrentlyConsultingBillSession() != null && selectedSessionInstance.getCurrentlyConsultingBillSession().equals(nextInLineSession)) {
             selectedSessionInstance.setCurrentlyConsultingBillSession(null);
         }
-        if (selectedSessionInstance.getLastCompletedBillSession().equals(nextInLineSession)) {
+        if (selectedSessionInstance.getLastCompletedBillSession() != null && selectedSessionInstance.getLastCompletedBillSession().equals(nextInLineSession)) {
             selectedSessionInstance.setLastCompletedBillSession(null);
         }
         sessionInstanceFacade.edit(selectedSessionInstance);
