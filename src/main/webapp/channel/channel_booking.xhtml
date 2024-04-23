@@ -27,8 +27,8 @@
                 }
             </style>
 
-                <p:panel class="my-2">
-                    <f:facet name="header">
+            <p:panel class="my-2">
+                <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
@@ -141,7 +141,7 @@
                                 itemValue="#{ses}"
                                 itemLabel="#{ses.name}">
                             </f:selectItems>
-                            
+
                             <p:column headerText="Name">
                                 <f:facet name="header" >
                                     <h:outputText value="Name" ></h:outputText>
@@ -229,6 +229,15 @@
 
                             <p:column style="width: 10px!important;">
                                 <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                            </p:column>
+
+                            <p:column style="width: 10px!important;">
+                                <h:panelGroup rendered="#{bs.markedToCancel}">
+                                    <i class="fas fa-ban text-danger"></i>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bs.markedToRefund}">
+                                    <i class="fas fa-undo-alt  text-danger"></i>
+                                </h:panelGroup>
                             </p:column>
 
                         </p:selectOneListbox>
