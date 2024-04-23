@@ -1883,7 +1883,7 @@ public class ChannelBillController implements Serializable {
         bill.setDeptId(deptId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
-            bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
+//            bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
             bill.setPaidAmount(getAmount());
             bill.setPaidAt(new Date());
         }
