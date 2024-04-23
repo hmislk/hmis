@@ -124,8 +124,8 @@
                                 <h:panelGrid columns="1">
                                     <p:commandButton 
                                         id="btnCallNextToCurrent"
-                                        value="Call Next to Current" 
-                                        action="#{bookingController.callNextSessionToCurrent}"
+                                        value="Start First" 
+                                        action="#{bookingController.startFirstSession}"
                                         icon="pi pi-step-forward"
                                         styleClass="ui-button-info w-100"
                                         process="@this"
@@ -142,14 +142,47 @@
                                         update="panelSessionDetails lstBookings"
                                         ajax="true" />
 
-                                    <p:commandButton value="Reverse &amp; Previous" 
-                                                     actionListener="#{bookingController.reverseCurrentCompleteAndCallPrevious}"
-                                                     icon="pi pi-undo" styleClass="ui-button-warning w-100 my-2"
-                                                     update="panelSessionDetails lstBookings" ajax="true" />
+                                    <p:commandButton 
+                                        value="Reverse &amp; Previous" 
+                                        actionListener="#{bookingController.reverseCurrentCompleteAndCallPrevious}"
+                                        icon="pi pi-undo" styleClass="ui-button-warning w-100 my-2"
+                                        update="panelSessionDetails lstBookings" ajax="true" />
 
-                                    <p:commandButton value="Reset &amp; Set Current" actionListener="#{bookingController.resetAndSetSelectedAsCurrentlyConsulted}"
-                                                     icon="pi pi-refresh" styleClass="ui-button-info w-100 my-2"
-                                                     update="panelSessionDetails lstBookings" ajax="true" />
+                                    <p:commandButton 
+                                        id="btnMarkLastCompleted"
+                                        value="Mark Last Completed" 
+                                        action="#{bookingController.markSelectedAsLastCompleted}"
+                                        icon="pi pi-flag" 
+                                        styleClass="ui-button-info w-100 my-2"
+                                        process="@this"
+                                        update="panelSessionDetails lstBookings"
+                                        ajax="true" />
+
+                                    <p:commandButton 
+                                        id="btnMarkNextInLine"
+                                        value="Mark Next In Line" 
+                                        action="#{bookingController.markSelectedAsNextInLine}"
+                                        icon="pi pi-forward" 
+                                        styleClass="ui-button-info w-100 my-2"
+                                        process="@this"
+                                        update="panelSessionDetails lstBookings"
+                                        ajax="true" />
+
+                                    <p:commandButton 
+                                        id="btnSetCurrentSession"
+                                        value="Set as Current Session" 
+                                        action="#{bookingController.markSelectedAsCurrentSession}"
+                                        icon="pi pi-user-edit" 
+                                        styleClass="ui-button-info w-100 my-2"
+                                        process="@this"
+                                        update="panelSessionDetails lstBookings"
+                                        ajax="true" />
+
+                                    <p:commandButton 
+                                        value="Reset &amp; Set Current" 
+                                        actionListener="#{bookingController.resetAndSetSelectedAsCurrentlyConsulted}"
+                                        icon="pi pi-refresh" styleClass="ui-button-info w-100 my-2"
+                                        update="panelSessionDetails lstBookings" ajax="true" />
                                 </h:panelGrid>
                             </div>
                             <div class="col-8" >
