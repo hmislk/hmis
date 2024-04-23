@@ -292,7 +292,7 @@ public class TransferRequestController implements Serializable {
         getBillFacade().edit(getBill());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
         printPreview = true;
-        notificationController.createNotification(bill);
+        notificationController.createNotification(getBill());
 
         
 
