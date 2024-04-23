@@ -292,9 +292,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No session selected");
             return;
         }
-        selectedSessionInstance.setStarted(false);
-        selectedSessionInstance.setStartedAt(new Date());
-        selectedSessionInstance.setStartedBy(sessionController.getLoggedUser());
+        selectedSessionInstance.setCompleted(false);
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Re-Started");
         for (BillSession bs : billSessions) {

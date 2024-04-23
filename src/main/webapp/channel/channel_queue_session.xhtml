@@ -62,7 +62,7 @@
                                              styleClass="ui-button-warning mx-1" 
                                              action="#{bookingController.reopenSessionInstance()}"
                                              oncomplete="PF('reopenSessionWarn').show()" 
-                                             disabled="#{bookingController.selectedSessionInstance.completed eq true}" />
+                                             disabled="#{bookingController.selectedSessionInstance.completed ne true}" />
 
                             <!-- Reload Session Button -->
                             <p:commandButton ajax="false" 
@@ -72,6 +72,10 @@
                                              action="#{bookingController.reloadSessionInstance()}"
                                              oncomplete="PF('reloadSessionWarn').show()" 
                                              disabled="#{bookingController.selectedSessionInstance == null}" />
+                        
+                        Started : #{bookingController.selectedSessionInstance.started} <br/>
+                        Completed : #{bookingController.selectedSessionInstance.completed}
+                        
                         </div>
                     </div>
                 </f:facet>
