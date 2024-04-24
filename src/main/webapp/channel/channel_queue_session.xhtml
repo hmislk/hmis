@@ -54,6 +54,25 @@
                                              icon="fa fa-calendar-alt" 
                                              styleClass="ui-button-info mx-1" 
                                              action="#{bookingController.navigateToChannelQueueFromConsultantRoom()}" />
+
+                            <!-- Reopen Session Button -->
+                            <p:commandButton ajax="false" 
+                                             value="Reopen Session" 
+                                             icon="fa fa-undo" 
+                                             styleClass="ui-button-warning mx-1" 
+                                             action="#{bookingController.reopenSessionInstance()}"
+                                             oncomplete="PF('reopenSessionWarn').show()" 
+                                             disabled="#{bookingController.selectedSessionInstance.completed ne true}" />
+
+                            <!-- Reload Session Button -->
+                            <p:commandButton ajax="false" 
+                                             value="Reload Session" 
+                                             icon="fa fa-sync-alt" 
+                                             styleClass="ui-button-secondary mx-1" 
+                                             action="#{bookingController.reloadSessionInstance()}"
+                                             oncomplete="PF('reloadSessionWarn').show()" 
+                                             disabled="#{bookingController.selectedSessionInstance == null}" />
+                        
                         </div>
                     </div>
                 </f:facet>
@@ -340,6 +359,7 @@
                                                 </div>
                                                 <div class="col-7">
                                                     <div class="d-flex justify-content-between">
+
                                                         <p:commandButton 
                                                             value="Mark"
                                                             ajax="false"
@@ -370,8 +390,10 @@
                         </h:panelGroup>
 
 
+
                     </div>
                 </div>
+
             </p:panel>
         </h:form>
         <script type="text/javascript">
