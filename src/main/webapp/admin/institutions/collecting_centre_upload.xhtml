@@ -9,146 +9,202 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="admin">
 
-        <div class="container-fluid" >
-            <div class="card" >
-                <div class="card-header" >
-                    <h2>Upload Credit Company</h2>
-                </div>
-                <div class="card-body" >
-                    <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadController.file}"
-                                      mode="simple"
-                                      label="Choose File"/>
-                        <p:commandButton value="Upload"
-                                         icon="fas fa-upload"
-                                         class="ui-button-success"
-                                         action="#{dataUploadController.uploadCollectingCentres()}"
-                                         ajax="false"/>
-                        <p:commandButton value="Download Template" 
-                                         ajax="false" 
-                                         icon="fas fa-download"
-                                         class="ui-button-warning mx-2"
-                                         onclick="PrimeFaces.monitorDownload(start, stop);" >
-                            <p:fileDownload value="#{dataUploadController.templateForCollectingCentreUpload}" />
-                        </p:commandButton>
+        <h:panelGroup rendered="#{!adjustmentCategoryControllerdataUploadController.uploadComplete}" >
+            <div class="container-fluid" >
+                <div class="card" >
+                    <div class="card-header" >
+                        <h2>Upload Collecting Centres</h2>
+                    </div>
+                    <div class="card-body" >
+                        <h:form enctype="multipart/form-data">
+                            <p:fileUpload value="#{dataUploadController.file}"
+                                          mode="simple"
+                                          label="Choose File"/>
+                            <p:commandButton value="Upload"
+                                             icon="fas fa-upload"
+                                             class="ui-button-success"
+                                             action="#{dataUploadController.uploadCollectingCentres()}"
+                                             ajax="false"/>
+                            <p:commandButton value="Download Template" 
+                                             ajax="false" 
+                                             icon="fas fa-download"
+                                             class="ui-button-warning mx-2"
+                                             onclick="PrimeFaces.monitorDownload(start, stop);" >
+                                <p:fileDownload value="#{dataUploadController.templateForCollectingCentreUpload}" />
+                            </p:commandButton>
 
-                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
-                        </p:dialog>
-                        <script type="text/javascript">
-                            function start() {
-                                PF('statusDialog').show();
-                            }
+                            <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                            </p:dialog>
+                            <script type="text/javascript">
+                                function start() {
+                                    PF('statusDialog').show();
+                                }
 
-                            function stop() {
-                                PF('statusDialog').hide();
-                            }
-                        </script>
+                                function stop() {
+                                    PF('statusDialog').hide();
+                                }
+                            </script>
 
-                    </h:form>
+                        </h:form>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Column</th>
-                                <th>Title</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>A</td>
-                                <td>Code</td>
-                                <td>Code. Required</td>
-                            </tr>
-                            <tr>
-                                <td>B</td>
-                                <td>Agent Name</td>
-                                <td>Agent Name. Required</td>
-                            </tr>
-                            <tr>
-                                <td>C</td>
-                                <td>Agent Printing Name</td>
-                                <td>Agent Printing Name. Optional</td>
-                            </tr>
-                            <tr>
-                                <td>D</td>
-                                <td>Active</td>
-                                <td>True or False</td>
-                            </tr>
-                            <tr>
-                                <td>E</td>
-                                <td>With Commission Status</td>
-                                <td>True or False</td>
-                            </tr>
-                            <tr>
-                                <td>F</td>
-                                <td>Route Name</td>
-                                <td>Route Name. Required</td>
-                            </tr>
-                            <tr>
-                                <td>G</td>
-                                <td>Percentage</td>
-                                <td>Percentage. Optional</td>
-                            </tr>
-                            <tr>
-                                <td>H</td>
-                                <td>Agent Contact No</td>
-                                <td>Agent Contact No. Optional</td>
-                            </tr>
-                            <tr>
-                                <td>I</td>
-                                <td>Email Address</td>
-                                <td>Email Address. Optional</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>J</td>
-                                <td>Owner Name</td>
-                                <td>Owner Name. Optional</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>K</td>
-                                <td>Agent Address</td>
-                                <td>Agent Address. Optional</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>L</td>
-                                <td>Standard Credit Limit</td>
-                                <td>Standard Credit Limit. Optional</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>M</td>
-                                <td>Allowed Credit Limit</td>
-                                <td>Allowed Credit Limit. Optional</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>N</td>
-                                <td>Max Credit Limit</td>
-                                <td>Max Credit Limit. Optional</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A</td>
+                                    <td>Code</td>
+                                    <td>Code. Required</td>
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td>Agent Name</td>
+                                    <td>Agent Name. Required</td>
+                                </tr>
+                                <tr>
+                                    <td>C</td>
+                                    <td>Agent Printing Name</td>
+                                    <td>Agent Printing Name. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>D</td>
+                                    <td>Active</td>
+                                    <td>True or False</td>
+                                </tr>
+                                <tr>
+                                    <td>E</td>
+                                    <td>With Commission Status</td>
+                                    <td>True or False</td>
+                                </tr>
+                                <tr>
+                                    <td>F</td>
+                                    <td>Route Name</td>
+                                    <td>Route Name. Required</td>
+                                </tr>
+                                <tr>
+                                    <td>G</td>
+                                    <td>Percentage</td>
+                                    <td>Percentage. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>H</td>
+                                    <td>Agent Contact No</td>
+                                    <td>Agent Contact No. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>I</td>
+                                    <td>Email Address</td>
+                                    <td>Email Address. Optional</td>
+                                </tr>
+
+                                <tr>
+                                    <td>J</td>
+                                    <td>Owner Name</td>
+                                    <td>Owner Name. Optional</td>
+                                </tr>
+
+                                <tr>
+                                    <td>K</td>
+                                    <td>Agent Address</td>
+                                    <td>Agent Address. Optional</td>
+                                </tr>
+
+                                <tr>
+                                    <td>L</td>
+                                    <td>Standard Credit Limit</td>
+                                    <td>Standard Credit Limit. Optional</td>
+                                </tr>
+
+                                <tr>
+                                    <td>M</td>
+                                    <td>Allowed Credit Limit</td>
+                                    <td>Allowed Credit Limit. Optional</td>
+                                </tr>
+
+                                <tr>
+                                    <td>N</td>
+                                    <td>Max Credit Limit</td>
+                                    <td>Max Credit Limit. Optional</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <p:poll update="tbl"></p:poll>
+            <p:poll update="tbl"></p:poll>
+        </h:panelGroup>
 
-        <p:dataTable id="tbl" 
-                     value="#{dataUploadController.collectingCentres}" var="colcen" >
-            <p:column >
-                <h:outputText value="#{colcen.name}" ></h:outputText>
-            </p:column>
-            <p:column >
-               
-            </p:column>
+        <h:panelGroup rendered="#{adjustmentCategoryControllerdataUploadController.uploadComplete}" >
 
-        </p:dataTable>
+            <p:dataTable id="tbl"
+                         value="#{dataUploadController.collectingCentres}"
+                         var="collectincentre"
+                         paginator="true"
+                         rows="10"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15">
+                <f:facet name="header" class="p-1" >
+                    <p:outputLabel value="Uploded More Collecting Centres" ></p:outputLabel>
+                    <p:commandButton
+                        style="float: right;" 
+                        class="m-1"
+                        ajax="false" 
+                        value="To Upload More Collecting Centres"
+                        icon="fas fa-upload" action="#{dataUploadController.navigateToCollectingCenterUpload()}" />
+                </f:facet>
 
+                <p:column headerText="Code">
+                    <h:outputText value="#{collectincentre.code}" />
+                </p:column>
+                <p:column headerText="Name">
+                    <h:outputText value="#{collectincentre.name}" />
+                </p:column>
+                <p:column headerText="Printing Name">
+                    <h:outputText value="#{collectincentre.chequePrintingName}" />
+                </p:column>
+                <p:column headerText="Active">
+                    <h:outputText value="#{collectincentre.inactive ? 'No' : 'Yes'}" />
+                </p:column>
+                <p:column headerText="Commission Status">
+                    <h:outputText value="#{collectincentre.collectingCentrePaymentMethod}" />
+                </p:column>
+                <p:column headerText="Route">
+                    <h:outputText value="#{collectincentre.route.name}" />
+                </p:column>
+                <p:column headerText="Percentage">
+                    <h:outputText value="#{collectincentre.percentage}" />
+                </p:column>
+                <p:column headerText="Phone">
+                    <h:outputText value="#{collectincentre.phone}" />
+                </p:column>
+                <p:column headerText="Email">
+                    <h:outputText value="#{collectincentre.email}" />
+                </p:column>
+                <p:column headerText="Owner Name">
+                    <h:outputText value="#{collectincentre.ownerName}" />
+                </p:column>
+                <p:column headerText="Address">
+                    <h:outputText value="#{collectincentre.address}" />
+                </p:column>
+                <p:column headerText="Standard Credit Limit">
+                    <h:outputText value="#{collectincentre.allowedCredit}" />
+                </p:column>
+                <p:column headerText="Allowed Credit Limit">
+                    <h:outputText value="#{collectincentre.allowedCreditLimit}" />
+                </p:column>
+                <p:column headerText="Max Credit Limit">
+                    <h:outputText value="#{collectincentre.maxCreditLimit}" />
+                </p:column>
+            </p:dataTable>
+
+
+        </h:panelGroup>
 
 
     </ui:define>
