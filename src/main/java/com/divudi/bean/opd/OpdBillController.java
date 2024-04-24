@@ -177,10 +177,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     WorkingTimeController workingTimeController;
     @Inject
     FinancialTransactionController financialTransactionController;
-    
+
     @Inject
     OpdTokenController opdTokenController;
-            
+
     /**
      * Class Variables
      */
@@ -368,7 +368,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 searchKeyword,
                 getFromDate(),
                 getToDate());
-        
+
     }
 
     @Deprecated
@@ -1027,7 +1027,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        
     }
 
     public void onLineSettleBills() {
@@ -1061,7 +1060,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        
     }
 
     public void getPharmacySaleBills() {
@@ -1109,7 +1107,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             grosTotal = r.getGrossTotal();
         }
 
-        
     }
 
     public Double getGrosTotal() {
@@ -1131,7 +1128,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        
+
     }
 
     public void getPharmacyBills() {
@@ -1144,7 +1141,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        
+
     }
 
     public void getPharmacyBillsBilled() {
@@ -1157,7 +1154,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        
+
     }
 
     public void getPharmacyWholeBills() {
@@ -1170,7 +1167,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        
+
     }
 
     public BillEjb getBillEjb() {
@@ -1620,7 +1617,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         duplicatePrint = false;
         return true;
     }
-    
+
     public void markToken(Bill b) {
         Token t = getToken();
         if (t == null) {
@@ -1633,7 +1630,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         t.setCompleted(false);
         opdTokenController.saveToken(t);
     }
-
 
     public boolean checkBillValues(Bill b) {
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -1781,8 +1777,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private Bill saveBill(Department bt, Bill newBill) {
         newBill.setBillType(BillType.OpdBill);
         newBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-
-//        newBill.setCategory(cat);
         newBill.setDepartment(getSessionController().getDepartment());
         newBill.setInstitution(getSessionController().getInstitution());
         newBill.setToDepartment(bt);
@@ -1847,8 +1841,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment(), newBill.getCategory(), newBill.getFromStaff()));
                 break;
         }
-        
-        
 
         if (newBill.getId() == null) {
             getFacade().create(newBill);
@@ -2657,7 +2649,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return "/opd/opd_bill?faces-redirect=true";
         }
     }
-    
+
     public String navigateToNewOpdBillFromToken() {
         Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
         if (opdBillingAfterShiftStart) {

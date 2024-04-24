@@ -340,7 +340,6 @@ public class BillNumberGenerator {
         return intToString((int) pts, 6);
     }
 
-   
     public String bookingIdGenerator(Institution institution, Bill bill) {
         BillType[] billTypes = BillType.ChannelCashFlow.allChildren();
         List<BillType> bts = Arrays.asList(billTypes);
@@ -375,7 +374,7 @@ public class BillNumberGenerator {
 
     }
 
-    public synchronized  String institutionBillNumberGenerator(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+    public synchronized String institutionBillNumberGenerator(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         BillNumber billNumber = fetchLastBillNumber(institution, toDepartment, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
@@ -409,13 +408,14 @@ public class BillNumberGenerator {
             result.append(billNumberSuffix);
         }
         result.append("/");
-        result.append(++b);
+        b++;
+        result.append(b);
         billNumber.setLastBillNumber(b);
-        billNumberFacade.edit(billNumber);
+        billNumberFacade.editAndFlush(billNumber);
         return result.toString();
     }
 
-    public synchronized  String institutionBillNumberGenerator(Institution institution, List<BillType> billTypes, BillClassType billClassType, String suffix) {
+    public synchronized String institutionBillNumberGenerator(Institution institution, List<BillType> billTypes, BillClassType billClassType, String suffix) {
         BillNumber billNumber = fetchLastBillNumber(institution, billTypes, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
@@ -491,8 +491,6 @@ public class BillNumberGenerator {
 
     }
 
-
-
     private BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
@@ -506,7 +504,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("dep", department);
         hm.put("tDep", toDepartment);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -541,17 +539,13 @@ public class BillNumberGenerator {
                     hm.put("class", PreBill.class);
                     break;
             }
-
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-
             if (dd == null) {
                 dd = 0l;
             }
-
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.create(billNumber);
+            billNumberFacade.createAndFlush(billNumber);
         }
-
         return billNumber;
 
     }
@@ -587,8 +581,8 @@ public class BillNumberGenerator {
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
-    
-     public String generateDailyTokenNumberCounterWise(Department department, Department counter,Category cat, Staff staff, TokenType tokenType) {
+
+    public String generateDailyTokenNumberCounterWise(Department department, Department counter, Category cat, Staff staff, TokenType tokenType) {
         String sql = "SELECT count(b) "
                 + " FROM Token b "
                 + " where b.tokenType=:tt "
@@ -599,7 +593,7 @@ public class BillNumberGenerator {
             sql += " and b.department=:dep ";
             hm.put("dep", department);
         }
-        
+
         if (counter != null) {
             sql += " and b.counter=:cun ";
             hm.put("cun", counter);
@@ -625,7 +619,6 @@ public class BillNumberGenerator {
         }
         return (dd != null) ? String.valueOf(dd) : "0";
     }
-    
 
     public String generateDailyTokenNumber(Department department, Category cat, Staff staff, TokenType tokenType) {
         String sql = "SELECT count(b) "
@@ -697,9 +690,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("dep", department);
         BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
-//        //// // System.out.println("billNumber = " + billNumber);
-//        //// // System.out.println("billType = " + billType);
-        if (billNumber == null && billType == BillType.StoreOrderApprove) {
+        if (billNumber == null) {
             sql = "SELECT b FROM "
                     + " Bill b "
                     + " where b.retired=false "
@@ -712,9 +703,7 @@ public class BillNumberGenerator {
             hm.put("bcl", billClassType);
             hm.put("dep", department);
             Bill bill = billFacade.findFirstByJpql(sql, hm);
-
             if (bill != null) {
-                //// // System.out.println("bill.getInsId() = " + bill.getInsId());
                 String[] parts = bill.getDeptId().split("/");
                 billNumber = new BillNumber();
                 billNumber.setBillType(billType);
@@ -770,7 +759,7 @@ public class BillNumberGenerator {
 
     }
 
-    private BillNumber fetchLastBillNumber(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
+    private synchronized BillNumber fetchLastBillNumber(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
                 + " where b.retired=false "
@@ -783,15 +772,13 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         hm.put("tDep", toDepartment);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
-
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillType(billType);
             billNumber.setBillClassType(billClassType);
             billNumber.setInstitution(institution);
             billNumber.setToDepartment(toDepartment);
-
             sql = "SELECT count(b) FROM Bill b "
                     + " where b.billType=:bTp "
                     + " and b.retired=false"
@@ -817,20 +804,21 @@ public class BillNumberGenerator {
                     hm.put("class", PreBill.class);
                     break;
             }
-
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-
             if (dd == null) {
                 dd = 0l;
             }
-
             billNumber.setLastBillNumber(dd);
-
-            billNumberFacade.create(billNumber);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if(newBillNumberLong==null){
+                newBillNumberLong=0l;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
         }
-
         return billNumber;
-
     }
 
     private BillNumber fetchLastBillNumber(Institution institution, BillType billType, BillClassType billClassType) {
@@ -983,7 +971,6 @@ public class BillNumberGenerator {
 
     }
 
-    
     private BillNumber fetchLastBillNumber(Institution institution, List<BillType> billTypes, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
@@ -1121,10 +1108,11 @@ public class BillNumberGenerator {
         result.append(toDept.getDepartmentCode());
 
         result.append("/");
-        result.append(++dd);
+        dd++;
+        result.append(dd);
 
         billNumber.setLastBillNumber(dd);
-        billNumberFacade.edit(billNumber);
+        billNumberFacade.editAndFlush(billNumber);
 
         return result.toString();
     }
@@ -1147,7 +1135,7 @@ public class BillNumberGenerator {
 
         return result.toString();
     }
-    
+
     public synchronized String generateBillNumber(Institution institution, BillType billType, BillClassType billClassType) {
         String insCode = (institution == null) ? "" : institution.getCode();
         BillNumber billNumber = fetchLastBillNumber(institution, billType, billClassType);
