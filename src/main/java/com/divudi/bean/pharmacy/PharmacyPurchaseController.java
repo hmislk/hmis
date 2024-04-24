@@ -10,6 +10,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PharmacyStockRow;
@@ -624,8 +625,12 @@ public class PharmacyPurchaseController implements Serializable {
         getBill().setCreatedAt(new Date());
         getBill().setCreater(getSessionController().getLoggedUser());
 
-        getBillFacade().edit(getBill());
-
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }else{
+            getBillFacade().edit(getBill());
+        }
+        
     }
 
     public BillItem getBillItem(Item i) {
@@ -681,6 +686,7 @@ public class PharmacyPurchaseController implements Serializable {
         if (bill == null) {
             bill = new BilledBill();
             bill.setBillType(BillType.PharmacyPurchaseBill);
+            bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             bill.setReferenceInstitution(getSessionController().getInstitution());
         }
         return bill;
