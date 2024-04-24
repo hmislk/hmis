@@ -1870,6 +1870,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (sia == null) {
             return false;
         }
+
         if (sia.getActivityCompleted() == null) {
             return false;
         }
