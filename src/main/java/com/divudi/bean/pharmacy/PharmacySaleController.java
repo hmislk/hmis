@@ -940,6 +940,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             calculateRates(tbi);
 //            calculateBillItemForEditing(tbi);
         }
+        calculateTotals();
     }
 
     public void calculateRates(BillItem bi) {
@@ -1667,9 +1668,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
-
                     setZeroToQty(bi);
-                    onEditCalculation(bi);
+//                    onEditCalculation(bi);
                     JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
                     return;
                 }
