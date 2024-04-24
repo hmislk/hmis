@@ -144,6 +144,10 @@ public class PharmacyBillSearch implements Serializable {
     @Inject
     PharmacySaleController pharmacySaleController;
     
+    public String navigatePharmacyReprintPo(){
+        return "pharmacy_reprint_po?faces-redirect=true";
+    }
+    
     public String cancelInwardPharmacyRequestBill(){
         if (bill==null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
@@ -155,6 +159,19 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
+    }
+    
+    public String cancelPharmacyTransferRequestBill(){
+        if (bill==null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        CancelledBill cb=pharmacyCreateCancelBill();
+        cb.setBillItems(getBill().getBillItems());
+        bill.setCancelled(true);
+        bill.setCancelledBill(cb);
+        billFacade.edit(bill);
+        return "/pharmacy/pharmacy_search?faces-redirect=true";
     }
 
     public void markAsChecked() {

@@ -287,6 +287,34 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public void reopenSessionInstance() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        selectedSessionInstance.setCompleted(false);
+        sessionInstanceController.save(selectedSessionInstance);
+        JsfUtil.addSuccessMessage("Session Re-Started");
+        for (BillSession bs : billSessions) {
+            if (!bs.isCompleted()) {
+                bs.setNextInLine(true);
+                billSessionFacade.edit(bs);
+                selectedSessionInstance.setNextInLineBillSession(bs);
+                sessionInstanceFacade.edit(selectedSessionInstance);
+                return;
+            }
+        }
+    }
+
+    public void reloadSessionInstance() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        fillBillSessions();
+        fillSessionActivities();
+    }
+
     public void markSessionInstanceAsCompleted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
@@ -471,7 +499,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fillSessionActivities();
         return "/channel/channel_queue_session?faces-redirect=true";
     }
-    
+
     public String navigateBackToManageSessionQueueAtConsultantRoom() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
@@ -1474,14 +1502,80 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fpFacade.edit(arrivalRecord);
     }
 
+    public void markToCancel() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (Boolean.TRUE.equals(selectedBillSession.getMarkedToRefund())) {
+            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            return;
+        }
+        selectedBillSession.setMarkedToCancel(true);
+        selectedBillSession.setMarkedToCancelAt(new Date());
+        selectedBillSession.setMarkedToCancelBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Cancelled");
+    }
+
+    public void markToCancelReversed() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (Boolean.TRUE.equals(selectedBillSession.getMarkedToCancel())) {
+            JsfUtil.addErrorMessage("Not a session marked as cancelled. Can not reverse.");
+            return;
+        }
+
+        selectedBillSession.setMarkedToCancel(false);
+        selectedBillSession.setMarkedToCancelAt(new Date());
+        selectedBillSession.setMarkedToCancelBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Cancelle Reversed");
+    }
+
+    public void markToRefund() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to refund");
+            return;
+        }
+        if (Boolean.TRUE.equals(selectedBillSession.getMarkedToCancel())) {
+            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            return;
+        }
+
+        selectedBillSession.setMarkedToRefund(true);
+        selectedBillSession.setMarkedToRefundAt(new Date());
+        selectedBillSession.setMarkedToRefundBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Refund");
+    }
+
+    public void markToRefundReversed() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (Boolean.TRUE.equals(selectedBillSession.getMarkedToRefund())) {
+            JsfUtil.addErrorMessage("Is not a session marked as to refund. Can not reverse.");
+            return;
+        }
+        selectedBillSession.setMarkedToRefund(false);
+        selectedBillSession.setMarkedToRefundAt(new Date());
+        selectedBillSession.setMarkedToRefundBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Refund was reversed.");
+    }
+
     public void markCurrentCompleteAndCallNext() {
         BillSession lastCompletedSession = null;
         BillSession currentSession = null;
         BillSession nextSession = null;
 
         // Iterate through the billSessions list
-        for (int i = 0; i < billSessions.size(); i++) {
-            BillSession bs = billSessions.get(i);
+        for (int i = 0; i < getValidBillSessions().size(); i++) {
+            BillSession bs = getValidBillSessions().get(i);
             if (Boolean.TRUE.equals(bs.getCurrentlyConsulted())) {
                 // Mark the currently consulted session as completed
                 bs.setCompleted(true);
@@ -1490,8 +1584,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 billSessionFacade.edit(bs);
 
                 // Check for the next session in the list
-                if (i + 1 < billSessions.size()) {
-                    nextSession = billSessions.get(i + 1);
+                if (i + 1 < getValidBillSessions().size()) {
+                    nextSession = getValidBillSessions().get(i + 1);
                     nextSession.setCurrentlyConsulted(true);
                     nextSession.setNextInLine(false);
                     currentSession = nextSession; // This is now the currently consulting session
@@ -1502,8 +1596,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
 
         // Set the next in line session if there is one
-        if (nextSession != null && billSessions.size() > billSessions.indexOf(nextSession) + 1) {
-            BillSession newNextInLine = billSessions.get(billSessions.indexOf(nextSession) + 1);
+        if (nextSession != null && getValidBillSessions().size() > getValidBillSessions().indexOf(nextSession) + 1) {
+            BillSession newNextInLine = getValidBillSessions().get(getValidBillSessions().indexOf(nextSession) + 1);
             newNextInLine.setNextInLine(true);
             billSessionFacade.edit(newNextInLine); // Update the next in line session
             selectedSessionInstance.setNextInLineBillSession(newNextInLine);
@@ -1520,58 +1614,59 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
-    public void callNextSessionToCurrent() {
+    public List<BillSession> getValidBillSessions() {
+        List<BillSession> validBillSessions = new ArrayList<>();
+        if (billSessions == null) {
+            return null;
+        }
+        if (billSessions.isEmpty()) {
+            return validBillSessions;
+        }
+        for (BillSession tbs : billSessions) {
+            if (tbs.getPaidBillSession() == null) {
+                continue;
+            }
+            if (tbs.isRetired()) {
+                continue;
+            }
+            if (tbs.getBill().isCancelled()) {
+                continue;
+            }
+            validBillSessions.add(tbs);
+        }
+        return validBillSessions;
+    }
+
+    public void startFirstSession() {
         BillSession lastCompletedSession = null;
         BillSession currentSession = null;
         BillSession nextSession = null;
         boolean currentFound = false;
 
-        // Check if there is currently a session being consulted
-        for (BillSession bs : billSessions) {
-            if (Boolean.TRUE.equals(bs.getCurrentlyConsulted())) {
-                currentFound = true;
-                break;
-            }
+        if (getValidBillSessions() == null) {
+            return;
+        }
+        if (getValidBillSessions().isEmpty()) {
+            return;
         }
 
-        // If no current session is being consulted
-        if (!currentFound) {
-            for (int i = 0; i < billSessions.size(); i++) {
-                BillSession bs = billSessions.get(i);
-                if (Boolean.TRUE.equals(bs.getNextInLine())) {
-                    // This session becomes the currently consulted session
-                    bs.setCurrentlyConsulted(true);
-                    bs.setNextInLine(false);
-                    currentSession = bs; // Set as the currently consulting session
-                    billSessionFacade.edit(bs);
+        currentSession = getValidBillSessions().get(0);
+        currentSession.setCurrentlyConsulted(true);
+        currentSession.setNextInLine(false);
+        billSessionFacade.edit(currentSession);
 
-                    // Find and update the next in line session
-                    if (i + 1 < billSessions.size()) {
-                        nextSession = billSessions.get(i + 1);
-                        nextSession.setNextInLine(true);
-                        billSessionFacade.edit(nextSession);
-                        selectedSessionInstance.setNextInLineBillSession(nextSession);
-                    } else {
-                        selectedSessionInstance.setNextInLineBillSession(null);
-                        JsfUtil.addErrorMessage("You have to srat the session to call for Patients");
-                        return;
-                    }
-
-                    // Update the last completed session if needed
-                    if (i - 1 >= 0 && billSessions.get(i - 1).isCompleted()) {
-                        lastCompletedSession = billSessions.get(i - 1);
-                        selectedSessionInstance.setLastCompletedBillSession(lastCompletedSession);
-                    }
-
-                    break;
-                }
-            }
+        if (getValidBillSessions().size() > 1) {
+            nextSession = getValidBillSessions().get(1);
+            nextSession.setCurrentlyConsulted(false);
+            nextSession.setNextInLine(true);
+            billSessionFacade.edit(nextSession);
+            selectedSessionInstance.setNextInLineBillSession(nextSession);
         }
 
-        // Update the SessionInstance with the new currentlyConsulting session and possibly the nextInLine session
+        selectedSessionInstance.setLastCompletedBillSession(null);
         selectedSessionInstance.setCurrentlyConsultingBillSession(currentSession);
-        // Persist changes to the SessionInstance
         sessionInstanceFacade.edit(selectedSessionInstance);
+
     }
 
     public void reverseCurrentCompleteAndCallPrevious() {
@@ -1580,8 +1675,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         // Find the index of the currently consulting session
         int currentIndex = -1;
-        for (int i = 0; i < billSessions.size(); i++) {
-            if (Boolean.TRUE.equals(billSessions.get(i).getCurrentlyConsulted())) {
+        for (int i = 0; i < getValidBillSessions().size(); i++) {
+            if (Boolean.TRUE.equals(getValidBillSessions().get(i).getCurrentlyConsulted())) {
                 currentIndex = i;
                 break;
             }
@@ -1590,13 +1685,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
         // If a currently consulting session is found
         if (currentIndex != -1) {
             // Reverse the completion of the current session
-            currentSession = billSessions.get(currentIndex);
+            currentSession = getValidBillSessions().get(currentIndex);
             currentSession.setCompleted(false);
             billSessionFacade.edit(currentSession);
 
             // There is a session before the current one
             if (currentIndex - 1 >= 0) {
-                previousSession = billSessions.get(currentIndex - 1);
+                previousSession = getValidBillSessions().get(currentIndex - 1);
 
                 // Reverse the last completed session to the previous session
                 previousSession.setCurrentlyConsulted(true);
@@ -1630,6 +1725,60 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
 
         // Update changes to SessionInstance
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void markSelectedAsCurrentSession() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Select");
+            return;
+        }
+        BillSession currentSession = selectedBillSession;
+        billSessionFacade.edit(currentSession);
+
+        selectedSessionInstance.setCurrentlyConsultingBillSession(currentSession);
+        if (selectedSessionInstance.getNextInLineBillSession() != null && selectedSessionInstance.getNextInLineBillSession().equals(currentSession)) {
+            selectedSessionInstance.setNextInLineBillSession(null);
+        }
+        if (selectedSessionInstance.getLastCompletedBillSession() != null && selectedSessionInstance.getLastCompletedBillSession().equals(currentSession)) {
+            selectedSessionInstance.setLastCompletedBillSession(null);
+        }
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void markSelectedAsLastCompleted() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Select a session to mark as last completed.");
+            return;
+        }
+        BillSession lastCompletedSession = selectedBillSession;
+        billSessionFacade.edit(lastCompletedSession);
+
+        selectedSessionInstance.setLastCompletedBillSession(lastCompletedSession);
+        if (selectedSessionInstance.getCurrentlyConsultingBillSession() != null && selectedSessionInstance.getCurrentlyConsultingBillSession().equals(lastCompletedSession)) {
+            selectedSessionInstance.setCurrentlyConsultingBillSession(null);
+        }
+        if (selectedSessionInstance.getNextInLineBillSession() != null && selectedSessionInstance.getNextInLineBillSession().equals(lastCompletedSession)) {
+            selectedSessionInstance.setNextInLineBillSession(null);
+        }
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void markSelectedAsNextInLine() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Select a session to mark as next in line.");
+            return;
+        }
+        BillSession nextInLineSession = selectedBillSession;
+        billSessionFacade.edit(nextInLineSession);
+
+        selectedSessionInstance.setNextInLineBillSession(nextInLineSession);
+        if (selectedSessionInstance.getCurrentlyConsultingBillSession() != null && selectedSessionInstance.getCurrentlyConsultingBillSession().equals(nextInLineSession)) {
+            selectedSessionInstance.setCurrentlyConsultingBillSession(null);
+        }
+        if (selectedSessionInstance.getLastCompletedBillSession() != null && selectedSessionInstance.getLastCompletedBillSession().equals(nextInLineSession)) {
+            selectedSessionInstance.setLastCompletedBillSession(null);
+        }
         sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
@@ -1721,12 +1870,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (sia == null) {
             return false;
         }
-        if(sia.getActivityCompleted()==null){
+
+        if (sia.getActivityCompleted() == null) {
             return false;
         }
         return sia.getActivityCompleted();
     }
-    
+
     public void markActivity(AppointmentActivity activity, BillSession billSession) {
         if (activity == null) {
             JsfUtil.addErrorMessage("No Activity Selected");
@@ -1810,20 +1960,38 @@ public class BookingController implements Serializable, ControllerWithPatient {
         long paidPatientCount = 0;
         long completedPatientCount = 0;
 
+        if (billSessions == null) {
+            selectedSessionInstance.setBookedPatientCount(0l);
+            selectedSessionInstance.setPaidPatientCount(0l);
+            selectedSessionInstance.setCompletedPatientCount(0l);
+            selectedSessionInstance.setRemainingPatientCount(0l);
+            sessionInstanceController.save(selectedSessionInstance);
+            return;
+        }
+
         // Loop through billSessions to calculate counts
         for (BillSession bs : billSessions) {
             if (bs != null) {
-                // Booked count increments for every BillSession instance
-                bookedPatientCount++;
+                bookedPatientCount++; // Always increment if bs is not null
 
-                // Check if the bill session is completed
-                if (bs.isCompleted()) {
-                    completedPatientCount++;
+                // Additional check for completion status
+                try {
+                    if (bs.isCompleted()) {
+                        completedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+                    System.out.println("Null pointer encountered in isCompleted check for BillSession: " + bs);
                 }
 
-                // Check if the bill session is paid
-                if (bs.getPaidBillSession() != null) {
-                    paidPatientCount++;
+                // Additional check for paid status
+                try {
+                    if (bs.getPaidBillSession() != null) {
+                        paidPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+                    System.out.println("Null pointer encountered in getPaidBillSession check for BillSession: " + bs);
                 }
             }
         }
@@ -3229,6 +3397,4 @@ public class BookingController implements Serializable, ControllerWithPatient {
         this.appointmentActivity = appointmentActivity;
     }
 
-    
-    
 }

@@ -538,6 +538,42 @@
 
                                 </p:panel>
 
+                                <p:panel id="pBillDetails" >
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <h:panelGrid 
+                                        columns="2" 
+                                        class="w-100 h5" >
+                                        <h:outputText value="Total" ></h:outputText >
+                                        <h:outputText id="tot" value="#{opdBillController.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Discount" ></h:outputText>
+                                        <h:outputText id="dis" value="#{opdBillController.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Net Total" ></h:outputText>
+                                        <h:outputText id="netTotal" value="#{opdBillController.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="VAT" ></h:outputText>
+                                        <h:outputText id="netTotalVat" value="#{opdBillController.vat}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Tendered" ></h:outputText>
+                                        <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" >
+                                            <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
+                                            <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
+                                        </p:inputText>
+                                        <h:outputText  value="Balance " ></h:outputText>
+                                        <h:outputText id="balance" value="#{opdBillController.cashBalance}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </p:panel>
+
                                 <p:panel class="m-1">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
@@ -673,41 +709,7 @@
                                 </p:panel>
 
 
-                                <p:panel id="pBillDetails" >
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
-                                    </f:facet>
-                                    <h:panelGrid 
-                                        columns="2" 
-                                        class="w-100 h5" >
-                                        <h:outputText value="Total" ></h:outputText >
-                                        <h:outputText id="tot" value="#{opdBillController.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Discount" ></h:outputText>
-                                        <h:outputText id="dis" value="#{opdBillController.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Net Total" ></h:outputText>
-                                        <h:outputText id="netTotal" value="#{opdBillController.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="VAT" ></h:outputText>
-                                        <h:outputText id="netTotalVat" value="#{opdBillController.vat}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Tendered" ></h:outputText>
-                                        <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" >
-                                            <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
-                                            <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
-                                        </p:inputText>
-                                        <h:outputText  value="Balance " ></h:outputText>
-                                        <h:outputText id="balance" value="#{opdBillController.cashBalance}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGrid>
-                                </p:panel>
+
 
                             </div>
                         </div>
