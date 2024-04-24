@@ -181,7 +181,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
         }
         currentToken.setCounter(counter);
-        currentToken.setDoctor(doctor);
+        currentToken.setStaff(staff);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
