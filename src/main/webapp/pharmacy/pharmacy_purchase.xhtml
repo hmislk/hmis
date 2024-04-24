@@ -105,6 +105,7 @@
                                     <h:outputLabel value="Qty"/><br/>
                                     <p:inputText  
                                         autocomplete="off"
+                                        onfocus="this.select()"
                                         id="txtQty" 
                                         styleClass="numericTxt"
                                         value="#{pharmacyPurchaseController.currentBillItem.tmpQty}"
@@ -114,6 +115,7 @@
                                     <h:outputLabel value="Free"/><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="txtFreeQty" 
+                                                 onfocus="this.select()"
                                                  styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
                                                  style="width:100%" /> 
@@ -122,6 +124,7 @@
                                     <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="txtPrate"  
+                                                 onfocus="this.select()"
                                                  styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
                                         <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
@@ -131,6 +134,7 @@
                                     <h:outputLabel value="Sale Price"></h:outputLabel>
                                     <p:inputText autocomplete="off" 
                                                  id="tmpRetail" 
+                                                 onfocus="this.select()"
                                                  styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
