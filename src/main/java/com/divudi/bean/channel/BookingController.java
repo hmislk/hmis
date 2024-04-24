@@ -1507,7 +1507,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return;
         }
-        if (selectedBillSession.getMarkedToRefund()) {
+        if (selectedBillSession.getMarkedToRefund() == true) {
             JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
             return;
         }
@@ -1523,7 +1523,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return;
         }
-        if (!selectedBillSession.getMarkedToCancel()) {
+        if (!selectedBillSession.getMarkedToCancel()==true) {
             JsfUtil.addErrorMessage("Error. Not a session marked to cancel.");
             return;
         }
@@ -1539,7 +1539,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Nothing to refund");
             return;
         }
-        if (selectedBillSession.getMarkedToCancel()) {
+        if (selectedBillSession.getMarkedToCancel()==true) {
             JsfUtil.addErrorMessage("Cannot refund a session marked for cancellation.");
             return;
         }
@@ -1555,7 +1555,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return;
         }
-        if (!selectedBillSession.getMarkedToRefund()) {
+        if (!selectedBillSession.getMarkedToRefund()==true) {
             JsfUtil.addErrorMessage("Error. Not a session marked to refund.");
             return;
         }
