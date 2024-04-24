@@ -927,7 +927,6 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             addBillItemSingleItem();
         }
         processBillItems();
-
         setActiveIndex(1);
     }
 
@@ -941,6 +940,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             calculateRates(tbi);
 //            calculateBillItemForEditing(tbi);
         }
+        calculateTotals();
     }
 
     public void calculateRates(BillItem bi) {
@@ -950,9 +950,14 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             if (itemBatch != null) {
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
-            bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
-            bi.setDiscount(calculateBillItemDiscountRate(bi));
-            bi.setNetRate(bi.getRate() - bi.getDiscount());
+            bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+            bi.setNetRate(bi.getRate() - bi.getDiscountRate());
+            
+            
+            bi.setGrossValue(bi.getRate() * bi.getQty());
+            bi.setDiscount(bi.getDiscountRate() * bi.getQty());
+            bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
+            
         }
     }
 
@@ -967,7 +972,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
                 netTotal += b.getNetValue();
                 grossTotal += b.getGrossValue();
                 discountTotal += b.getDiscount();
-                getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
+//                getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
             }
         }
 
@@ -1663,9 +1668,8 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
-
                     setZeroToQty(bi);
-                    onEditCalculation(bi);
+//                    onEditCalculation(bi);
                     JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
                     return;
                 }
@@ -2062,29 +2066,21 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 
 //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
-        //   ////System.out.println("bill item discount rate");
-        //   ////System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
-            //   ////System.out.println("bi is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem() == null) {
-            //   ////System.out.println("pi is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //   ////System.out.println("stock is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
-            //   ////System.out.println("batch is null");
             return 0.0;
         }
-
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
-
-        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
-        double tdp = 0;
+        double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
+        double discountRate = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
@@ -2100,7 +2096,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
                 return 0;
             } else {
                 bi.setPriceMatrix(priceMatrix);
-                return (tr * priceMatrix.getDiscountPercent()) / 100;
+                return (retailRate * priceMatrix.getDiscountPercent()) / 100;
             }
         }
 
@@ -2111,11 +2107,11 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             //  //System.err.println("tr = " + tr);
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
-                tdp = priceMatrix.getDiscountPercent();
+                discountRate = priceMatrix.getDiscountPercent();
             }
 
             double dr;
-            dr = (tr * tdp) / 100;
+            dr = (retailRate * discountRate) / 100;
             return dr;
 
         }
@@ -2126,11 +2122,11 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
-                tdp = priceMatrix.getDiscountPercent();
+                discountRate = priceMatrix.getDiscountPercent();
             }
 
             double dr;
-            dr = (tr * tdp) / 100;
+            dr = (retailRate * discountRate) / 100;
 
             return dr;
 
@@ -2138,10 +2134,10 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 
         //CREDIT COMPANY DISCOUNT
         if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
-            tdp = toInstitution.getPharmacyDiscount();
+            discountRate = toInstitution.getPharmacyDiscount();
 
             double dr;
-            dr = (tr * tdp) / 100;
+            dr = (retailRate * discountRate) / 100;
 
             return dr;
         }
