@@ -1241,15 +1241,17 @@ public class PatientInvestigationController implements Serializable {
 
             // Get the "Barcodes" JSON array from the JSON object
             JSONArray barcodes = root.getJSONArray("Barcodes");
-            String defaultTemplate = "<div style='width: 200px; padding: 10px; border: 1px solid #000; font-family: Arial, sans-serif; font-size: 12px;'>"
-                    + "<div style='margin: 2px 0;'>Name: " + "{name}"
-                    + ", Date: " + "{name}"
-                    + ", Gender: " + "{sex}"
-                    + ", Age: " + "{sex}" + "</div>"
+            String defaultTemplate = "<div style='width: 250px; padding: 8px; border: 1px solid #000; font-family: Arial, sans-serif; font-size: 11px;'>"
+                    + "<div style='margin: 2px 0;'>"
+                    + " Name: " + "{name} ({age}) <br/>"
+                    + " Gender: " + "{sex} <br/>"
+                    + " Date: " + "{billDate} <br/>"
+                    + "</div>"
                     + "<div style='font-family: \"Libre Barcode 128\", cursive; font-size: 24px; margin: 5px 0;'>" + "{barcode}" + "</div>"
-                    + "<div style='margin: 2px 0;'>Tests: " + "{tests}"
-                    + ", Ins ID: " + "{insId}"
-                    + ", Dept ID: " + "{deptId}" + "</div>"
+                    + "<div style='margin: 2px 0;'>"
+                    + "Tests: " + "{tests} <br/>"
+                    + "Ins ID: " + "{insId} <br/>"
+                    + "Dept ID: " + "{deptId}" + "</div>"
                     + "</div>";
             String template = congConfigOptionApplicationController.getLongTextValueByKey("Template for Sample Tube Sticker Printing", defaultTemplate);
             sampleTubeLabels = new ArrayList<>();

@@ -839,7 +839,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
         Bill bill = getBillFacade().find(getPreBill().getId());
-        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
+        bill.setBillTypeAtomic(BillTypeAtomic.INWARD_PHARMACY_REQUEST);
         billFacade.edit(bill);
         notificationController.createNotification(bill);
         clearBill();

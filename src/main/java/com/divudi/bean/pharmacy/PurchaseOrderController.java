@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillNumberSuffix;
@@ -76,6 +77,8 @@ public class PurchaseOrderController implements Serializable {
     private LazyDataModel<Bill> searchBills;
 
     private PaymentMethodData paymentMethodData;
+    @Inject
+    NotificationController notificationController;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -143,11 +146,13 @@ public class PurchaseOrderController implements Serializable {
 
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
+        getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         billFacade.edit(getAprovedBill());
-
+        notificationController.createNotification(getAprovedBill());
         //Update Requested Bill Reference
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
+        
 
 //        clearList();
         printPreview = true;

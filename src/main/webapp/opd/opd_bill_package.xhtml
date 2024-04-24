@@ -12,13 +12,11 @@
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     >
 
-
-
     <ui:define name="content">
 
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
-                <p:focus id="focusIx" for="acIx" />
+                <p:focus id="focusIx" for="advanced" />
                 <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop" >
                     <p:panel class="w-100" >
                         <f:facet name="header" >
@@ -26,18 +24,15 @@
                             <h:outputLabel value="OPD Packages" class="mx-4"></h:outputLabel>
                         </f:facet>
 
-
-
                         <div class="row">
                             <div class="col-md-6">
                                 <h:panelGroup>
 
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:panelGroup id="panelIx" class="w-100">
-                                            <common:patient_details controller="#{billPackageController}"/>
+                                            <common:patient_details controller="#{billPackageController}" searchable="true" editable="true"/>
                                         </h:panelGroup>
                                     </h:panelGrid>
-
 
                                     <div class="mb-2">
 
@@ -47,39 +42,62 @@
                                                 <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                             </f:facet>
 
-                                            <p:autoComplete
-                                                widgetVar="aIx" 
-                                                id="acIx"
-                                                forceSelection="true" 
-                                                value="#{billPackageController.currentBillItem.item}"
-                                                completeMethod="#{itemController.completePackage}" 
-                                                var="ix" 
-                                                itemLabel="#{ix.name}"
-                                                itemValue="#{ix}"    
-                                                required="true" requiredMessage="Please add item" size="50" class="mx-2 ">
-                                                <p:column>
-                                                    #{ix.name}
-                                                </p:column>
-                                                <p:column>
-                                                    #{ix.total}
-                                                </p:column>
+                                            <!--                                            <p:autoComplete
+                                                                                            widgetVar="aIx" 
+                                                                                            id="acIx"
+                                                                                            forceSelection="true" 
+                                                                                            value="#{billPackageController.currentBillItem.item}"
+                                                                                            completeMethod="#{itemController.completePackage}" 
+                                                                                            var="ix" 
+                                                                                            itemLabel="#{ix.name}"
+                                                                                            itemValue="#{ix}"    
+                                                                                            required="true" requiredMessage="Please add item" size="50" class="mx-2 ">
+                                            
+                                                                                            <p:column>
+                                            #{ix.name}
+                                        </p:column>
+                                        <p:column>
+                                            #{ix.total}
+                                        </p:column>
+                                        <p:ajax event="itemSelect" process="acIx" ></p:ajax>
+                                    </p:autoComplete>-->
 
-                                            </p:autoComplete>
+
+                                            <p:selectOneListbox 
+                                                id="advanced" 
+                                                value="#{billPackageController.currentBillItem.item}"
+                                                var="i" 
+                                                filter="true" 
+                                                filterMatchMode="contains">
+                                                <f:selectItems 
+                                                    value="#{itemController.packaes}" 
+                                                    var="item" 
+                                                    itemLabel="#{item.name}" 
+                                                    itemValue="#{item}"/>
+                                                <p:column>
+                                                    <h:outputText value="#{i.name}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value="#{i.department}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value="#{i.total}"/>
+                                                </p:column>
+                                            </p:selectOneListbox>
+
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
+                                                process="advanced btnAddIx"
+                                                update="tblBillItem pBillDetails pIxAdd"
                                                 icon="fa fa-plus"
                                                 class=" mx-1 ui-button-success my-2"
                                                 action="#{billPackageController.addToBill()}" >
-                                                <f:ajax 
-                                                    execute="acIx btnAddIx" 
-                                                    render="focusIx tblBillItem pBillDetails pIxAdd" />
                                             </p:commandButton>
                                         </p:panel>
                                     </div>
 
                                 </h:panelGroup>
-
 
                                 <p:panel class="w-100">
 
@@ -89,10 +107,17 @@
                                     </f:facet>
                                     <p:tabView id="tblBillItem" >
                                         <p:tab id="pacName" title="Package Name" >
-                                            <h:panelGrid columns="2" >
+                                            <div class="d-flex justify-content-between">
                                                 <h:outputLabel value="#{billPackageController.currentBillItem.item.name}"/>
-                                                <p:commandButton id="btnRemove" value="X" rendered="#{billPackageController.currentBillItem.item ne null}" action="#{billPackageController.removeBillItem}" ajax="false" />                                                
-                                            </h:panelGrid>
+                                                <p:commandButton 
+                                                    id="btnRemove" 
+                                                    value="X" 
+                                                    title="Remove"
+                                                    class="ui-button-danger"
+                                                    rendered="#{billPackageController.currentBillItem.item ne null}" 
+                                                    action="#{billPackageController.removeBillItem}" 
+                                                    ajax="false" />                                                
+                                            </div>
                                         </p:tab>
                                         <p:tab id="tabBillItems" title="Bill Items" >
                                             <p:dataTable 
@@ -162,8 +187,6 @@
                                             </p:dataTable>
                                         </p:tab>
                                     </p:tabView>
-
-
                                 </p:panel>
 
                             </div>
@@ -281,9 +304,6 @@
                                         </p:panel>
                                     </div>
 
-
-
-
                                     <p:panel class="w-100 mt-1" >
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
@@ -294,18 +314,19 @@
                                             columns="2" 
                                             class="w-100">
                                             <p:outputLabel for="refIns" value="Institution" ></p:outputLabel>
-                                            <p:autoComplete id="refIns" 
-                                                            forceSelection="true" 
-                                                            value="#{billPackageController.referredByInstitution}"
-                                                            completeMethod="#{institutionController.completeIns}"
-                                                            var="ri" 
-                                                            itemLabel="#{ri.name}" 
-                                                            itemValue="#{ri}"
-                                                            size="10"
-                                                            minQueryLength="4"
-                                                            inputStyleClass="form-control"
-                                                            placeholder="Type at least 4 letters to search"
-                                                            class="w-100 my-1">
+                                            <p:autoComplete 
+                                                id="refIns" 
+                                                forceSelection="true" 
+                                                value="#{billPackageController.referredByInstitution}"
+                                                completeMethod="#{institutionController.completeIns}"
+                                                var="ri" 
+                                                itemLabel="#{ri.name}" 
+                                                itemValue="#{ri}"
+                                                size="10"
+                                                minQueryLength="4"
+                                                inputStyleClass="form-control"
+                                                placeholder="Type at least 4 letters to search"
+                                                class="w-100 my-1">
                                                 <f:ajax  event="itemSelect" execute="creditCom"  />
                                                 <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
                                                 <p:column headerText="Code">#{ri.institutionCode}</p:column>
@@ -355,17 +376,18 @@
                                                 </p:dialog> 
                                             </h:panelGroup>
 
-                                            <p:autoComplete forceSelection="true" 
-                                                            id="cmbDoc" 
-                                                            value="#{billPackageController.referredBy}" 
-                                                            completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                            minQueryLength="4"
-                                                            placeholder="Type at least 4 letters to search"
-                                                            itemLabel="#{ix.person.name}" 
-                                                            itemValue="#{ix}" 
-                                                            inputStyleClass="form-control"
-                                                            class="w-100 my-1" 
-                                                            size="10">
+                                            <p:autoComplete 
+                                                forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{billPackageController.referredBy}" 
+                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                minQueryLength="4"
+                                                placeholder="Type at least 4 letters to search"
+                                                itemLabel="#{ix.person.name}" 
+                                                itemValue="#{ix}" 
+                                                inputStyleClass="form-control"
+                                                class="w-100 my-1" 
+                                                size="10">
                                                 <p:column headerText="Name" >
                                                     <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
                                                 </p:column>
@@ -383,19 +405,20 @@
                                                     action="#{navigationController.navigateToCollectingCenter()}"
                                                     actionListener="#{collectingCentreController.prepareAdd()}"  />  
                                             </h:panelGroup>
-                                            <p:autoComplete id="creditCom" 
-                                                            forceSelection="true" 
-                                                            class="w-100 my-1"
-                                                            value="#{opdBillController.collectingCentre}"  
-                                                            completeMethod="#{institutionController.completeCollectingCenter}" 
-                                                            var="ix" 
-                                                            placeholder="Type at least 4 letters to search"
-                                                            inputStyleClass="form-control"
-                                                            minQueryLength="4"
-                                                            itemLabel="#{ix.name}" 
-                                                            itemValue="#{ix}" 
-                                                            size="10"
-                                                            >
+                                            <p:autoComplete 
+                                                id="creditCom" 
+                                                forceSelection="true" 
+                                                class="w-100 my-1"
+                                                value="#{opdBillController.collectingCentre}"  
+                                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                                var="ix" 
+                                                placeholder="Type at least 4 letters to search"
+                                                inputStyleClass="form-control"
+                                                minQueryLength="4"
+                                                itemLabel="#{ix.name}" 
+                                                itemValue="#{ix}" 
+                                                size="10"
+                                                >
                                                 <f:ajax  event="itemSelect" execute="creditCom"  />
                                                 <p:column headerText="Collecting Centre Name">
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
@@ -416,19 +439,20 @@
 
                                             </h:panelGroup>
 
-                                            <p:autoComplete id="creditCompany" 
-                                                            class="w-100 my-1"
-                                                            inputStyleClass="form-control"
-                                                            forceSelection="true"
-                                                            value="#{billPackageController.creditCompany}"  
-                                                            completeMethod="#{creditCompanyController.completeCredit}" 
-                                                            var="ix"
-                                                            minQueryLength="4"
-                                                            placeholder="Type at least 4 letters to search"
-                                                            itemLabel="#{ix.name}" 
-                                                            itemValue="#{ix}" 
-                                                            size="10" 
-                                                            >
+                                            <p:autoComplete 
+                                                id="creditCompany" 
+                                                class="w-100 my-1"
+                                                inputStyleClass="form-control"
+                                                forceSelection="true"
+                                                value="#{billPackageController.creditCompany}"  
+                                                completeMethod="#{creditCompanyController.completeCredit}" 
+                                                var="ix"
+                                                minQueryLength="4"
+                                                placeholder="Type at least 4 letters to search"
+                                                itemLabel="#{ix.name}" 
+                                                itemValue="#{ix}" 
+                                                size="10" 
+                                                >
 
                                                 <f:ajax  event="itemSelect" listener="#{opdBillController.calTotals()}"
                                                          execute="@this" 
@@ -436,19 +460,20 @@
                                             </p:autoComplete> 
 
                                             <p:outputLabel value="Staff"></p:outputLabel>
-                                            <p:autoComplete  minQueryLength="4"
-                                                             forceSelection="true" 
-                                                             value="#{billPackageController.staff}" 
-                                                             id="creditStaff"
-                                                             completeMethod="#{staffController.completeStaff}" 
-                                                             var="mys" 
-                                                             class="w-100 my-1"
-                                                             placeholder="Type at least 3 letters to search"
-                                                             inputStyleClass="form-control"
-                                                             itemLabel="#{mys.person.nameWithTitle}" 
-                                                             itemValue="#{mys}"
+                                            <p:autoComplete  
+                                                minQueryLength="4"
+                                                forceSelection="true" 
+                                                value="#{billPackageController.staff}" 
+                                                id="creditStaff"
+                                                completeMethod="#{staffController.completeStaff}" 
+                                                var="mys" 
+                                                class="w-100 my-1"
+                                                placeholder="Type at least 3 letters to search"
+                                                inputStyleClass="form-control"
+                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                itemValue="#{mys}"
 
-                                                             size="10">
+                                                size="10">
                                                 <p:column headerText="Name" >
                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                 </p:column>
@@ -514,52 +539,47 @@
                     </p:panel>
                 </h:panelGroup>
 
+                <p:panel rendered="#{billPackageController.printPreview}" >
+                    <f:facet name="header" >
+                        <h:outputLabel value="Package Bill View" class="mx-4"></h:outputLabel>
+                    </f:facet>
 
-                <h:panelGroup rendered="#{billPackageController.printPreview}" >
-                    <div >
-                        <div >
-                            <div >
-
-
-
-                                <h:panelGroup >
-                                    <div class="nonPrintBlock">
-                                        <p:commandButton value="Print" ajax="false" action="#"  >
-                                            <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
-                                        </p:commandButton>
-                                    </div>
-                                    <h:panelGroup id="fiveFivePaperWithHeadings">
-                                        <ui:repeat value="#{billPackageController.bills}" var="b">
-                                            <bi:five_five_paper_with_headings_opd_package bill="#{b}"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
-                                </h:panelGroup>
-
-
-
-                                <p:commandButton value="Print" ajax="false" action="#" >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton value="Print Without Totals" ajax="false" action="#" >
-                                    <p:printer target="gpBillPreview1" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton value="New Lab Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
-                                </p:commandButton>
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billPackageController.cancellAll}"/>
-                                <h:panelGroup id="gpBillPreview">
-                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
-                                        <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-                                <h:panelGroup id="gpBillPreview1">
-                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
-                                        <bi:opdBillPrintRuhunu_pack_1 bill="#{bill}" dup="false"/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-                            </div>
-                        </div>
+                    <div class="d-flex justify-content-end">
+                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                            <f:selectItem itemLabel="Please Select Paper Type" />
+                            <f:selectItems value="#{enumController.paperTypes}" />
+                        </p:selectOneMenu>
+                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                        <p:commandButton 
+                            value="Print" 
+                            class="ui-button-info m-1"
+                            icon="fa fa-print"
+                            ajax="false">
+                            <p:printer target="printView" />
+                        </p:commandButton> 
                     </div>
-                </h:panelGroup>
+
+                    <h:panelGroup id="printView">
+
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                            <ui:repeat value="#{billPackageController.bills}" var="b">
+                                <bi:opdPackegePosBill bill="#{b}"/>
+                            </ui:repeat>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                            <ui:repeat value="#{billPackageController.bills}" var="b">
+                                <bi:five_five_paper_with_headings_opd_package bill="#{b}"/>   
+                            </ui:repeat>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </p:panel>
             </h:form>
         </h:panelGroup>
     </ui:define>

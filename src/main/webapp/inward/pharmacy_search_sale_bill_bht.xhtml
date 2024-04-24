@@ -90,8 +90,12 @@
                                     size="10"
                                     >
 
-                                    <p:column headerText="Bill No" >                                
-                                        <h:outputLabel  value="#{bill.deptId}"  />
+                                    <p:column headerText="Bill No" > 
+                                        <h:commandLink
+                                            value="#{bill.deptId}" 
+                                            action="pharmacy_reprint_bill_sale_bht"  >
+                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                        </h:commandLink>
                                     </p:column>
 
                                     <p:column headerText="BHT No" width="5%">                                
@@ -137,18 +141,15 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="View" width="7%">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="pharmacy_reprint_bill_sale_bht"  >
-                                            <f:setPropertyActionListener value="#{bill}" 
-                                                                         target="#{pharmacyBillSearch.bill}"/>   
-                                        </p:commandButton>
-                                    </p:column>
-
                                     <p:column width="35%">
                                         <p:dataTable value="#{bill.returnBhtIssueBills}" var="rb">
-                                            <p:column  >                                                               
-                                                <h:outputLabel  value="#{rb.deptId}"/>                                   
+                                            <p:column  >  
+                                                <h:commandLink
+                                                    value="#{rb.deptId}"
+                                                    disabled="#{rb.creater eq null}"
+                                                    action="pharmacy_reprint_bill_return_bht"> 
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}"/>
+                                                </h:commandLink>
                                             </p:column>
                                             <p:column >
                                                 <h:outputLabel value="#{rb.createdAt}" >
@@ -178,12 +179,6 @@
                                                 <h:outputLabel value="#{rb.total}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
-                                            </p:column>
-                                            <p:column>
-                                                <p:commandButton ajax="false" value="View Bill" action="pharmacy_reprint_bill_return_bht" 
-                                                                 disabled="#{rb.creater eq null}"  >
-                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}"/>
-                                                </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
                                     </p:column>

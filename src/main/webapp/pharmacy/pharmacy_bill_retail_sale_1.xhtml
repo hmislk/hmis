@@ -19,7 +19,7 @@
                     <p:panel rendered="#{!pharmacySaleController1.billPreview}">
                         <p:panel>
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" disabled="true" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton icon="fas fa-file-invoice" disabled="true" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                             <i class="fas fa-shopping-cart rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
@@ -472,6 +472,8 @@
                                                         <p:outputLabel value="Comments" ></p:outputLabel>
                                                         <p:inputTextarea class="w-100 mx-4" value="#{pharmacySaleController1.comment}" id="comment"/>
 
+
+
                                                     </h:panelGrid>
 
                                                 </p:panel>
@@ -503,7 +505,7 @@
                                                             id="paid"
                                                             value="#{pharmacySaleController1.cashPaid}"
                                                             onfocus="this.select()">
-                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
+                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                                         </p:inputText>
                                                         <h:outputLabel  value="Balance" ></h:outputLabel>
                                                         <h:outputLabel class="mx-4 my-1" id="balance" value="#{pharmacySaleController1.balance}" >
@@ -567,8 +569,8 @@
 
                             <div class="d-flex gap-3">
 
-                                <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                <p:commandButton icon="fas fa-file-invoice" value="Sale 2" disabled="true"  action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
@@ -584,10 +586,12 @@
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
                                         <phi:saleBill_without_item bill="#{pharmacySaleController1.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
+                                   
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        
                                         <phi:saleBill bill="#{pharmacySaleController1.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
