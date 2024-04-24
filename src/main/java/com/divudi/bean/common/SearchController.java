@@ -50,10 +50,13 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFinanceType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
+import com.divudi.light.common.BillSummaryRow;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,6 +147,7 @@ public class SearchController implements Serializable {
     private List<Bill> bills;
     private List<Payment> payments;
     private List<BillLight> billLights;
+    private List<BillSummaryRow> billSummaryRows;
     private List<Bill> selectedBills;
     List<Bill> aceptPaymentBills;
     private List<BillFee> billFees;
@@ -152,6 +156,8 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
+    
+    BillSummaryRow billSummaryRow;
     Bill cancellingIssueBill;
     Bill bill;
     Speciality speciality;
@@ -211,6 +217,11 @@ public class SearchController implements Serializable {
     boolean billPreview;
     private Long currentTokenId;
 
+    public String navigateToAllFinancialTransactionSummary(){
+        billSummaryRows=null;
+        return "/analytics/all_financial_transaction_summary";
+    }
+    
     public void clearBillList() {
         if (bills == null) {
             return;
@@ -1120,6 +1131,14 @@ public class SearchController implements Serializable {
 
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
+    }
+
+    public List<BillSummaryRow> getBillSummaryRows() {
+        return billSummaryRows;
+    }
+
+    public void setBillSummaryRows(List<BillSummaryRow> billSummaryRows) {
+        this.billSummaryRows = billSummaryRows;
     }
 
     public class billsWithbill {
@@ -6379,6 +6398,39 @@ public class SearchController implements Serializable {
         toDepartment = null;
 
     }
+    
+    public void processAllFinancialTransactionalSummary() {
+        billSummaryRows = null;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "b.billTypeAtomic, "
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal),"
+                + "count(b)) "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.billTypeAtomic in :abts "
+                + " group by b.billTypeAtomic"
+                + " order by b.id ";
+//        Bill b = new Bill();
+//        b.getTotal();
+//        b.getDiscount();
+//        b.getNetTotal();
+//        b.getBillTypeAtomic();
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.DATE);
+    }
 
     public void fillAllBills() {
         bills = null;
@@ -9162,5 +9214,7 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
+    
+    
 
 }
