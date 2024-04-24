@@ -188,7 +188,7 @@
                                 </f:facet>
                                 <div class="d-flex align-items-center gap-2">
                                     <h:outputText value="#{s.name}" />
-                                    <h:panelGroup rendered="#{s.started}">
+                                    <h:panelGroup rendered="#{s.started and !s.completed}">
                                         <div class="ring-container">
                                             <div class="ringring"></div>
                                             <div class="circle"></div>
