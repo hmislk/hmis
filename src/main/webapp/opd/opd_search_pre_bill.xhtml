@@ -39,37 +39,29 @@
                                         maxdate="#{commonController.currentDateTime}"
                                         >                                                                              
                                     </p:calendar>
-                                    <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}"  />
-                                    <h:outputLabel value="Patient Name"/>     
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}"  />
-                                    <h:outputLabel value="Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                    <h:outputLabel value="Net Total"/>   
-                                    
-                                    <p:inputText 
-                                        autocomplete="off" 
-                                        value="#{searchController.searchKeyword.netTotal}" />
+
+                                    <p:commandButton 
+                                        class="ui-button-success w-100"
+                                        icon="fas fa-clock"
+                                        ajax="false"
+                                        value="Search Unsettled Bills"
+                                        action="#{searchController.searchOpdBatchBillsToSettleAtCashier()}" />
 
                                     <p:commandButton  
                                         id="btnSearch" 
                                         icon="fas fa-search" 
-                                        class="ui-button-success w-100 my-1" 
+                                        class="ui-button-primary w-100 my-1" 
                                         ajax="false" 
-                                        value="Search All"
-                                        action="#{searchController.createOpdPreTable}"/>
-                                    <p:commandButton 
-                                        class="ui-button-warning w-100"
-                                        icon="fas fa-search"
-                                        ajax="false"
-                                        value="Search Not Paid Only"
-                                        action="#{searchController.createOpdPreTableNotPaid}"/>
+                                        value="Search All Bills"
+                                        action="#{searchController.searchOpdBatchBillsSettledOrNotSettled()}" />
+
                                     <p:commandButton
                                         ajax="false"
-                                        icon="fas fa-search"
-                                        class="my-1 ui-button-warning w-100 " 
-                                        value="Search Paid Only"
-                                        action="#{searchController.createOpdPreTablePaid}"/>
+                                        icon="fas fa-check"
+                                        class="my-1 ui-button-secondary w-100" 
+                                        value="Search Settled Bills"
+                                        action="#{searchController.searchOpdBatchBillsSettledAtCashier()}" />
+
 
                                 </h:panelGrid>
                             </div>
@@ -98,19 +90,23 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Patient" style="width: 100px">
+                                    <p:column headerText="Patient Name"  sortBy="#{bill.patient.person.nameWithTitle}" filterBy="#{bill.patient.person.nameWithTitle}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
                                     </p:column> 
 
-                                    <p:column headerText="Department"  style="width: 120px">
+                                    <p:column headerText="Patient Phone"  sortBy="#{bill.patient.person.phone}" filterBy="#{bill.patient.person.phone}" filterMatchMode="contains" >
+                                        <h:outputLabel value="#{bill.patient.person.phone}"  ></h:outputLabel>
+                                    </p:column> 
+
+                                    <p:column headerText="Department"   sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
                                     </p:column> 
 
-                                    <p:column headerText="Billed At"  >
+                                    <p:column headerText="Billed At"  sortBy="#{bill.createdAt}">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -123,7 +119,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                             
                                     </p:column>                 
-                                    <p:column headerText="Billed By" >
+                                    <p:column headerText="Billed By"  sortBy="#{bill.creater.webUserPerson.name}" filterBy="#{bill.creater.webUserPerson.name}" filterMatchMode="contains"  >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>
@@ -133,12 +129,38 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column>                                                          
-                                    <p:column headerText="Net Value" >
+                                    <p:column headerText="Net Value"  sortBy="#{bill.netTotal}" filterBy="#{bill.netTotal}" filterMatchMode="contains" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
 
+                                    </p:column>
+
+                                    <p:column headerText="Settling" >
+                                        <ui:repeat value="#{bill.cashBillsOpdPre}" var="rb">
+                                            <h:panelGroup layout="block" style="margin-bottom: 10px;">
+                                                <!-- Basic info -->
+                                                <h:outputText value="#{rb.creater.webUserPerson.name} accepted " />
+                                                <h:outputText value="#{rb.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                                <h:outputText value=" at " />
+                                                <h:outputText value="#{rb.createdAt}">
+                                                    <f:convertDateTime pattern="yyyy MM dd" timeZone="Asia/Colombo" />
+                                                </h:outputText>
+
+                                                <!-- Conditionally display cancellation info -->
+                                                <h:panelGroup rendered="#{rb.cancelled}">
+                                                    <h:outputText style="color: red;" value=" and was cancelled by " />
+                                                    <h:outputText style="color: red;" value="#{rb.cancelledBill.creater.webUserPerson.name}" />
+                                                    <h:outputText style="color: red;" value=" at " />
+                                                    <h:outputText style="color: red;" value="#{rb.cancelledBill.createdAt}">
+                                                        <f:convertDateTime pattern="yyyy MM dd" timeZone="Asia/Colombo" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </ui:repeat>
                                     </p:column>
 
                                     <p:column style="width: 70px">

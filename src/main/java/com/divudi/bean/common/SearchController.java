@@ -156,7 +156,7 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
-    
+
     BillSummaryRow billSummaryRow;
     Bill cancellingIssueBill;
     Bill bill;
@@ -217,11 +217,11 @@ public class SearchController implements Serializable {
     boolean billPreview;
     private Long currentTokenId;
 
-    public String navigateToAllFinancialTransactionSummary(){
-        billSummaryRows=null;
+    public String navigateToAllFinancialTransactionSummary() {
+        billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary";
     }
-    
+
     public void clearBillList() {
         if (bills == null) {
             return;
@@ -3483,8 +3483,8 @@ public class SearchController implements Serializable {
         bills = lst1;
 
     }
-    
-     private String createKeySqlSearchForPoCancel(HashMap tmp) {
+
+    private String createKeySqlSearchForPoCancel(HashMap tmp) {
         String sql = "";
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
             sql += " and  ((b.toInstitution.name) like :toIns )";
@@ -5538,6 +5538,73 @@ public class SearchController implements Serializable {
 
     }
 
+    public String searchOpdBatchBillsSettledAtCashier() {
+        bills = null;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.institution=:ins"
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.deptId is not null "
+                + " and b.cancelled=false"
+                + " and b.referenceBill is not null ";
+        jpql += " and b.billTypeAtomic = :billType ";
+        m.put("billType", BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        jpql += " order by b.createdAt desc  ";
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", getSessionController().getInstitution());
+        bills = getBillFacade().findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP, 25);
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    }
+    
+    public String searchOpdBatchBillsToSettleAtCashier() {
+        bills = null;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.institution=:ins"
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.deptId is not null "
+                + " and b.cancelled=false"
+                + " and b.referenceBill is null ";
+        jpql += " and b.billTypeAtomic = :billType ";
+        m.put("billType", BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        jpql += " order by b.createdAt desc  ";
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", getSessionController().getInstitution());
+        bills = getBillFacade().findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP, 25);
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    }
+
+    public String searchOpdBatchBillsSettledOrNotSettled() {
+        bills = null;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.institution=:ins"
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.deptId is not null ";
+        jpql += " and b.billTypeAtomic = :billType ";
+        m.put("billType", BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        jpql += " order by b.createdAt desc  ";
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", getSessionController().getInstitution());
+        bills = getBillFacade().findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP, 25);
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    }
+
     public String createOpdPreTable() {
         createPreTable(BillType.OpdPreBill);
         return "/opd/opd_search_pre_bill?faces-redirect=true";
@@ -6157,7 +6224,7 @@ public class SearchController implements Serializable {
     public void createTableByKeyword(BillType billType) {
         fillBills(billType, null, null);
     }
-    
+
     public void fillBills(BillType billType, Institution ins, Department dep) {
         bills = null;
         String sql;
@@ -6208,7 +6275,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         billLights = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
+
     }
 
     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
@@ -6398,8 +6465,9 @@ public class SearchController implements Serializable {
         toDepartment = null;
 
     }
-    
+
     public void processAllFinancialTransactionalSummary() {
+        System.out.println("processAllFinancialTransactionalSummary");
         billSummaryRows = null;
         String jpql;
         Map params = new HashMap();
@@ -6419,7 +6487,7 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.billTypeAtomic in :abts "
                 + " group by b.billTypeAtomic"
-                + " order by b.id ";
+                + " order by b.billTypeAtomic ";
 //        Bill b = new Bill();
 //        b.getTotal();
 //        b.getDiscount();
@@ -9214,7 +9282,5 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
-    
-    
 
 }

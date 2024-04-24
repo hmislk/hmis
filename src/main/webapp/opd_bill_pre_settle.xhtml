@@ -56,18 +56,18 @@
                             <h:panelGroup id="eWallet" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
                                 <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
                                 <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
 
-                             <p:commandButton ajax= "false"  
-                                              value="Accept Payment &amp; Settle"
+                            <p:commandButton ajax= "false"  
+                                             value="Accept Payment &amp; Settle"
                                              style="float: right;"
                                              class="ui-button-success mx-2"
                                              icon="fa fa-check"
                                              id="settle"
-                                             action="#{opdPreSettleController.settleBillWithPay2}" />
+                                             action="#{opdPreSettleController.settleOpdBatchBill}" />
 
                         </h:panelGrid>
 
@@ -170,31 +170,33 @@
                                 </div>
                                 <div>
                                     <p:commandButton ajax="false" value="Print" class="ui-button-info m-1" icon="fas fa-print">
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
 
-                        <p:commandButton  
-                            id="btnSearch" 
-                            icon="fas fa-search" 
-                            class="ui-button-success m-1" 
-                            ajax="false" 
-                            value="Search All"
-                            action="#{searchController.createOpdPreTable}"/>
-                        <p:commandButton 
-                            class="ui-button-warning m-1"
-                            icon="fas fa-search"
-                            ajax="false"
-                            value="Search Not Paid Only"
-                            action="#{searchController.createOpdPreTableNotPaid}"/>
-                        <p:commandButton
-                            ajax="false"
-                            icon="fas fa-search"
-                            class="m-1 ui-button-warning" 
-                            value="Search Paid Only"
-                            action="#{searchController.createOpdPreTablePaid}"/>
+                                    <p:commandButton 
+                                        class="ui-button-success m-1"
+                                        icon="fas fa-clock"
+                                        ajax="false"
+                                        value="Search Unsettled Bills"
+                                        action="#{searchController.searchOpdBatchBillsToSettleAtCashier()}" />
+
+                                    <p:commandButton  
+                                        id="btnSearch" 
+                                        icon="fas fa-search" 
+                                        class="ui-button-primary m-1" 
+                                        ajax="false" 
+                                        value="Search All Bills"
+                                        action="#{searchController.searchOpdBatchBillsSettledOrNotSettled()}" />
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fas fa-check"
+                                        class="my-1 ui-button-secondary m-1" 
+                                        value="Search Settled Bills"
+                                        action="#{searchController.searchOpdBatchBillsSettledAtCashier()}" />
                                 </div>
                             </div>
-                            
+
                         </f:facet>
 
                         <!-- Controls Section -->

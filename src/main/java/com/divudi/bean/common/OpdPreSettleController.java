@@ -288,7 +288,7 @@ public class OpdPreSettleController implements Serializable {
         getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBillClassType(BillClassType.BilledBill);
         getSaleBill().setBillType(BillType.OpdBill);
-        getSaleBill().setBillTypeAtomic(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -358,8 +358,33 @@ public class OpdPreSettleController implements Serializable {
         }
 
     }
-
+    
     public void settleBillWithPay2() {
+        editingQty = null;
+        if (errorCheckForSaleBill()) {
+            return;
+        }
+        
+        if(getCashPaid() < getPreBill().getNetTotal()){
+           JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
+            return; 
+        }
+        saveSaleBill();
+        saveSaleBillItems();
+
+//        getPreBill().getCashBillsPre().add(getSaleBill());
+        getBillFacade().edit(getPreBill());
+
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        setBill(getBillFacade().find(getSaleBill().getId()));
+
+//        makeNull();
+        billPreview = true;
+
+    }
+
+    public void settleOpdBatchBill() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
             return;
