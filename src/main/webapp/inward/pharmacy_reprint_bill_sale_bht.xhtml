@@ -203,27 +203,11 @@
                                     <h:panelGroup   id="gpBillPreview" class="mt-2"> 
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                            <div >
-                                                <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
-                                                    <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                                                </h:panelGroup>
-                                            </div>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                                            <div >
-                                                <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
-                                                    <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></phi:saleBill_prabodha>
-                                                </h:panelGroup>
-                                            </div>
+                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                                            <div >
-                                                <h:panelGroup rendered="true" > 
-                                                    <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                                </h:panelGroup>
-                                            </div>
+                                            <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
                                         </h:panelGroup>                            
                                     </h:panelGroup>  
                                 </p:panel>

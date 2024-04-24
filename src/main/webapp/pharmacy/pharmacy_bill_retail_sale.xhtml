@@ -586,10 +586,12 @@
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
                                         <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
+                                   
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        
                                         <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>

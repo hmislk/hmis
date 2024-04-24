@@ -571,7 +571,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         clearBillValues();
         printPreview = false;
         this.patient = patient;
-        return "/opd_bill_package?faces-redirect=true";
+        return "/opd/opd_bill_package?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {
