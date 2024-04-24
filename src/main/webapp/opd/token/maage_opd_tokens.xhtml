@@ -101,12 +101,13 @@
                                 <div class="d-flex gap-2">
 
                                     <p:commandButton ajax="false"
+                                                     id="btnCall"
                                                      icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
                                                      class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
-                                                     update="@form"
+                                                     update="@this"
                                                      title="#{token.called ? 'Cancel Call' : 'Call Token'}"
                                                      action="#{opdTokenController.toggleCalledStatus}"
-                                                     process="@this">
+                                                     process="btnCall">
                                         <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
                                         <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
                                     </p:commandButton>
