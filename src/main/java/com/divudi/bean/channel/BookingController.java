@@ -1524,7 +1524,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
         if (Boolean.TRUE.equals(selectedBillSession.getMarkedToCancel())) {
-            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            JsfUtil.addErrorMessage("Not a session marked as cancelled. Can not reverse.");
             return;
         }
 
@@ -1558,7 +1558,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
         if (Boolean.TRUE.equals(selectedBillSession.getMarkedToRefund())) {
-            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            JsfUtil.addErrorMessage("Is not a session marked as to refund. Can not reverse.");
             return;
         }
         selectedBillSession.setMarkedToRefund(false);
