@@ -489,6 +489,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return "/channel/channel_booking?faces-redirect=true";
     }
 
+    public String navigateBackToBookingsLoagingBillSessions() {
+        fillBillSessions();
+        return "/channel/channel_booking?faces-redirect=true";
+    }
+    
     public String navigateToManageSessionQueueAtConsultantRoom() {
         System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
