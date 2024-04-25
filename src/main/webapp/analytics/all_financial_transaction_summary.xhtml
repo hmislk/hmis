@@ -48,23 +48,23 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      >
-                            <p:column headerText="Bill Type" styleClass="alignTop" width="20em">
+                            <p:column headerText="Bill Type" styleClass="alignTop" >
                                 <h:outputLabel value="#{bill.billTypeAtomic}"/>
                             </p:column>
-                            <p:column headerText="Count" >                                
+                            <p:column headerText="Count" width="4em">                                
                                 <h:outputLabel value="#{bill.billCount}"/>
                             </p:column>
-                            <p:column headerText="Gross Total" styleClass="averageNumericColumn">
+                            <p:column headerText="Gross Total"  width="8em" >
                                 <h:outputLabel value="#{bill.grossTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Discount" styleClass="averageNumericColumn">
+                            <p:column headerText="Discount"  width="8em">
                                 <h:outputLabel value="#{bill.discount}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                            <p:column headerText="Net Value"  width="8em">
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>

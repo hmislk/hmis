@@ -390,6 +390,15 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    public void retireAlllistedBills() {
+       for(Bill b:bills){
+           b.setRetired(true);
+           b.setRetiredAt(new Date());
+           b.setRetirer(sessionController.getLoggedUser());
+           getBillFacade().edit(b);
+       }
+    }
 
     public void listAllPayments() {
         String sql;

@@ -36,7 +36,6 @@
                                         value="#{searchController.toDate}" 
                                         navigator="false" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.currentDateTime}"
                                         >                                                                              
                                     </p:calendar>
 
@@ -86,7 +85,7 @@
 
                                     >
 
-                                    <p:column headerText="No" styleClass="alignTop">
+                                    <p:column headerText="No" styleClass="alignTop" width="3em">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
@@ -147,7 +146,7 @@
                                                 </h:outputText>
                                                 <h:outputText value=" at " />
                                                 <h:outputText value="#{rb.createdAt}">
-                                                    <f:convertDateTime pattern="yyyy MM dd" timeZone="Asia/Colombo" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                                 </h:outputText>
 
                                                 <!-- Conditionally display cancellation info -->
@@ -171,47 +170,7 @@
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column width="40%">
-                                        <p:dataTable value="#{bill.cashBillsOpdPre}" var="rb">
-                                            <p:column  headerText="Bill No">                                                               
-                                                <h:outputLabel  value="#{rb.deptId}"/>                                   
-                                            </p:column>
-                                            <p:column headerText="Accepted At">
-                                                <h:outputLabel value="#{rb.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </h:outputLabel>
-                                                <br/>
-                                                <h:panelGroup rendered="#{rb.cancelled}">
-                                                    <h:outputLabel style="color: red;" value="Cancelled At " />
-                                                    <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
-                                                                   value="#{rb.cancelledBill.createdAt}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                    </h:outputLabel>
-                                                </h:panelGroup>                               
-                                            </p:column> 
-                                            <p:column headerText="Accepted By">                               
-                                                <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
-                                                </h:outputLabel>                                
-                                                <br/>
-                                                <h:panelGroup rendered="#{rb.cancelled}" >
-                                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                    <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
-                                                                   value="#{rb.cancelledBill.creater.webUserPerson.name}" >                                       
-                                                    </h:outputLabel>
-                                                </h:panelGroup> 
-                                            </p:column>                                                     
-                                            <p:column headerText="Net Total">
-                                                <h:outputLabel value="#{rb.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>                                  
-                                            </p:column>
-                                            <p:column width="20%">
-                                                <p:commandButton class="ui-button-primary" ajax="false" value="View Payment Bill" action="/opd/bill_reprint?faces-redirect=true" disabled="#{bill.referenceBill eq null}">
-                                                    <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
-                                                </p:commandButton>
-                                            </p:column>
-                                        </p:dataTable>
-                                    </p:column>
+                                  
 
                                 </p:dataTable>
 

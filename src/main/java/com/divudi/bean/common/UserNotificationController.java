@@ -129,7 +129,7 @@ public class UserNotificationController implements Serializable {
             }
             fillLoggedUserNotifications();
         }
-        
+
         if (canceldRequests) {
             if (items == null) {
                 return;
@@ -143,7 +143,7 @@ public class UserNotificationController implements Serializable {
             }
             fillLoggedUserNotifications();
         }
-        
+
         if (notCompeletedNotifiaction) {
             if (items == null) {
                 return;
@@ -156,9 +156,9 @@ public class UserNotificationController implements Serializable {
                 }
             }
             fillLoggedUserNotifications();
-            
+
         }
-       
+
     }
 
     public void filterNotificationsByCriteria() {
@@ -197,7 +197,7 @@ public class UserNotificationController implements Serializable {
             }
             System.out.println("iterator 2 seenedNotifiaction = " + items.size());
         }
-        
+
         if (todayNotification) {
             if (items == null) {
                 return;
@@ -214,7 +214,7 @@ public class UserNotificationController implements Serializable {
                 }
             }
         }
-        
+
         if (notCompeletedNotifiaction) {
             if (items == null) {
                 return;
@@ -231,7 +231,7 @@ public class UserNotificationController implements Serializable {
                 }
             }
         }
-        
+
         if (canceldRequests) {
             if (items == null) {
                 return;
@@ -443,6 +443,8 @@ public class UserNotificationController implements Serializable {
             case PharmacyOrderApprove:
                 todept = n.getBill().getFromDepartment();
                 break;
+            default:
+                todept = sessionController.getDepartment();
         }
 
         if (n.getBill() == null) {
@@ -595,7 +597,7 @@ public class UserNotificationController implements Serializable {
     }
 
     public Date getDate() {
-        date= new Date();
+        date = new Date();
         return date;
     }
 

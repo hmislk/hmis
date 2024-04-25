@@ -119,7 +119,9 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Tendered" ></h:outputLabel>
-                                        <p:inputText autocomplete="off"  id="paid" value="#{opdPreSettleController.cashPaid}" >
+                                        <p:inputText
+                                            onfocus="this.select()"
+                                            autocomplete="off"  id="paid" value="#{opdPreSettleController.cashPaid}" >
                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                         </p:inputText>
                                         <h:outputLabel  value="Balance " ></h:outputLabel>
