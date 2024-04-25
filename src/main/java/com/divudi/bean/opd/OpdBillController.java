@@ -275,7 +275,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private boolean duplicatePrint;
     private Token token;
-    
+
     private Double totalHospitalFee;
     private Double totalSaffFee;
 
@@ -304,8 +304,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
-    public List<BillItem> fillOpdBillItems() {
-        List<BillItem> items = new ArrayList<>();
+    public void fillOpdBillItems() {
+        System.out.println("fillOpdBillItems");
+        lstBillItems = new ArrayList<>();
         String jpql;
         Map m = new HashMap();
         jpql = "select i "
@@ -319,16 +320,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         m.put("to", toDate);
         m.put("ret", false);
         m.put("can", false);
-        items = billItemFacade.findByJpql(jpql, m);
-        if (items == null) {
-            return null;
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        lstBillItems = billItemFacade.findByJpql(jpql, m);
+        if (lstBillItems == null) {
+            return ;
         }
-        for (BillItem i : items) {
+        for (BillItem i : lstBillItems) {
+            System.out.println("i = " + i);
             if (i.getBillFees() == null || i.getBillFees().isEmpty()) {
                 i.setBillFees(billController.billFeesOfBillItem(i));
             }
         }
-        return items;
     }
 
     public void reloadCurrentlyWorkingStaff() {
@@ -3711,6 +3714,4 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.totalSaffFee = totalSaffFee;
     }
 
-    
-    
 }
