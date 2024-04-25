@@ -366,6 +366,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public String navigateToOpdQueue() {
+        return "/opd/token/opd_queue?faces-redirect=true";
+    }
+    
     public String navigateToManageOpdTokensCompleted() {
         counter = null;
         fillOpdTokensCompleted();

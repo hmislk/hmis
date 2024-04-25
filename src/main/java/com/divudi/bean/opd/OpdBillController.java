@@ -299,6 +299,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
+    public List<BillItem> fillOpdBillItems() {
+        List<BillItem> items = new ArrayList<>();
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from BillItem i"
+                + " where i.retired=:ret"
+                + " and i.bill.cancelled=:can"
+                + " and i.bill.fromDepartment=:dep"
+                + " and i.createdAt between :frm and :to";
+        m.put("dep", fromDepartment);
+        m.put("frm", fromDate);
+        m.put("to", toDate);
+        m.put("ret", false);
+        m.put("can", false);
+        items = billItemFacade.findByJpql(jpql, m);
+        return items;
+    }
+
     public void reloadCurrentlyWorkingStaff() {
         List<WorkingTime> wts = workingTimeController.findCurrentlyActiveWorkingTimes();
         currentlyWorkingStaff = new ArrayList<>();

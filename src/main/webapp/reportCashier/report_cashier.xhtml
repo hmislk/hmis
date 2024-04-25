@@ -11,11 +11,11 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                
-                    <p:panel header="OPD Analytics">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <h:form>
+
+                <p:panel header="OPD Analytics">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
                                 <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Common Cashier Reports">
@@ -36,7 +36,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Bill Type Summary" action="#{cashierReportController.navigateToBillTypeSummery()}"/>
                                         </div>
                                     </p:tab>
-                                   
+
                                     <p:tab title="Package Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="Package Detail Report - By Bill Items" 
@@ -95,39 +95,44 @@
                                     <p:tab title="OPD Services">
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" />
-                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" />
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" />
                                         </div>
                                     </p:tab>
-                                     <p:tab title="Lists">
-                                    <h:form>
+                                    <p:tab title="Lists">
+                                        <h:form>
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton class="w-100" 
+                                                                 ajax="false"
+                                                                 value="Batch Bill List" 
+                                                                 action="#{opdBillController.navigateToOpdBatchBillList()}" />
+                                                <p:commandButton class="w-100" 
+                                                                 ajax="false"
+                                                                 value="Bill Payments"
+                                                                 action="#{opdBillController.navigateToOpdBillPayments()}" />
+                                            </div>
+                                        </h:form>
+                                    </p:tab>
+                                    <p:tab title="OPD Income">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" 
-                                                             ajax="false"
-                                                             value="Batch Bill List" 
-                                                             action="#{opdBillController.navigateToOpdBatchBillList()}" />
-                                            <p:commandButton class="w-100" 
-                                                             ajax="false"
-                                                             value="Bill Payments"
-                                                             action="#{opdBillController.navigateToOpdBillPayments()}" />
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="OPD Income" action="/opd/analytics/opd_income.xhtml" />
                                         </div>
-                                    </h:form>
-                                </p:tab>
+                                    </p:tab>
 
                                     <!--                                </p:panelGrid>-->
                                 </p:accordionPanel>
-                                </h:form>
-
-                            </div>
-                            <div class="col-md-9">
-                                <ui:insert name="subcontent" >
-
-                                </ui:insert>
-                            </div>
+                            </h:form>
 
                         </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
 
-                    </p:panel>
-                
+                            </ui:insert>
+                        </div>
+
+                    </div>
+
+                </p:panel>
+
             </ui:define>
         </ui:composition>
 
