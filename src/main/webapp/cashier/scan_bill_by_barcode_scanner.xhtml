@@ -30,9 +30,13 @@
                                         class="w-100"
                                         value="#{searchController.currentTokenId}"
                                         placeholder="Enter Bill ID or Click here to Scan"
+                                        onfocus="this.select()"
                                         >
+                                       
                                     </p:inputText>
+                                    <p:focus id="focusIx" for="billID" />
                                     <p:defaultCommand target="btnAddbill" />
+                                    <p:focus context="billID"/>
                                 </div>
                                 <div >
                                     <p:commandButton

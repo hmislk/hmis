@@ -256,7 +256,7 @@ public class CommonReport implements Serializable {
     }
 
     public String navigateToCashierDetailedReport() {
-        return "/store/store_report_cashier_detailed_by_user.xhtml";
+        return "/store/store_report_cashier_detailed_by_user?faces-redirect=true";
     }
 
     public String navigateToReportCashierDetailedByUser1() {
