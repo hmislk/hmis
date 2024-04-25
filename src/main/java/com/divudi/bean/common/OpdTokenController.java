@@ -353,15 +353,17 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill()!=null){
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetClassVariables();
                 return "/opd/token/index?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
             }
-
+        } else {
+            resetClassVariables();
+            return "/opd/token/index?faces-redirect=true";
         }
-        JsfUtil.addErrorMessage("Start Your Shift First !");
-        return "/cashier/index?faces-redirect=true";
-
     }
 
     public String navigateToManageOpdTokensCompleted() {
