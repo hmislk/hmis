@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template_without_menu.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+
+
+    <ui:define name="content">
+        <style>
+            @keyframes blink {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            .blink {
+                animation: blink 1s infinite;
+            }
+
+            .sticky-top {
+                position: fixed;
+                top: 0;
+                z-index: 1000; /* Ensure the navbar appears above other content */
+            }
+
+
+        </style>
+
+        <h:form id="form">
+            <div class="row w-100">
+                <div class="col-12" >
+
+                    <nav class="navbar navbar-light p-2 sticky-top w-100" style="background-color: #e3f2fd;">
+                        <div class="d-flex align-items-center mx-4">
+                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                            <h4 onclick="toggleFullScreen()" class="mx-4">Todays Session</h4>
+                        </div>
+
+                        <div>
+                            <p:commandButton ajax="false" 
+                                             value="List Completed" 
+                                             icon="fa fa-check" 
+                                             styleClass="ui-button-success mx-1" 
+                                             action="#{bookingController.listTodaysCompletedSesionInstances()}" />
+
+                            <!-- View Ongoing Session Data Button -->
+                            <p:commandButton ajax="false" 
+                                             value="List Ongoing"
+                                             icon="fa fa-sync-alt" 
+                                             styleClass="ui-button-info mx-1" 
+                                             action="#{bookingController.listTodaysOngoingSesionInstances()}" />
+
+                            <!-- List Pending Button -->
+                            <p:commandButton ajax="false" 
+                                             value="List Pending"
+                                             icon="fa fa-hourglass-start" 
+                                             styleClass="ui-button-warning mx-1" 
+                                             action="#{bookingController.listTodaysPendingSesionInstances()}" />
+
+                            <!-- List All Button -->
+                            <p:commandButton ajax="false" 
+                                             value="List All"
+                                             icon="fa fa-list" 
+                                             styleClass="ui-button-primary mx-1" 
+                                             action="#{bookingController.listTodaysAllSesionInstances()}" />
+                        </div>
+
+                    </nav>
+
+                </div>
+                <p:spacer height="65px" />
+                <ui:repeat var="s" 
+                           id="tblSessions"
+                           value="#{bookingController.sessionInstances}" 
+                           class="w-100 mt-5">
+
+                    <div class="bgCard row  w-100 p-2 shadow mt-1">
+                        <div class="col-3 bg-primary text-white d-flex align-items-center">
+                            <div class="px-4">
+                                <h:outputText style="font-size: 30pt" styleClass="far fa-clock"/>
+                            </div>
+                            <div class="p-1 px-2">
+                                <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 10pt"/><br/>
+                                <h:outputText value="#{s.sessionDate}"  style="font-size: 8pt;">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                                <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 8pt;">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputText>
+                            </div>
+                        </div>
+                        <div class="col-3 bg-dark">
+                            <div class="d-flex align-items-center text-white p-2">
+                                <div class="px-4">
+                                    <h:outputText style="font-size: 20pt" styleClass="fas fa-user-md"/>
+                                </div>
+                                <div class="text-white">
+                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
+                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black">
+                            <div class="text-center ">
+                                <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        <span style="font-size: 20pt;font-weight: bold">
+                                            <span class="text-success">
+                                                <span class="blink" style="font-size: 8pt">&#x25CF;</span>
+                                                <h:outputText value="#{s.completedPatientCount}">
+                                                    <f:convertNumber pattern="#,##00"/>
+                                                </h:outputText>
+                                            </span>
+                                            :
+                                            <span class="text-primary" style="font-size: 20pt;font-weight: bold"> 
+                                                <h:outputText value="#{s.paidPatientCount}">
+                                                    <f:convertNumber pattern="#,##00"/>
+                                                </h:outputText>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+
+                        </div>
+                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black;">
+                            <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <span>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="text-center mx-4">
+                                                <h:panelGrid columns="1">
+                                                    <h:outputText  style="font-size: 8pt;font-weight: bold" value="Paid"/>
+                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.paidPatientCount}">
+                                                        <f:convertNumber pattern="#,##00"/>
+                                                    </h:outputText>
+                                                </h:panelGrid>
+                                            </span>
+
+                                            <span class="text-center"> 
+                                                <h:panelGrid columns="1">
+                                                    <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
+                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
+                                                        <f:convertNumber pattern="#,##00"/>
+                                                    </h:outputText>
+                                                </h:panelGrid>
+                                            </span>
+                                        </div>
+                                    </span>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                        <div class="col-2 ">
+                            <div class="d-flex justify-content-end align-items-center mt-2">
+                                <div>
+                                    <p:commandButton icon="fas fa-play" iconPos="right"
+                                                     styleClass=" rounded-button ui-button-success " ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{s.completed}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
+
+
+                                    <p:commandButton  icon="fas fa-play" iconPos="right"
+                                                      styleClass="rounded-button ui-button-warning" ajax="false"
+                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                      rendered="#{not s.completed and not s.started}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
+
+
+                                    <p:commandButton  icon="fas fa-play" iconPos="right"
+                                                      styleClass="rounded-button ui-button-info " ajax="false"
+                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                      rendered="#{s.started and not s.completed}">
+                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--                    <div class="card mt-1">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                   
+                                                                                                        <div class="col-2 bg-dark text-white">
+                                                        <div>
+                                                                                                                    </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            
+                                                            <h:panelGroup class="mx-2">
+                                                                                                                            </h:panelGroup>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                    
+                    
+                                            </div>
+                                        </div>-->
+                </ui:repeat>
+            </div>
+
+        </h:form>
+        <script type="text/javascript">
+            //<![CDATA[
+            function toggleFullScreen() {
+                var elem = document.documentElement;
+                if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                        !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            }
+            //]]>
+        </script>
+    </ui:define>
+</ui:composition>

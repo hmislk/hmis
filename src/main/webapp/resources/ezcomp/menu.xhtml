@@ -58,6 +58,12 @@
                         value="OPD Token" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{opdTokenController.navigateToOpdQueue()}" 
+                        value="OPD Queue" 
+                        icon="fa fa-users" 
+                        rendered="true" />
                     <p:submenu 
                         id="smOpdBilling"
                         label="Billing"
@@ -857,7 +863,7 @@
                     <p:menuitem 
                         ajax="false"  
                         value="Channel Queue"  
-                        action="#{bookingController.navigateToChannelQueueFromMenu()}" 
+                        action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem 
