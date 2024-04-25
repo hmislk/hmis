@@ -486,6 +486,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateBackToBookings() {
+        fillBillSessions();
         return "/channel/channel_booking?faces-redirect=true";
     }
 
