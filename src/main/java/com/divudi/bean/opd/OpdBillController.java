@@ -144,6 +144,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
      * Controllers
      */
     @Inject
+    BillController billController;
+    @Inject
     private SessionController sessionController;
     @Inject
     private ItemController itemController;
@@ -273,6 +275,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private boolean duplicatePrint;
     private Token token;
+    
+    private Double totalHospitalFee;
+    private Double totalSaffFee;
 
     /**
      *
@@ -315,6 +320,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         m.put("ret", false);
         m.put("can", false);
         items = billItemFacade.findByJpql(jpql, m);
+        if (items == null) {
+            return null;
+        }
+        for (BillItem i : items) {
+            if (i.getBillFees() == null || i.getBillFees().isEmpty()) {
+                i.setBillFees(billController.billFeesOfBillItem(i));
+            }
+        }
         return items;
     }
 
@@ -3682,4 +3695,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.token = token;
     }
 
+    public Double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(Double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public Double getTotalSaffFee() {
+        return totalSaffFee;
+    }
+
+    public void setTotalSaffFee(Double totalSaffFee) {
+        this.totalSaffFee = totalSaffFee;
+    }
+
+    
+    
 }

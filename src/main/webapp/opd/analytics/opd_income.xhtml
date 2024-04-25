@@ -113,15 +113,25 @@
                                         <h:outputLabel value="#{billItem.bill.fromStaff.person.nameWithTitle}" />
                                     </p:column>
                                     <p:column headerText="OPD Fee">                                
-                                        <h:outputLabel value="#{billItem}" />
+                                        <h:outputLabel value="#{billItem.totalHospitalFeeValueTransient}" />
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{opdBillController.totalHospitalFee}" >
+                                                <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Doctor Fee">                                
-                                        <h:outputLabel value="#{billItem.bill.hospitalFee}" />
+                                        <h:outputLabel value="#{billItem.totalDoctorFeeValueTransient}" />
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{opdBillController.totalSaffFee}" >
+                                                <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Procedure Fee">                                
                                         <h:outputLabel value="#{billItem.netValue}" />
                                     </p:column>
-                                     <p:column headerText="Total">                                
+                                    <p:column headerText="Total">                                
                                         <h:outputLabel value="#{billItem.netValue}" />
                                     </p:column>
                                 </p:dataTable>
