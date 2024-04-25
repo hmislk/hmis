@@ -1245,6 +1245,15 @@ public class PastPatientEncounterController implements Serializable {
             paAsString += pa.getItemValue().getName() + "<br/>";
         }
         
+        String visitDx = "";
+        for (ClinicalFindingValue ix : getEncounterDiagnoses()) {
+            visitDx += ix.getItemValue().getName();
+            if (!ix.getLobValue().trim().equals("")) {
+                visitDx += " - " + ix.getLobValue();
+            }
+            visitDx += "<br/>";
+        }
+        
 
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
@@ -1293,6 +1302,7 @@ public class PastPatientEncounterController implements Serializable {
                 .replace("{rr}", rr)
                 .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
+                .replace("{visit-dx}", visitDx)
                 .replace("{routine-medicines}", routineMedicinesAsString)
                 .replace("{allergies}", allergiesAsString)
                 .replace("{visit-date}", visitDate)
