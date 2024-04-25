@@ -5,6 +5,10 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+    
+    <h:head>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    </h:head>
 
     <h:body>
 
@@ -34,18 +38,24 @@
                                 action="#{patientInvestigationController.prepareSampleCollection()}" >
                             </p:commandButton>
                         </div>
-                        
+
                     </p:panel>
-                    
-                    
-                    <ui:repeat value="#{patientInvestigationController.sampleTubeLabels}" var="label" >
-                        <h:outputText escape="false" value="#{label}" ></h:outputText>
-                    </ui:repeat>
-                    
+
+                    <h:panelGroup id="labelview">
+                        <div>
+                            <ui:repeat value="#{patientInvestigationController.sampleTubeLabels}" var="label" >
+                                    <h:outputText escape="false" value="#{label}" ></h:outputText>
+                                    
+                                    <br/>
+                            </ui:repeat>
+                        </div>
+                    </h:panelGroup>
+
 
                     <p:commandButton value="Print" ajax="false"  >
-                        <p:printer target="print" ></p:printer>
+                        <p:printer target="labelview" ></p:printer>
                     </p:commandButton>
+
                     <h:panelGroup id="print" >
                         <ui:repeat value="#{patientInvestigationController.patientSamples}" var="ps" >
                             <div style="page-break-after: always; width: 97vw;height: 97vh;border: none; margin: 0px;overflow: hidden; text-align: center; vertical-align: central" >
@@ -77,20 +87,11 @@
                                     </tr>
                                 </table>
 
-
-
-
                             </div>
                         </ui:repeat>
                     </h:panelGroup>
-
                 </h:form>
-
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

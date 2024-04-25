@@ -49,7 +49,16 @@
 
                 </f:facet>
                 <p:tabView id="detail">
-                    <p:tab title="Booking" id="booking">
+                    <p:tab title="Booking" id="booking" class="w-100">
+                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToCancel}" class="w-100 bg-danger text-white p-2" layout="block">
+                            <i class="fas fa-ban text-white m-3"></i>
+                            <h:outputText value="Marked to Cancel" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToRefund}"  class="w-100 bg-danger text-white p-2" layout="block">
+                            <i class="fas fa-undo-alt  text-white m-3" ></i>
+                            <h:outputText value="Marked to Refund"  />
+                        </h:panelGroup>
+                        <!-- More Labels and Output Below -->
                         <h:panelGrid columns="2" >
                             <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance ne 0.0}">
                                 <div class="ui-message-error ui-widget ui-corner-all">
@@ -58,6 +67,8 @@
                                         <h:outputText value="NOT PAID YET" ></h:outputText>
                                     </span>
                                 </div>
+
+
 
                                 <h:panelGrid columns="2">
                                     <p:outputLabel value="Name"/>
@@ -198,7 +209,7 @@
                                     <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.creater.webUserPerson.nameWithTitle}" />
                                     <p:outputLabel style="color: red" value="Refund At" />
                                     <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.createdAt}" >
-                                        <f:convertNumber pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertNumber>
+<!--                                        <f:convertNumber pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertNumber>-->
                                     </p:outputLabel> 
                                 </h:panelGrid>
 
@@ -565,7 +576,7 @@
                                         <p:commandButton
                                             class="ui-button-secondary mx-2"
                                             icon="fa-solid fa-arrow-left"
-                                            action="#{bookingController.navigateBackToBookings()}"
+                                            action="#{bookingController.navigateBackToBookingsLoagingBillSessions()}"
                                             value="Back to Channel Booking"
                                             process="@this"
                                             update="@all">

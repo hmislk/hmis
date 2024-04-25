@@ -89,7 +89,7 @@
 
                         <p:menuitem 
                             ajax="false"
-                            action="/opd_bill_package?faces-redirect=true" 
+                            action="/opd/opd_bill_package?faces-redirect=true" 
                             actionListener="#{billPackageController.clearBillValues}" 
                             value="Package Billing"
                             icon="fa fa-fw fa-boxes"
@@ -237,17 +237,34 @@
                         value="Token Management" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
-                    <p:menuitem ajax="false" action="/lab/report_for_opd_print?faces-redirect=true" value="Lab Report print" icon="fa fa-file-medical" rendered="true" />
-                    <p:menuitem ajax="false" action="#{cashierReportController.navigateToOpdSummeries()}" value="OPD Analytics" icon="fa fa-list-alt"></p:menuitem>
-                    <p:menuitem ajax="false"
-                                rendered="false"
-                                action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
-                                value="Analytics" icon="fa fa-list-alt"></p:menuitem>
-                    <p:menuitem ajax="false"
-                                styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
-                                rendered="#{webUserController.hasPrivilege('Opd') and sessionController.applicationPreference.opdBillingAftershiftStart eq true}"
-                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
-                                value="Financial Transaction Manager" icon="fa fa-list-alt"></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{reportController.navigatetoOPDLabReportByMenu()}" 
+                        value="Lab Report Print" 
+                        icon="fa fa-file-medical" 
+                        rendered="#{webUserController.hasPrivilege('OpdLabReportSearch')}"
+                         />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{cashierReportController.navigateToOpdSummeries()}" 
+                        value="OPD Analytics" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        rendered="false"
+                        action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
+                        value="Analytics" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"
+                        styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
+                        rendered="#{webUserController.hasPrivilege('Opd') and sessionController.applicationPreference.opdBillingAftershiftStart eq true}"
+                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                        value="Financial Transaction Manager" 
+                        icon="fa fa-list-alt">
+                    </p:menuitem>
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
@@ -824,8 +841,7 @@
                         <p:menuitem ajax="false"  action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
                     </p:submenu>
                     <p:menuitem  ajax="false" action="/store/store_search?faces-redirect=true"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
-                    <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/store/store_summery_index?faces-redirect=true"  value="Summary" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
+                    <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Store Analytics" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
 
                 </p:submenu>
 

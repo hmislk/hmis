@@ -181,7 +181,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.OPD_TOKEN));
         }
         currentToken.setCounter(counter);
-        currentToken.setDoctor(doctor);
+        currentToken.setStaff(staff);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
@@ -240,7 +240,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         findPreBill(currentToken.getBill());
         opdPreSettleController.setBillPreview(false);
         opdPreSettleController.setToken(currentToken);
-        return "/opd_bill_pre_settle?faces-redirect=true";
+        return "/opd/opd_bill_pre_settle?faces-redirect=true";
     }
 
     public void findPreBill(Bill args) {

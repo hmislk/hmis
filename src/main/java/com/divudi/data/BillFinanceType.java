@@ -13,6 +13,7 @@ public enum BillFinanceType {
     CREDIT_IN("Credit In"),
     CREDIT_OUT("Credit Out"),
     CREDIT_SETTLEMENT("Credit Settlement"),
+    CREDIT_SETTLEMENT_REVERSE("Credit Settlement Reverse"),
     FLOAT_STARTING_BALANCE("Float Starting Balance"),
     FLOAT_CLOSING_BALANCE("Float Closing Balance"),
     FLOAT_INCREASE("Float Increase"),
