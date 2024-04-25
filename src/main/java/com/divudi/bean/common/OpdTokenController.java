@@ -4,10 +4,12 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
@@ -66,6 +68,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     OpdPreBillController opdPreBillController;
     @Inject
     OpdPreSettleController opdPreSettleController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
 
     // </editor-fold> 
     private Token currentToken;
@@ -346,8 +350,20 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToTokenIndex() {
-        resetClassVariables();
-        return "/opd/token/index?faces-redirect=true";
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetClassVariables();
+                return "/opd/token/index?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            resetClassVariables();
+            return "/opd/token/index?faces-redirect=true";
+        }
     }
 
     public String navigateToManageOpdTokensCompleted() {
