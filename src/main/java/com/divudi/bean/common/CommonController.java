@@ -88,7 +88,7 @@ public class CommonController implements Serializable {
     }
 
     public Date getCurrentDateTime() {
-        return new Date();
+        return CommonFunctionsController.getEndOfDay(new Date());
     }
 
     public boolean renderPaginator(List<Object> list, int count) {

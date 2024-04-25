@@ -221,7 +221,13 @@ public class DataUploadController implements Serializable {
     private List<Doctor> doctorsTosave;
 
     private boolean pollActive;
+    private boolean uploadComplete;
 
+    public String navigateToCollectingCenterUpload(){
+        uploadComplete=false;
+        return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
+    }
+    
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
         if (file != null) {
@@ -1493,8 +1499,12 @@ public class DataUploadController implements Serializable {
                 collectingCentres = readCollectingCentresFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
+                uploadComplete=false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
             }
         }
+        uploadComplete=true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
     
      public void uploadCreditCOmpanies() {
@@ -3556,6 +3566,14 @@ public class DataUploadController implements Serializable {
 
     public void setDoctorsTosave(List<Doctor> doctorsTosave) {
         this.doctorsTosave = doctorsTosave;
+    }
+
+    public boolean isUploadComplete() {
+        return uploadComplete;
+    }
+
+    public void setUploadComplete(boolean uploadComplete) {
+        this.uploadComplete = uploadComplete;
     }
     
     
