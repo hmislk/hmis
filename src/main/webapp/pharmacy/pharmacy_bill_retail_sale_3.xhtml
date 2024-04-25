@@ -21,7 +21,7 @@
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" disabled="true" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            <p:commandButton icon="fas fa-file-invoice" disabled="true"  class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                             <i class="fas fa-shopping-cart rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
 
                         </p:panel>
@@ -29,7 +29,7 @@
                         <p:panel class="w-100">
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
-                                <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" class="mx-4"></h:outputLabel>
+                                <h:outputLabel value="Pharmacy Retail Bill (Sale 4)" class="mx-4"></h:outputLabel>
                             </f:facet>
 
                             <div class="row">
@@ -404,7 +404,7 @@
                                                                             <p:outputLabel value="Staff Member" ></p:outputLabel>
                                                                             <p:autoComplete  
                                                                                 forceSelection="true" 
-                                                                                value="#{pharmacySaleController32.toStaff}" 
+                                                                                value="#{pharmacySaleController2.toStaff}" 
                                                                                 id="scStaff"
                                                                                 completeMethod="#{staffController.completeStaff}" 
                                                                                 var="mys" 
@@ -505,7 +505,7 @@
                                                             id="paid"
                                                             value="#{pharmacySaleController3.cashPaid}"
                                                             onfocus="this.select()">
-                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
+                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                                         </p:inputText>
                                                         <h:outputLabel  value="Balance" ></h:outputLabel>
                                                         <h:outputLabel class="mx-4 my-1" id="balance" value="#{pharmacySaleController3.balance}" >
@@ -569,10 +569,10 @@
 
                             <div class="d-flex gap-3">
 
-                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                                <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
 
                             </div>
@@ -586,10 +586,12 @@
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
                                         <phi:saleBill_without_item bill="#{pharmacySaleController3.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
+                                   
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        
                                         <phi:saleBill bill="#{pharmacySaleController3.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>

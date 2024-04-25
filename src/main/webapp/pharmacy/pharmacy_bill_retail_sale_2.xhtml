@@ -48,7 +48,7 @@
                                                 maxResults="10" 
                                                 class="w-100"
                                                 forceSelection="true"
-                                                value="#{pharmacySaleController2.stock}"
+                                                value="#{pharmacySaleController2.stock}" 
                                                 completeMethod="#{stockController.completeAvailableStocks}" 
                                                 var="i" 
                                                 itemLabel="#{i.itemBatch.item.name}" 
@@ -109,7 +109,7 @@
                                                         icon="fa fa-plus" 
                                                         value="Add" 
                                                         styleClass="ui-button-success" 
-                                                        action="#{pharmacySaleController2.addBillItem()}"
+                                                        action="#{pharmacySaleController2.addBillItem()}" 
                                                         ajax="false" 
                                                         process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
                                                         update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
@@ -160,8 +160,8 @@
                                         <p:dataTable id="tblBillItem" value="#{pharmacySaleController2.preBill.billItems}"
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
 
-                                            <p:ajax event="rowEdit" listener="#{pharmacySaleController2.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
-                                            <p:ajax event="rowEditCancel" listener="#{pharmacySaleController2.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
+                                            <p:ajax event="rowEdit" listener="#{pharmacySaleController2.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                            <p:ajax event="rowEditCancel" listener="#{pharmacySaleController2.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
                                             <p:column headerText="Item" width="30%">
@@ -265,7 +265,7 @@
                                             class="w-100"
                                             id="lstReplaceableBatch" 
                                             selection="#{pharmacySaleController2.replacableStock}"
-                                            value="#{pharmacySaleController2.replaceableStocks}"
+                                            value="#{pharmacySaleController2.replaceableStocks}" 
                                             var="ri" 
                                             selectionMode="single"
                                             rowKey="#{ri.id}"
@@ -318,7 +318,7 @@
                                                     <div class="row" >
                                                         <div class="col-md-5" >
                                                             <p:selectOneMenu   id="pay"
-                                                                               value="#{pharmacySaleController2.paymentMethod}">
+                                                                               value="#{pharmacySaleController2.paymentMethod}">    
                                                                 <f:selectItems value="#{enumController.paymentMethods}" var="p" itemLabel="#{p.label}"
                                                                                itemValue="#{p}"/>
                                                                 <p:ajax process="@this cmbPs cmbPs2" 
@@ -327,7 +327,7 @@
                                                                         listener="#{pharmacySaleController2.changeListener()}"/>
                                                             </p:selectOneMenu>
 
-                                                            <p:selectOneMenu   id="cmbPs2" value="#{pharmacySaleController2.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">
+                                                            <p:selectOneMenu   id="cmbPs2" value="#{pharmacySaleController2.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">   
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                                 <p:ajax process="@this pay " 
                                                                         update="pBillDetails panelPaymentDetails" 
@@ -344,7 +344,7 @@
                                                                 class="ui-button-success mx-1"
                                                                 onclick="if (!confirm('Are you sure?'))
                                                                             return false"
-                                                                            action="#{pharmacySaleController2.settleBillWithPay}" >
+                                                                action="#{pharmacySaleController2.settleBillWithPay}" >
                                                                 <f:facet name="title" >
                                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                                     <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -390,7 +390,7 @@
                                                                         <h:panelGrid id="tabCredit" columns="3" class="my-2" >
                                                                             <p:outputLabel value="Credit Company" ></p:outputLabel>
                                                                             <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" forceSelection="true" 
-                                                                                            value="#{pharmacySaleController2.toInstitution}"
+                                                                                            value="#{pharmacySaleController2.toInstitution}" 
                                                                                             id="scCreditCompany"
                                                                                             completeMethod="#{institutionController.completeCreditCompany}" 
                                                                                             var="myi" itemLabel="#{myi.name}" itemValue="#{myi}">
@@ -437,7 +437,7 @@
                                                                     <h:panelGroup
                                                                         class="row my-1 w-100"
                                                                         layout="block" 
-                                                                        id="multiplePaymentMethods"  rendered="#{pharmacySaleController2.paymentMethod eq 'MultiplePaymentMethods'}"
+                                                                        id="multiplePaymentMethods"  rendered="#{pharmacySaleController2.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                                         >
                                                                         <pa:multiple_payment_methods paymentMethodData="#{pharmacySaleController2.paymentMethodData}" class="w-100" controller="#{pharmacySaleController2}"/>
 
@@ -450,7 +450,7 @@
                                                     </div>
 
                                                     <div class="col-5">
-                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController2.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">
+                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController2.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">   
                                                             <f:selectItem itemLabel="Discount Scheme"/>
                                                             <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                             <p:ajax process="@this pay " 
@@ -462,7 +462,7 @@
 
                                                     <h:panelGrid columns="2" class="my-2">
                                                         <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                                        <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController2.preBill.referredBy}"
+                                                        <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController2.preBill.referredBy}" 
                                                                         completeMethod="#{doctorController.completeDoctor}" 
                                                                         var="ix" itemLabel="#{ix.person.name}" 
                                                                         itemValue="#{ix}" size="40" 
@@ -505,7 +505,7 @@
                                                             id="paid"
                                                             value="#{pharmacySaleController2.cashPaid}"
                                                             onfocus="this.select()">
-                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
+                                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                                         </p:inputText>
                                                         <h:outputLabel  value="Balance" ></h:outputLabel>
                                                         <h:outputLabel class="mx-4 my-1" id="balance" value="#{pharmacySaleController2.balance}" >
@@ -571,7 +571,7 @@
 
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                                <p:commandButton icon="fas fa-file-invoice" disabled="true"  value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
 
@@ -584,12 +584,14 @@
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}" >
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
-                                        <phi:saleBill_without_item bill="#{pharmacySaleController2.printBill}"></phi:saleBill_without_item>
+                                        <phi:saleBill_without_item bill="#{pharmacySaleController2.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
+                                   
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        
                                         <phi:saleBill bill="#{pharmacySaleController2.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>

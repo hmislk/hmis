@@ -841,8 +841,7 @@
                         <p:menuitem ajax="false"  action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
                     </p:submenu>
                     <p:menuitem  ajax="false" action="/store/store_search?faces-redirect=true"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
-                    <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/store/store_summery_index?faces-redirect=true"  value="Summary" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
+                    <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Store Analytics" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
 
                 </p:submenu>
 
