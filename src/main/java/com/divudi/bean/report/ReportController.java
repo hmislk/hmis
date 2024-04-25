@@ -159,6 +159,10 @@ public class ReportController implements Serializable {
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
 
+    public String navigatetoOPDLabReportByMenu(){
+        return "/lab/report_for_opd_print?faces-redirect=true";
+    }
+    
     public String navigateToPrescriptionSummaryReport() {
         return "/pharmacy/prescription_summary_report?faces-redirect=true";
     }

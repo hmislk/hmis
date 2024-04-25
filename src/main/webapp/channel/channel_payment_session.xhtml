@@ -28,7 +28,7 @@
                                             class="ui-button-secondary"
                                             icon="fa-solid fa-arrow-left"
                                             action="#{bookingController.navigateToViewSessionData()}" 
-                                            value="Back to Sesion Data" >
+                                            value="Back to Session Data" >
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -39,26 +39,30 @@
                                 <div class="row w-100">
                                     <div class="col-5">
                                         <p:panel class="mb-2 w-100">
-                                            <h:panelGrid columns="2" class="w-100">
+                                            <h:panelGrid columns="3" class="w-100">
                                                 <p:outputLabel value="Speciality" />
-                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.speciality}" />
+                                                <p:outputLabel value=":" />
+                                                <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.speciality.name}" />
 
                                                 <p:outputLabel value="Staff" />
+                                                <p:outputLabel value=":" />
                                                 <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
 
                                                 <p:outputLabel value="Session" />
+                                                <p:outputLabel value=":" />
                                                 <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.originatingSession.name}" />
                                                 
                                                 <p:outputLabel value="Date" />
+                                                <p:outputLabel value=":" />
                                                 <p:outputLabel value="#{channelStaffPaymentBillController.sessionInstance.sessionDate}" >
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                                     </f:convertDateTime>
                                                 </p:outputLabel>
                                                 
                                                 <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                                <p:outputLabel value=":" />
                                                 <p:selectOneMenu 
-                                                    id="cmbPay" 
-                                                    class="w-100 mx-2" 
+                                                    id="cmbPay"
                                                     value="#{channelStaffPaymentBillController.paymentMethod}" >
                                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 </p:selectOneMenu>
@@ -120,12 +124,12 @@
                                         <h:outputLabel value="#{i+1}">
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Bill Id">
+                                    <p:column headerText="Bill ID">
                                         <h:outputLabel value="#{bf.bill.insId}">
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Appoinment No">
+                                    <p:column headerText="Appointment No">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
                                     </p:column>
@@ -231,7 +235,7 @@
 
                 <h:form>
                     <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
+                        <p:commandButton ajax="false" class="ui-button-success mx-1 my-2" icon="fas fa-plus" style="float: right" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
                         <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                     </h:panelGroup>
                 </h:form>

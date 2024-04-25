@@ -1438,6 +1438,15 @@ public class PatientEncounterController implements Serializable {
                 ixSameLine += " / ";
             }
         }
+        
+        String visitDx = "";
+        for (ClinicalFindingValue ix : getEncounterDiagnoses()) {
+            visitDx += ix.getItemValue().getName();
+            if (!ix.getLobValue().trim().equals("")) {
+                visitDx += " - " + ix.getLobValue();
+            }
+            visitDx += "<br/>";
+        }
 
         String paAsString = "";
         for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
@@ -1497,6 +1506,7 @@ public class PatientEncounterController implements Serializable {
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{visit-dx}", visitDx)
                 .replace("{ix-same-line}", ixSameLine)
                 .replace("{rr}", rr)
                 .replace("{pa}", paAsString)
@@ -1629,7 +1639,6 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select Surgery");
             return;
         }
-        System.out.println("get = " + getPatientProcedure().getItemValue().getName());
         getPatientProcedure().setPatient(patient);
         getPatientProcedure().setClinicalFindingValueType(ClinicalFindingValueType.PatientProcedure);
         clinicalFindingValueFacade.create(getPatientProcedure());

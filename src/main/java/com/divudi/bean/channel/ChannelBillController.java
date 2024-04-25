@@ -781,28 +781,22 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelCreditPaidBill() {
-        System.out.println("cancelCreditPaidBill");
-        System.out.println("getBillSession() = " + getBillSession());
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
         }
-        System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
         if (getBillSession().getBill() == null) {
             JsfUtil.addErrorMessage("No Bill To Cancel");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession() = " + getBillSession().getPaidBillSession());
         if (getBillSession().getPaidBillSession() == null) {
             JsfUtil.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
         if (getBillSession().getPaidBillSession().getBill() == null) {
             JsfUtil.addErrorMessage("No Paid Paid Bill Session");
             return;
         }
-        System.out.println("getBillSession().getPaidBillSession().getBill().isRefunded() = " + getBillSession().getPaidBillSession().getBill().isRefunded());
         if (getBillSession().getPaidBillSession().getBill().isRefunded()) {
             JsfUtil.addErrorMessage("Already Refunded");
             return;
@@ -1499,17 +1493,13 @@ public class ChannelBillController implements Serializable {
 //
 //    }
     public void add() {
-        System.out.println("add");
         errorText = "";
         if (errorCheck()) {
             settleSucessFully = false;
             return;
         }
-        System.out.println("Error check completed");
         savePatient();
-        System.out.println("Saving patient completed");
         printingBill = saveBilledBill();
-        System.out.println("Printing bill completed");
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessions();
@@ -1893,7 +1883,7 @@ public class ChannelBillController implements Serializable {
         bill.setDeptId(deptId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
-            bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
+//            bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
             bill.setPaidAmount(getAmount());
             bill.setPaidAt(new Date());
         }

@@ -141,6 +141,8 @@ public class ItemController implements Serializable {
 
     ReportKeyWord reportKeyWord;
 
+    private List<Item> packaes;
+
     public void processDepartmentItemCount() {
         // Query for count of items without a department
         String jpqlWithoutDept = "select count(i) "
@@ -930,7 +932,6 @@ public class ItemController implements Serializable {
                 + " and d.institution=:ins "
                 + " order by d.name";
         departments = departmentFacade.findByJpql(sql, m);
-        System.out.println("dep = " + departments.size());
         return departments;
     }
 
@@ -1466,6 +1467,19 @@ public class ItemController implements Serializable {
         }
         return suggestions;
 
+    }
+
+    public List<Item> fillpackages() {
+        List<Item> suggestions;
+        String sql;
+        sql = "select c from Item c where c.retired=false"
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + " and type(c)=Packege "
+                    + " order by c.name";
+            //////// // System.out.println(sql);
+            packaes = getFacade().findByJpql(sql);
+            //System.out.println("packaes = " + packaes);
+            return packaes;
     }
 
     public List<Item> completePackage(String query) {
@@ -2192,7 +2206,7 @@ public class ItemController implements Serializable {
         current = null;
         getCurrent();
     }
-    
+
     public void saveSelectedWithItemLight() {
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
@@ -2232,7 +2246,7 @@ public class ItemController implements Serializable {
     }
 
     public void deleteWithItemLight() {
-        if(getCurrent()==null){
+        if (getCurrent() == null) {
             JsfUtil.addSuccessMessage("No such item");
             return;
         }
@@ -2243,7 +2257,7 @@ public class ItemController implements Serializable {
         JsfUtil.addSuccessMessage("Deleted Successfully");
         recreateModel();
         getAllItems();
-        selectedItemLight=null;
+        selectedItemLight = null;
     }
 
     public Institution getInstitution() {
@@ -2680,6 +2694,18 @@ public class ItemController implements Serializable {
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
 
+    }
+
+    public List<Item> getPackaes() {
+        if(packaes==null){
+            packaes = fillpackages();
+        }
+        // System.out.println("getPackaes = " + packaes);   
+        return packaes;
+    }
+
+    public void setPackaes(List<Item> packaes) {
+        this.packaes = packaes;
     }
 
     @FacesConverter("itemLightConverter")

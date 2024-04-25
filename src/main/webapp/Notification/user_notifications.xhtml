@@ -10,89 +10,148 @@
             <ui:define name="content">
                 <h:form >
                     <h:panelGroup id="userNoti" >
-                        <div class="d-flex justify-content-end align-items-center">
-                             <p:commandButton 
-                            class="m-2 ui-button-warning" 
-                            ajax="false" 
-                            icon="fas fa-trash" 
-                            value="Clear Cancelled Request" 
-                            action="#{userNotificationController.clearCanceledRequestsNotification()}"/>
-                        </div>
-                        <p:repeat value="#{userNotificationController.items}" var="un">
-                            <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: red;' : ''}">
-                                <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER'}">
-                                    <div class="col-4 bg-success p-2 ">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <h:outputText  styleClass="fa-solid fa-comments mx-4 text-white" />
-                                            <h5 class="text-white">New Notification from</h5>
-                                            <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_TRANSFER_REQUEST'}">
-                                    <div class="col-4 bg-primary p-2 ">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <h:outputText  styleClass="fa-solid fa-comments mx-4 text-white" />
-                                            <h5 class="text-white">New Notification from</h5>
-                                            <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_DIRECT_ISSUE'}">
-                                    <div class="col-4 bg-warning p-2 ">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <h:outputText  styleClass="fa-solid fa-comments mx-4 text-white" />
-                                            <h5 class="text-white">New Notification from</h5>
-                                            <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-                                <div class="col-8 text-black">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div >
-                                            <p:outputLabel class="mx-2" value="#{un.notification.message}"/>
-                                            <p:outputLabel class="mx-4" value="#{un.notification.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat} / HH:mm" ></f:convertDateTime>
-                                            </p:outputLabel>
-                                            <p:outputLabel class="mx-2" value="#{un.notification.bill.cancelled}"/>
-                                        </div>
+                        <div class="d-flex justify-content-end align-items-center my-2">
 
-                                        <div class="d-flex align-items-center mt-2">
-                                            <div>
-                                                <p:commandButton 
-                                                    id="btnGo" 
-                                                    class="ui-button-raised mx-2" 
-                                                    action="#{userNotificationController.navigateToCurrentNotificationRequest(un)}"
-                                                    value="Go To"
-                                                    ajax="false"
-                                                    icon="fas fa-eye"
-                                                    >
-                                                    <f:setPropertyActionListener value="#{un}" target="#{userNotificationController.current}"/>
-                                                </p:commandButton>
-                                            </div>
-                                            <div>
-                                                <p:commandButton 
-                                                    id="btnRemove" 
-                                                    class="ui-button-danger mx-2" 
-                                                    onclick="PF('dlg2').show();"
-                                                    icon="fas fa-trash"
-                                                    />
-                                            </div>
+                            <h:panelGroup id="criteria">
+                                Today :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.todayNotification}" />
+                                Seen :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.seenedNotifiaction}" />
+                                Completed :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.completedNotification}" />
+                                NotCompleted :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.notCompeletedNotifiaction}" />
+                                Canceled :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.canceldRequests}" />
+                            </h:panelGroup>
 
-                                            <p:dialog header="Modal Dialog" widgetVar="dlg2" modal="true" width="250" height="150" class="w-50 p-2">
-                                                <h:outputText value="Comment" style="font-size: 20px"/><br/>
-                                                <p:inputTextarea class="w-100" value="#{un.retireComments}">
-                                                </p:inputTextarea>
-                                                <div class="d-flex align-items-center justify-content-end m-2">
-                                                    <p:commandButton class="ui-button-danger" value="Ok" ajax="false" action="#{userNotificationController.removeUserNotification(un)}"/>
-                                                </div>
-                                            </p:dialog>  
-                                        </div>
-                                    </div>
+                            <p:commandButton 
+                                id="btnFilter"
+                                class="m-2 ui-button-success" 
+                                process="btnFilter criteria"
+                                update="reNot"
+                                icon="fa-solid fa-filter" 
+                                value="Filter" 
+                                action="#{userNotificationController.filterNotificationsByCriteria()}"/>
+
+                            <p:commandButton 
+                                class="m-2 ui-button-danger" 
+                                icon="fas fa-trash" 
+                                value="Clear" 
+                                onclick="PF('confirmationDialog').show();"
+                                />
+                                
+                            <p:dialog  minHeight="100" width="400"  header="Confirmation" widgetVar="confirmationDialog" modal="true" >
+                                <p class="my-2">Are you sure you want to cancel the request?</p>
+                                <div class="d-flex mt-2 justify-content-end">
+                                    <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{userNotificationController.clearNotificationsByCriteria()}" onclick="PF('confirmationDialog').hide();" />
+                                    <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
                                 </div>
+                            </p:dialog>
 
-                            </div>
-                        </p:repeat>
+                            
+
+
+                        </div>
+                        <h:panelGroup id="reNot" >
+                            <p:repeat value="#{userNotificationController.items}" var="un">
+                                <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
+                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'INWARD_PHARMACY_REQUEST'}">
+                                        <div class="col-4 p-2 text-left" style="background: linear-gradient(90deg, rgba(58,71,180,1) 0%, rgba(65,6,27,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-comments mx-4 text-white" />
+                                                <h5 class="text-white">INWARD PHARMACY REQUEST</h5>
+                                                <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_TRANSFER_REQUEST'}">
+                                        <div class="col-4 p-2 text-left" style="background: linear-gradient(to right, #8e2de2, #4a00e0);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-comments mx-4 text-white" />
+                                                <h5 class="text-white">PHARMACY TRANSFER REQUEST</h5>
+                                                <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_DIRECT_ISSUE'}">
+                                        <div class="col-4 p-2 text-left" style="background: linear-gradient(90deg, rgba(180,119,58,1) 0%, rgba(65,6,27,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-comments mx-4 text-white" />
+                                                <h5 class="text-white">PHARMACY DIRECT ISSUE</h5>
+                                                <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER'}">
+                                        <div class="col-4 p-2 text-left" style="background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(65,6,27,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-comments mx-4 text-white" />
+                                                <h5 class="text-white">PHARMACY_ORDER</h5>
+                                                <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'PHARMACY_ORDER_APPROVAL'}">
+                                        <div class="col-4 bg-success p-2 text-left" style="background: linear-gradient(90deg, rgba(180,58,58,1) 0%, rgba(65,6,27,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-comments mx-4 text-white" />
+                                                <h5 class="text-white">PHARMACY ORDER APPROVAL</h5>
+                                                <h6 style="box-sizing: border-box;border: 1px solid white;padding: 10px;color: white;font-weight: bold;margin-right: 10px"> #{un.notification.bill.department.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <div class="col-8 text-black">
+                                        <div class="row text-left">
+                                            <div class="col-5 d-flex align-items-center" style="font-weight: bold">
+                                                <p:outputLabel class="mx-2" value="#{un.notification.message}"/>
+                                            </div>
+                                            <div class="col-1 d-flex justify-content-center align-items-center">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputText rendered="#{un.notification.completed}" styleClass="fas fa-check mx-2" />
+                                                    <h:outputText rendered="#{un.seen}" styleClass="fa-solid fa-eye" />
+                                                </div>
+                                            </div>
+                                            <div class="col-3 d-flex align-items-center" style="box-sizing: border-box;border-left: 1px solid black;border-right: 1px solid black;">
+                                                <p:outputLabel class="mx-4" style="font-weight: bolder" value="#{un.notification.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                            </div>
+                                            <div class="col-3 d-flex align-items-center">
+                                                <div class="d-flex align-items-center justify-content-end mt-2">
+                                                    <div>
+                                                        <p:commandButton 
+                                                            id="btnGo" 
+                                                            class="ui-button-raised mx-2 " 
+                                                            action="#{userNotificationController.navigateToCurrentNotificationRequest(un)}"
+                                                            value="Go"
+                                                            ajax="false"
+                                                            icon="fa-solid fa-paper-plane"
+                                                            >
+                                                            <f:setPropertyActionListener value="#{un}" target="#{userNotificationController.current}"/>
+                                                        </p:commandButton>
+                                                    </div>
+                                                    <div>
+                                                        <p:commandButton 
+                                                            id="btnRemove" 
+                                                            class="ui-button-danger mx-2" 
+                                                            onclick="PF('dlg2').show();"
+                                                            icon="fas fa-trash"
+                                                            />
+                                                    </div>
+
+                                                    <p:dialog header="Modal Dialog" widgetVar="dlg2" modal="true" width="250" height="150" class="w-50 p-2">
+                                                        <h:outputText value="Comment" style="font-size: 20px"/><br/>
+                                                        <p:inputTextarea class="w-100" value="#{un.retireComments}">
+                                                        </p:inputTextarea>
+                                                        <div class="d-flex align-items-center justify-content-end m-2">
+                                                            <p:commandButton class="ui-button-danger" value="Ok" ajax="false" action="#{userNotificationController.removeUserNotification(un)}"/>
+                                                        </div>
+                                                    </p:dialog>  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </p:repeat>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </h:form>
             </ui:define>

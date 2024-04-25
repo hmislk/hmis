@@ -317,20 +317,15 @@ public class TransferIssueController implements Serializable {
                 transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
             }
             
-            System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
 
             if (grnBillItem.getPharmaceuticalBillItem().getFreeQty() != 0.0 && grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
                 
                 transferIssueBillItem.setQty(transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty());
                 
                 double totalQty = transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty();
-                System.out.println("totalQty = " + totalQty);
                 
-                System.out.println("transferIssueBillItem.getQty() = " + transferIssueBillItem.getQty());
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 
-                System.out.println("transferIssueBillItem.getQtyInUnit() = " + transferIssueBillItem.getQtyInUnit());
-                System.out.println("grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit() = " + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 
                 
             
@@ -465,6 +460,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
+        notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -476,7 +472,6 @@ public class TransferIssueController implements Serializable {
         issuedBill = null;
         issuedBill = b;
         
-        notificationController.createNotification(issuedBill);
         printPreview = true;
 
     }
@@ -672,10 +667,8 @@ public class TransferIssueController implements Serializable {
     private PharmacyController pharmacyController;
     
     public void onEditDepartmentTransfer(BillItem billItem) {
-        System.out.println("billItem = " + billItem);
         double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
 
-        System.out.println("availableStock = " + availableStock);
 
         if (availableStock < billItem.getPharmaceuticalBillItem().getQtyInUnit()) {
             billItem.setTmpQty(0.0);

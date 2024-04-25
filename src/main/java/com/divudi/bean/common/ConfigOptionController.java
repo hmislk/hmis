@@ -176,9 +176,6 @@ public class ConfigOptionController implements Serializable {
     }
 
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
-        System.out.println("getEnumValue");
-        System.out.println("option = " + option);
-        System.out.println("enumClass = " + enumClass);
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
         }
@@ -190,7 +187,6 @@ public class ConfigOptionController implements Serializable {
 
     public <E extends Enum<E>> E getEnumValueByKey(String key, Class<E> enumClass, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         ConfigOption option = getOptionValueByKey(key, scope, institution, department, webUser);
-        System.out.println("option = " + option);
 
         if (option == null || option.getValueType() != OptionValueType.ENUM || !option.getEnumType().equals(enumClass.getName())) {
             option = new ConfigOption();
@@ -202,14 +198,11 @@ public class ConfigOptionController implements Serializable {
             option.setDepartment(department);
             option.setWebUser(webUser);
             option.setValueType(OptionValueType.ENUM);
-            System.out.println("option.getEnumValue() = " + option.getEnumValue());
             option.setEnumType(enumClass.getName());
-            System.out.println("enumClass.getName() = " + enumClass.getName());
             optionFacade.create(option); // Persist the new ConfigOption entity
 
         }
 
-        System.out.println("1 option = " + option);
         return getEnumValue(option, enumClass);
     }
 
@@ -230,7 +223,6 @@ public class ConfigOptionController implements Serializable {
         try {
             return Double.parseDouble(option.getEnumValue());
         } catch (NumberFormatException e) {
-            System.out.println("Failed to parse option value as double: " + e.getMessage());
             return null;
         }
     }
@@ -293,9 +285,8 @@ public class ConfigOptionController implements Serializable {
             // Attempt to convert the option's value to a Long
             return Long.parseLong(option.getOptionValue());
         } catch (NumberFormatException e) {
-            // Log or handle the case where the value cannot be parsed into a Long
-            System.out.println("Failed to parse option value as Long: " + e.getMessage());
-            return null;
+// Log or handle the case where the value cannot be parsed into a Long
+                        return null;
         }
     }
 

@@ -25,73 +25,24 @@
                 .fullHeightListbox .ui-selectlistbox-listcontainer {
                     height: 80vh !important;
                 }
-
-                .ring-container {
-                    position: relative;
-                }
-
-                .circle {
-                    width: 10px;
-                    height: 10px;
-                    background-color: #62bd19;
-                    border-radius: 50%;
-                    position: absolute;
-                    top: -5.3px;
-                    left: 1.2px;
-                }
-
-                .ringring {
-                    border: 3px solid #62bd19;
-                    -webkit-border-radius: 20px;
-                    height: 20px;
-                    width: 20px;
-                    top : -9.45px;
-                    left: -4.10px;
-                    position: absolute;
-                    -webkit-animation: pulsate 1s ease-out;
-                    -webkit-animation-iteration-count: infinite;
-                    opacity: 0.0
-                }
-                @-webkit-keyframes pulsate {
-                    0% {
-                        -webkit-transform: scale(0.1, 0.1);
-                        opacity: 0.0;
-                    }
-                    50% {
-                        opacity: 1.0;
-                    }
-                    100% {
-                        -webkit-transform: scale(1.2, 1.2);
-                        opacity: 0.0;
-                    }
-                }
             </style>
 
-            <p:panel class="my-2">
+            <p:panel>
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h:outputText class="mx-4" value="Channel Booking"/>
+                            <h:outputText class="mx-4" value=" Past Channel Booking"/>
                         </div>
 
                         <div class="d-flex justify-content-center align-items-center">
                             <p:commandButton 
                                 ajax="false" 
-                                value="To Add Booking" 
-                                icon="fas fa-plus"
-                                class="ui-button-success"
+                                value="Channel Booking"
+                                icon="fas fa-arrow-right"
+                                class="ui-button-secondary"
 
-                                action="#{bookingController.navigateToAddBooking()}"
-                                />
-
-                            <!-- View Session Data Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="View Session Data"
-                                icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
+                                action="#{pastBookingController.navigateToChannelBooking()}"
                                 />
 
                             <p:commandButton 
@@ -99,15 +50,15 @@
                                 value="Consulant Room"
                                 icon="fas fa-eye"
                                 class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
+                                action="#{pastBookingController.navigateToViewSessionData()}"
                                 />
 
                             <!-- Manage Booking Button -->
                             <p:commandButton 
                                 ajax="false" 
                                 value="Manage Booking" 
-                                class="ui-button-warning"
-                                action="#{bookingController.navigateToManageBooking()}"
+                                class="ui-button-Warning"
+                                action="#{pastBookingController.navigateToManageBooking()}"
                                 icon="fa-solid fa-bars-progress" />
 
                         </div>
@@ -121,14 +72,14 @@
                                 <p:selectOneListbox 
                                     id="acSpeciality"
                                     filter="true"
-                                    value="#{bookingController.speciality}"
+                                    value="#{pastBookingController.speciality}"
                                     class="w-100 fullHeightListbox"
                                     >
                                     <p:ajax
                                         event="change"
                                         process="@this" 
                                         update="acBookings scStaff acSessions"
-                                        listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                        listener="#{pastBookingController.listnerStaffListForRowSelect}"/>
                                     <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
                                         value="#{doctorSpecialityController.selectedItems}"
@@ -149,15 +100,14 @@
                                 id="scStaff"
                                 filter="true"
                                 filterMatchMode="contains"
-                                value="#{bookingController.staff}"
+                                value="#{pastBookingController.staff}"
                                 class="w-100 fullHeightListbox"
                                 >
                                 <p:ajax  
                                     process="@this" 
-                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
-                                    listener="#{bookingController.generateSessions}"/>
+                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId}"/>
 
-                                <f:selectItems value="#{bookingController.consultants}"
+                                <f:selectItems value="#{pastBookingController.consultants}"
                                                var="con" 
                                                itemValue="#{con}"
                                                itemLabel="#{con.name}">
@@ -166,36 +116,44 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 p-0" >
+                    <div class="col-1 p-0 my-2">
+                        <div>
+                            <p:datePicker id="acDate"
+                                          value="#{pastBookingController.date}"
+                                          readonlyInput="true"
+                                          placeholder="Select Date"
+
+                                          class="w-50"
+                                        onchange="#{pastBookingController.fillSessionInstance()}">
+                                <p:ajax
+                                    process="@this"
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
+                                    listener="#{pastBookingController.fillSessionInstance()}"/>
+                            </p:datePicker>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 p-0" >
                         <p:watermark for="acSessions" value="Select Session" ></p:watermark>
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
-                            value="#{bookingController.selectedSessionInstance}" 
+                            value="#{pastBookingController.selectedSessionInstance}"
                             class="w-100 fullHeightListbox"
                             var="s">
 
                             <f:selectItems 
-                                value="#{bookingController.sessionInstances}" 
+                                value="#{pastBookingController.sessionInstances}"
                                 var="ses" 
                                 itemValue="#{ses}"
                                 itemLabel="#{ses.name}">
                             </f:selectItems>
-
+                            
                             <p:column headerText="Name">
                                 <f:facet name="header" >
                                     <h:outputText value="Name" ></h:outputText>
                                 </f:facet>
-                                <div class="d-flex align-items-center gap-2">
-                                    <h:outputText value="#{s.name}" />
-                                    <h:panelGroup rendered="#{s.started and !s.completed}">
-                                        <div class="ring-container">
-                                            <div class="ringring"></div>
-                                            <div class="circle"></div>
-                                        </div>
-                                    </h:panelGroup>
-
-                                </div>
+                                <h:outputText value="#{s.name}" />
                             </p:column>
                             <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{s.sessionDate}">
@@ -233,21 +191,21 @@
                                 event="change" 
                                 process="@this"
                                 update="acBookings acSessions"
-                                listener="#{bookingController.fillBillSessions}" />
+                                listener="#{pastBookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
 
                     <div class="col-4" >
                         <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
-                        <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
+                        <h:outputText id="test" value="#{pastBookingController.selectedBillSession}" rendered="false"></h:outputText>
                         <p:selectOneListbox 
                             id="acBookings" 
-                            value="#{bookingController.selectedBillSession}" 
+                            value="#{pastBookingController.selectedBillSession}"
                             filter="true" 
 
                             var="bs" 
                             class="w-100 fullHeightListbox">
-                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
+                            <f:selectItems value="#{pastBookingController.billSessions}" var="item" itemValue="#{item}" />
                             <p:ajax process="acBookings" update="test"></p:ajax>
                             <p:column style="width: 5px!important;">
                                 <h:outputText value="#{bs.serialNo}" />
@@ -278,15 +236,6 @@
 
                             <p:column style="width: 10px!important;">
                                 <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
-                            </p:column>
-
-                            <p:column style="width: 10px!important;">
-                                <h:panelGroup rendered="#{bs.markedToCancel}">
-                                    <i class="fas fa-ban text-danger"></i>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bs.markedToRefund}">
-                                    <i class="fas fa-undo-alt  text-danger"></i>
-                                </h:panelGroup>
                             </p:column>
 
                         </p:selectOneListbox>

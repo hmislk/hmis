@@ -66,8 +66,9 @@
                             <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stockHistory.stockQty}">
-                            <f:convertNumber integerOnly="true"/>
+                            <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
+                        #{bip.pharmaceuticalBillItem.stockHistory.id}
                     </p:column>                  
 
                     <p:column style="text-align: right!important;"> 
@@ -75,7 +76,7 @@
                             <h:outputLabel value="Changed Qty" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber integerOnly="true"/>
+                            <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>                  
 
@@ -85,7 +86,7 @@
                             <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.stockHistory.stockQty}">
-                            <f:convertNumber integerOnly="true"/>
+                            <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>                  
 

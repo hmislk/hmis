@@ -9,7 +9,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.bean.pharmacy.PurchaseOrderController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_ORDER;
@@ -34,6 +36,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -66,6 +69,10 @@ public class UserNotificationController implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     TransferIssueController transferIssueController;
+    @Inject
+    PurchaseOrderController purchaseOrderController;
+    @Inject
+    PharmacyBillSearch pharmacyBillSearch;
     @EJB
     private UserNotificationFacade ejbFacade;
     @EJB
@@ -79,7 +86,12 @@ public class UserNotificationController implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     SmsManagerEjb smsManager;
-
+    private Date date;
+    private boolean todayNotification;
+    private boolean seenedNotifiaction;
+    private boolean completedNotification;
+    private boolean notCompeletedNotifiaction;
+    private boolean canceldRequests;
 
     public String navigateToRecivedNotification() {
         return "/Notification/user_notifications";
@@ -88,22 +100,154 @@ public class UserNotificationController implements Serializable {
     public String navigateToSentNotification() {
         return "/Notification/sent_notifications";
     }
-    
-    public void clearCanceledRequestsNotification(){
-        fillLoggedUserNotifications();
-        if (items==null) {
-            return;
-        }
-        
-        for (UserNotification item : items) {
-            if (item.getNotification()==null) {
+
+    public void clearNotificationsByCriteria() {
+        if (seenedNotifiaction) {
+            if (items == null) {
                 return;
             }
-            if (item.getNotification().getBill().isCancelled()) {
-                items.remove(item);
+            for (UserNotification un : items) {
+                if (un.isSeen()) {
+                    un.setRetired(true);
+                    un.setRetiredAt(new Date());
+                    getFacade().edit(un);
+                }
+            }
+            fillLoggedUserNotifications();
+        }
+
+        if (completedNotification) {
+            if (items == null) {
+                return;
+            }
+            for (UserNotification un : items) {
+                if (un.getNotification().isCompleted()) {
+                    un.setRetired(true);
+                    un.setRetiredAt(new Date());
+                    getFacade().edit(un);
+                }
+            }
+            fillLoggedUserNotifications();
+        }
+        
+        if (canceldRequests) {
+            if (items == null) {
+                return;
+            }
+            for (UserNotification un : items) {
+                if (un.getNotification().getBill().isCancelled()) {
+                    un.setRetired(true);
+                    un.setRetiredAt(new Date());
+                    getFacade().edit(un);
+                }
+            }
+            fillLoggedUserNotifications();
+        }
+        
+        if (notCompeletedNotifiaction) {
+            if (items == null) {
+                return;
+            }
+            for (UserNotification un : items) {
+                if (!un.getNotification().isCompleted()) {
+                    un.setRetired(true);
+                    un.setRetiredAt(new Date());
+                    getFacade().edit(un);
+                }
+            }
+            fillLoggedUserNotifications();
+            
+        }
+       
+    }
+
+    public void filterNotificationsByCriteria() {
+        if (seenedNotifiaction) {
+            if (items == null) {
+                return;
+            }
+            Iterator<UserNotification> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                UserNotification notification = iterator.next();
+                if (notification.getNotification() == null) {
+                    continue;
+                }
+
+                if (!notification.isSeen()) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (completedNotification) {
+            if (items == null) {
+                return;
+            }
+            System.out.println("iterator 1 seenedNotifiaction = " + items.size());
+            Iterator<UserNotification> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                UserNotification notification = iterator.next();
+                if (notification.getNotification() == null) {
+                    continue;
+                }
+
+                if (!notification.getNotification().isCompleted()) {
+                    iterator.remove();
+                }
+            }
+            System.out.println("iterator 2 seenedNotifiaction = " + items.size());
+        }
+        
+        if (todayNotification) {
+            if (items == null) {
+                return;
+            }
+            Iterator<UserNotification> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                UserNotification notification = iterator.next();
+                if (notification.getNotification() == null) {
+                    continue;
+                }
+
+                if (!notification.getNotification().getCreatedAt().equals(getDate())) {
+                    iterator.remove();
+                }
             }
         }
         
+        if (notCompeletedNotifiaction) {
+            if (items == null) {
+                return;
+            }
+            Iterator<UserNotification> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                UserNotification notification = iterator.next();
+                if (notification.getNotification() == null) {
+                    continue;
+                }
+
+                if (notification.getNotification().isCompleted()) {
+                    iterator.remove();
+                }
+            }
+        }
+        
+        if (canceldRequests) {
+            if (items == null) {
+                return;
+            }
+            Iterator<UserNotification> iterator = items.iterator();
+            while (iterator.hasNext()) {
+                UserNotification notification = iterator.next();
+                if (notification.getNotification() == null) {
+                    continue;
+                }
+
+                if (!notification.getNotification().getBill().isCancelled()) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     public void save(UserNotification userNotification) {
@@ -156,8 +300,34 @@ public class UserNotificationController implements Serializable {
     }
 
     public void removeUserNotification(UserNotification un) {
-        System.out.println("items = " + items.size());
-        un.setSeen(true);
+        Department todept = null;
+        Notification n = un.getNotification();
+        switch (n.getBill().getBillType()) {
+            case PharmacyOrder:
+                todept = n.getBill().getFromDepartment();
+                break;
+            case PharmacyTransferIssue:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyTransferRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case InwardPharmacyRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyOrderApprove:
+                todept = n.getBill().getFromDepartment();
+                break;
+        }
+
+        if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("You can't Access On Current Department !");
+            return;
+        }
+        if (un.getNotification().getBill() == null) {
+            return;
+        }
+        un.setRetired(true);
         getFacade().edit(un);
         fillLoggedUserNotifications();
     }
@@ -169,20 +339,40 @@ public class UserNotificationController implements Serializable {
     public List<UserNotification> fillLoggedUserNotifications() {
         String jpql = "select un "
                 + " from UserNotification un "
-                + " where un.seen=:seen "
-                + " and un.webUser=:wu "
-                + " and un.notification.completed=:com";
+                + " where un.webUser=:wu "
+                + " and un.retired=:ret";
         Map m = new HashMap();
-        m.put("seen", false);
-        m.put("com", false);
+        m.put("ret", false);
         m.put("wu", sessionController.getLoggedUser());
         items = getFacade().findByJpql(jpql, m);
         return items;
     }
 
     public String navigateToCurrentNotificationRequest(UserNotification un) {
-        Department toDepartmentFromNotification=un.getNotification().getBill().getToDepartment();
-        if (!toDepartmentFromNotification.equals(sessionController.getLoggedUser().getDepartment())) {
+        un.setSeen(true);
+        getFacade().edit(un);
+
+        Department todept = null;
+        Notification n = un.getNotification();
+        switch (n.getBill().getBillType()) {
+            case PharmacyOrder:
+                todept = n.getBill().getFromDepartment();
+                break;
+            case PharmacyTransferIssue:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyTransferRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case InwardPharmacyRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyOrderApprove:
+                todept = n.getBill().getFromDepartment();
+                break;
+        }
+
+        if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return "";
         }
@@ -192,7 +382,7 @@ public class UserNotificationController implements Serializable {
         Bill bill = un.getNotification().getBill();
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
-            case PHARMACY_ORDER:
+            case INWARD_PHARMACY_REQUEST:
                 pharmacySaleBhtController.setBhtRequestBill(bill);
                 return pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest();
 
@@ -200,10 +390,21 @@ public class UserNotificationController implements Serializable {
                 transferIssueController.setRequestedBill(bill);
                 return transferIssueController.navigateToPharmacyIssueForRequests();
 
+            case PHARMACY_ORDER:
+                purchaseOrderController.setRequestedBill(bill);
+                return purchaseOrderController.navigateToPurchaseOrderApproval();
+
+            case PHARMACY_ORDER_APPROVAL:
+                pharmacyBillSearch.setBill(bill);
+                return "/pharmacy/pharmacy_reprint_po";
+            case PHARMACY_DIRECT_ISSUE:
+                pharmacyBillSearch.setBill(bill);
+                return "/pharmacy/pharmacy_reprint_po";
+
             default:
                 return "";
-
         }
+
     }
 
     public void createUserNotifications(Notification notification) {
@@ -220,11 +421,34 @@ public class UserNotificationController implements Serializable {
     }
 
     private void createUserNotificationsForMedium(Notification n) {
-        Department department = n.getBill().getToDepartment();
+        Department todept = null;
+        if (n == null) {
+            return;
+        }
+
+        switch (n.getBill().getBillType()) {
+            case PharmacyOrder:
+                todept = n.getBill().getFromDepartment();
+                break;
+            case PharmacyTransferIssue:
+                todept = n.getBill().getToDepartment();
+                System.out.println("todept = " + todept);
+                break;
+            case PharmacyTransferRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case InwardPharmacyRequest:
+                todept = n.getBill().getToDepartment();
+                break;
+            case PharmacyOrderApprove:
+                todept = n.getBill().getFromDepartment();
+                break;
+        }
+
         if (n.getBill() == null) {
             return;
         }
-        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), department);
+        List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
         System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
@@ -336,6 +560,55 @@ public class UserNotificationController implements Serializable {
 
     public List<UserNotification> getItems() {
         return items;
+    }
+
+    public boolean isTodayNotification() {
+        return todayNotification;
+    }
+
+    public void setTodayNotification(boolean todayNotification) {
+        this.todayNotification = todayNotification;
+    }
+
+    public boolean isSeenedNotifiaction() {
+        return seenedNotifiaction;
+    }
+
+    public void setSeenedNotifiaction(boolean seenedNotifiaction) {
+        this.seenedNotifiaction = seenedNotifiaction;
+    }
+
+    public boolean isCompletedNotification() {
+        return completedNotification;
+    }
+
+    public void setCompletedNotification(boolean completedNotification) {
+        this.completedNotification = completedNotification;
+    }
+
+    public boolean isNotCompeletedNotifiaction() {
+        return notCompeletedNotifiaction;
+    }
+
+    public void setNotCompeletedNotifiaction(boolean notCompeletedNotifiaction) {
+        this.notCompeletedNotifiaction = notCompeletedNotifiaction;
+    }
+
+    public Date getDate() {
+        date= new Date();
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public boolean isCanceldRequests() {
+        return canceldRequests;
+    }
+
+    public void setCanceldRequests(boolean canceldRequests) {
+        this.canceldRequests = canceldRequests;
     }
 
     /**

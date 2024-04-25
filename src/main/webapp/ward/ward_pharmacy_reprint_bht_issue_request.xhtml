@@ -13,13 +13,51 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Inward Pharmacy Request Reprint" ></h:outputLabel>
                     <p:commandButton class="ui-button-secondary mx-2" style="float: right;" icon="fas fa-arrow-left" ajax="false" action="ward_pharmacy_bht_issue_request_bill_search" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Back"/>
-                
+
                     <!--<p:commandButton ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill_search"  value="Requested List"/>-->
                     <p:commandButton class="ui-button-info" style="float: right;" icon="fas fa-print" value="Reprint" ajax="false" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                    
-                    </f:facet>
+
+                    <p:commandButton 
+                        class="ui-button-warning mx-1"
+                        style="float: right;"
+                        icon="fas fa-pen"
+                        value="Edit Request" 
+                        ajax="false">
+                    </p:commandButton>
+                    <p:commandButton 
+                        class="ui-button-danger mx-1"
+                        style="float: right;"
+                        icon="fas fa-cancel"
+                        value="Cancel Request" 
+                        onclick="PF('confirmationDialog').show();"
+                        >
+                    </p:commandButton>
+
+                    <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
+                        <p>Are you sure you want to cancel the request?</p>
+                        <p:inputText class="w-100" 
+                                     required="true" 
+                                     value="#{pharmacyBillSearch.comment}"
+                                     placeholder="Please provide a comment for the cancel Request" />
+
+                        <f:facet name="footer">
+                            <p:commandButton 
+                                class="mx-2 ui-button-warning"
+                                ajax="false" 
+                                value="Yes"
+                                action="#{pharmacyBillSearch.cancelInwardPharmacyRequestBill()}" 
+                                onclick="PF('confirmationDialog').hide();" />
+                            <p:commandButton 
+                                value="No"
+                                onclick="PF('confirmationDialog').hide();" />
+                         </f:facet>
+                    </p:dialog>
+
+                   
+
+                </f:facet>
                 <p:panel>
                     <div class="row">
                         <div class="col-4">
@@ -59,7 +97,7 @@
                                     </p:selectOneMenu>
                                     <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button " title="Redraw Bill"></p:commandButton>
                                 </div>
-                            
+
                                 <h:panelGroup id="gpBillPreview">
                                     <h:panelGroup id="groupPrint" >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >

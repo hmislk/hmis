@@ -154,8 +154,6 @@ public class SecurityController implements Serializable {
     private boolean matching;
 
     public void testPassword() {
-        System.out.println("Test Password");
-        System.out.println("password = " + password);
         matching = matchPassword(password, hashedPassword);
     }
 
@@ -176,8 +174,6 @@ public class SecurityController implements Serializable {
     }
 
     public static boolean matchPassword(String planePassword, String encryptedPassword) {
-        System.out.println("matchPassword");
-        System.out.println("planePassword = " + planePassword);
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
         boolean mathingAccess =en.checkPassword(planePassword, encryptedPassword);
         return  mathingAccess;

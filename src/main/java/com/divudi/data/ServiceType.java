@@ -8,7 +8,8 @@ public enum ServiceType {
     PHARMACY("Pharmacy"),
     CHANNELLING("Channelling"),
     COLLECTING_CENTRE("Colelcting Centre"),
-    OTHER("Other");
+    OTHER("Other"),
+    INWARD("Inward");
 
     private final String label;
 

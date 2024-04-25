@@ -648,7 +648,7 @@ public class PatientController implements Serializable {
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
         getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
-        return "/emr/opd_visit";
+        return "/emr/opd_visit?faces-redirect=true";
     }
 
     public String navigateToNewDataEntryForm() {

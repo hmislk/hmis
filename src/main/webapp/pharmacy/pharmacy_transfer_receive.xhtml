@@ -14,22 +14,23 @@
                 <p:panel>
 
                     <f:facet name="header" >                                  
-                        <h:panelGrid columns="4"  >                        
+                                              
                             <p:outputLabel value="Staff : &nbsp;#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
                             <p:commandButton  
                                 value="Recieve" 
                                 icon="fas fa-check"
+                                style="float: right;"
                                 class="ui-button-success mx-2"
                                 action="#{transferReceiveController.settle}" 
                                 ajax="false" >
                             </p:commandButton>
 
-                        </h:panelGrid>
+                      
                     </f:facet>
-                </p:panel>
+                
 
-                <p:panel class="my-2">
+                <p:panel>
                     <f:facet name="header">
                         <h:outputLabel styleClass="fas fa-list" />
                         <h:outputLabel value="Requested Item " class="mx-4" />
@@ -91,7 +92,7 @@
                 </p:panel>
 
                 <ph:history/>
-
+                </p:panel>
             </p:panel>
             <p:panel rendered="#{transferReceiveController.printPreview}">
                 <p:commandButton 
