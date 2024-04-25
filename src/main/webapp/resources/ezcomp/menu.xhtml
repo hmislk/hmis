@@ -783,8 +783,7 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/pharmacy/pharmacy_analytics?faces-redirect=true"  value="Theatre Analytics" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
                 </p:submenu>
 
                 <p:submenu   
