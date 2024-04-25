@@ -108,6 +108,7 @@ public class DocumentTemplateController implements Serializable {
                 + "Order Tests For Visit Same Line: {ix-same-line}<br/>"
                 + "Plan of Action : {pa}<br/>"
                 + "Past Diagnosis : {past-dx}<br/>"
+                + "Visit Diagnosis : {visit-dx}<br/>"
                 + "Routine Medicines : {routine-medicines}<br/>"
                 + "Allergies : {allergies}<br/>"
                 + "Visit Date : {visit-date}<br/>"
