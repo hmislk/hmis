@@ -23,6 +23,11 @@
                                 <p:outputLabel value="Patient Profile" class="my-2"/>
                                 <p:commandButton icon="fas fa-pencil" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2 ui-button-success" style="float: right;"></p:commandButton>
                                 <p:commandButton icon="fas fa-search" value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2 ui-button-warning" style="float: right;"></p:commandButton>
+                                <p:commandButton icon="pi pi-print" value="Print"
+                                                 class="p-0 m-1 ui-button-info" 
+                                                 >
+                                    <p:printer target="groupPatientCard"/>
+                                </p:commandButton>
                                 <p:commandButton icon="fas fa-plus" value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2 ui-button-info" style="float: right;"></p:commandButton>
                             </f:facet>
                             <div class="row" >
@@ -99,89 +104,92 @@
 
 
                                     <!-- Barcode -->
-                                    <h:panelGroup  style="text-align: center; width: 100%;" layout="block">
+                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 100%;" layout="block">
+                                        <h:outputText value="#{sessionController.loggedUser.institution.name}" style="font-size: 12px;"/><br/>
+                                        <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 12px;"/><br/>
                                         <p:barcode value="#{patientController.current.idStr}" type="code39" cache="false" style="width:20%;" />
                                     </h:panelGroup>
 
+
                                 </div>
                                 <div  class="col-md-4 d-flex flex-column  gap-2" >
-                                <p:commandButton value="Admit" 
-                                                 action="#{patientController.navigateToAdmitFromPatientProfile()}" 
-                                                 ajax="false" 
-                                                 styleClass="mx-2">
+                                    <p:commandButton value="Admit" 
+                                                     action="#{patientController.navigateToAdmitFromPatientProfile()}" 
+                                                     ajax="false" 
+                                                     styleClass="mx-2">
 
-                                </p:commandButton>
-                                <p:commandButton value="OPD Bill" 
-                                                 action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
-                                                 ajax="false"
-                                                 class="w-100"
-                                                 styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton value="Collecting Centre Billing" 
-                                                 action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
-                                                 ajax="false"
-                                                 class="w-100"
-                                                 styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton value="OPD Bill for Cashier"
-                                                 class="w-100"
-                                                 action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton value="OPD Packages" 
-                                                 action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
-                                                 ajax="false"
-                                                 class="w-100"
-                                                 styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="Accept Payments" 
-                                    action="#{searchController.navigateToPatientAcceptPayment()}" 
-                                    ajax="false" 
-                                    styleClass="mx-2">
-                                    <f:setPropertyActionListener value="#{patientController.current}"
-                                                                 target="#{searchController.patient}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="Refunds"
-                                    action="#{patientController.navigateToPatientRefundPayment}" 
-                                    ajax="false" 
-                                    styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="Lab Reports"
-                                    action="#{searchController.navigateToPatientLabReports}"
-                                    ajax="false"
-                                    styleClass="mx-2">
-                                    <f:setPropertyActionListener value="#{patientController.current}"
-                                                                 target="#{searchController.patient}" ></f:setPropertyActionListener>
-                                </p:commandButton>
+                                    </p:commandButton>
+                                    <p:commandButton value="OPD Bill" 
+                                                     action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
+                                                     ajax="false"
+                                                     class="w-100"
+                                                     styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton value="Collecting Centre Billing" 
+                                                     action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
+                                                     ajax="false"
+                                                     class="w-100"
+                                                     styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton value="OPD Bill for Cashier"
+                                                     class="w-100"
+                                                     action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton value="OPD Packages" 
+                                                     action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
+                                                     ajax="false"
+                                                     class="w-100"
+                                                     styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Accept Payments" 
+                                        action="#{searchController.navigateToPatientAcceptPayment()}" 
+                                        ajax="false" 
+                                        styleClass="mx-2">
+                                        <f:setPropertyActionListener value="#{patientController.current}"
+                                                                     target="#{searchController.patient}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Refunds"
+                                        action="#{patientController.navigateToPatientRefundPayment}" 
+                                        ajax="false" 
+                                        styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Lab Reports"
+                                        action="#{searchController.navigateToPatientLabReports}"
+                                        ajax="false"
+                                        styleClass="mx-2">
+                                        <f:setPropertyActionListener value="#{patientController.current}"
+                                                                     target="#{searchController.patient}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
 
-                                <p:commandButton 
-                                    value="Inward Appointments"
-                                    action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
-                                    ajax="false"
-                                    styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="Receive Deposits"
-                                    action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
-                                    ajax="false"
-                                    styleClass="mx-2"></p:commandButton>
-                                <p:commandButton 
-                                    value="Clinical Dashboard"
-                                    action="#{patientController.toEmrPatientProfile}"
-                                    ajax="false"
-                                    styleClass="mx-2">
-                                </p:commandButton>
-                                <p:messages ></p:messages>
-                            </div>
+                                    <p:commandButton 
+                                        value="Inward Appointments"
+                                        action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                        ajax="false"
+                                        styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Receive Deposits"
+                                        action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
+                                        ajax="false"
+                                        styleClass="mx-2"></p:commandButton>
+                                    <p:commandButton 
+                                        value="Clinical Dashboard"
+                                        action="#{patientController.toEmrPatientProfile}"
+                                        ajax="false"
+                                        styleClass="mx-2">
+                                    </p:commandButton>
+                                    <p:messages ></p:messages>
+                                </div>
                             </div>  
 
 
 
-                            
 
-                           
+
+
                         </p:panel>
 
 
