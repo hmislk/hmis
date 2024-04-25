@@ -167,6 +167,8 @@ public class SearchController implements Serializable {
     double dueTotal;
     double doneTotal;
     double netTotal;
+    private double grossTotal;
+    private double discount;
     ServiceSession selectedServiceSession;
     Staff currentStaff;
     List<BillItem> billItem;
@@ -279,7 +281,7 @@ public class SearchController implements Serializable {
             switch (btype) {
                 case OpdPreBill:
                     setPreBillForOpd(args);
-                    return "/opd_bill_pre_settle";
+                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
                 case PharmacyPre:
                     setPreBillForPharmecy(args);
@@ -287,7 +289,7 @@ public class SearchController implements Serializable {
 
                 case OpdBathcBillPre:
                     setPreBillForOpd(args);
-                    return "/opd_bill_pre_settle";
+                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
                 default:
                     throw new AssertionError();
@@ -390,14 +392,14 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public void retireAlllistedBills() {
-       for(Bill b:bills){
-           b.setRetired(true);
-           b.setRetiredAt(new Date());
-           b.setRetirer(sessionController.getLoggedUser());
-           getBillFacade().edit(b);
-       }
+        for (Bill b : bills) {
+            b.setRetired(true);
+            b.setRetiredAt(new Date());
+            b.setRetirer(sessionController.getLoggedUser());
+            getBillFacade().edit(b);
+        }
     }
 
     public void listAllPayments() {
@@ -1148,6 +1150,22 @@ public class SearchController implements Serializable {
 
     public void setBillSummaryRows(List<BillSummaryRow> billSummaryRows) {
         this.billSummaryRows = billSummaryRows;
+    }
+
+    public double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
     }
 
     public class billsWithbill {
@@ -5569,7 +5587,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP, 25);
         return "/opd/opd_search_pre_bill?faces-redirect=true";
     }
-    
+
     public String searchOpdBatchBillsToSettleAtCashier() {
         bills = null;
         String jpql;
@@ -6476,8 +6494,10 @@ public class SearchController implements Serializable {
     }
 
     public void processAllFinancialTransactionalSummary() {
-        System.out.println("processAllFinancialTransactionalSummary");
         billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
         List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
@@ -6506,7 +6526,14 @@ public class SearchController implements Serializable {
         params.put("fromDate", getFromDate());
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
-        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.DATE);
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+        }
+
     }
 
     public void fillAllBills() {

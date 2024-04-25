@@ -44,32 +44,58 @@
                                      style="min-width: 100%;"  
                                      paginator="true"
                                      paginatorPosition="bottom"
-                                     rows ="10"
+                                     rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
-                            <p:column headerText="Bill Type" styleClass="alignTop" >
+                                     rowsPerPageTemplate="5,10,15">
+
+                            <p:column headerText="Bill Type" styleClass="alignTop">
                                 <h:outputLabel value="#{bill.billTypeAtomic}"/>
+                                <f:facet name="footer">
+                                    Total
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Count" width="4em">                                
+
+                            <p:column headerText="Count" width="4em">
                                 <h:outputLabel value="#{bill.billCount}"/>
+                                <f:facet name="footer">
+                                    
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Gross Total"  width="8em" >
-                                <h:outputLabel value="#{bill.grossTotal}" >
+
+                            <p:column headerText="Gross Total" width="8em">
+                                <h:outputLabel value="#{bill.grossTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Discount"  width="8em">
-                                <h:outputLabel value="#{bill.discount}" >
+
+                            <p:column headerText="Discount" width="8em">
+                                <h:outputLabel value="#{bill.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Net Value"  width="8em">
-                                <h:outputLabel value="#{bill.netTotal}" >
+
+                            <p:column headerText="Net Value" width="8em">
+                                <h:outputLabel value="#{bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>                         
                         </p:dataTable>
+
 
 
 

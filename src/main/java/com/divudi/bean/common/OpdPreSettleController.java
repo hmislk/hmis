@@ -618,7 +618,7 @@ public class OpdPreSettleController implements Serializable {
         } else {
             setPreBill(args);
             getPreBill().setPaymentMethod(args.getPaymentMethod());
-            return "/opd_bill_pre_settle?faces-redirect=true";
+            return "/opd/opd_bill_pre_settle?faces-redirect=true";
         }
     }
 
