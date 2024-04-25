@@ -142,12 +142,14 @@ public class TransferIssueController implements Serializable {
     }
 
     public void remove(BillItem billItem) {
-        if (billItem.getTransUserStock().isRetired()) {
-            JsfUtil.addErrorMessage("This Item Already removed");
-            return;
-        }
+        if (billItem.getTransUserStock() != null) {
+            if (billItem.getTransUserStock().isRetired()) {
+                JsfUtil.addErrorMessage("This Item Already removed");
+                return;
+            }
 
-        userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
+            userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
+        }
 
         getBillItems().remove(billItem.getSearialNo());
         int serialNo = 0;
@@ -298,14 +300,13 @@ public class TransferIssueController implements Serializable {
                 continue;
             }
             PharmaceuticalBillItem transferIssueBillItem = new PharmaceuticalBillItem();
-            
+
             transferIssueBillItem.setItemBatch(grnBillItem.getPharmaceuticalBillItem().getItemBatch());
             transferIssueBillItem.setStock(grnBillItem.getPharmaceuticalBillItem().getStock());
             transferIssueBillItem.setStockHistory(grnBillItem.getPharmaceuticalBillItem().getStockHistory());
             transferIssueBillItem.setDoe(grnBillItem.getPharmaceuticalBillItem().getDoe());
             transferIssueBillItem.setStringValue(grnBillItem.getPharmaceuticalBillItem().getStringValue());
-            
-            
+
             if (grnBillItem.getPharmaceuticalBillItem().getQty() != 0.0 && grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
                 transferIssueBillItem.setQty(grnBillItem.getPharmaceuticalBillItem().getQty());
                 transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
@@ -316,24 +317,20 @@ public class TransferIssueController implements Serializable {
                 transferIssueBillItem.setQty(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
                 transferIssueBillItem.setQtyInUnit(grnBillItem.getPharmaceuticalBillItem().getQtyInUnit());
             }
-            
 
             if (grnBillItem.getPharmaceuticalBillItem().getFreeQty() != 0.0 && grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
-                
+
                 transferIssueBillItem.setQty(transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty());
-                
+
                 double totalQty = transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty();
-                
+
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
-                
-                
-                
-            
+
             } else if (grnBillItem.getPharmaceuticalBillItem().getFreeQty() != 0.0) {
-                transferIssueBillItem.setQty(transferIssueBillItem.getQty()+ grnBillItem.getPharmaceuticalBillItem().getFreeQty());
+                transferIssueBillItem.setQty(transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQty());
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQty());
             } else if (grnBillItem.getPharmaceuticalBillItem().getQtyInUnit() != 0.0) {
-                transferIssueBillItem.setQty(transferIssueBillItem.getQty()+ grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
+                transferIssueBillItem.setQty(transferIssueBillItem.getQty() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
                 transferIssueBillItem.setQtyInUnit(transferIssueBillItem.getQtyInUnit() + grnBillItem.getPharmaceuticalBillItem().getFreeQtyInUnit());
             }
 
@@ -471,7 +468,7 @@ public class TransferIssueController implements Serializable {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         issuedBill = null;
         issuedBill = b;
-        
+
         printPreview = true;
 
     }
@@ -665,10 +662,9 @@ public class TransferIssueController implements Serializable {
 
     @Inject
     private PharmacyController pharmacyController;
-    
+
     public void onEditDepartmentTransfer(BillItem billItem) {
         double availableStock = pharmacyBean.getStockQty(billItem.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
-
 
         if (availableStock < billItem.getPharmaceuticalBillItem().getQtyInUnit()) {
             billItem.setTmpQty(0.0);
