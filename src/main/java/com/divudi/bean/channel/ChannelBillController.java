@@ -969,6 +969,7 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         cb.setDeptId(deptId);
+        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
         getBillFacade().create(cb);
 
         if (bill.getPaymentMethod() == PaymentMethod.Agent) {

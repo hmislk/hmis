@@ -240,7 +240,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         findPreBill(currentToken.getBill());
         opdPreSettleController.setBillPreview(false);
         opdPreSettleController.setToken(currentToken);
-        return "/opd_bill_pre_settle?faces-redirect=true";
+        return "/opd/opd_bill_pre_settle?faces-redirect=true";
     }
 
     public void findPreBill(Bill args) {

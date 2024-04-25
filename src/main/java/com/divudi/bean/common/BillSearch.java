@@ -1515,6 +1515,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Error in Bill Value Inversion");
             return "";
         }
+        
         saveRefundBill(refundingBill);
 
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
@@ -1595,6 +1596,7 @@ public class BillSearch implements Serializable {
             rb.setBilledBill(getBill());
         }
         Date bd = Calendar.getInstance().getTime();
+        rb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         rb.setBillDate(bd);
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
@@ -2712,7 +2714,6 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         try {
             createBillItemsAndBillFeesForOpdRefund();
-
         } catch (IllegalAccessException ex) {
             Logger.getLogger(BillSearch.class
                     .getName()).log(Level.SEVERE, null, ex);
