@@ -26,7 +26,7 @@
                                         value="#{searchController.fromDate}" 
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.currentDateTime}"
+                                        maxdate="#{commonController.endOfDayOnCurrentDate}"
                                         >      
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>

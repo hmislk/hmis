@@ -22,13 +22,13 @@
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.currentDateTime}">
+                                        maxdate="#{commonController.endOfDayOnCurrentDate}">
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{opdPreBillReportController.toDate}"
                                         navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.currentDateTime}" >
+                                        maxdate="#{commonController.endOfDayOnCurrentDate}" >
                             </p:calendar>
                             <h:outputLabel value="User Name"/>
                             <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{webUserController.completeUser}"
