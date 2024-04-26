@@ -462,20 +462,18 @@ public class OpdPreSettleController implements Serializable {
     public void createPaymentsForCashierAcceptpayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-
         p.setPaidValue(p.getBill().getNetTotal());
-
         if (p.getId() == null) {
             getPaymentFacade().create(p);
+        }else{
+            getPaymentFacade().edit(p);
         }
-
-        setPaymentMethodData(p, pm);
+       
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
