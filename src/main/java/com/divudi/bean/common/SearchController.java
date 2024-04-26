@@ -1187,6 +1187,14 @@ public class SearchController implements Serializable {
         this.departmentController = departmentController;
     }
 
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -6554,8 +6562,24 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+    private List<Department> departments;
+    
+    
+    public void fillInstitutionInDepartment(Institution ins){
+        if(ins == null){
+            setDepartments(null);
+        }else{
+            setDepartments(getDepartmentController().getInstitutionDepatrments(ins));
+        }
+    }
 
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
+        System.out.println("institution = " + institution);
+        System.out.println("department = " + department);
+        if(institution == null){
+            setDepartments(null);
+        }
         billSummaryRows = null;
         grossTotal = 0.0;
         discount = 0.0;
