@@ -22,7 +22,7 @@
                                         <p:calendar styleClass="dateTimePicker" 
                                                     class="w-100" 
                                                     inputStyleClass="form-control" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    maxdate="#{commonController.currentDateTime}" >      
+                                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >      
                                         </p:calendar>
 
                                         <p:spacer height="10" width="5" ></p:spacer>
@@ -31,7 +31,7 @@
                                         <p:calendar styleClass="dateTimePicker" 
                                                     class="w-100" 
                                                     inputStyleClass="form-control" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    maxdate="#{commonController.currentDateTime}" >                                                                              
+                                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >                                                                              
                                         </p:calendar>
 
                                     </h:panelGroup>

@@ -28,7 +28,7 @@
                                             value="#{opdPreBillController.fromDate}" 
                                             navigator="false" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            maxdate="#{commonController.currentDateTime}"  >      
+                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar class="w-100" 
@@ -37,7 +37,7 @@
                                             value="#{opdPreBillController.toDate}" 
                                             navigator="false" 
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            maxdate="#{commonController.currentDateTime}"  >                                                                              
+                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >                                                                              
                                 </p:calendar>
                                 
                                 <div class="d-grid gap-2 my-2">
