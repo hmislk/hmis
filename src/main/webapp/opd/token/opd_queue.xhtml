@@ -46,176 +46,118 @@
 
                     <nav class="navbar navbar-light p-2 sticky-top w-100" style="background-color: #e3f2fd;">
                         <div class="d-flex align-items-center mx-4">
-                            <h:outputText styleClass="fa fa-hospital"/>
-                            <h4 onclick="toggleFullScreen()" class="mx-4">OPD Queue Management</h4>
+                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                            <h4 onclick="toggleFullScreen()" class="mx-4">OPD Token Management</h4>
                         </div>
 
                         <div>
                             <p:commandButton ajax="false" 
-                                             value="List Completed" 
+                                             value="Manage OPD Token" 
                                              icon="fa fa-check" 
                                              styleClass="ui-button-success mx-1" 
                                              action="#{bookingController.listTodaysCompletedSesionInstances()}" />
-
-                            <!-- View Ongoing Session Data Button -->
-                            <p:commandButton ajax="false" 
-                                             value="List Ongoing"
-                                             icon="fa fa-sync-alt" 
-                                             styleClass="ui-button-info mx-1" 
-                                             action="#{bookingController.listTodaysOngoingSesionInstances()}" />
-
-                            <!-- List Pending Button -->
-                            <p:commandButton ajax="false" 
-                                             value="List Pending"
-                                             icon="fa fa-hourglass-start" 
-                                             styleClass="ui-button-warning mx-1" 
-                                             action="#{bookingController.listTodaysPendingSesionInstances()}" />
-
-                            <!-- List All Button -->
-                            <p:commandButton ajax="false" 
-                                             value="List All"
-                                             icon="fa fa-list" 
-                                             styleClass="ui-button-primary mx-1" 
-                                             action="#{bookingController.listTodaysAllSesionInstances()}" />
                         </div>
 
                     </nav>
 
                 </div>
                 <p:spacer height="65px" />
-                <ui:repeat var="s" 
+                <div>
+                    <ui:repeat var="token" 
                            id="tblSessions"
-                           value="#{bookingController.sessionInstances}" 
+                           value="#{opdTokenController.currentTokens}"
                            class="w-100 mt-5">
 
-                    <div class="bgCard row  w-100 p-2 shadow mt-1">
-                        <div class="col-3 bg-primary text-white d-flex align-items-center">
-                            <div class="px-4">
-                                <h:outputText style="font-size: 30pt" styleClass="far fa-clock"/>
+                    <div class="shadow-lg p-2 row d-flex align-items-center" style="height: 100px">
+                        
+                            <div class="col-1 text-center">
+                                <h:outputText value="#{token.tokenNumber}" />
                             </div>
-                            <div class="p-1 px-2">
-                                <h:outputText value="#{s.name}" style="font-weight: bold;font-size: 10pt"/><br/>
-                                <h:outputText value="#{s.sessionDate}"  style="font-size: 8pt;">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
-                                <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  style="font-weight: bold; font-size: 8pt;">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                                </h:outputText>
+                            <div class="col-3 ">
+                                <h:outputText value="#{token.patient.person.nameWithTitle}" style="text-transform: uppercase;font-weight: bold;" />
                             </div>
-                        </div>
-                        <div class="col-3 bg-dark">
-                            <div class="d-flex align-items-center text-white p-2">
-                                <div class="px-4">
-                                    <h:outputText style="font-size: 20pt" styleClass="fas fa-user-md"/>
-                                </div>
-                                <div class="text-white">
-                                    <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
-                                    <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
-                                </div>
+                            <div class="col-1 ">
+                                <h:outputText value="#{token.counter.name}" />
                             </div>
 
-                        </div>
-                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black">
-                            <div class="text-center ">
-                                <h:panelGroup rendered="#{s.completedPatientCount ne null and s.paidPatientCount ne null}">
-                                    <div class="d-flex justify-content-center align-items-center mt-2">
-                                        <span style="font-size: 20pt;font-weight: bold">
-                                            <span class="text-success">
-                                                <span class="blink" style="font-size: 8pt">&#x25CF;</span>
-                                                <h:outputText value="#{s.completedPatientCount}">
-                                                    <f:convertNumber pattern="#,##00"/>
-                                                </h:outputText>
-                                            </span>
-                                            :
-                                            <span class="text-primary" style="font-size: 20pt;font-weight: bold"> 
-                                                <h:outputText value="#{s.paidPatientCount}">
-                                                    <f:convertNumber pattern="#,##00"/>
-                                                </h:outputText>
-                                            </span>
-                                        </span>
-                                    </div>
-                                </h:panelGroup>
+                            <div class="col-2 ">
+                                <p:tag value="#{opdTokenController.getTokenStatus(token) == 'Pending' ? 'Pending' : 
+                                                opdTokenController.getTokenStatus(token) == 'Called' ? 'Called' :
+                                                opdTokenController.getTokenStatus(token) == 'In Progress' ? 'In Progress' :
+                                                opdTokenController.getTokenStatus(token) == 'Completed' ? 'Completed' :
+                                                opdTokenController.getTokenStatus(token)}" 
+                                       severity="#{opdTokenController.getTokenStatus(token) == 'Pending' ? 'warning' :
+                                                   opdTokenController.getTokenStatus(token) == 'Called' ? 'secondary' :
+                                                   opdTokenController.getTokenStatus(token) == 'In Progress' ? 'info' :
+                                                   opdTokenController.getTokenStatus(token) == 'Completed' ? 'success' : ''}"
+                                       style="font-size: 14px;"/>
                             </div>
+                            <div class="col-3">
 
-                        </div>
-                        <div class="col-2" style="box-sizing: border-box;border-right: 2px solid black;">
-                            <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <span>
-                                        <div class="d-flex align-items-center mt-2">
-                                            <span class="text-center mx-4">
-                                                <h:panelGrid columns="1">
-                                                    <h:outputText  style="font-size: 8pt;font-weight: bold" value="Paid"/>
-                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.paidPatientCount}">
-                                                        <f:convertNumber pattern="#,##00"/>
-                                                    </h:outputText>
-                                                </h:panelGrid>
-                                            </span>
+                                <h:panelGrid rendered="#{not empty token.bill and token.bill.billType eq 'OpdBathcBillPre'}" >
+                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
+                                        <h:outputText value="PAYMENT DONE" />
+                                        <br/>
+                                        <h:outputText value="Bill Number : " />
+                                        <h:outputText value="#{token.bill.referenceBill.deptId}" />
+                                    </h:panelGroup>
 
-                                            <span class="text-center"> 
-                                                <h:panelGrid columns="1">
-                                                    <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
-                                                    <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
-                                                        <f:convertNumber pattern="#,##00"/>
-                                                    </h:outputText>
-                                                </h:panelGrid>
-                                            </span>
-                                        </div>
-                                    </span>
-                                </div>
-                            </h:panelGroup>
-                        </div>
-                        <div class="col-2 ">
-                            <div class="d-flex justify-content-end align-items-center mt-2">
-                                <div>
-                                    <p:commandButton icon="fas fa-play" iconPos="right"
-                                                     styleClass=" rounded-button ui-button-success " ajax="false"
-                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                     rendered="#{s.completed}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
+                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
+
+                                        <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
+                                        <br/>
+                                        <h:outputText value="Bill Number : " />
+                                        <h:outputText value="#{token.bill.deptId}" />
+                                    </h:panelGroup>
+                                </h:panelGrid>
+                                <h:panelGrid rendered="#{not empty token.bill and token.bill.billType.label eq 'OPD Accepet Payment'}" >
+                                    <h:outputText value="PAYMENT DONE" />
+                                </h:panelGrid>
+                            </div>
+                            <div class="col-2">
+                                <div class="d-flex justify-content-between">
+
+                                    <p:commandButton ajax="false"
+                                                     id="btnCall"
+                                                     icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                     class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                     update="@this"
+                                                     title="#{token.called ? 'Cancel Call' : 'Call Token'}"
+                                                     action="#{opdTokenController.toggleCalledStatus}"
+                                                     process="btnCall">
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                        <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
                                     </p:commandButton>
 
-
-                                    <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                      styleClass="rounded-button ui-button-warning" ajax="false"
-                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                      rendered="#{not s.completed and not s.started}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    <p:commandButton 
+                                        id="opdCashier"
+                                        icon="fa fa-fw fa-cash-register"
+                                        disabled="#{token.bill ne null}"
+                                        action="#{opdTokenController.navigateToNewOpdBillForCashierTabView()}"
+                                        ajax="false"
+                                        >
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                        <p:tooltip value="Opd Billing for Cashier"/>
                                     </p:commandButton>
-
-
-                                    <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                      styleClass="rounded-button ui-button-info " ajax="false"
-                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                      rendered="#{s.started and not s.completed}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
+                                    
+                                    <p:commandButton ajax="false"
+                                                     icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                     class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                     update="@form"
+                                                     title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                     action="#{opdTokenController.toggleCompletedStatus}"
+                                                     process="@this">
+                                        <f:setPropertyActionListener target="#{opdTokenController.currentToken}" value="#{token}" />
+                                        <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
                                     </p:commandButton>
+                                    <p:tooltip value="Opd Billing For Cashier" for="opdCashier"/>
                                 </div>
                             </div>
-                        </div>
+                       
                     </div>
-
-                    <!--                    <div class="card mt-1">
-                                            <div class="card-body">
-                                                <div class="row">
-                                                   
-                                                                                                        <div class="col-2 bg-dark text-white">
-                                                        <div>
-                                                                                                                    </div>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            
-                                                            <h:panelGroup class="mx-2">
-                                                                                                                            </h:panelGroup>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                    
-                    
-                                            </div>
-                                        </div>-->
                 </ui:repeat>
+                </div>
             </div>
 
         </h:form>
