@@ -122,14 +122,14 @@
                                                     <p:column>#{pta.parentCategory}</p:column>                                        
                                                 </p:autoComplete>
                                                 <h:outputText value="Institution" ></h:outputText>
-                                                <p:selectOneMenu class="mx-1" id="cmbIns" value="#{itemController.current.institution}" filter="true" style="width: 100%">
+                                                <p:selectOneMenu class="mx-1" id="cmbIns" value="#{itemController.current.institution}" filter="true" filterMatchMode="contains" style="width: 100%">
                                                     <f:selectItem itemLabel="Please select a Institution"/>
                                                     <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
                                                     
                                                 </p:selectOneMenu>
                                                 <h:outputText value="Department" ></h:outputText>
-                                                <p:selectOneMenu  id="cmbDep" value="#{itemController.current.department}" class="form-control mx-1">
+                                                <p:selectOneMenu  id="cmbDep" value="#{itemController.current.department}" filterMatchMode="contains" filter="true" class="form-control mx-1">
                                                     <f:selectItem itemLabel="Please select a Department"/>
                                                     <f:selectItems value="#{itemController.fillInstitutionDepatrments()}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                 </p:selectOneMenu>

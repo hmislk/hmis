@@ -144,6 +144,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
      * Controllers
      */
     @Inject
+    BillController billController;
+    @Inject
     private SessionController sessionController;
     @Inject
     private ItemController itemController;
@@ -274,6 +276,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private boolean duplicatePrint;
     private Token token;
 
+    private Double totalHospitalFee;
+    private Double totalSaffFee;
+
     /**
      *
      * Navigation Methods
@@ -297,6 +302,36 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         batchBill = null;
         bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
+    }
+
+    public void fillOpdBillItems() {
+        System.out.println("fillOpdBillItems");
+        lstBillItems = new ArrayList<>();
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from BillItem i"
+                + " where i.retired=:ret"
+                + " and i.bill.cancelled=:can"
+                + " and i.bill.fromDepartment=:dep"
+                + " and i.createdAt between :frm and :to";
+        m.put("dep", fromDepartment);
+        m.put("frm", fromDate);
+        m.put("to", toDate);
+        m.put("ret", false);
+        m.put("can", false);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        lstBillItems = billItemFacade.findByJpql(jpql, m);
+        if (lstBillItems == null) {
+            return ;
+        }
+        for (BillItem i : lstBillItems) {
+            System.out.println("i = " + i);
+            if (i.getBillFees() == null || i.getBillFees().isEmpty()) {
+                i.setBillFees(billController.billFeesOfBillItem(i));
+            }
+        }
     }
 
     public void reloadCurrentlyWorkingStaff() {
@@ -3661,6 +3696,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public Double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(Double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public Double getTotalSaffFee() {
+        return totalSaffFee;
+    }
+
+    public void setTotalSaffFee(Double totalSaffFee) {
+        this.totalSaffFee = totalSaffFee;
     }
 
 }
