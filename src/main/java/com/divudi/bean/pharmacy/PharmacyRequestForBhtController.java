@@ -173,8 +173,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
 
-        
-
     }
 
     public void settleSurgeryBhtIssueStore() {
@@ -718,7 +716,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
 
-        
     }
 
     public void settlePharmacyBhtIssueAccept() {
@@ -736,7 +733,6 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         settleBhtIssueRequestAccept(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
 
-        
     }
 
     public void settlePharmacyBhtIssueRequest() {
@@ -747,7 +743,6 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
-        
 
     }
 
@@ -867,7 +862,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         savePreBillFinally(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinally(tmpBillItems);
-        
+
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
 
@@ -1010,7 +1005,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
-        getPreBill().getBillItems().remove(b.getSearialNo());
+        getPreBill().getBillItems().remove(b);
         calTotal();
     }
 
