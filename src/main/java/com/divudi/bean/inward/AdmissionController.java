@@ -422,6 +422,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToPharmacyBhtRequest() {
+         pharmacyRequestForBhtController.resetAll();
+         pharmacyRequestForBhtController.setPatientEncounter(current);
         return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
 
