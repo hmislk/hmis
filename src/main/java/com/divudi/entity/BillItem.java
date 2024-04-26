@@ -59,7 +59,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    
+
     double Rate;
     double discountRate;
     double marginRate;
@@ -150,6 +150,14 @@ public class BillItem implements Serializable {
     private double previousRecieveQtyInUnit;
     @Transient
     private double previousRecieveFreeQtyInUnit;
+
+    @Transient
+    private double totalHospitalFeeValueTransient;
+    @Transient
+    private double totalDoctorFeeValueTransient;
+    @Transient
+    private double totalProcedureFeeValueTransient;
+
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
@@ -570,10 +578,10 @@ public class BillItem implements Serializable {
     }
 
     public Double getQty() {
-        if(qty==null){
-            qty=0.0;
-        }else if(qty==0.0){
-            qty =0.0;
+        if (qty == null) {
+            qty = 0.0;
+        } else if (qty == 0.0) {
+            qty = 0.0;
         }
         return qty;
     }
@@ -689,6 +697,7 @@ public class BillItem implements Serializable {
             getPharmaceuticalBillItem().setFreeQty((double) this.tmpFreeQty);
         }
     }
+
     public UserStock getTransUserStock() {
         return transUserStock;
     }
@@ -899,5 +908,49 @@ public class BillItem implements Serializable {
         this.previousRecieveFreeQtyInUnit = previousRecieveFreeQtyInUnit;
     }
 
-   
+    @Transient
+    private void calculateFeeTotals() {
+        totalHospitalFeeValueTransient = 0.0;
+        totalDoctorFeeValueTransient = 0.0;
+        totalProcedureFeeValueTransient = 0.0;
+        if (this.getBillFees() == null) {
+            return;
+        }
+        for (BillFee bf : this.getBillFees()) {
+            if (bf.getFee() == null) {
+                return;
+            }
+            if (bf.getFee().getFeeType() == null) {
+                return;
+            }
+            switch (bf.getFee().getFeeType()) {
+                case Staff:
+                    totalDoctorFeeValueTransient += bf.getFeeValue();
+                    break;
+                case OwnInstitution:
+                case Department:
+                case Service:
+                    totalHospitalFeeValueTransient += bf.getFeeValue();
+                default:
+                    throw new AssertionError();
+            }
+        }
+    }
+
+    public double getTotalHospitalFeeValueTransient() {
+        calculateFeeTotals();
+        return totalHospitalFeeValueTransient;
+    }
+
+    public double getTotalDoctorFeeValueTransient() {
+        calculateFeeTotals();
+        return totalDoctorFeeValueTransient;
+    }
+
+    public double getTotalProcedureFeeValueTransient() {
+        calculateFeeTotals();
+        return totalProcedureFeeValueTransient;
+    }
+
+
 }
