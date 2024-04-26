@@ -23,16 +23,15 @@
                 background-color: #007bff;
                 border-radius: 50%;
                 color: white;
-                line-height: 100px;
                 text-align: center;
                 margin: 10px auto;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                font-size: 75pt;
+                font-size: 45pt;
             }
             .counter-name {
-                font-size: 3em;
+                font-size: 1.5em;
                 font-weight: bold;
                 color: #333;
             }
@@ -51,7 +50,7 @@
             .patientDetails{
 
 
-                font-size: 28pt;
+                font-size: 18pt;
                 font-weight: bolder;
 
             }
@@ -99,18 +98,18 @@
             }
 
             @keyframes scaleAnimation {
-                25% {
+                50% {
                     transform: scale(1); /* Initial scale */
                 }
-                50% {
+                80% {
                     transform: scale(1.1); /* Scale to 1.5 times the original size */
                 }
 
             }
 
             .element {
-                width: 150px; /* Initial width */
-                height: 150px; /* Initial height */
+                width: 100px; /* Initial width */
+                height: 100px; /* Initial height */
                 background-color: #007bff;
                 animation: scaleAnimation 5s ease-in-out infinite alternate; /* Animation properties */
             }
@@ -148,7 +147,7 @@
             <div class="navBar p-2">
                 <div>
                     <div>
-                        <h1 onclick="toggleFullScreen(); return false;">Queue Management &amp; Token System</h1> 
+                        <h3 onclick="toggleFullScreen(); return false;">Queue Management &amp; Token System</h3> 
                         <div style="font-size: 15pt; font-weight: bold;position: fixed;z-index: 0000">
                             <span id="date"></span>
                             <span id="time"></span>
@@ -165,15 +164,18 @@
                     <h6>#{sessionController.institution.web}</h6>
                 </div>
             </div>
-            <div class="container-fluid" style="margin-top: 180px">
+            <div class="container-fluid" style="margin-top: 160px">
 
                 <ui:repeat var="token" value="#{opdTokenController.currentTokens}" >
-                    <div class="card shadow mb-2 p-2">
+                    <div class="card shadow mb-2 p-2" style="height: 125px">
                         <div class="row d-flex align-items-center" >
                             <div class="col-3">
-                                <div>
+                                <div class="mx-2">
                                     <div class="counter-name">
                                         <h:outputText value="#{token.counter.name}" />
+                                    </div>
+                                    <div>
+                                        <h:outputText style="font-size: 10pt;font-weight: bold" value="#{token.staff.person.nameWithTitle}" />
                                     </div>
                                     <h4>#{token.department.name}</h4>
                                 </div>
@@ -187,10 +189,10 @@
                                 <div class="">
                                     <h:panelGroup rendered="#{token.bill ne null}" >
                                         <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                            <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
+                                            <img width="120px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                            <img width="250px"  src="https://assets.materialup.com/uploads/355a438c-4e7b-4412-a74d-1c4c1dd444fa/preview.gif"/>
+                                            <img width="120px"  src="https://assets.materialup.com/uploads/355a438c-4e7b-4412-a74d-1c4c1dd444fa/preview.gif"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
 
@@ -198,9 +200,8 @@
                             </div>
                             <div class="col-3">
                                 <div class="patientDetails">
-                                    <h:outputText value="#{token.patient.person.name}" /><br/>
+                                    <h:outputText value="#{token.patient.person.nameWithTitle}" style="text-transform: uppercase" /><br/>
                                 </div>
-                                <h3><h:outputText value="#{token.patient.person.area.name}" /></h3>
                             </div>
                         </div>
 

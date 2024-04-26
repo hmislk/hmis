@@ -276,6 +276,19 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
+    
+     public String navigateToNewOpdBillForCashierTabView() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+
+        opdPreBillController.makeNull();
+        opdPreBillController.setPatient(currentToken.getPatient());
+        opdPreBillController.setToken(currentToken);
+        return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
+    }
+
 
     public void navigateToNewOpdBill() {
         if (currentToken == null) {
