@@ -58,6 +58,12 @@
                         value="OPD Token" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{opdTokenController.navigateToOpdQueue()}" 
+                        value="OPD Queue" 
+                        icon="fa fa-users" 
+                        rendered="true" />
                     <p:submenu 
                         id="smOpdBilling"
                         label="Billing"
@@ -783,8 +789,7 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/pharmacy/pharmacy_analytics?faces-redirect=true"  value="Theatre Analytics" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
                 </p:submenu>
 
                 <p:submenu   
@@ -858,7 +863,7 @@
                     <p:menuitem 
                         ajax="false"  
                         value="Channel Queue"  
-                        action="#{bookingController.navigateToChannelQueueFromMenu()}" 
+                        action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem 

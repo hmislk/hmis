@@ -170,8 +170,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-  
-
     public String getLandingPageOld() {
         if (landingPage == null) {
             FacesContext context = FacesContext.getCurrentInstance();
@@ -586,9 +584,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Department getDepartment() {
-        if(department==null){
-            if(loggedUser==null){
-                if(loggedUser.getDepartment()!=null){
+        if (department == null) {
+            if (loggedUser == null) {
+                if (loggedUser.getDepartment() != null) {
                     department = loggedUser.getDepartment();
                 }
             }
@@ -1043,15 +1041,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                boolean passwordIsOk=SecurityController.matchPassword(password, u.getWebUserPassword());
+                boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 if (passwordIsOk) {
-                    
+
                     departments = listLoggableDepts(u);
-                    
+
                     if (webUserController.testRun) {
                         departments = departmentController.fillAllItems();
                     }
-                    
+
                     if (departments.isEmpty()) {
                         JsfUtil.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
                         return false;
@@ -1081,7 +1079,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
-                    
+
                     if (webUserController.testRun) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
@@ -1090,7 +1088,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setActivated(u.isActivated());
                     setRole(u.getRole());
 
-                    
                     String sql;
                     UserPreference uf;
                     sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
@@ -1706,8 +1703,11 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         thisLogin.setIpaddress(ip);
         thisLogin.setComputerName(host);
-
-        getLoginsFacade().create(thisLogin);
+        if (thisLogin.getId() == null) {
+            getLoginsFacade().create(thisLogin);
+        }else{
+            getLoginsFacade().edit(thisLogin);
+        }
         getApplicationController().addToLoggins(this);
     }
 
