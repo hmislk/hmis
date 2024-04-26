@@ -811,7 +811,7 @@
                                      value="Unit Issue Margin" />
                     </p:submenu>
                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('StorePurchase')}">
-                        <p:menuitem  ajax="false" action="/store/store_purhcase_order_request?faces-redirect=true"  value="Purchase Orders" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_purhcase_order_request?faces-redirect=true"  value="Purchase Orders" rendered="#{webUserController.hasPrivilege('StorePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_purhcase_order_list_to_approve?faces-redirect=true"  value="PO Approve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseOrderApproveSearch') or webUserController.hasPrivilege('StorePurchaseOrderApprove')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_purchase_order_list_for_recieve?faces-redirect=true"  value="GRN Receive"  actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNRecive')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/store/store_grn_list_for_return?faces-redirect=true"  value="GRN Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNReturn')}" ></p:menuitem>  
