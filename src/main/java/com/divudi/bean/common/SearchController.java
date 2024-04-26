@@ -234,6 +234,13 @@ public class SearchController implements Serializable {
         billSummaryRows = null;
         return "/analytics/financial_transaction_summary_PaymentMethod?faces-redirect=true";
     }
+    
+    public String navigateToFinancialTransactionSummaryByUsers() {
+        institution = sessionController.getInstitution();
+        department = null;
+        billSummaryRows = null;
+        return "/analytics/financial_transaction_summary_Users?faces-redirect=true";
+    }
 
     public void clearBillList() {
         if (bills == null) {
@@ -6713,6 +6720,64 @@ public class SearchController implements Serializable {
 
     }
 
+    public void processAllFinancialTransactionalSummarybyUsers() {
+        //System.out.println("institution = " + institution);
+        //System.out.println("department = " + department);
+        if(institution == null){
+            setDepartments(null);
+        }
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal), "
+                + "count(b), "
+                + "b.creater.webUserPerson ) "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.billTypeAtomic in :abts ";
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", getInstitution());
+
+            if (department != null) {
+                jpql += " and b.department=:dept";
+                params.put("dept", getDepartment());
+            }
+        }
+
+        jpql += " group by b.creater "
+                + " order by  b.creater";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        //System.out.println("billSummaryRows = " + billSummaryRows);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+        }
+
+    }
+    
+    
     public void fillAllBills() {
         bills = null;
         String sql;
