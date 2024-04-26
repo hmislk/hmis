@@ -133,8 +133,6 @@ public class SearchController implements Serializable {
     PharmacyPreSettleController pharmacyPreSettleController;
     @Inject
     TokenController tokenController;
-    @Inject
-    private DepartmentController departmentController;
 
     /**
      * Properties
@@ -220,19 +218,10 @@ public class SearchController implements Serializable {
     private Bill preBill;
     boolean billPreview;
     private Long currentTokenId;
-    
 
     public String navigateToAllFinancialTransactionSummary() {
         billSummaryRows = null;
-        return "/analytics/all_financial_transaction_summary?faces-redirect=true";
-    }
-    
-    
-    public String navigateToFinancialTransactionSummaryPaymentMethod() {
-        institution = sessionController.getInstitution();
-        department = null;
-        billSummaryRows = null;
-        return "/analytics/financial_transaction_summary_PaymentMethod?faces-redirect=true";
+        return "/analytics/all_financial_transaction_summary";
     }
 
     public void clearBillList() {
@@ -355,27 +344,27 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToSmsList() {
-        return "/analytics/sms_list?faces-redirect=true";
+        return "/analytics/sms_list";
     }
 
     public String navigateToFailedSmsList() {
-        return "/analytics/sms_faild?faces-redirect=true";
+        return "/analytics/sms_faild";
 
     }
 
     public String navigateToListOtherInstitutionBills() {
         bills = null;
-        return "/analytics/other_institution_bills?faces-redirect=true";
+        return "/analytics/other_institution_bills";
     }
 
     public String navigateToAnalytics() {
         bills = null;
-        return "/analytics/index?faces-redirect=true";
+        return "/analytics/index";
     }
 
     public String navigateToOpdBillList() {
         bills = null;
-        return "/analytics/opd_bill_list?faces-redirect=true";
+        return "/analytics/opd_bill_list";
     }
 
     public String toSearchBills() {
@@ -1177,22 +1166,6 @@ public class SearchController implements Serializable {
 
     public void setDiscount(double discount) {
         this.discount = discount;
-    }
-
-    public DepartmentController getDepartmentController() {
-        return departmentController;
-    }
-
-    public void setDepartmentController(DepartmentController departmentController) {
-        this.departmentController = departmentController;
-    }
-
-    public List<Department> getDepartments() {
-        return departments;
-    }
-
-    public void setDepartments(List<Department> departments) {
-        this.departments = departments;
     }
 
     public class billsWithbill {
@@ -6554,75 +6527,6 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
-        for (BillSummaryRow bss : billSummaryRows) {
-            grossTotal += bss.getGrossTotal();
-            discount += bss.getDiscount();
-            netTotal += bss.getNetTotal();
-        }
-
-    }
-    
-    private List<Department> departments;
-    
-    
-    public void fillInstitutionInDepartment(Institution ins){
-        if(ins == null){
-            setDepartments(null);
-        }else{
-            setDepartments(getDepartmentController().getInstitutionDepatrments(ins));
-        }
-    }
-
-    public void processAllFinancialTransactionalSummarybyPaymentMethod() {
-        //System.out.println("institution = " + institution);
-        //System.out.println("department = " + department);
-        if(institution == null){
-            setDepartments(null);
-        }
-        billSummaryRows = null;
-        grossTotal = 0.0;
-        discount = 0.0;
-        netTotal = 0.0;
-        String jpql;
-        Map params = new HashMap();
-        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
-        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
-        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
-        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
-        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
-
-        jpql = "select new com.divudi.light.common.BillSummaryRow("
-                + "b.billTypeAtomic, "
-                + "sum(b.total), "
-                + "sum(b.discount), "
-                + "sum(b.netTotal), "
-                + "count(b), "
-                + "b.paymentMethod ) "
-                + " from Bill b "
-                + " where b.retired=:ret"
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.billTypeAtomic in :abts ";
-
-        if (institution != null) {
-            jpql += " and b.institution=:ins";
-            params.put("ins", getInstitution());
-
-            if (department != null) {
-                jpql += " and b.department=:dept";
-                params.put("dept", getDepartment());
-            }
-        }
-
-        jpql += " group by b.paymentMethod, b.billTypeAtomic "
-                + " order by b.billTypeAtomic";
-
-        params.put("toDate", getToDate());
-        params.put("fromDate", getFromDate());
-        params.put("ret", false);
-        params.put("abts", billTypesToFilter);
-        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        //System.out.println("billSummaryRows = " + billSummaryRows);
 
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
