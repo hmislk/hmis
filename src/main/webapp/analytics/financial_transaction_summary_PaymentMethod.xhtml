@@ -96,10 +96,14 @@
                                      rowsPerPageTemplate="5,10,15">
 
                             <p:column headerText="Bill Type" styleClass="alignTop" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}">
-                                <h:outputLabel value="#{bill.person}"/>
+                                <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 <f:facet name="footer">
                                     Total
                                 </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Payment Method" styleClass="alignTop" width="4em">
+                                <h:outputLabel value="#{bill.paymentMethod}"/>
                             </p:column>
 
                             <p:column headerText="Count" width="4em">
