@@ -286,6 +286,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
+         if (currentToken == null) {
+             System.out.println("currentToken == null");
+         }
         opdTabPreBillController.setToken(currentToken);
         return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
     }
