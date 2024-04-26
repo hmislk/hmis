@@ -396,7 +396,7 @@
                                                         <p:commandButton 
                                                             id="btnAddAdditionalItem"
                                                             value="Add Item to Session" 
-                                                            process="btnAddAdditionalItem acAdditionalItem"
+                                                            process="btnAddAdditionalItem acAdditionalItem @this"
                                                             update=":form:msg acAdditionalItem tblAdditionalItems"
                                                             action="#{channelScheduleController.addAdditionalItems()}" >
                                                         </p:commandButton>
@@ -418,8 +418,8 @@
                                                                 <p:commandButton 
                                                                     id="btnRemoveAdditionalItem" 
                                                                     value="Remove" 
-                                                                    process="btnRemoveAdditionalItem" 
-                                                                    update="tblAdditionalItems"
+                                                                    process="btnRemoveAdditionalItem @this"
+                                                                    update="tblAdditionalItems tblAdditionalItems"
                                                                     action="#{channelScheduleController.removeAdditionalItems()}" >
                                                                     <f:setPropertyActionListener value="#{ii}" target="#{channelScheduleController.additionalItemToRemove}" ></f:setPropertyActionListener>
                                                                 </p:commandButton>
