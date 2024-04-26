@@ -196,8 +196,6 @@
                                             </p:panel>
 
                                         </h:panelGroup>
-
-
                                     </div>
                                     <div class="col-md-7">
 
@@ -308,7 +306,8 @@
                                                         </div>
                                                         <div class="col-8">
 
-                                                            <p:datePicker value="#{billBhtController.currentBillItem.billTime}" 
+                                                            <p:datePicker 
+                                                                value="#{billBhtController.currentBillItem.billTime}" 
                                                                           id="billedTimeStamp"
                                                                           pattern="dd MMM yyyy HH:mm:ss"
                                                                           showTime="true"
@@ -330,7 +329,6 @@
 
                                                 </div>
                                             </p:panel>
-
                                         </div>
                                     </div>
                                 </div>
@@ -341,7 +339,7 @@
                                                 <p:tabView id="tblBillItem" >
                                                     <p:tab id="tabBillItems" title="Bill Items" >
                                                         <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billBhtController.lstBillEntries}" var="bi" >
-                                                            <p:column>
+                                                            <p:column width="5em">
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                                             </p:column>
@@ -354,17 +352,22 @@
                                                                 <h:outputLabel value="#{bi.billItem.item.department.name}"/>
                                                             </p:column>
 
-                                                            <p:column>
+                                                            <p:column >
                                                                 <f:facet name="header">Category</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.item.category.name}"/>
 
                                                             </p:column>
 
-                                                            <p:column>
-                                                                <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem}" >
+                                                            <p:column width="5em">
+                                                                <p:commandButton 
+                                                                    id="btnRemove" 
+                                                                    icon="fa fa-times"
+                                                                    title="Remove"
+                                                                    class="ui-button-danger"
+                                                                    action="#{billBhtController.removeBillItem}" >
                                                                     <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
                                                                     <p:ajax  process="btnRemove" update="@form" />
-                                                                </h:commandButton>
+                                                                </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </p:tab>
@@ -382,10 +385,13 @@
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillFee" title="Fees" >
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif" 
-                                                                     rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
-                                                                                      or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                                      ? '':'noDisplayRow'}">
+                                                        <p:dataTable 
+                                                            rowIndexVar="rowIndex" 
+                                                            value="#{billBhtController.lstBillFees}" 
+                                                            var="bif" 
+                                                            rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
+                                                                             or (webUserController.hasPrivilege('ShowInwardFee'))
+                                                                             ? '':'noDisplayRow'}">
                                                             <p:column>
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>
@@ -402,10 +408,11 @@
                                                                              disabled="#{!bif.billItem.item.userChangable
                                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                                     <f:convertNumber pattern="#,##0.00" />
-                                                                    <f:ajax event="keyup" execute="@this" 
-                                                                            render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  
-                                                                            :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
-                                                                            listener="#{billBhtController.feeChanged(bif)}" />
+                                                                    <f:ajax 
+                                                                        event="keyup" 
+                                                                        execute="@this" 
+                                                                        render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
+                                                                        listener="#{billBhtController.feeChanged(bif)}" />
                                                                 </h:inputText>
                                                             </p:column>
 
@@ -432,8 +439,11 @@
                                                                 <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.staff eq null}" ></h:outputLabel>
                                                                 <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
                                                                     <f:selectItem itemLabel="Select Staff" />
-                                                                    <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
-                                                                                    var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                                    <f:selectItems  
+                                                                        value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
+                                                                        var="bifs" 
+                                                                        itemLabel="#{bifs.person.name}" 
+                                                                        itemValue="#{bifs}" />
                                                                 </p:selectOneMenu>
                                                             </p:column>
                                                         </p:dataTable>
