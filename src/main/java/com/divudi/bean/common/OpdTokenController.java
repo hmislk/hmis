@@ -65,11 +65,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     private PharmacyBillSearch pharmacyBillSearch;
     @Inject
-    OpdPreBillController opdPreBillController;
+    OpdPreBillController opdTabPreBillController;
     @Inject
     OpdPreSettleController opdPreSettleController;
     @Inject
     FinancialTransactionController financialTransactionController;
+ 
 
     // </editor-fold> 
     private Token currentToken;
@@ -271,9 +272,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        opdPreBillController.makeNull();
-        opdPreBillController.setPatient(currentToken.getPatient());
-        opdPreBillController.setToken(currentToken);
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
     
@@ -282,10 +283,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-
-        opdPreBillController.makeNull();
-        opdPreBillController.setPatient(currentToken.getPatient());
-        opdPreBillController.setToken(currentToken);
+        
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
         return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
     }
 
@@ -296,9 +297,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        opdPreBillController.makeNull();
-        opdPreBillController.setPatient(currentToken.getPatient());
-        opdPreBillController.setToken(currentToken);
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
     }
 
     public void fillOpdTokens() {
