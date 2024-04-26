@@ -5698,6 +5698,87 @@ public class SearchController implements Serializable {
         return "/opd/opd_search_pre_bill?faces-redirect=true";
     }
 
+    public void fillPharmacyPreBillsToAcceptAtCashierGetPaid() {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false"
+                + " and b.referenceBill is not null ";
+
+        sql += createPharmacyPayKeyword(temMap);
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+    }
+    
+    public void fillPharmacyPreBillsToAcceptAtCashierNotPaid() {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.billTypeAtomic is not null "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false"
+                + " and b.referenceBill is null ";
+
+        sql += createPharmacyPayKeyword(temMap);
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+    }
+    
+    public void fillPharmacyPreBillsToAcceptAtCashier() {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false";
+
+        sql += createPharmacyPayKeyword(temMap);
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+    }
+
     public void createPharmacyPreTable() {
         Date startTime = new Date();
         createPreTable(BillType.PharmacyPre);
