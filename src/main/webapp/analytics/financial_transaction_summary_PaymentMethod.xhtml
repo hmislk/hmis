@@ -45,7 +45,7 @@
                                 class="w-100 mx-4" 
                                 inputStyleClass="w-100"
                                 >
-                                <p:ajax listener="#{searchController.fillInstitutionInDepartment(searchController.institution)}" process="ins2" update="somDept" />
+                                <p:ajax event="itemSelect" process="ins2" update="somDept" />
                             </p:autoComplete>
 
                             <h:outputText value="Department" />
@@ -56,7 +56,7 @@
                                 >
                                 <f:selectItem  itemLabel="Please select a Department"/>
                                 <f:selectItems 
-                                    value="#{searchController.departments}" 
+                                    value="#{departmentController.getInstitutionDepatrments(searchController.institution)}" 
                                     var="d" 
                                     itemLabel="#{d.name}" itemValue="#{d}" 
                                     />
