@@ -763,7 +763,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 getToken().setBill(b);
                 tokenFacade.edit(getToken());
                 markToken(b);
-                System.out.println("getToken().setBill(b) = ");
+                
             }
             
         } else {
