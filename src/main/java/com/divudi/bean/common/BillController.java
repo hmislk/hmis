@@ -284,6 +284,34 @@ public class BillController implements Serializable {
         searchController.createTableByKeywordToPayBills();
     }
 
+    public double getHospitalFee(BillItem i) {
+        List<BillFee> billFees = billFeesOfBillItem(i);
+        double hospitalFee = 0.0;
+        for (BillFee billFee : billFees) {
+            if (billFee.getFee() == null) {
+                continue;
+            }
+            if(billFee.getFee().getFeeType()!=FeeType.Staff){
+                hospitalFee+=billFee.getFeeValue();
+            }
+        }
+        return hospitalFee;
+    }
+    
+    public double getStaffFee(BillItem i) {
+        List<BillFee> billFees = billFeesOfBillItem(i);
+        double hospitalFee = 0.0;
+        for (BillFee billFee : billFees) {
+            if (billFee.getFee() == null) {
+                continue;
+            }
+            if(billFee.getFee().getFeeType()==FeeType.Staff){
+                hospitalFee+=billFee.getFeeValue();
+            }
+        }
+        return hospitalFee;
+    }
+
     public void clearPharmacy() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -917,7 +945,6 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -956,7 +983,6 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        
     }
 
     public void getPharmacySaleBills() {
@@ -1004,7 +1030,6 @@ public class BillController implements Serializable {
             grosTotal = r.getGrossTotal();
         }
 
-        
     }
 
     public Double getGrosTotal() {
@@ -1057,7 +1082,7 @@ public class BillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
+
     }
 
     public void getPharmacyBills() {
@@ -1102,7 +1127,6 @@ public class BillController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void getPharmacyBillsBilled() {
@@ -1115,7 +1139,7 @@ public class BillController implements Serializable {
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
         vat = r.getVat();
-        
+
     }
 
     public void getPharmacyWholeBills() {
@@ -1159,7 +1183,6 @@ public class BillController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public BillEjb getBillEjb() {
@@ -1419,7 +1442,6 @@ public class BillController implements Serializable {
         checkBillValues();
         printPreview = true;
 
-        
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1709,7 +1731,7 @@ public class BillController implements Serializable {
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-        
+
         cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setBilledBill(batchBill);
 
@@ -2517,8 +2539,8 @@ public class BillController implements Serializable {
         List<Bill> lst = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return lst;
     }
-    
-    public Bill findBillbyID( Long id){
+
+    public Bill findBillbyID(Long id) {
         if (id == null) {
             return null;
         }

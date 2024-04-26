@@ -647,35 +647,34 @@
                     </p:tab>
 
                     <p:tab 
-                        title="Change Number"
+                        title="Change Appointment Details"
                         id="changeNumber" 
                         rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
 
-                        <h:panelGrid columns="2">
-
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:outputLabel value="Patient Name"/>
                             <p:inputText autocomplete="off" 
                                          readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}"
                                          value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
-                            <p:outputLabel value="Patient"/>
+                            <p:outputLabel value="Patient Phoone Number"/>
                             <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"  disabled="#{!webUserController.hasPrivilege('ClinicalPatientPhoneNumberEdit')}"/>
-                            <p:outputLabel value="Current Serial No"/>
+                            <p:outputLabel value="Current Appointment No"/>
                             <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                 <p:outputLabel value="#{bis.billSession.serialNo}">                                        
                                 </p:outputLabel>
                             </ui:repeat>
-                            <p:outputLabel value="Serial No"/>
+                            <p:outputLabel value="Appointment No"/>
                             <p:inputText autocomplete="off" value="#{bookingController.serealNo}">                                        
                             </p:inputText>
-
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
+                                             disabled="#{bookingController.selectedBillSession.bill.cancelled==true
+                                                         or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
 
                             <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
                                              disabled="#{bookingController.selectedBillSession.bill.cancelled==true
                                                          or bookingController.selectedBillSession.bill.refunded==true}" />
-
-
-
-
-
                         </h:panelGrid>
 
 

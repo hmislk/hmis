@@ -21,10 +21,11 @@
                             <h:outputText class="mx-2" value="Lable Print For Inward Add Services" />
                         </div>
                         <div>
-                            <p:commandButton value="New Bill"
-                                             icon="fa fa-plus"
-                                             class="ui-button-success m-1"  ajax="false"
-                                             action="#{billBhtController.resetBillData()}" >
+                            <p:commandButton 
+                                value="New Bill"
+                                icon="fa fa-plus"
+                                class="ui-button-success m-1"  ajax="false"
+                                action="#{billBhtController.resetBillData()}" >
                             </p:commandButton>
                             <p:commandButton
                                 ajax="false"
@@ -48,45 +49,50 @@
                     </div>
                 </f:facet>
 
-
-                <h:panelGrid columns="1" id="stickerPanel">
-                    <ui:repeat value="#{billBhtController.stickers}" var="sticker">
-                        <ez:stickerLableForTest sticker="#{sticker}" />
-                        <h:panelGroup style="width:5in; height:2.5in; border: 1px solid black; padding:10px; margin-bottom:10px; position: relative;" rendered="false">
-                            <h:outputText value="Name: " style="font-weight:bold;"/>
-                            <h:outputText value="#{sticker.p}"/><br/>
-
-                            <h:outputText value="Age: " style="font-weight:bold;"/>
-                            <h:outputText value="#{sticker.patientAge}"/><br/>
-
-                            <h:outputText value="Tests: " style="font-weight:bold;"/>
-                            <h:outputText value="#{sticker.tests}"/><br/>
-
-                            <h:outputText value="Sample ID: " style="font-weight:bold;"/>
-                            <h:outputText value="#{sticker.sampleId}"/><br/>
-
-                            <h:outputText value="Bill Date: " style="font-weight:bold;"/>
-                            <h:outputText value="#{sticker.billDateString}"/><br/>
-
-                            <h:outputText value="INS ID: " style="font-weight:bold;"/>
-                            <h:outputText value="#{sticker.insid}"/><br/>
-
-                            <!-- Optional field, check if not empty or null before displaying -->
-                            <h:panelGroup rendered="#{not empty sticker.tube}">
-                                <h:outputText value="Tube: " style="font-weight:bold;"/>
-                                <h:outputText value="#{sticker.tube}"/><br/>
-                            </h:panelGroup>
-
-                            <!-- Additional layout adjustments can be done here -->
-                        </h:panelGroup>
-                    </ui:repeat>
-                </h:panelGrid>
-
-
-
-                <p:commandButton value="Print Stickers" type="button" class="ui-button-info my-1" icon="fas fa-print">
+                <p:commandButton 
+                    value="Print Stickers" 
+                    type="button" 
+                    style="float: right;"
+                    class="ui-button-info" 
+                    icon="fas fa-print">
                     <p:printer target="stickerPanel" />
                 </p:commandButton>
+
+                <div class=" d-flex justify-content-center">
+                    <h:panelGrid columns="1" id="stickerPanel">
+                        <ui:repeat value="#{billBhtController.stickers}" var="sticker">
+                            <ez:stickerLableForTest sticker="#{sticker}" />
+                            <h:panelGroup style="width:5in; height:2.5in; border: 1px solid black; padding:10px; margin-bottom:10px; position: relative;" rendered="false">
+                                <h:outputText value="Name: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.p}"/><br/>
+
+                                <h:outputText value="Age: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.patientAge}"/><br/>
+
+                                <h:outputText value="Tests: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.tests}"/><br/>
+
+                                <h:outputText value="Sample ID: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.sampleId}"/><br/>
+
+                                <h:outputText value="Bill Date: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.billDateString}"/><br/>
+
+                                <h:outputText value="INS ID: " style="font-weight:bold;"/>
+                                <h:outputText value="#{sticker.insid}"/><br/>
+
+                                <!-- Optional field, check if not empty or null before displaying -->
+                                <h:panelGroup rendered="#{not empty sticker.tube}">
+                                    <h:outputText value="Tube: " style="font-weight:bold;"/>
+                                    <h:outputText value="#{sticker.tube}"/><br/>
+                                </h:panelGroup>
+
+                                <!-- Additional layout adjustments can be done here -->
+                            </h:panelGroup>
+                        </ui:repeat>
+                    </h:panelGrid>
+                </div>
+
             </p:panel>
         </h:form>
     </ui:define>
