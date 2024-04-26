@@ -380,6 +380,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdQueue() {
+        fillOpdTokens();
         return "/opd/token/opd_queue?faces-redirect=true";
     }
     
