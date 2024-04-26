@@ -6575,8 +6575,8 @@ public class SearchController implements Serializable {
     }
 
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
-        System.out.println("institution = " + institution);
-        System.out.println("department = " + department);
+        //System.out.println("institution = " + institution);
+        //System.out.println("department = " + department);
         if(institution == null){
             setDepartments(null);
         }
