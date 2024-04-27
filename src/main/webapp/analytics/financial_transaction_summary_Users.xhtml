@@ -84,9 +84,8 @@
                             </p:commandButton>
                         </h:panelGrid>
                         
-                        value="#{searchController.billSummaryRows}" 
 
-<!--                        <p:dataTable 
+                        <p:dataTable 
                             rowIndexVar="i" id="tbl" 
                             value="#{searchController.billSummaryRows}" 
                             reflow="true"
@@ -98,20 +97,11 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15">
 
-                            <p:column headerText="Paymet Method" width="8em">
-                                <h:outputLabel value="#{bill.webUser}">
+                            <p:column headerText="Cashier" width="10em">
+                                <h:outputLabel value="#{bill.person.name}">
                                 </h:outputLabel>
                             </p:column>
                             
-                            <p:column headerText="Bill Type" styleClass="alignTop" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}">
-                                <h:outputLabel value="#{bill.billTypeAtomic}"/>
-                                <f:facet name="footer">
-                                    Total
-                                </f:facet>
-                            </p:column>
-
-
-
                             <p:column headerText="Count" width="4em">
                                 <h:outputLabel value="#{bill.billCount}"/>
                                 <f:facet name="footer">
@@ -151,7 +141,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>                         
-                        </p:dataTable>-->
+                        </p:dataTable>
                     </p:panel>
                 </h:form>
             </ui:define>

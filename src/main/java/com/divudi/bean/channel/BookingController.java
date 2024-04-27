@@ -3290,6 +3290,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return null;
         }
+        if(patient.getPerson().getName().isEmpty()){
+            JsfUtil.addErrorMessage("Please Enter a Name");
+            return null;
+        }
+        
         selectedBillSession.getBill().setPatient(patient);
         billFacade.edit(selectedBillSession.getBill());
         JsfUtil.addSuccessMessage("Patient Changed");
