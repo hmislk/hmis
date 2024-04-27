@@ -266,7 +266,15 @@ public class SearchController implements Serializable {
     public String settleBillByBarcode() {
         currentBill = searchBillFromBillId(currentTokenId);
         String action;
+        if (currentBill == null) {
+            Token t = tokenController.findToken(currentBillId);
+            if (t != null) {
+                if (t.getBill() != null) {
 
+                    currentBill = t.getBill();
+                }
+            }
+        }
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
