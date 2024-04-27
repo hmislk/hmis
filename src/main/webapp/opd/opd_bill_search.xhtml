@@ -199,17 +199,22 @@
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
                                              >
-                                    <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
+                                    <p:column 
+                                        headerText="No" 
+                                        filterBy="#{bill.id}" 
+                                        filterMatchMode="contains"
                                               sortBy="#{bill.id}"
                                               rendered="false"
-                                              styleClass="alignTop" width="15">
+                                              styleClass="alignTop" 
+                                              width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
-                                        <p:commandLink id="billNo" 
-                                                       ajax="false" 
-                                                       value="#{bill.deptId}" 
-                                                       action="#{billSearch.navigateToViewOpdBill()}">
+                                        <p:commandLink 
+                                            id="billNo" 
+                                            ajax="false" 
+                                            value="#{bill.deptId}" 
+                                            action="#{billSearch.navigateToViewOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
