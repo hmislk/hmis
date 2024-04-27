@@ -37,6 +37,14 @@
                 z-index: 1000; /* Ensure the navbar appears above other content */
             }
 
+            .preLoder {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+
 
         </style>
 
@@ -47,10 +55,15 @@
                     <nav class="navbar navbar-light p-2 sticky-top w-100" style="background-color: #e3f2fd;" >
                         <div class="d-flex align-items-center mx-4">
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h4 onclick="toggleFullScreen()" class="mx-4">OPD Token Management</h4>
+                            <h4 class="mx-4">OPD Token Management</h4>
                         </div>
 
                         <div class="d-flex">
+                            <div class="d-flex align-items-center">
+                                <!--                                <h:outputLabel value="Total Patient Now"/>
+                                                                <p:badge class="mx-4" value="#{opdTokenController.currentTokens.size()}" size="large" severity="success"/>
+                                -->
+                            </div>
                             <p:selectOneMenu class="mx-2" value="#{opdTokenController.counter}" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems 
@@ -62,10 +75,13 @@
                             </p:selectOneMenu>
 
                             <p:commandButton ajax="false" 
-                                             value="FIlter" 
+                                             value="Filter" 
                                              icon="fa fa-check" 
                                              styleClass="ui-button-success mx-1" 
                                              action="#{opdTokenController.fillOpdTokens()}" />
+                            <p:poll interval="180" 
+                                    listener="#{opdTokenController.fillOpdTokens()}"
+                                    update="tblSessions" />
                         </div>
 
                     </nav>
@@ -76,18 +92,22 @@
                     <ui:repeat var="token" 
                                id="tblSessions"
                                value="#{opdTokenController.currentTokens}"
-                               class="w-100 mt-5">
+                               class="w-100 mt-5"
+                               >
 
-                        <div class="shadow-lg p-2 row d-flex align-items-center" style="height: 100px">
+                        <div class="shadow-lg p-2 row d-flex align-items-center mt-2" style="height: 80px">
 
-                            <div class="col-1 text-center">
-                                <h:outputText value="#{token.tokenNumber}" />
+                            <div class="col-1 text-center d-flex justify-content-center align-items-center ">
+                                <div style="box-sizing: border-box;width: 40px;height: 40px;border-radius: 50%;border: 2px solid black;color: black" class="d-flex justify-content-center align-items-center">
+                                    <h:outputText style="font-weight: bolder" value="#{token.tokenNumber}" />
+                                </div>
                             </div>
-                            <div class="col-3 ">
+
+                            <div class="col-3">
                                 <h:outputText value="#{token.patient.person.nameWithTitle}" style="text-transform: uppercase;font-weight: bold;" />
                             </div>
                             <div class="col-1 ">
-                                <h:outputText value="#{token.counter.name}" />
+                                <h:outputText style="font-weight: bolder" value="#{token.counter.name}" />
                             </div>
 
                             <div class="col-2 ">
@@ -171,13 +191,21 @@
                 </div>
             </div>
 
+            <div id="preLoder" class="preLoder">
+                <div class="spinner-grow" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
         </h:form>
         <script type="text/javascript">
             //<![CDATA[
             function toggleFullScreen() {
+
                 var elem = document.documentElement;
                 if (!document.fullscreenElement && !document.mozFullScreenElement &&
                         !document.webkitFullscreenElement && !document.msFullscreenElement) {
+
                     if (elem.requestFullscreen) {
                         elem.requestFullscreen();
                     } else if (elem.msRequestFullscreen) {
@@ -199,6 +227,11 @@
                     }
                 }
             }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById("preLoder").style.display = "none";
+            });
+
             //]]>
         </script>
     </ui:define>

@@ -13,6 +13,18 @@
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                <style>
+                    .preLoder {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+
+
+
+                </style>
+
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
@@ -22,10 +34,9 @@
                                     <div class="d-flex align-items-center">
                                         <p:commandButton  
                                             value="Settle"
-                                            style="float: right;"
                                             ajax="false"
                                             icon="fa fa-check"              
-                                            action="#{opdTabPreBillController.settleBill}" 
+                                            action="#{opdTabPreBillController.settleBill()}" 
                                             class="ui-button-success mx-2 w-100"
                                             >
                                         </p:commandButton>
@@ -42,10 +53,10 @@
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa-solid fa-circle-plus" /> 
                                                 <h:outputText value="Add Items And Services" class="mx-4"></h:outputText>
                                             </div>
-                                            
+
                                         </div>
 
                                     </f:facet>
@@ -139,7 +150,7 @@
                                                                         value="X"
                                                                         ajax="false"
                                                                         action="#{opdTabPreBillController.removeBillItem(bi)}">
-                                                                       
+
                                                                     </p:commandButton>
                                                                 </p:column>
                                                             </p:dataTable>
@@ -500,35 +511,20 @@
 
 
                     </h:panelGroup>
+                    <div id="preLoder" class="preLoder">
+                        <div class="spinner-grow" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
                 </h:form>
 
                 <script type="text/javascript">
                     //<![CDATA[
-                    function toggleFullScreen() {
-                        var elem = document.documentElement;
-                        if (!document.fullscreenElement && !document.mozFullScreenElement &&
-                                !document.webkitFullscreenElement && !document.msFullscreenElement) {
-                            if (elem.requestFullscreen) {
-                                elem.requestFullscreen();
-                            } else if (elem.msRequestFullscreen) {
-                                elem.msRequestFullscreen();
-                            } else if (elem.mozRequestFullScreen) {
-                                elem.mozRequestFullScreen();
-                            } else if (elem.webkitRequestFullscreen) {
-                                elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-                            }
-                        } else {
-                            if (document.exitFullscreen) {
-                                document.exitFullscreen();
-                            } else if (document.msExitFullscreen) {
-                                document.msExitFullscreen();
-                            } else if (document.mozCancelFullScreen) {
-                                document.mozCancelFullScreen();
-                            } else if (document.webkitExitFullscreen) {
-                                document.webkitExitFullscreen();
-                            }
-                        }
-                    }
+
+                    document.addEventListener("DOMContentLoaded", function () {
+                        document.getElementById("preLoder").style.display = "none";
+                    });
+
                     //]]>
                 </script>
 
