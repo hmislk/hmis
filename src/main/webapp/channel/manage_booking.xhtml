@@ -209,7 +209,7 @@
                                     <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.creater.webUserPerson.nameWithTitle}" />
                                     <p:outputLabel style="color: red" value="Refund At" />
                                     <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.createdAt}" >
-<!--                                        <f:convertNumber pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertNumber>-->
+                                        <!--                                        <f:convertNumber pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertNumber>-->
                                     </p:outputLabel> 
                                 </h:panelGrid>
 
@@ -590,9 +590,12 @@
                                                 style="width: 13em;">
                                                 <f:selectItem itemLabel="Please Select Paper Type" />
                                                 <f:selectItems value="#{enumController.paperTypes}" />
+                                                <p:ajax event="itemSelect" process="@this" update="gpSettleBillPreview" />
                                             </p:selectOneMenu>
                                             <p:commandButton 
-                                                ajax="false" 
+                                                id="btnRefresh"
+                                                process="@this"
+                                                update="gpSettleBillPreview"
                                                 icon="fa fa-sync-alt" 
                                                 class="ui-button" 
                                                 title="Redraw Bill">
