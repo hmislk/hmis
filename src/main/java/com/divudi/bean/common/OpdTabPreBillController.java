@@ -1300,10 +1300,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     MembershipSchemeController membershipSchemeController;
     
     public void calTotals() {
-//     //   ////// // System.out.println("calculating totals");
-        if (paymentMethod == null) {
-            return;
-        }
         
         if (toStaff != null) {
             paymentScheme = null;
@@ -1467,6 +1463,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 continue;
             }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
+                System.out.println("getSelectedCurrentlyWorkingStaff().getSpeciality() = " + getSelectedCurrentlyWorkingStaff().getSpeciality());
                 if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
                     if (bf.getFee().getStaff() == null) {
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
@@ -1482,22 +1479,12 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         }
     }
     
-    public void removeBillItem() {
-
-        //TODO: Need to add Logic
-        //////// // System.out.println(getIndex());
-        if (getIndex() != null) {
-            //  boolean remove;
-            BillEntry temp = getLstBillEntries().get(getIndex());
-            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
-            recreateList(temp);
-            // remove = getLstBillEntries().remove(getIndex());
-
-            //  getLstBillEntries().remove(index);
-            ////////// // System.out.println("Is Removed:" + remove);
+    public void removeBillItem(BillEntry bi) {
+        if (bi != null) {
+            getLstBillEntries().remove(bi);
             calTotals();
-            
         }
+        
         
     }
     
