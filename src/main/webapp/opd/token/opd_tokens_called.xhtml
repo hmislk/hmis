@@ -35,10 +35,10 @@
                 font-weight: bold;
                 color: #333;
             }
-            .patient-name {
+/*            .patient-name {
                 font-size: 1em;
                 color: #555;
-            }
+            }*/
             .token-item {
                 margin-bottom: 20px;
                 padding: 10px;
@@ -47,13 +47,10 @@
                 background-color: #f9f9f9;
             }
 
-            .patientDetails{
-
-
+/*            .drDetails{
                 font-size: 18pt;
                 font-weight: bolder;
-
-            }
+            }*/
 
             @keyframes gradientChange {
                 0% {
@@ -174,9 +171,6 @@
                                     <div class="counter-name">
                                         <h:outputText value="#{token.counter.name}" />
                                     </div>
-                                    <div>
-                                        <h:outputText style="font-size: 10pt;font-weight: bold" value="#{token.staff.person.nameWithTitle}" />
-                                    </div>
                                     <h4>#{token.department.name}</h4>
                                 </div>
                             </div>
@@ -199,8 +193,8 @@
                                 </div>
                             </div>
                             <div class="col-3">
-                                <div class="patientDetails">
-                                    <h:outputText value="#{token.patient.person.nameWithTitle}" style="text-transform: uppercase" /><br/>
+                                <div >
+                                    <h:outputText value="#{token.staff.person.nameWithTitle}" style="font-size: 1.5em;font-weight: bold; text-transform: uppercase"/><br/>
                                 </div>
                             </div>
                         </div>
