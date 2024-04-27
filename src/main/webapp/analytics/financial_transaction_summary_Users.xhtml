@@ -12,7 +12,7 @@
 
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="Financial Transaction Summary - Payment Method"/>                          
+                            <h:outputLabel value="Financial Transaction Summary - Users"/>                          
                         </f:facet>
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
@@ -69,7 +69,7 @@
                                 id="btnSearch" 
                                 ajax="false" 
                                 value="Process" 
-                                action="#{searchController.processAllFinancialTransactionalSummarybyPaymentMethod}"/>
+                                action="#{searchController.processAllFinancialTransactionalSummarybyUsers}"/>
                             <p:commandButton 
                                 class="ui-button-success mx-2" 
                                 icon="fas fa-file-excel" 
@@ -77,40 +77,35 @@
                                 ajax="false" 
                                 value="Excel" >
                                 <p:dataExporter 
-                                    fileName="All Financial Transactions - Payment Method" 
+                                    fileName="All Financial Transactions - Users" 
                                     type="xlsx" 
                                     target="tbl" >
                                 </p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
+                        
 
-                        <p:dataTable rowIndexVar="i" id="tbl" 
-                                     value="#{searchController.billSummaryRows}" 
-                                     reflow="true"
-                                     var="bill"  
-                                     style="min-width: 100%;"  
-                                     paginator="true"
-                                     paginatorPosition="bottom"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15">
+                        <p:dataTable 
+                            rowIndexVar="i" id="tbl" 
+                            value="#{searchController.billSummaryRows}" 
+                            reflow="true"
+                            var="bill"  
+                            style="min-width: 100%;"  
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15">
 
-                            <p:column headerText="Bill Type" styleClass="alignTop" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}">
-                                <h:outputLabel value="#{bill.billTypeAtomic}"/>
-                                <f:facet name="footer">
-                                    Total
-                                </f:facet>
+                            <p:column headerText="Cashier" width="10em">
+                                <h:outputLabel value="#{bill.person.name}">
+                                </h:outputLabel>
                             </p:column>
                             
-                            <p:column headerText="Payment Method" width="5em">
-                                <h:outputLabel value="#{bill.paymentMethod}"/>
-                                <f:facet name="footer">
-                                </f:facet>
-                            </p:column>
-
                             <p:column headerText="Count" width="4em">
                                 <h:outputLabel value="#{bill.billCount}"/>
                                 <f:facet name="footer">
+
                                 </f:facet>
                             </p:column>
 
