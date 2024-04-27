@@ -1439,6 +1439,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         clearBillValues();
         paymentMethod = null;
         printPreview = false;
+        lstBillEntries=null;
 
     }
 

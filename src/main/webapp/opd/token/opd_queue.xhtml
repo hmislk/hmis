@@ -106,7 +106,7 @@
                             <div class="col-3">
                                 <h:outputText value="#{token.patient.person.nameWithTitle}" style="text-transform: uppercase;font-weight: bold;" />
                             </div>
-                            <div class="col-1 ">
+                            <div class="col-2 ">
                                 <h:outputText style="font-weight: bolder" value="#{token.counter.name}" />
                             </div>
 
@@ -122,27 +122,29 @@
                                                    opdTokenController.getTokenStatus(token) == 'Completed' ? 'success' : ''}"
                                        style="font-size: 14px;"/>
                             </div>
-                            <div class="col-3">
-
-                                <h:panelGrid rendered="#{not empty token.bill and token.bill.billType eq 'OpdBathcBillPre'}" >
+                            <div class="col-2" >
+                                <h:panelGrid rendered="#{not empty token.bill }" style="font-weight: bolder" >
                                     <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                        <h:outputText value="PAYMENT DONE" />
+                                        <p:badge class="mx-4" value="PAYMENT DONE" size="small" severity="info"/>
                                         <br/>
-                                        <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.referenceBill.deptId}" />
+<!--                                        <div style="font-size: 10pt" class="text-center">
+                                            <h:outputText value="Bill Number : " />
+                                            <h:outputText value="#{token.bill.referenceBill.deptId}" />
+                                        </div>-->
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
-
-                                        <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
+                                        <p:badge class="mx-4" value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}" size="small" severity="success"/>
+                                        <p:badge class="mx-4" value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}" size="small" severity="info"/>
                                         <br/>
-                                        <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.deptId}" />
+<!--                                        <div style="font-size: 10pt" class="text-center">
+                                            <h:outputText value="Bill Number : " />
+                                            <h:outputText value="#{token.bill.deptId}" />
+                                        </div>-->
                                     </h:panelGroup>
                                 </h:panelGrid>
                                 <h:panelGrid rendered="#{not empty token.bill and token.bill.billType.label eq 'OPD Accepet Payment'}" >
-                                    <h:outputText value="PAYMENT DONE" />
+                                    <p:badge class="mx-4" value="PAYMENT DONE" rendered="#{token.bill.cancelled eq true}" size="small" severity="info"/>
                                 </h:panelGrid>
                             </div>
                             <div class="col-2">
