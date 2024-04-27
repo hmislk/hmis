@@ -26,51 +26,92 @@
                                     rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}"
                                     ajax="false">
                                 </p:commandButton>
-                            </div>
+                            </div> 
                         </f:facet>
                         <div class="row">
                             <div class="col-12 d-flex justify-content-between ">
                                 <!-- Command Buttons -->
                                 <div class="d-flex m-1 col-6">
-                                    <p:commandButton ajax="false" value="To Cancel" action="/opd/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
-                                    </p:commandButton>
-                                    <p:commandButton
+                                    
+                                    <h:panelGroup rendered="#{billSearch.opdBillCancellationSameDay}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Cancel" 
+                                            action="#{billSearch.navigateToCancelOpdBill()}" 
+                                            disabled="#{(billSearch.bill.cancelled or billSearch.bill.refundedBill ne null)}" 
+                                            class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                   
+                                    <h:panelGroup rendered="#{!billSearch.opdBillCancellationSameDay}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Can not Cancel" 
+                                            disabled="true" 
+                                            class="ui-button-danger m-1 w-25" 
+                                            icon="fa fa-times" > 
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
+                                        <p:commandButton
+                                            ajax="false" 
+                                            value="To Refund"
+                                            disabled="#{billSearch.bill.cancelled}" 
+                                            action="#{billSearch.navigateToRefundOpdBill}" 
+                                            class="ui-button-warning m-1 w-25" 
+                                            icon="fa fa-money-bill-wave">                          
+                                        </p:commandButton>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">
+                                        <p:commandButton
+                                            ajax="false" 
+                                            value="Can not Refund Bill"
+                                            disabled="true" 
+                                            class="ui-button-warning m-1 w-25" 
+                                            icon="fa fa-money-bill-wave">                          
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    
+                                    <p:commandButton 
                                         ajax="false" 
-                                        value="To Refund" 
-                                        action="#{billSearch.navigateToRefundOpdBill}" 
-                                        disabled="#{billSearch.bill.cancelled}" 
-                                        class="ui-button-warning m-1 w-25" 
-                                        icon="fa fa-money-bill-wave">                          
+                                        value="Cancel All Bills of this Patient" 
+                                        action="#{billController.cancellAll}" 
+                                        disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" 
+                                        class="w-50 m-1"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;" 
+                                        icon="fa fa-ban">
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="w-50 m-1"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;" icon="fa fa-ban"/>
                                     <!-- Print Button -->
 
                                 </div>
 
                                 <div class="d-flex col-6 justify-content-end m-1">
-                                    
-                                    <p:commandButton value="Print" 
-                                                     class="ui-button-info m-1 w-25"
-                                                     icon="fa fa-print"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info m-1 w-25"
+                                        icon="fa fa-print"
+                                        ajax="false">
                                         <p:printer target="groupPrint" />
                                     </p:commandButton>
                                     <!-- Print Lookup Button -->
-                                    <p:commandButton value="Patient Lookup" 
-                                                     class="ui-button-warning m-1 w-25"
-                                                     icon="fa fa-search"
-                                                     action="#{opdBillController.navigateToSearchPatients()}"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Patient Lookup" 
+                                        class="ui-button-warning m-1 w-25"
+                                        icon="fa fa-search"
+                                        action="#{opdBillController.navigateToSearchPatients()}"
+                                        ajax="false">
                                     </p:commandButton>
 
                                     <!-- Patient Profile Button -->
-                                    <p:commandButton value="Patient Profile" 
-                                                     class="ui-button-warning m-1 w-25"
-                                                     icon="fa fa-user"
-                                                     action="#{patientController.navigateToOpdPatientProfile()}"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Patient Profile" 
+                                        class="ui-button-warning m-1 w-25"
+                                        icon="fa fa-user"
+                                        action="#{patientController.navigateToOpdPatientProfile()}"
+                                        ajax="false">
                                         <f:setPropertyActionListener 
                                             value="#{opdBillController.bills[0].patient}" 
                                             target="#{patientController.current}" />
@@ -84,10 +125,7 @@
 
                                     </p:commandButton>
 
-
-
                                 </div>
-
 
                             </div>
                         </div>

@@ -51,6 +51,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.OptionScope;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -151,9 +152,12 @@ public class BillSearch implements Serializable {
     private SecurityController securityController;
     @Inject
     NotificationController notificationController;
-
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    CommonFunctionsController commonFunctionsController;
     /**
      * Class Variables
      */
@@ -216,6 +220,9 @@ public class BillSearch implements Serializable {
     private OverallSummary overallSummary;
 
     private Bill currentRefundBill;
+
+    private boolean opdBillCancellationSameDay = false;
+    private boolean opdBillRefundAllowedSameDay = false;
 
     public void preparePatientReportByIdForRequests() {
         bill = null;
@@ -1225,7 +1232,7 @@ public class BillSearch implements Serializable {
             userBills = new ArrayList<>();
 
         }
-        
+
         return userBills;
 
     }
@@ -1515,7 +1522,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Error in Bill Value Inversion");
             return "";
         }
-        
+
         saveRefundBill(refundingBill);
 
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
@@ -2068,16 +2075,14 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        
-
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-        
+
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
-        
+
         getBill().setCancelled(true);
         getBill().setCancelledBill(cancellationBill);
         billController.save(getBill());
@@ -2094,7 +2099,7 @@ public class BillSearch implements Serializable {
         }
 
         notificationController.createNotification(cancellationBill);
-        
+
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
@@ -2675,12 +2680,55 @@ public class BillSearch implements Serializable {
         printPreview = false;
         return "/opd/bill_cancel?faces-redirect=true;";
     }
-    
+
+    public boolean chackRefundORCancelBill(Bill bill) {
+        boolean result = false;
+        //System.out.println("bill.getCreatedAt = " + bill.getCreatedAt());
+        //System.out.println("After 24H Date = " + commonFunctionsController.dateAfter24Hours(bill.getCreatedAt()));
+        //System.out.println("curret Date = " + new Date());
+        if (commonFunctionsController.dateAfter24Hours(bill.getCreatedAt()).after(new Date())) {
+            result = true;
+            //System.out.println("Can Refund or Cancel");
+        } else {
+            result = false;
+            //System.out.println("Can not Refund Or Cancel");
+        }
+        return result;
+    }
+
     public String navigateToViewOpdBill() {
+
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        
+        if (configOptionController.getBooleanValueByKey("OPD Bill Cancelation is Limited to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
+            opdBillCancellationSameDay = chackRefundORCancelBill(bill);
+            //System.out.println("opdBillCancellationSameDay = " + opdBillCancellationSameDay);
+//            if (opdBillCancellationSameDay) {
+//                System.out.println("Can Cancel");
+//            } else {
+//                System.out.println("Can not Cancel");
+//            }
+        } else {
+            opdBillCancellationSameDay = true;
+            //System.out.println("***Can Cancel***");
+        }
+
+        if (configOptionController.getBooleanValueByKey("OPD Bill Refund Allowed to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
+            opdBillRefundAllowedSameDay = chackRefundORCancelBill(bill);
+            //System.out.println("opdBillRefundAllowedSameDay = " + opdBillRefundAllowedSameDay);
+//            if (opdBillRefundAllowedSameDay) {
+//                System.out.println("Can Refund");
+//            } else {
+//                System.out.println("Can not Refund");
+//            }
+        } else {
+            opdBillRefundAllowedSameDay = true;
+            //System.out.println("***Can Refund***");
+        }
+        
         paymentMethod = bill.getPaymentMethod();
         createBillItemsAndBillFees();
         billBean.checkBillItemFeesInitiated(bill);
@@ -2688,6 +2736,7 @@ public class BillSearch implements Serializable {
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
+
         return "/opd/bill_reprint?faces-redirect=true;";
     }
 
@@ -2705,7 +2754,7 @@ public class BillSearch implements Serializable {
         printPreview = false;
         return "/collecting_centre/bill_reprint?faces-redirect=true;";
     }
-
+    
     public String navigateToRefundOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3727,6 +3776,22 @@ public class BillSearch implements Serializable {
 
     public void setPatientDepositsTotal(double patientDepositsTotal) {
         this.patientDepositsTotal = patientDepositsTotal;
+    }
+
+    public boolean isOpdBillCancellationSameDay() {
+        return opdBillCancellationSameDay;
+    }
+
+    public void setOpdBillCancellationSameDay(boolean opdBillCancellationSameDay) {
+        this.opdBillCancellationSameDay = opdBillCancellationSameDay;
+    }
+
+    public boolean isOpdBillRefundAllowedSameDay() {
+        return opdBillRefundAllowedSameDay;
+    }
+
+    public void setOpdBillRefundAllowedSameDay(boolean opdBillRefundAllowedSameDay) {
+        this.opdBillRefundAllowedSameDay = opdBillRefundAllowedSameDay;
     }
 
     public class PaymentSummary {
