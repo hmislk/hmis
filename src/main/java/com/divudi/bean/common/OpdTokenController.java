@@ -321,7 +321,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             j += " and t.counter =:ct";
             m.put("ct", counter);
         }
-        j += " order by t.id DESC";
+        j += " order by t.id ASC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
         //System.out.println("currentTokens " + currentTokens);
     }
