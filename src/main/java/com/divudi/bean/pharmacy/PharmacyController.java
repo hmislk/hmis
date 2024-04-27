@@ -370,6 +370,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToDiscardCategory() {
+        discardCategoryController.fillDiscardCategories();
         discardCategoryController.getItems();
         discardCategoryController.getCurrent();
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
