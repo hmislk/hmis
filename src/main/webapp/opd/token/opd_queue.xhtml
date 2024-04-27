@@ -79,7 +79,7 @@
                                              icon="fa fa-check" 
                                              styleClass="ui-button-success mx-1" 
                                              action="#{opdTokenController.fillOpdTokens()}" />
-                            <p:poll interval="180" 
+                            <p:poll interval="40" 
                                     listener="#{opdTokenController.fillOpdTokens()}"
                                     update="tblSessions" />
                         </div>
