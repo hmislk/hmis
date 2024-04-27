@@ -92,6 +92,7 @@ public class AppointmentActivityController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        fillAppointmentActivities();
     }
 
     private AppointmentActivityFacade getFacade() {

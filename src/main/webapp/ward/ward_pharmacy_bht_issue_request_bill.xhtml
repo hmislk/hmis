@@ -41,7 +41,7 @@
                                     <p:ajax 
                                         event="itemSelect" 
                                         process="@this" 
-                                        update="@this" />
+                                        update="@this acPt2" />
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Patient Name or BHT" class="mt-2"/> 
@@ -52,7 +52,7 @@
                                     value="#{pharmacyRequestForBhtController.patientEncounter}" 
                                     completeMethod="#{admissionController.completePatient}"
                                     var="apt2"
-                                    disabled="#{pharmacyRequestForBhtController.department ne null}"
+                                    disabled="#{pharmacyRequestForBhtController.department eq null}"
                                     itemLabel="#{apt2.bhtNo}"
                                     itemValue="#{apt2}" 
                                     size="30" 

@@ -786,7 +786,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        CancelledBill cb = createCancelBill(getBillSession().getBill());
+        CancelledBill cb = createCancelBill1(getBillSession().getBill());
         BillItem cItem = cancelBillItems(getBillSession().getBillItem(), cb);
         BillSession cbs = cancelBillSession(getBillSession(), cb, cItem);
         getBillSession().getBill().setCancelled(true);

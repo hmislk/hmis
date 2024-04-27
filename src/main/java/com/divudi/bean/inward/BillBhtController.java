@@ -53,6 +53,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.ItemLight;
 import com.divudi.data.lab.InvestigationTubeSticker;
 import com.divudi.entity.UserPreference;
@@ -152,7 +153,7 @@ public class BillBhtController implements Serializable {
 
     private List<ItemLight> inwardItems;
     private ItemLight itemLight;
-
+    
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
@@ -327,6 +328,7 @@ public class BillBhtController implements Serializable {
         Bill tmp = new BilledBill();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
 
         if (tmp.getId() == null) {
             getBillFacade().create(tmp);
@@ -543,6 +545,7 @@ public class BillBhtController implements Serializable {
         //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         temp.setBillType(BillType.InwardBill);
+        temp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
 
         getBillBean().setSurgeryData(temp, getBatchBill(), SurgeryBillType.Service);
 
