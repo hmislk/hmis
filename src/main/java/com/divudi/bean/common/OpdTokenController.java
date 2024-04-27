@@ -70,6 +70,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     OpdPreSettleController opdPreSettleController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    @Inject
+    OpdPreBillController opdPreBillController;
  
 
     // </editor-fold> 
@@ -272,9 +274,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        opdTabPreBillController.makeNull();
-        opdTabPreBillController.setPatient(currentToken.getPatient());
-        opdTabPreBillController.setToken(currentToken);
+        opdPreBillController.makeNull();
+        opdPreBillController.setPatient(currentToken.getPatient());
+        opdPreBillController.setToken(currentToken);
+        
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
     
@@ -286,7 +289,6 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
-         
         opdTabPreBillController.setToken(currentToken);
         return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
     }
