@@ -582,7 +582,7 @@ public class BillNumberGenerator {
         hm.put("class2", PreBill.class);
 
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        System.out.println("dd = " + dd);
+        //System.out.println("dd = " + dd);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
 
