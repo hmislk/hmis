@@ -42,6 +42,14 @@ public class CommonFunctionsController {
         }
     }
 
+    public Date dateAfter24Hours(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR_OF_DAY, 24);
+        //System.out.println("calendar = " + calendar.getTime());
+        return calendar.getTime();
+    }
+
     public String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) {
             return str;

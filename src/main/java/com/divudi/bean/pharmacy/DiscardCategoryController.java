@@ -72,6 +72,7 @@ public class DiscardCategoryController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
+        fillDiscardCategories();
         getItems();
     }
 
@@ -123,6 +124,7 @@ public class DiscardCategoryController implements Serializable {
         recreateModel();
         getItems();
         current = null;
+        fillDiscardCategories();
         getCurrent();
     }
 
@@ -130,19 +132,25 @@ public class DiscardCategoryController implements Serializable {
         return ejbFacade;
     }
 
-    public List<DiscardCategory> getItems() {
-        if (items == null) {
-            String j;
-            j = "select c "
-                    + " from DiscardCategory c "
-                    + " where c.retired=false "
-                    + " order by c.name";
-            items = getFacade().findByJpql(j);
-            if (items == null) {
-                items = new ArrayList<>();
-            }
+    public void fillDiscardCategories() {
+        String j;
+        j = "select c "
+                + " from DiscardCategory c "
+                + " where c.retired=false "
+                + " order by c.name";
+        items = getFacade().findByJpql(j);
+        if (items!=null && !items.isEmpty()){
+            current = items.get(0);
         }
+        if (items == null){
+            items = new ArrayList<>();
+        }
+    }
 
+    public List<DiscardCategory> getItems() {
+        if(items == null){
+            items = new ArrayList<>();
+        }
         return items;
     }
 

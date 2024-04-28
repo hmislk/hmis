@@ -14,67 +14,118 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" >
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Reprint" class="mt-2"></p:outputLabel>
+                                <p:commandButton 
+                                    value="Print to Original Bill" 
+                                    class="ui-button-info m-1"
+                                    icon="fa fa-print"
+                                    action="#{opdBillController.navigateToOpdOriginalBillPrint()}"
+                                    rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}"
+                                    ajax="false">
+                                </p:commandButton>
+                            </div> 
+                        </f:facet>
                         <div class="row">
                             <div class="col-12 d-flex justify-content-between ">
                                 <!-- Command Buttons -->
                                 <div class="d-flex m-1 col-6">
-                                    <p:commandButton ajax="false" value="To Cancel" action="/opd/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
-                                    </p:commandButton>
-                                    <p:commandButton
+                                    
+                                    <h:panelGroup rendered="#{billSearch.opdBillCancellationSameDay}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Cancel" 
+                                            action="#{billSearch.navigateToCancelOpdBill()}" 
+                                            disabled="#{(billSearch.bill.cancelled or billSearch.bill.refundedBill ne null)}" 
+                                            class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                   
+                                    <h:panelGroup rendered="#{!billSearch.opdBillCancellationSameDay}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Can not Cancel" 
+                                            disabled="true" 
+                                            class="ui-button-danger m-1 w-25" 
+                                            icon="fa fa-times" > 
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
+                                        <p:commandButton
+                                            ajax="false" 
+                                            value="To Refund"
+                                            disabled="#{billSearch.bill.cancelled}" 
+                                            action="#{billSearch.navigateToRefundOpdBill}" 
+                                            class="ui-button-warning m-1 w-25" 
+                                            icon="fa fa-money-bill-wave">                          
+                                        </p:commandButton>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">
+                                        <p:commandButton
+                                            ajax="false" 
+                                            value="Can not Refund Bill"
+                                            disabled="true" 
+                                            class="ui-button-warning m-1 w-25" 
+                                            icon="fa fa-money-bill-wave">                          
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    
+                                    <p:commandButton 
                                         ajax="false" 
-                                        value="To Refund" 
-                                        action="#{billSearch.navigateToRefundOpdBill}" 
-                                        disabled="#{billSearch.bill.cancelled}" 
-                                        class="ui-button-warning m-1 w-25" 
-                                        icon="fa fa-money-bill-wave">                          
+                                        value="Cancel All Bills of this Patient" 
+                                        action="#{billController.cancellAll}" 
+                                        disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" 
+                                        class="w-50 m-1"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;" 
+                                        icon="fa fa-ban">
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="w-50 m-1"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;" icon="fa fa-ban"/>
                                     <!-- Print Button -->
 
                                 </div>
 
                                 <div class="d-flex col-6 justify-content-end m-1">
-
-                                    <p:commandButton value="Print" 
-                                                     class="ui-button-info m-1 w-25"
-                                                     icon="fa fa-print"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info m-1 w-25"
+                                        icon="fa fa-print"
+                                        ajax="false">
                                         <p:printer target="groupPrint" />
                                     </p:commandButton>
                                     <!-- Print Lookup Button -->
-                                    <p:commandButton value="Patient Lookup" 
-                                                     class="ui-button-warning m-1 w-25"
-                                                     icon="fa fa-search"
-                                                     action="#{opdBillController.navigateToSearchPatients()}"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Patient Lookup" 
+                                        class="ui-button-warning m-1 w-25"
+                                        icon="fa fa-search"
+                                        action="#{opdBillController.navigateToSearchPatients()}"
+                                        ajax="false">
                                     </p:commandButton>
 
                                     <!-- Patient Profile Button -->
-                                    <p:commandButton value="Patient Profile" 
-                                                     class="ui-button-warning m-1 w-25"
-                                                     icon="fa fa-user"
-                                                     action="#{patientController.navigateToOpdPatientProfile()}"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Patient Profile" 
+                                        class="ui-button-warning m-1 w-25"
+                                        icon="fa fa-user"
+                                        action="#{patientController.navigateToOpdPatientProfile()}"
+                                        ajax="false">
                                         <f:setPropertyActionListener 
                                             value="#{opdBillController.bills[0].patient}" 
                                             target="#{patientController.current}" />
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton  
-                                                     class="ui-button-secondary m-1"
-                                                     icon="fa-solid fa-arrow-left"
-                                                     action="#{opdBillController.navigateToSearchOpdBills()}"
-                                                     ajax="false">
-                                       
+                                        class="ui-button-secondary m-1"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="#{opdBillController.navigateToSearchOpdBills()}"
+                                        ajax="false">
+
                                     </p:commandButton>
 
-
-
                                 </div>
-
 
                             </div>
                         </div>
@@ -140,17 +191,17 @@
                                                 <div class="col-md-2"><h:outputLabel value="Payment Type " ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                                                 <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.paymentMethod}" /></div>
-                                                    
-                                                </div>
+
+                                            </div>
                                             <h:panelGroup rendered="#{billSearch.bill.chequeRefNo ne null}">
                                                 <div class="row">
-                                                <div class="col-md-2"><h:outputLabel value="Cheque No" /></div>
-                                                <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.chequeRefNo}" ></h:outputLabel></div>
-                                            </div>
+                                                    <div class="col-md-2"><h:outputLabel value="Cheque No" /></div>
+                                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                    <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.chequeRefNo}" ></h:outputLabel></div>
+                                                </div>
                                             </h:panelGroup>
-                                            
-                                            
+
+
                                             <div class="row">
                                                 <div class="col-md-2"><h:outputLabel value="Total" ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>

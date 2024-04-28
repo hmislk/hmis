@@ -68,6 +68,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.OptionScope;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -181,6 +182,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     @Inject
     OpdTokenController opdTokenController;
+    
+    @Inject
+    ConfigOptionController configOptionController;
 
     /**
      * Class Variables
@@ -290,11 +294,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdAnalyticsIndex() {
-        return "/opd/analytics/index";
+        return "/opd/analytics/index?faces-redirect=true";
+    }
+    
+    public String navigateToOpdOriginalBillPrint() {
+        return "/opd/original_bill_reprint?faces-redirect=true";
     }
 
     public String navigateToOpdBatchBillList() {
-        return "/opd/analytics/opd_batch_bill_search";
+        return "/opd/analytics/opd_batch_bill_search?faces-redirect=true";
     }
 
     public String navigateToSearchOpdBills() {
