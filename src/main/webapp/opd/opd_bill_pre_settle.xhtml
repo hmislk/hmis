@@ -137,6 +137,7 @@
 
 
                         <p:panel header="Bill Item Details">
+                            <h:outputLabel value="#{opdPreSettleController.preBill.billItems.size()}" />
                             <p:dataTable rowIndexVar="rowIndex" value="#{opdPreSettleController.preBill.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>

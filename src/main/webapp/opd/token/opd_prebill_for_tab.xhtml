@@ -30,19 +30,24 @@
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <h5 onclick="toggleFullScreen()">Add Item And Services</h5>
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <p:commandButton  
-                                            value="Settle"
-                                            ajax="false"
-                                            icon="fa fa-check"              
-                                            action="#{opdTabPreBillController.settleBill()}" 
-                                            class="ui-button-success mx-2 w-100"
-                                            >
-                                        </p:commandButton>
-                                        <p:commandButton value="Back" action="#{opdTokenController.navigateToOpdQueue()}"/>
-                                    </div>
+
+                                <div class="d-flex align-items-center">
+                                    <p:badge value="#{opdTabPreBillController.token.tokenNumber}" styleClass="mr-2" size="large" severity="warning"></p:badge>
+                                    <h:outputLabel value="#{opdTabPreBillController.patient.person.nameWithTitle}" class="w-100 mx-4" style="text-transform: capitalize"/>
                                 </div>
+
+                                <div class="d-flex align-items-center ">
+                                    <p:commandButton  
+                                        value="Settle"
+                                        ajax="false"
+                                        icon="fa fa-check"              
+                                        action="#{opdTabPreBillController.settleBill()}" 
+                                        class="ui-button-success mx-2 w-100"
+                                        >
+                                    </p:commandButton>
+                                    <p:commandButton value="Back" action="#{opdTokenController.navigateToOpdQueue()}"/>
+                                </div>
+
                             </div>
                         </f:facet>
 
