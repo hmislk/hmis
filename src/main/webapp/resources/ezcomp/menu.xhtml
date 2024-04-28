@@ -120,8 +120,9 @@
                             actionListener="#{searchController.makeListNull}"  
                             value="Accept Payments for OPD Bills"
                             icon="fa fa-money-bill-alt"></p:menuitem>
-                        <p:menuitem 
+                        <p:menuitem
                             ajax="false" 
+                            rendered="false"
                             action="/opd_search_pre_batch_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"  
                             value="Accept Payment for OPD Batch Bills"
