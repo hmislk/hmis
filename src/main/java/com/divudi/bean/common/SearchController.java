@@ -241,9 +241,9 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToFinancialTransactionSummaryByDepartment() {
-        System.out.println("sessionController.getDepartment() = " + sessionController.getDepartment());
+        //System.out.println("sessionController.getDepartment() = " + sessionController.getDepartment());
         department = sessionController.getDepartment();
-        System.out.println("department = " + department);
+        //System.out.println("department = " + department);
         billSummaryRows = null;
         fillInstitutionInDepartment(sessionController.getInstitution());
         return "/analytics/financial_transaction_summary_Department?faces-redirect=true";
