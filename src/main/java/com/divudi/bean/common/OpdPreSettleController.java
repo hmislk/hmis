@@ -297,6 +297,7 @@ public class OpdPreSettleController implements Serializable {
         getBillBean().setBills(billsOfBatchBillPre);
         getSaleBill().setBillDate(new Date());
         getSaleBill().setBillTime(new Date());
+        getSaleBill().setSessionId(billController.findBatchBillSessionID(getPreBill().getDeptId().toString()));
         getSaleBill().setCreatedAt(Calendar.getInstance().getTime());
         getSaleBill().setCreater(getSessionController().getLoggedUser());
 
