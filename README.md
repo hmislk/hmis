@@ -118,6 +118,11 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 
 * Ruhunu MediHospital, Hambanthota  - 2012 Up to date
 * Arogya Hospital, Tangalle - 2014 Up to date
+* University Medical Centre, Faculty of Medicine, University of Colombo - Starting
+* Kirillawela Family Healthcare Centre - 2024 onwards
+* Kirinda Medical Centre - 2023 Onwards
+* Sethma Hospital, Gampaha - Implementing
+* Southern Lanka Hospital, Tangalle - Implementing
 * Arogya Channelling Centre, Tangalle -  2010 Up to date
 * Arogya Pharmacy, Tangalle -  2015 Up to date
 * St. George Hospital, Biyagama -  2016 Up to 2019
@@ -149,7 +154,7 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * City Lab, Matara - 2013
 * Roseth Hospital, Ambalangoda - 2014 tp to date
 * Richmond Laboratory Services, Galle - 2010 up to date
-* Clinical Laboratory , Boossa - 2010 up to date
+* Clinical Laboratory , Boossa - 2010 up 2020
 * Baddegama Medical Services, Baddegama - 2014 up to date
 * Sahana Medicare, Thissamaharamaya - 2014 up to date
 * Medray Medical Laboratory, Matara - 2014 up to date
