@@ -89,7 +89,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  *

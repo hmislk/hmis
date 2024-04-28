@@ -108,7 +108,8 @@ public class CashierReportController implements Serializable {
      * @return
      */
     public String navigateToOpdSummeries() {
-        return "/reportCashier/report_cashier";
+        String fileUrl = "/analytics/opd/index?faces-redirect=true;";
+        return fileUrl;
     }
 
     public void recreteModal() {
