@@ -39,21 +39,21 @@
                                     <f:selectItems value="#{enumController.paymentMethods}"  />
                                 </p:selectOneMenu> 
                             </p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
 
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                        <h:outputLabel value="Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
-                                        <h:outputLabel value="Discount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel>
-                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </p:panelGrid>
+
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
+                                    <h:outputLabel value="Discount :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel>
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+
                             <p:panel header="Bill Item Detail">
                                 <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
                                     <p:column>
@@ -81,20 +81,20 @@
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}">
                         <div class="my-1">
                             <p:commandButton action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
-                                    actionListener="#{searchController.makeListNull}"  
-                                    class="ui-button-warning m-1"
-                                    icon="fas fa-arrow-left"
-                                    value="Back To Search Return Bill (Item)" >
-                               
+                                             actionListener="#{searchController.makeListNull}"  
+                                             class="ui-button-warning m-1"
+                                             icon="fas fa-arrow-left"
+                                             value="Back To Search Return Bill (Item)" >
+
                             </p:commandButton>
                             <p:commandButton ajax="false" action="#" class="ui-button-info" icon="fas fa-print" value="Print">
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
                             <h:panelGroup
-                             id="gpBillPreview">
-                                 <pharmacy:returnBill  bill="#{pharmacyBillSearch.bill.cancelledBill}" />
-                            
-                           
+                                id="gpBillPreview">
+                                <pharmacy:returnBill  bill="#{pharmacyBillSearch.bill.cancelledBill}" />
+
+
                             </h:panelGroup>
                         </div>
                     </h:panelGroup>
