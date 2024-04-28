@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -188,6 +189,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     AppointmentActivityController appointmentActivityController;
     @Inject
     SessionInstanceActivityController sessionInstanceActivityController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -773,6 +776,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please enter Psyment Details");
             settleSucessFully = false;
             return;
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
+            if(selectedSessionInstance.isCompleted()){
+                JsfUtil.addErrorMessage("This Session Has Been Completed");
+                settleSucessFully = false;
+                return;
+            }
         }
         patientController.save(patient);
         printingBill = saveBilledBill(reservedBooking);

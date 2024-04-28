@@ -65,11 +65,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     private PharmacyBillSearch pharmacyBillSearch;
     @Inject
-    OpdPreBillController opdPreBillController;
+    OpdPreBillController opdTabPreBillController;
     @Inject
     OpdPreSettleController opdPreSettleController;
     @Inject
     FinancialTransactionController financialTransactionController;
+ 
 
     // </editor-fold> 
     private Token currentToken;
@@ -271,11 +272,27 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        opdPreBillController.makeNull();
-        opdPreBillController.setPatient(currentToken.getPatient());
-        opdPreBillController.setToken(currentToken);
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
+    
+     public String navigateToNewOpdBillForCashierTabView() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+         if (currentToken == null) {
+             System.out.println("currentToken == null");
+         }
+        opdTabPreBillController.setToken(currentToken);
+        return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
+    }
+
 
     public void navigateToNewOpdBill() {
         if (currentToken == null) {
@@ -283,9 +300,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        opdPreBillController.makeNull();
-        opdPreBillController.setPatient(currentToken.getPatient());
-        opdPreBillController.setToken(currentToken);
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
     }
 
     public void fillOpdTokens() {
@@ -367,6 +384,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdQueue() {
+        fillOpdTokens();
         return "/opd/token/opd_queue?faces-redirect=true";
     }
     

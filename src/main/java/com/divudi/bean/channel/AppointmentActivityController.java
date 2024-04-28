@@ -74,6 +74,22 @@ public class AppointmentActivityController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
+        if (current.getName() == null || current.getName().isEmpty()){
+            JsfUtil.addErrorMessage("Please Enter Name");
+            return;
+        }
+        if (current.getCode() == null || current.getCode().isEmpty()){
+            JsfUtil.addErrorMessage("Please Enter Code");
+            return;
+        }
+        if (current.getDiscription()== null || current.getDiscription().isEmpty()){
+            JsfUtil.addErrorMessage("Please Enter Discription");
+            return;
+        }
+        if (current.getImageLink()== null || current.getImageLink().isEmpty()){
+            JsfUtil.addErrorMessage("Please Enter Image Link");
+            return;
+        }
         save(current);
         JsfUtil.addSuccessMessage("Saved");
         fillAppointmentActivities();
