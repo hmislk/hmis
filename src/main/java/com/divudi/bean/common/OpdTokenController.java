@@ -290,6 +290,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
         opdTabPreBillController.setToken(currentToken);
+        opdTabPreBillController.setSelectedCurrentlyWorkingStaff(currentToken.getStaff());
         return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
     }
 
@@ -323,7 +324,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
         j += " order by t.id ASC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-        //System.out.println("currentTokens " + currentTokens);
+        
     }
 
     public String getTokenStatus(Token token) {
