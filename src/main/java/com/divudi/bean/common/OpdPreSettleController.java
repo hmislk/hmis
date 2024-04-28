@@ -102,6 +102,7 @@ public class OpdPreSettleController implements Serializable {
     private Bill saleBill;
     private Bill billedBill;
     Bill bill;
+    private List<Bill> billsOfBatchBillPre;
     BillItem billItem;
     BillItem removingBillItem;
     BillItem editingBillItem;
@@ -621,21 +622,22 @@ public class OpdPreSettleController implements Serializable {
         this.yearMonthDay = yearMonthDay;
     }
 
-    public String toSettle(Bill args) {
+    public String toSettle(Bill preBatchBill) {
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
-        hm.put("bil", args);
+        hm.put("bil", preBatchBill);
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
             JsfUtil.addErrorMessage("Allready Paid");
             return "";
         } else {
-            setPreBill(args);
-            getPreBill().setPaymentMethod(args.getPaymentMethod());
+            setPreBill(preBatchBill);
+            billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
+            getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
             return "/opd/opd_bill_pre_settle?faces-redirect=true";
         }
     }
@@ -1212,5 +1214,15 @@ public class OpdPreSettleController implements Serializable {
     public void setToken(Token token) {
         this.token = token;
     }
+
+    public List<Bill> getBillsOfBatchBillPre() {
+        return billsOfBatchBillPre;
+    }
+
+    public void setBillsOfBatchBillPre(List<Bill> billsOfBatchBillPre) {
+        this.billsOfBatchBillPre = billsOfBatchBillPre;
+    }
+    
+    
 
 }

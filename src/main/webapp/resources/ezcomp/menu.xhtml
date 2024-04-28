@@ -908,7 +908,7 @@
                         <p:menuitem  ajax="false"  value="Debit Note Search"  action="/channel/channel_debit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
-                    <p:menuitem ajax="false" action="/reportCashier/report_cashier?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/analytics/opd/index?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
 
