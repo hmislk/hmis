@@ -12,15 +12,31 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethods}"  />
-                            </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyReturnCashCancel()}" >
-                            </h:commandButton>                            
-                        </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{pharmacyBillSearch.bill.comments}" style="float: right" class="p-2 w-100"/> 
 
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel Bill" 
+                                        icon="fa fa-cancel"
+                                        style="float: right"
+                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyReturnCashCancel()}" >
+                                    </p:commandButton>  
+                                </h:panelGrid>
+
+                            </f:facet>
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.paymentMethod}" required="true"  >
+                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                </p:selectOneMenu> 
+                            </p:panel>
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
@@ -39,29 +55,26 @@
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.toStaff.person.name}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
-                        </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                        #{rowIndex+1}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                        #{bip.item.name}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Qty</f:facet>
-                                        #{bip.qty}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Value</f:facet>
-                                        #{bip.netValue}
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{pharmacyBillSearch.bill.comments}"/>                            
+                            <p:panel header="Bill Item Detail">
+                                <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
+                                    <p:column>
+                                        <f:facet name="header">No</f:facet>
+                                            #{rowIndex+1}
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                            #{bip.item.name}
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Qty</f:facet>
+                                            #{bip.qty}
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Value</f:facet>
+                                            #{bip.netValue}
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
                         </p:panel>
                     </h:panelGroup>
 
