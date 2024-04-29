@@ -78,6 +78,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     private boolean printPreview;
+    private double totalBillItemsCount;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -325,7 +326,7 @@ public class PurchaseOrderRequestController implements Serializable {
                 b.setRetireComments("Retired at Finalising PO");
 
             }
-
+            totalBillItemsCount = totalBillItemsCount + qty;
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
 //            b.setPharmaceuticalBillItem(null);
             if (b.getId() == null) {
@@ -386,6 +387,11 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
+            return ;
+        }
+
 //
 //        if (checkItemPrice()) {
 //            JsfUtil.addErrorMessage("Please enter purchase price for all");
@@ -427,8 +433,18 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+
         finalizeBill();
+        totalBillItemsCount = 0;
         finalizeBillComponent();
+        if (totalBillItemsCount == 0){
+            JsfUtil.addErrorMessage("Please add item quantities for the bill");
+            return ;
+        }
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
         
@@ -607,6 +623,14 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    public double getTotalBillItemsCount() {
+        return totalBillItemsCount;
+    }
+
+    public void setTotalBillItemsCount(double totalBillItemsCount) {
+        this.totalBillItemsCount = totalBillItemsCount;
     }
 
 }
