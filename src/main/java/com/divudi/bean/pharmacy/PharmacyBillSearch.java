@@ -950,6 +950,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.setInstitution(getSessionController().getInstitution());
 
         cb.setComments(getComment());
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
 
         return cb;
     }
