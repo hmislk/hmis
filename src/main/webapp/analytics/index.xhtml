@@ -38,15 +38,28 @@
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
+                                                value="Financial Transactions Summary - Users PaymentMethod" 
+                                                action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
                                                 value="Financial Transactions Summary - Department" 
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            <p:commandButton ajax="false" value="All Bills" action="/analytics/all_bills"
-                                                             class="w-100"></p:commandButton>
-                                            <p:commandButton ajax="false" value="List of Bills of Other Institutions"
-                                                             action="#{searchController.navigateToListOtherInstitutionBills()}"
-                                                             class="w-100"></p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="All Bills" 
+                                                action="/analytics/all_bills"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" value="List of Bills of Other Institutions"
+                                                action="#{searchController.navigateToListOtherInstitutionBills()}"
+                                                class="w-100">
+                                            </p:commandButton>
                                         </div>
                                     </p:tab>
 

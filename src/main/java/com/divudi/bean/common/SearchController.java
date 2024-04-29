@@ -169,6 +169,7 @@ public class SearchController implements Serializable {
     double dueTotal;
     double doneTotal;
     double netTotal;
+    private double totalBillCount;
     private double grossTotal;
     private double discount;
     ServiceSession selectedServiceSession;
@@ -247,6 +248,13 @@ public class SearchController implements Serializable {
         billSummaryRows = null;
         fillInstitutionInDepartment(sessionController.getInstitution());
         return "/analytics/financial_transaction_summary_Department?faces-redirect=true";
+    }
+    
+    public String navigateToFinancialTransactionSummaryByUserPayment() {
+        department = sessionController.getDepartment();
+        billSummaryRows = null;
+        fillInstitutionInDepartment(sessionController.getInstitution());
+        return "/analytics/financial_transaction_summary_Users_PaymentMethod?faces-redirect=true";
     }
 
     public void clearBillList() {
@@ -1207,6 +1215,14 @@ public class SearchController implements Serializable {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    public double getTotalBillCount() {
+        return totalBillCount;
+    }
+
+    public void setTotalBillCount(double totalBillCount) {
+        this.totalBillCount = totalBillCount;
     }
 
     public class billsWithbill {
@@ -6825,6 +6841,53 @@ public class SearchController implements Serializable {
             grossTotal += bss.getGrossTotal();
             discount += bss.getDiscount();
             netTotal += bss.getNetTotal();
+        }
+        
+    }
+    
+   public void processAllFinancialTransactionalSummarybyUserPayment() {
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        totalBillCount = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal), "
+                + "count(b), "
+                + "b.paymentMethod,"
+                + "b.creater.webUserPerson ) "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.billTypeAtomic in :abts "
+                + " and b.department=:dept";
+        
+        jpql += " group by b.paymentMethod, b.creater.webUserPerson"
+                + " order by b.creater.webUserPerson";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+        params.put("dept", getDepartment());
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        //System.out.println("billTypesToFilter = " + billTypesToFilter);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+            totalBillCount += bss.getBillCount();
         }
 
     }
