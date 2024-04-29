@@ -234,26 +234,17 @@ public class Person implements Serializable {
     }
 
     public int getAgeMonthsComponent() {
-        if (ageCalculated == false) {
-            calAgeFromDob();
-            ageCalculated = true;
-        }
+        calAgeFromDob();
         return ageMonthsComponent;
     }
 
     public int getAgeDaysComponent() {
-        if (ageCalculated == false) {
-            calAgeFromDob();
-            ageCalculated = true;
-        }
+        calAgeFromDob();
         return ageDaysComponent;
     }
 
     public int getAgeYearsComponent() {
-        if (ageCalculated == false) {
-            calAgeFromDob();
-            ageCalculated = true;
-        }
+        calAgeFromDob();
         return ageYearsComponent;
     }
 
