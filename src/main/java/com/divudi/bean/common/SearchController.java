@@ -300,7 +300,7 @@ public class SearchController implements Serializable {
     }
 
     public String toSettle(Bill args) {
-        String sql = "Select b from BilledBill b"
+        String sql = "Select b from Bill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
                 + " and b.cancelled=false ";
