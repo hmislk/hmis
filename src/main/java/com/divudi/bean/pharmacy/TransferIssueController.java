@@ -378,6 +378,10 @@ public class TransferIssueController implements Serializable {
         } else {
             getBillFacade().edit(getIssuedBill());
         }
+        if (getBillItems()==null || getBillItems().isEmpty()){
+            JsfUtil.addErrorMessage("Please Add Bill Items");
+            return;
+        }
         for (BillItem i : getBillItems()) {
 
             i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
