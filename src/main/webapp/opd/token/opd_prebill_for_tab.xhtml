@@ -13,236 +13,244 @@
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                <style>
+                    .preLoder {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+
+
+
+                </style>
+
                 <h:form>
-                    <p:panel>
+                    <p:panel id='pIxAdd' >
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <h5 onclick="toggleFullScreen()">Add Item And Services</h5>
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <p:commandButton  
-                                            value="Settle"
-                                            style="float: right;"
-                                            ajax="false"
-                                            icon="fa fa-check"              
-                                            action="#{opdTabPreBillController.settleBill}" 
-                                            class="ui-button-success mx-2 w-100"
-                                            >
-                                        </p:commandButton>
-                                        <p:commandButton value="Back" action="#{opdTokenController.navigateToOpdQueue()}"/>
-                                    </div>
+
+                                <div class="d-flex align-items-center">
+                                    <p:badge value="#{opdTabPreBillController.token.tokenNumber}" styleClass="mr-2" size="large" severity="warning"></p:badge>
+                                    <h:outputLabel value="#{opdTabPreBillController.patient.person.nameWithTitle}" class="w-100 mx-4" style="text-transform: capitalize"/>
                                 </div>
+
+                                <div class="d-flex align-items-center ">
+                                    <p:commandButton  
+                                        value="Settle"
+                                        ajax="false"
+                                        icon="fa fa-check"              
+                                        action="#{opdTabPreBillController.settleBill()}" 
+                                        class="ui-button-success mx-2 w-100"
+                                        >
+                                    </p:commandButton>
+                                    <p:commandButton value="Back" action="#{opdTokenController.navigateToOpdQueue()}"/>
+                                </div>
+
                             </div>
                         </f:facet>
 
                         <h:form id="form">
                             <p:focus id="focusIx" for="acIx" />
                             <div class="row">
-                                <p:panel id='pIxAdd' class="w-100 mb-1" >
-                                    <f:facet name="header" >
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
-                                                <h:outputText value="Add Items And Services" class="mx-4"></h:outputText>
-                                            </div>
-                                            
-                                        </div>
 
-                                    </f:facet>
-                                    <div class="row">
-                                        <p:focus  context="acIx"/>
-                                        <div class="col-7">
-                                            <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
-                                            <p:selectOneListbox 
-                                                filter="true"
-                                                filterMatchMode="contains"
-                                                id="acIx"
-                                                class="w-100"
-                                                scrollHeight="600"
-                                                converter="itemLightConverter"
-                                                value="#{opdTabPreBillController.itemLight}" 
-                                                var="ix" 
-                                                style="font-size: 8pt;font-weight: bolder;">
-                                                <f:selectItems value="#{opdTabPreBillController.opdItems}"
-                                                               var="item" 
-                                                               itemLabel="#{item.name}"
-                                                               itemValue="#{item}" >
-                                                </f:selectItems>
-                                                <p:column  headerText="Name">
-                                                    <f:facet name="header" >
-                                                        Name
-                                                    </f:facet>
-                                                    <h:outputText value="#{ix.name}" ></h:outputText>
-                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
-                                                        <h:outputText value=" (#{ix.fullName})" ></h:outputText>
-                                                    </h:panelGroup>
-                                                </p:column>
-                                                <p:column style="text-align: right;" headerText="Value">
-                                                    <h:outputText value="#{ix.total}"></h:outputText>
-                                                </p:column>
-                                                <p:column  headerText="Dept">
-                                                    <h:outputText value="#{ix.departmentName}"></h:outputText>
-                                                </p:column>
-                                                <p:column  headerText="Code">
-                                                    <h:outputText value="#{ix.code}"></h:outputText>
-                                                </p:column>
-
-                                            </p:selectOneListbox>
-                                        </div>
-                                        <div class="col-5">
-                                            <div class="d-flex align-items-center">
-                                                <h:panelGrid id="txtQty">
-                                                    <p:inputText autocomplete="off" 
-                                                                 class="w-100"
-                                                                 value="#{opdTabPreBillController.currentBillItem.qty}" >
-                                                    </p:inputText>
-                                                </h:panelGrid>
-                                                <p:commandButton 
-                                                    id="btnAddIx" 
-                                                    value="Add" 
-                                                    onerror="Please Select Item"
-                                                    icon="fa fa-plus"
-                                                    class="w-100 mx-1 my-1 ui-button-success"
-                                                    action="#{opdTabPreBillController.addToBill()}" 
-                                                    process="acIx btnAddIx txtQty panelBillItems"
-                                                    update="focusIx pIxAdd :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
-                                                </p:commandButton>
-                                                <p:defaultCommand target="btnAddIx" />
-                                            </div>
-                                            <div>
-                                                <h:panelGroup id="panelBillItems" >
-                                                    <p:tabView id="tblBillItem" >
-                                                        <p:tab id="tabBillItems" title="Bill Items" >
-                                                            <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillEntries}" var="bi" >
-                                                                <p:column>
-                                                                    <f:facet name="header">No</f:facet>
-                                                                        #{rowIndex+1}
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Item</f:facet>
-                                                                        #{bi.billItem.item.name}
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Fee</f:facet>
-                                                                    <h:outputLabel value="#{bi.billItem.netValue}">
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Department</f:facet>
-                                                                        #{bi.billItem.item.department.name}
-                                                                </p:column>
-
-                                                                <p:column>
-                                                                    <p:commandButton 
-                                                                        id="btnRemove"
-                                                                        value="X"
-                                                                        ajax="false"
-                                                                        action="#{opdTabPreBillController.removeBillItem(bi)}">
-                                                                       
-                                                                    </p:commandButton>
-                                                                </p:column>
-                                                            </p:dataTable>
-                                                        </p:tab>
-                                                        <p:tab id="tabBillIx" title="Tests" >
-                                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillComponents}" var="bix" >
-                                                                <p:column>
-                                                                    <f:facet name="header">No</f:facet>
-                                                                        #{rowIndex+1}
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Name</f:facet>
-                                                                        #{bix.item.name}
-                                                                </p:column>
-
-                                                            </p:dataTable>
-                                                        </p:tab>
-
-                                                        <p:tab id="tabBillFee" title="Fees" >
-                                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillFees}" var="bif" >
-                                                                <p:column>
-                                                                    <f:facet name="header">Item Name</f:facet>
-                                                                    <h:outputLabel value="#{bif.billItem.item.name}" />
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Fee</f:facet>
-                                                                    <h:inputText autocomplete="off"  
-                                                                                 id="txtFeeVal"
-                                                                                 value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                        <f:ajax event="keyup" execute="@this" 
-                                                                                render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                                listener="#{opdTabPreBillController.feeChangeListener(bif)}" />
-                                                                    </h:inputText>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <p:commandButton ajax="false" value="Update" action="#{opdTabPreBillController.feeChangeListener(bif)}" />
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Fee Name</f:facet>
-                                                                    <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.fee !=null}" ></h:outputLabel>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">Speciality</f:facet>
-                                                                    <h:outputLabel value="#{bif.fee.speciality.name}" rendered="#{bif.fee !=null and bif.fee.speciality!=null}" ></h:outputLabel>
-                                                                </p:column>
-
-                                                                <p:column>
-                                                                    <f:facet name="header">Payee</f:facet>                                                
-                                                                    <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
-                                                                        <f:selectItem itemLabel="Select Staff" />
-                                                                        <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
-                                                                    </p:selectOneMenu>
-
-                                                                </p:column>
-                                                            </p:dataTable>
-                                                        </p:tab>
-                                                    </p:tabView>
+                                <div class="row">
+                                    <p:focus  context="acIx"/>
+                                    <div class="col-7">
+                                        <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
+                                        <p:selectOneListbox 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            id="acIx"
+                                            class="w-100"
+                                            scrollHeight="400"
+                                            converter="itemLightConverter"
+                                            value="#{opdTabPreBillController.itemLight}" 
+                                            var="ix" 
+                                            style="font-size: 8pt;font-weight: bolder;">
+                                            <f:selectItems value="#{opdTabPreBillController.opdItems}"
+                                                           var="item" 
+                                                           itemLabel="#{item.name}"
+                                                           itemValue="#{item}" >
+                                            </f:selectItems>
+                                            <p:column  headerText="Name">
+                                                <f:facet name="header" >
+                                                    Name
+                                                </f:facet>
+                                                <h:outputText value="#{ix.name}" ></h:outputText>
+                                                <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                    <h:outputText value=" (#{ix.fullName})" ></h:outputText>
                                                 </h:panelGroup>
-                                            </div>
-                                            <div>
-                                                <p:panel id="pBillDetails" class=" m-1"  >
-                                                    <f:facet name="header" >
-                                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
-                                                    </f:facet>
-                                                    <h:panelGrid
-                                                        columns="2" 
-                                                        class="w-100 h5" >
-                                                        <h:outputLabel value="Total" ></h:outputLabel >
-                                                        <h:outputLabel id="tot" value="#{opdTabPreBillController.total}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                                        <h:outputLabel id="dis" value="#{opdTabPreBillController.discount}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                                        <h:outputLabel id="netTotal" value="#{opdTabPreBillController.netTotal}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </h:panelGrid>
+                                            </p:column>
+                                            <p:column style="text-align: right;" headerText="Value">
+                                                <h:outputText value="#{ix.total}"></h:outputText>
+                                            </p:column>
+                                            <p:column  headerText="Dept">
+                                                <h:outputText value="#{ix.departmentName}"></h:outputText>
+                                            </p:column>
+                                            <p:column  headerText="Code">
+                                                <h:outputText value="#{ix.code}"></h:outputText>
+                                            </p:column>
 
-                                                </p:panel>
-                                            </div>
-                                            <div>
-                                                <p:panel class="m-1">
-                                                    <f:facet name="header" >
-                                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                                        <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
-                                                    </f:facet>
-                                                    <p:selectOneListbox value="#{opdTabPreBillController.selectedCurrentlyWorkingStaff}">
-                                                        <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
-                                                        <f:selectItems value="#{opdTabPreBillController.currentlyWorkingStaff}" var="s" 
-                                                                       itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:selectOneListbox>
-                                                </p:panel>
-                                            </div>
+                                        </p:selectOneListbox>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="d-flex align-items-center">
+                                            <h:panelGrid id="txtQty">
+                                                <p:inputText autocomplete="off" 
+                                                             class="w-100"
+                                                             value="#{opdTabPreBillController.currentBillItem.qty}" >
+                                                </p:inputText>
+                                            </h:panelGrid>
+                                            <p:commandButton 
+                                                id="btnAddIx" 
+                                                value="Add" 
+                                                onerror="Please Select Item"
+                                                icon="fa fa-plus"
+                                                class="w-100 mx-1 my-1 ui-button-success"
+                                                action="#{opdTabPreBillController.addToBill()}" 
+                                                process="acIx btnAddIx txtQty panelBillItems"
+                                                update="focusIx :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                            </p:commandButton>
+                                            <p:defaultCommand target="btnAddIx" />
                                         </div>
 
+                                        <div>
+                                            <p:panel id="pBillDetails" class=" m-1"  >
+                                                <f:facet name="header" >
+                                                    <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                    <h:outputText value="Bill Details" class="mx-4"></h:outputText>
+                                                </f:facet>
+                                                <h:panelGrid
+                                                    style="font-size: 10pt"
+                                                    columns="2" 
+                                                    class="w-100 h5" >
+                                                    <h:outputLabel value="Total" ></h:outputLabel >
+                                                    <h:outputLabel id="tot" value="#{opdTabPreBillController.total}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Discount" ></h:outputLabel>
+                                                    <h:outputLabel id="dis" value="#{opdTabPreBillController.discount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Net Total" ></h:outputLabel>
+                                                    <h:outputLabel id="netTotal" value="#{opdTabPreBillController.netTotal}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </h:panelGrid>
+
+                                            </p:panel>
+                                        </div>
+                                        <div>
+                                            <p:panel class="m-1">
+                                                <f:facet name="header" >
+                                                    <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                    <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
+                                                </f:facet>
+                                                <p:selectOneListbox  style="font-size: 10pt" value="#{opdTabPreBillController.selectedCurrentlyWorkingStaff}">
+                                                    <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
+                                                    <f:selectItems value="#{opdTabPreBillController.currentlyWorkingStaff}" var="s" 
+                                                                   itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:selectOneListbox>
+                                            </p:panel>
+                                        </div>
                                     </div>
-                                </p:panel>
+                                    <div>
+                                        <h:panelGroup id="panelBillItems" >
+                                            <p:tabView id="tblBillItem" >
+                                                <p:tab id="tabBillItems" title="Bill Items" >
+                                                    <p:dataTable id="tblRequests" style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillEntries}" var="bi" >
+                                                        <p:column>
+                                                            <f:facet name="header">No</f:facet>
+                                                                #{rowIndex+1}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Item</f:facet>
+                                                                #{bi.billItem.item.name}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Fee</f:facet>
+                                                            <h:outputLabel value="#{bi.billItem.netValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Department</f:facet>
+                                                                #{bi.billItem.item.department.name}
+                                                        </p:column>
+
+                                                        <p:column>
+                                                            <p:commandButton 
+                                                                id="btnRemove"
+                                                                value="X"
+                                                                ajax="false"
+                                                                action="#{opdTabPreBillController.removeBillItem(bi)}">
+
+                                                            </p:commandButton>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </p:tab>
+                                                <p:tab id="tabBillIx" title="Tests" >
+                                                    <p:dataTable  style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillComponents}" var="bix" >
+                                                        <p:column>
+                                                            <f:facet name="header">No</f:facet>
+                                                                #{rowIndex+1}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Name</f:facet>
+                                                                #{bix.item.name}
+                                                        </p:column>
+
+                                                    </p:dataTable>
+                                                </p:tab>
+
+                                                <p:tab id="tabBillFee" title="Fees" >
+                                                    <p:dataTable  style="font-size: 10pt" rowIndexVar="rowIndex" value="#{opdTabPreBillController.lstBillFees}" var="bif" >
+                                                        <p:column>
+                                                            <f:facet name="header">Item Name</f:facet>
+                                                            <h:outputLabel value="#{bif.billItem.item.name}" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Fee</f:facet>
+                                                            <h:inputText autocomplete="off"  
+                                                                         id="txtFeeVal"
+                                                                         value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                <f:ajax event="keyup" execute="@this" 
+                                                                        render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                        listener="#{opdTabPreBillController.feeChangeListener(bif)}" />
+                                                            </h:inputText>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton ajax="false" value="Update" action="#{opdTabPreBillController.feeChangeListener(bif)}" />
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Fee Name</f:facet>
+                                                            <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.fee !=null}" ></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Speciality</f:facet>
+                                                            <h:outputLabel value="#{bif.fee.speciality.name}" rendered="#{bif.fee !=null and bif.fee.speciality!=null}" ></h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column>
+                                                            <f:facet name="header">Payee</f:facet>                                                
+                                                            <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
+                                                                <f:selectItem itemLabel="Select Staff" />
+                                                                <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                            </p:selectOneMenu>
+
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </p:tab>
+                                            </p:tabView>
+                                        </h:panelGroup>
+                                    </div>
+
+                                </div>
+
 
                                 <div class="col-md-4" >
 
@@ -500,11 +508,17 @@
 
 
                     </h:panelGroup>
+                    <div id="preLoder" class="preLoder">
+                        <div class="spinner-grow" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
                 </h:form>
 
                 <script type="text/javascript">
                     //<![CDATA[
-                    function toggleFullScreen() {
+
+                    document.addEventListener("dblclick", () => {
                         var elem = document.documentElement;
                         if (!document.fullscreenElement && !document.mozFullScreenElement &&
                                 !document.webkitFullscreenElement && !document.msFullscreenElement) {
@@ -517,18 +531,13 @@
                             } else if (elem.webkitRequestFullscreen) {
                                 elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
                             }
-                        } else {
-                            if (document.exitFullscreen) {
-                                document.exitFullscreen();
-                            } else if (document.msExitFullscreen) {
-                                document.msExitFullscreen();
-                            } else if (document.mozCancelFullScreen) {
-                                document.mozCancelFullScreen();
-                            } else if (document.webkitExitFullscreen) {
-                                document.webkitExitFullscreen();
-                            }
                         }
-                    }
+                    });
+
+                    document.addEventListener("DOMContentLoaded", function () {
+                        document.getElementById("preLoder").style.display = "none";
+                    });
+
                     //]]>
                 </script>
 

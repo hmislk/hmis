@@ -220,7 +220,6 @@ public class SearchController implements Serializable {
     private Bill preBill;
     boolean billPreview;
     private Long currentTokenId;
-    private Long currentId;
     
 
     public String navigateToAllFinancialTransactionSummary() {
@@ -256,19 +255,6 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Enter Correct Bill Number !");
             return null; // Return null if the token ID is null
         }
-        String sql = "SELECT b FROM Bill b "
-                + "WHERE b.retired = false "
-                + "AND b.id = :bid";
-        HashMap<String, Object> hm = new HashMap<>();
-        hm.put("bid", currentTokenId);
-        return getBillFacade().findFirstByJpql(sql, hm);
-    }
-    
-     public Bill searchBillFromTokenId(Long currentTokenId) {
-        if (currentTokenId == null) {
-            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
-            return null; // Return null if the token ID is null
-        }
         String sql = "SELECT t.bill FROM Token t "
                 + "WHERE t.retired = false "
                 + "AND t.id = :tid";
@@ -278,20 +264,24 @@ public class SearchController implements Serializable {
     }
 
     public String settleBillByBarcode() {
+        currentBill = searchBillFromBillId(currentTokenId);
         String action;
-        if (currentId != null) {
-            currentBill = searchBillFromTokenId(currentId);
+        if (currentBill == null) {
+            Token t = tokenController.findToken(currentBillId);
+            if (t != null) {
+                if (t.getBill() != null) {
+
+                    currentBill = t.getBill();
+                }
+            }
         }
         if (currentBill == null) {
-            currentBill=searchBillFromBillId(currentId);
+            JsfUtil.addErrorMessage("No Bill Found");
+            return "";
         }
-        if (currentBill==null) {
-            JsfUtil.addErrorMessage("No Bill Found !");
-            return " ";
-        }
-        
+
         if (currentBill.isPaid()) {
-            JsfUtil.addErrorMessage("Error : Bill is Already Paid !");
+            JsfUtil.addErrorMessage("Error : Bill is Already Paid");
             return " ";
         }
         action = toSettle(currentBill);
@@ -300,7 +290,7 @@ public class SearchController implements Serializable {
     }
 
     public String toSettle(Bill args) {
-        String sql = "Select b from Bill b"
+        String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
                 + " and b.cancelled=false ";
@@ -1218,14 +1208,6 @@ public class SearchController implements Serializable {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
-    }
-
-    public Long getCurrentId() {
-        return currentId;
-    }
-
-    public void setCurrentId(Long currentId) {
-        this.currentId = currentId;
     }
 
     public class billsWithbill {
