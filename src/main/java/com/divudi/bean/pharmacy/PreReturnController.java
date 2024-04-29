@@ -134,7 +134,7 @@ public class PreReturnController implements Serializable {
         double dbl = 0 - getReturnBill().getTotal();
 
         getReturnBill().setBillType(BillType.PharmacyPre);
-        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_ITEMS_Only);
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         getReturnBill().setTotal(dbl);
         getReturnBill().setNetTotal(dbl);
 
