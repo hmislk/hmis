@@ -44,7 +44,9 @@ public class ConfigOption implements Serializable {
 
     @Lob
     private String optionValue; // Store the optionValue as a String
+    @Deprecated
     private String enumType; // To store the enum class name
+    @Deprecated
     private String enumValue; // To store the enum optionValue (name of the enum constant)
 
     // References to specific entities based on scope (nullable)
