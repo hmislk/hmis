@@ -1420,6 +1420,7 @@ public class PatientController implements Serializable {
             controller.setPatientDetailsEditable(true);
             controller.setPatient(null);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.isEmpty()) {
@@ -1448,6 +1449,7 @@ public class PatientController implements Serializable {
         controller.setPatientDetailsEditable(true);
         if (quickSearchPhoneNumber != null) {
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
         }
     }
 
