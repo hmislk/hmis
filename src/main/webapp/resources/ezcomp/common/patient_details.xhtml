@@ -133,7 +133,6 @@
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
                                                            itemLabel="#{i.label}" itemValue="#{i}"/>
-                                            <p:ajax process="cmbTitle" update="cmbSex" ></p:ajax>
                                             <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
@@ -197,16 +196,17 @@
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
-                                                <p:datePicker 
-
+                                                <p:datePicker  
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
+                                                    yearNavigator="true"
+                                                    monthNavigator="true"
                                                     inputStyleClass="form-control"
                                                     pattern="#{sessionController.applicationPreference.longDateFormat}"
                                                     placeholder="Date of Birth (dd/mm/yyyy)"
                                                     >
-                                                    <f:ajax event="dateSelect" execute="@this" render="year month day" />
+                                                    <p:ajax event="dateSelect" process="@this" update="year month day" />
                                                 </p:datePicker>
                                             </div>
                                         </div>

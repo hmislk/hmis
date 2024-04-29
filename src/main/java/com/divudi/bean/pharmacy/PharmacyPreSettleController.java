@@ -412,6 +412,7 @@ public class PharmacyPreSettleController implements Serializable {
         getSaleReturnBill().copyValue(getPreBill());
 
         getSaleReturnBill().setBillType(BillType.PharmacySale);
+        getSaleReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
         getSaleReturnBill().setReferenceBill(getPreBill());
         getSaleReturnBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleReturnBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
