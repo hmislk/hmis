@@ -77,13 +77,14 @@ public class PurchaseOrderController implements Serializable {
     private LazyDataModel<Bill> searchBills;
 
     private PaymentMethodData paymentMethodData;
+    private double totalBillItemsCount;
     @Inject
     NotificationController notificationController;
 
     public void removeSelected() {
         //  //System.err.println("1");
         if (selectedItems == null) {
-            //   //System.err.println("2");
+            JsfUtil.addErrorMessage("Please select items");
             return;
         }
 
@@ -137,12 +138,21 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return "";
         }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
+            return "";
+        }
 
         calTotal();
 
         saveBill();
-
+        
+        totalBillItemsCount = 0;
         saveBillComponent();
+        if (totalBillItemsCount == 0){
+            JsfUtil.addErrorMessage("Please add item quantities for the bill");
+            return "";
+        }
 
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
@@ -238,7 +248,7 @@ public class PurchaseOrderController implements Serializable {
                 i.setRetireComments("Retired at Approving PO");
 
             }
-
+            totalBillItemsCount = totalBillItemsCount + qty;
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             try {
@@ -499,6 +509,14 @@ public class PurchaseOrderController implements Serializable {
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    public double getTotalBillItemsCount() {
+        return totalBillItemsCount;
+    }
+
+    public void setTotalBillItemsCount(double totalBillItemsCount) {
+        this.totalBillItemsCount = totalBillItemsCount;
     }
 
 }
