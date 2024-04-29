@@ -18,10 +18,10 @@
 
                         <div class="row">
                             <div class="col-2">
-                                <h:panelGrid columns="1">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar
-                                        class="my-1 w-100" 
+                                        class="my-1 w-100"
+                                        inputStyleClass="form-control"
                                         id="fromDate" 
                                         value="#{searchController.fromDate}" 
                                         navigator="false"
@@ -34,13 +34,14 @@
                                         class="my-1 w-100" 
                                         id="toDate" 
                                         value="#{searchController.toDate}" 
+                                        inputStyleClass="form-control"
                                         navigator="false" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         >                                                                              
                                     </p:calendar>
-
+ 
                                     <p:commandButton 
-                                        class="ui-button-success w-100"
+                                        class="ui-button-success mt-2 w-100"
                                         icon="fas fa-clock"
                                         ajax="false"
                                         value="Search Unsettled Bills"
@@ -57,12 +58,9 @@
                                     <p:commandButton
                                         ajax="false"
                                         icon="fas fa-check"
-                                        class="my-1 ui-button-secondary w-100" 
+                                        class=" ui-button-secondary w-100" 
                                         value="Search Settled Bills"
                                         action="#{searchController.searchOpdBatchBillsSettledAtCashier()}" />
-
-
-                                </h:panelGrid>
                             </div>
                             <div class="col-10">
 
