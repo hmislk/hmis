@@ -217,10 +217,9 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
-
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.person.mobile}"
+                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
                                             class="form-control" 
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
