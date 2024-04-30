@@ -11,12 +11,9 @@
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form >
-
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <f:facet name="header" >
 
@@ -60,16 +57,18 @@
                             <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
                                 <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
-
-                            <p:commandButton ajax= "false"  
-                                             value="Accept Payment &amp; Settle"
-                                             style="float: right;"
-                                             class="ui-button-success mx-2"
-                                             icon="fa fa-check"
-                                             id="settle"
-                                             action="#{opdPreSettleController.settleOpdBatchBill}" />
-
+                          
+                            <p:commandButton 
+                                ajax= "false"  
+                                value="Accept Payment &amp; Settle"
+                                style="float: right;"
+                                class="ui-button-success mx-2"
+                                icon="fa fa-check"
+                                id="settle"
+                                action="#{opdPreSettleController.settleOpdBatchBill}" />
+                        
                         </h:panelGrid>
+
 
                         <div class="row">
                             <div class="col-4">
@@ -128,40 +127,71 @@
                                         <h:outputLabel id="balance" value="#{opdPreSettleController.cashPaid-opdPreSettleController.preBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </p:panelGrid>
-
+                                    </h:panelGrid>
                                 </p:panel>
                             </div>
                         </div>
 
+                        <div class="row mt-2" >
+                            <div class="col-12">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                    </f:facet> 
 
-
-                        <p:panel header="Bill Item Details">
-                            <h:outputLabel value="#{opdPreSettleController.preBill.billItems.size()}" />
-                            <p:dataTable rowIndexVar="rowIndex" value="#{opdPreSettleController.preBill.billItems}" var="bip" >
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                        #{rowIndex+1}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                        #{bip.item.name}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Qty</f:facet>
-                                        #{bip.qty}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Rate</f:facet>
-                                        #{bip.rate}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Value</f:facet>
-                                        #{bip.grossValue}
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBillPre}" var="preBill" >
+                                        <p:panel>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:panelGrid columns="3">
+                                                        <h:outputLabel value="Bill for " ></h:outputLabel>
+                                                        <h:outputLabel value=":" style="width: 45px; text-align: center"></h:outputLabel>
+                                                        <h:outputLabel value="#{preBill.toDepartment.name}" ></h:outputLabel>
+                                                        <h:outputLabel value="Bill No " ></h:outputLabel>
+                                                        <h:outputLabel value=":" style="width: 45px; text-align: center"></h:outputLabel>
+                                                        <h:outputLabel value="#{preBill.deptId}" ></h:outputLabel>
+                                                        <h:outputLabel value="Total " ></h:outputLabel>
+                                                        <h:outputLabel value=":" style="width: 45px; text-align: center"></h:outputLabel>
+                                                        <h:outputLabel value="#{preBill.total}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                                        <h:outputLabel value="Discount " ></h:outputLabel>
+                                                        <h:outputLabel value=":" style="width: 45px; text-align: center"></h:outputLabel>
+                                                        <h:outputLabel value="#{preBill.discount}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                                        <h:outputLabel value="Net Total " ></h:outputLabel>
+                                                        <h:outputLabel value=":" style="width: 45px; text-align: center"></h:outputLabel>
+                                                        <h:outputLabel value="#{preBill.netTotal}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                                    </h:panelGrid>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:dataTable rowIndexVar="rowIndex" value="#{preBill.billItems}" var="bip" >
+                                                        <p:column>
+                                                            <f:facet name="header">No</f:facet>
+                                                                #{rowIndex+1}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Item</f:facet>
+                                                                #{bip.item.name}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Qty</f:facet>
+                                                                #{bip.qty}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Rate</f:facet>
+                                                                #{bip.rate}
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="header">Value</f:facet>
+                                                                #{bip.grossValue}
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </div>
+                                            </div>
+                                        </p:panel>
+                                    </ui:repeat>
+                                </p:panel>
+                            </div>
+                        </div>
                     </p:panel>
 
 
@@ -236,13 +266,8 @@
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>
