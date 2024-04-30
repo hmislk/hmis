@@ -69,6 +69,18 @@
                                     ajax="false"
                                     action="#{billBhtController.resetBillData()}" >
                                 </p:commandButton>
+                                <p:commandButton 
+                                    style="float: right;"
+                                    ajax="false"
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    class="ui-button-warning m-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{billBhtController.patientEncounter}" 
+                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
                             </div>
 
                         </div>
@@ -308,11 +320,11 @@
 
                                                             <p:datePicker 
                                                                 value="#{billBhtController.currentBillItem.billTime}" 
-                                                                          id="billedTimeStamp"
-                                                                          pattern="dd MMM yyyy HH:mm:ss"
-                                                                          showTime="true"
-                                                                          showButtonBar="true"
-                                                                          timeInput="true">                               
+                                                                id="billedTimeStamp"
+                                                                pattern="dd MMM yyyy HH:mm:ss"
+                                                                showTime="true"
+                                                                showButtonBar="true"
+                                                                timeInput="true">                               
                                                             </p:datePicker>
                                                         </div>
                                                     </div>

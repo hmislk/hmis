@@ -65,52 +65,141 @@
                         </tr>
                     </table>
 
-                    <div style="margin-left: 100px">
+                    <div class="w-100">
                         <table class="tbl" >
                             <h:panelGroup>
                                 <tr>
-                                    <div class="row text-left w-100 my-4">
-                                        <div class="col-4 w-100">
-
-                                            <div class="d-flex justify-content-between w-100">
-                                                <div class="w-100 text-left">
-                                                    <h:outputLabel value="Patient Name" />  
-                                                </div>
-                                                <div class="text-right w-100 ">
-                                                    <h:outputLabel value=":" />
-                                                </div>
-                                                <div class="text-right w-100">
-                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
-                                                </div>
+                                    <div class="row w-100 my-2">
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Bill NO" /></div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.insId}" /></div>
                                             </div>
-
-
-                                            <div class="d-flex justify-content-between w-100 text-left" style="align-content: l">
-                                                <div class="w-100 text-left align-left">
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5">
                                                     <h:outputLabel value="BHT NO" />
                                                 </div>
-                                                <div class="w-100 ">
-                                                    <h:outputLabel value=":" />
-                                                </div>
-                                                <div class="w-100">
+                                                <div class="col-1"><h:outputLabel value=":" />  </div>
+                                                <div class="col-6" style="text-align: left;">
                                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
                                                 </div>
-                                            </div>
 
-                                            <div class="d-flex justify-content-between w-100">
-                                                <div class="w-100 text-left">
-                                                    <h:outputLabel value="Bill NO" />
-                                                </div>
-                                                <div class="w-100 text-right">
-                                                    <h:outputLabel value=":" />
-                                                </div>
-                                                <div class="w-100 text-right">
-                                                    <h:outputLabel value="#{cc.attrs.bill.insId}" />
-                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
 
+                                    <div class="row w-100 my-2">
+                                        <div class="col-10">
+                                            <div class="row">
+                                                <div class="col-3">
+                                                    <h:outputLabel value="Patient Name" />  
+                                                </div>
+                                                <div class="col-1">
+                                                    <h:outputLabel value=":" />  
+                                                </div>
+                                                <div class="col-8" style="text-align: left;">
+                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row w-100 my-2">
+                                        <div class="col-10">
+                                            <div class="row">
+                                                <div class="col-3">
+                                                    <h:outputLabel value="Patient Address" />
+                                                </div>
+                                                <div class="col-1"><h:outputLabel value=":" />  </div>
+                                                <div class="col-8" style="text-align: left;">
+                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}" />
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row w-100 my-2">
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Patient NIC" /></div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}" /></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Patient Mobile" /> </div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.mobile}"/></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row w-100 my-2">
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Guardian" /></div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" /></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Room" /> </div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}"/></div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row w-100 my-2">
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Admission Time" /></div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.dateOfAdmission}">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                    </h:outputLabel></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="row">
+                                                <div class="col-5"><h:outputLabel value="Discharge Time" /> </div>
+                                                <div class="col-1"><h:outputLabel value=":" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.dateOfDischarge}">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                    </h:outputLabel></div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null}">
+                                        <div class="row w-100 my-2">
+                                            <div class="col-6">
+                                                <div class="row">
+                                                    <div class="col-5"><h:outputLabel value="Company Name" /></div>
+                                                    <div class="col-1"><h:outputLabel value=":" /></div>
+                                                    <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.creditCompany.name}">
+                                                        </h:outputLabel></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="row">
+                                                    <div class="col-5"><h:outputLabel value="Company Address" /> </div>
+                                                    <div class="col-1"><h:outputLabel value=":" /></div>
+                                                    <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.creditCompany.address}">
+                                                        </h:outputLabel></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
 
                                 </tr>
                             </h:panelGroup>
