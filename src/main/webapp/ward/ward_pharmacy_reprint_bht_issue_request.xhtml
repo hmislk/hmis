@@ -89,14 +89,14 @@
                         </div>
                         <div class="col-8">
                             <p:panel header="Bill" style="height: 100%">
-                                <div class="d-flex justify-content-end gap-2" >
-                                    <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
-                                    <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" class="" style="width: 13em;">
-                                        <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" />
-                                    </p:selectOneMenu>
-                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button " title="Redraw Bill"></p:commandButton>
-                                </div>
+                                 <div class="d-flex justify-content-end gap-2">
+                                        <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" title="Redraw Bill"></p:commandButton>
+                                    </div>
 
                                 <h:panelGroup id="gpBillPreview">
                                     <h:panelGroup id="groupPrint" >

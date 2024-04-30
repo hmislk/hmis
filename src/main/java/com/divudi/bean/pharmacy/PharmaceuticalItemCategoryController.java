@@ -136,6 +136,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
     private boolean errorCheck() {
         if (getCurrent() != null) {
             if (getCurrent().getDescription() == null || getCurrent().getDescription().isEmpty()) {
+                JsfUtil.addSuccessMessage("Please Fill Desciption.");
                 return false;
             } else {
                 String sql;
