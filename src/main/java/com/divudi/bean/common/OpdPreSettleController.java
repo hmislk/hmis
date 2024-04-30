@@ -134,6 +134,7 @@ public class OpdPreSettleController implements Serializable {
     double balance;
     Double editingQty;
     private Token token;
+    private List<Bill> billsOfBatchBillPre;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -1209,6 +1210,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public List<Bill> getBillsOfBatchBillPre() { 
+        return billsOfBatchBillPre;
+    }
+
+    public void setBillsOfBatchBillPre(List<Bill> billsOfBatchBillPre) {     
+        this.billsOfBatchBillPre = billsOfBatchBillPre;
     }
 
 }
