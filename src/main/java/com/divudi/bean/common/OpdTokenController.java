@@ -65,11 +65,13 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     private PharmacyBillSearch pharmacyBillSearch;
     @Inject
-    OpdPreBillController opdTabPreBillController;
+    OpdTabPreBillController opdTabPreBillController;
     @Inject
     OpdPreSettleController opdPreSettleController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    @Inject
+    OpdPreBillController opdPreBillController;
  
 
     // </editor-fold> 
@@ -272,9 +274,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        opdTabPreBillController.makeNull();
-        opdTabPreBillController.setPatient(currentToken.getPatient());
-        opdTabPreBillController.setToken(currentToken);
+        opdPreBillController.makeNull();
+        opdPreBillController.setPatient(currentToken.getPatient());
+        opdPreBillController.setToken(currentToken);
+        
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
     
@@ -286,10 +289,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
-         if (currentToken == null) {
-             System.out.println("currentToken == null");
-         }
         opdTabPreBillController.setToken(currentToken);
+        opdTabPreBillController.setSelectedCurrentlyWorkingStaff(currentToken.getStaff());
         return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
     }
 
@@ -321,9 +322,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             j += " and t.counter =:ct";
             m.put("ct", counter);
         }
-        j += " order by t.id DESC";
+        j += " order by t.id ASC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-        //System.out.println("currentTokens " + currentTokens);
+        
     }
 
     public String getTokenStatus(Token token) {

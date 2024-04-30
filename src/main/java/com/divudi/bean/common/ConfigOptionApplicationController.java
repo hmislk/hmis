@@ -182,6 +182,24 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
+    
+    public String getEnumValueByKey(String key) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.ENUM) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.ENUM);
+            option.setOptionValue("");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        return option.getOptionValue();
+    }
 
     public Long getLongValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
