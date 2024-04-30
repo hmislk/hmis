@@ -247,11 +247,27 @@
                                             <td>#{opdBillController.batchBill.deptId}</td>
                                         </tr>
                                         <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Payment Method</td>
+                                            <td>#{opdBillController.batchBill.paymentMethod.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Net Total</td>
                                             <td>#{opdBillController.batchBill.netTotal}</td>
                                         </tr>
                                     </tbody>
                                 </table>
+                                
+                                <p:dataTable value="#{opdBillController.payments}" var="p" >
+                                    <p:column >
+                                        <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{p.bill.id}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
 
 
                             </div>
