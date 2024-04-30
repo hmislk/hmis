@@ -134,6 +134,7 @@ public class OpdPreSettleController implements Serializable {
     double balance;
     Double editingQty;
     private Token token;
+    private List<Bill> billsOfBatchBillPre;
 
     public void makeNull() {
         selectedAlternative = null;
