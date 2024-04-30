@@ -2697,12 +2697,10 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewOpdBill() {
-
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        
         if (configOptionController.getBooleanValueByKey("OPD Bill Cancelation is Limited to the Last 24 hours", OptionScope.APPLICATION, null, null, null)) {
             opdBillCancellationSameDay = chackRefundORCancelBill(bill);
             //System.out.println("opdBillCancellationSameDay = " + opdBillCancellationSameDay);
@@ -2738,6 +2736,17 @@ public class BillSearch implements Serializable {
         printPreview = false;
 
         return "/opd/bill_reprint?faces-redirect=true;";
+    }
+    
+    
+    public String navigateToViewOpdBillNewWindow() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        createBillItemsAndBillFees();
+        billBean.checkBillItemFeesInitiated(bill);
+        return "/opd/bill_view?faces-redirect=true;";
     }
 
     public String navigateToViewCollectingCentreBill() {

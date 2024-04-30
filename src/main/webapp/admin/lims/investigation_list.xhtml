@@ -60,13 +60,13 @@
                             <div class="row w-75" >
                                 <div class="col-6">
                                     <p:commandButton icon="pi pi-cog" action="#{investigationController.navigateToManageInvestigation()}" styleClass="ui-button-icon-only ui-p-primeng">
-                                    <f:setPropertyActionListener value="#{item}" target="#{investigationController.current}"  />
-                                </p:commandButton>
+                                        <f:setPropertyActionListener value="#{item}" target="#{investigationController.current}"  />
+                                    </p:commandButton>
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton icon="pi pi-trash" ajax="false" action="#{investigationController.delete()}" onclick="return confirm('Are you sure you want to delete this item?');" styleClass="ui-button-icon-only ui-p-primeng ui-button-danger">
-                                    <f:setPropertyActionListener value="#{item}"  target="#{investigationController.current}"  />
-                                </p:commandButton>
+                                        <f:setPropertyActionListener value="#{item}"  target="#{investigationController.current}"  />
+                                    </p:commandButton>
                                 </div>
                             </div>
 

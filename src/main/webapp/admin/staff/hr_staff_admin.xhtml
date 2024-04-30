@@ -169,7 +169,7 @@
                                                         </p:calendar>
 
                                                         <p:outputLabel value="Speciality" />
-                                                        <p:selectOneMenu class="w-100 mx-2" value="#{staffController.current.speciality}" >
+                                                        <p:selectOneMenu class="w-100 mx-2" value="#{staffController.current.speciality}" filter="true" filterMatchMode="contains" >
                                                             <f:selectItem itemLabel="Please select a speciality"/>
                                                             <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                         </p:selectOneMenu>

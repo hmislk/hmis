@@ -75,6 +75,9 @@ public class OpdPreSettleController implements Serializable {
     OpdPreBillController opdPreBillController;
     @Inject
     BillController billController;
+    @Inject
+    private PaymentSchemeController paymentSchemeController;
+    
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -177,7 +180,6 @@ public class OpdPreSettleController implements Serializable {
 
     public void onTabChange(TabChangeEvent event) {
         setPatientTabId(event.getTab().getId());
-
     }
 
     public Title[] getTitle() {
@@ -254,9 +256,6 @@ public class OpdPreSettleController implements Serializable {
         this.billItems = billItems;
     }
 
-    @Inject
-    private PaymentSchemeController paymentSchemeController;
-
     @SuppressWarnings("empty-statement")
     private boolean errorCheckForSaleBill() {
 
@@ -311,7 +310,6 @@ public class OpdPreSettleController implements Serializable {
         }
 
         updateSettledBatchBill();
-
     }
 
     private Bill saveSettlingIndividualBill(Bill individualBill, Bill settlingBatchBill) {
@@ -894,7 +892,6 @@ public class OpdPreSettleController implements Serializable {
         if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
-
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
