@@ -731,7 +731,7 @@ public class OpdPreSettleController implements Serializable {
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
-            JsfUtil.addErrorMessage("Allready Paid");
+            JsfUtil.addErrorMessage("Already Paid");
             return "";
         } else {
             setPreBill(preBatchBill);
