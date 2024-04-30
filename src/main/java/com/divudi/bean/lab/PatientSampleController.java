@@ -31,6 +31,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -176,7 +177,7 @@ public class PatientSampleController implements Serializable {
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
-        items = getFacade().findByJpql(jpql, m);
+        items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
         if(s==null){
             s = new PatientSample();
             s.setCreatedAt(new Date());
