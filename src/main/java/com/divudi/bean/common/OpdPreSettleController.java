@@ -1312,10 +1312,12 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public List<Bill> getBillsOfBatchBillPre() {
+        
         return billsOfBatchBillPre;
     }
 
     public void setBillsOfBatchBillPre(List<Bill> billsOfBatchBillPre) {
+        
         this.billsOfBatchBillPre = billsOfBatchBillPre;
     }
 
