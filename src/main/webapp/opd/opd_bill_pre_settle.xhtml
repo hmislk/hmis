@@ -14,7 +14,6 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form >
-
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <f:facet name="header" >
 
@@ -69,7 +68,6 @@
                                 icon="fa fa-check"
                                 id="settle"
                                 action="#{opdPreSettleController.settleOpdBatchBill}" />
-
                         </div>
 
                         <div class="row">
@@ -118,7 +116,6 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </h:panelGrid>
-
                                 </p:panel>
                             </div>
                         </div>
@@ -256,11 +253,8 @@
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
