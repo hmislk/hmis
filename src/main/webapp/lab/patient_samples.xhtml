@@ -7,23 +7,23 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/admin/lims/index.xhtml">
-            <ui:define name="subcontent">
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
 
                 <h:form>
                     
                     
                     <p:panelGrid columns="2" >
                         <p:outputLabel value="From" ></p:outputLabel>
-                        <p:calendar value="#{sampleController.fromDate}" ></p:calendar>
+                        <p:calendar value="#{patientSampleController.fromDate}" ></p:calendar>
                         <p:outputLabel value="From" ></p:outputLabel>
-                        <p:calendar value="#{sampleController.toDate}" ></p:calendar>
-                        <p:commandButton value="Prcess" action="#{sampleController.listSamples()}" ajax="false" ></p:commandButton>
+                        <p:calendar value="#{patientSampleController.toDate}" ></p:calendar>
+                        <p:commandButton value="Prcess" action="#{patientSampleController.listPatientSamples()}" ajax="false" ></p:commandButton>
                         
                     </p:panelGrid>
                     
                     
-                    <p:dataTable value="#{sampleController.items}" 
+                    <p:dataTable value="#{patientSampleController.items}" 
                                  paginatorAlwaysVisible="false"
                                  var="item"
                                  paginator="true" 
@@ -31,18 +31,23 @@
                                  emptyMessage="No Speciman Types found"
                                  paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
 
-                        <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                        <p:column sortBy="#{item.bill.deptId}" 
+                                  filterBy="#{item.bill.insId}"
+                                  filterMatchMode="contains">
                             <f:facet name="header">
-                                <h:outputText value="Name"/>
+                                <h:outputText value="Ins ID"/>
                             </f:facet>
-                            <h:outputText value="#{item.name}"/>
+                            <h:outputText value="#{item.bill.insId}"/>
                         </p:column>
-                        <p:column sortBy="#{item.description}" filterBy="#{item.description}" filterMatchMode="contains">
+                        <p:column sortBy="#{item.bill.deptId}" 
+                                  filterBy="#{item.bill.insId}"
+                                  filterMatchMode="contains">
                             <f:facet name="header">
-                                <h:outputText value="Description"/>
+                                <h:outputText value="Dept ID"/>
                             </f:facet>
-                            <h:outputText value="#{item.description}"/>
+                            <h:outputText value="#{item.bill.deptId}"/>
                         </p:column>
+                        
                         <p:column>
                             <f:facet name="header">
                                 <h:outputText value="Actions"/>
