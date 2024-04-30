@@ -101,6 +101,9 @@
                         <p:column headerText="Phone Number">
                             #{ps.person.phone}
                         </p:column>
+                        <p:column headerText="Mobile Number">
+                            #{ps.person.mobile}
+                        </p:column>
                         <p:column>
                             <p:commandButton 
                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
@@ -214,10 +217,9 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
-
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.person.mobile}"
+                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
                                             class="form-control" 
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -231,7 +233,7 @@
 
                                             autocomplete="off" 
                                             placeholder="Phone Number"
-                                            value="#{cc.attrs.controller.patient.person.phone}"
+                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
                                             class="form-control" validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
