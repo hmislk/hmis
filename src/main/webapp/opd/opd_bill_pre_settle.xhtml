@@ -18,20 +18,18 @@
                         <f:facet name="header" >
 
                             <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>  
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Back To Search"
-                                class="ui-button-warning mx-2"
-                                style="float: right;"
-                                icon="fa fa-arrow-left"
-                                actionListener="#{searchController.createOpdPreTable}"
-                                action="/opd/opd_search_pre_bill"/>
+                            <p:commandButton ajax="false" value="Back To Search"
+                                             class="ui-button-warning mx-2"
+                                             style="float: right;"
+                                             icon="fa fa-arrow-left"
+                                             actionListener="#{searchController.createOpdPreTable}"
+                                             action="/opd/opd_search_pre_bill"/>
                             <p:defaultCommand target="settle"/>
                         </f:facet>
 
-                        <div class="d-flex justify-content-end mb-2">
-                            <h:outputLabel value="Payment Method" class="mt-2"/>
-                            <h:outputLabel value="" style="min-width: 20px;" />
+                        <h:panelGrid columns="20">
+                            <h:outputLabel value="Payment Method" />
+                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   
                                 id="cmbPs" 
                                 value="#{opdPreSettleController.preBill.paymentMethod}"  
@@ -59,7 +57,7 @@
                             <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
                                 <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
-
+                          
                             <p:commandButton 
                                 ajax= "false"  
                                 value="Accept Payment &amp; Settle"
@@ -68,10 +66,12 @@
                                 icon="fa fa-check"
                                 id="settle"
                                 action="#{opdPreSettleController.settleOpdBatchBill}" />
-                        </div>
+                        
+                        </h:panelGrid>
+
 
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -80,38 +80,50 @@
                                     <common:patient patient="#{opdPreSettleController.preBill.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-
-                            <div class="col-6">
+                            <div class="col-4">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{opdPreSettleController.preBill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{opdPreSettleController.preBill.total}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{opdPreSettleController.preBill.discount}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{opdPreSettleController.preBill.netTotal}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-4">
                                 <p:panel id="pBillDetails"  >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Batch Bill Details" class="mx-2"></h:outputLabel>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="3" columnClasses="numberCol, textCol"  >
+                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 55px; text-align: center"></h:outputLabel>
                                         <h:outputLabel id="total" value="#{opdPreSettleController.preBill.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 55px; text-align: center"></h:outputLabel>
                                         <h:outputLabel id="dis" value="#{opdPreSettleController.preBill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />                                          
                                         </h:outputLabel>
                                         <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 55px; text-align: center"></h:outputLabel>
                                         <h:outputLabel id="netTotal" value="#{opdPreSettleController.preBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Tendered" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 55px; text-align: center"></h:outputLabel>
                                         <p:inputText
                                             onfocus="this.select()"
                                             autocomplete="off"  id="paid" value="#{opdPreSettleController.cashPaid}" >
                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                         </p:inputText>
                                         <h:outputLabel  value="Balance " ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 55px; text-align: center"></h:outputLabel>
                                         <h:outputLabel id="balance" value="#{opdPreSettleController.cashPaid-opdPreSettleController.preBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -182,6 +194,7 @@
                         </div>
                     </p:panel>
 
+
                     <p:panel rendered="#{opdPreSettleController.billPreview}">
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
@@ -235,7 +248,7 @@
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                     <prints:five_five_paper_with_headings bill="#{opdPreSettleController.saleBill}"/>                        
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >                              
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                     <prints:five_five_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
