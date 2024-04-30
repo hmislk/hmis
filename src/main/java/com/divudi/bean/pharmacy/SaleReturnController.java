@@ -200,7 +200,7 @@ public class SaleReturnController implements Serializable {
         refundBill.setInstitution(getSessionController().getInstitution());
         refundBill.setDepartment(getSessionController().getDepartment());
         refundBill.setComments(comment);
-        refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS);
+        refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
 //        refundBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(
 //                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacySale, BillNumberSuffix.SALRET));

@@ -60,7 +60,7 @@
                     <!-- Right aligned quick search -->
                     <h:panelGroup id="quickSearch" >
                         <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
-
+                            <p:focus  for="txtQuickSearchPhoneNumber" />
                             <p:inputText 
                                 autocomplete="off"
                                 id="txtQuickSearchPhoneNumber"
@@ -101,6 +101,9 @@
                         <p:column headerText="Phone Number">
                             #{ps.person.phone}
                         </p:column>
+                        <p:column headerText="Mobile Number">
+                            #{ps.person.mobile}
+                        </p:column>
                         <p:column>
                             <p:commandButton 
                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
@@ -130,7 +133,6 @@
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
                                                            itemLabel="#{i.label}" itemValue="#{i}"/>
-                                            <p:ajax process="cmbTitle" update="cmbSex" ></p:ajax>
                                             <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
@@ -172,7 +174,7 @@
 
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="blur" execute="@this" render="dpDob" />
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -181,7 +183,7 @@
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="blur" execute="@this"  render="dpDob"  />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -190,20 +192,21 @@
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="blur" execute="@this"  render="dpDob" />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
-                                                <p:datePicker 
-
+                                                <p:datePicker  
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
+                                                    yearNavigator="true"
+                                                    monthNavigator="true"
                                                     inputStyleClass="form-control"
                                                     pattern="#{sessionController.applicationPreference.longDateFormat}"
                                                     placeholder="Date of Birth (dd/mm/yyyy)"
                                                     >
-                                                    <f:ajax event="dateSelect" execute="@this" render="year month day" />
+                                                    <p:ajax event="dateSelect" process="@this" update="year month day" />
                                                 </p:datePicker>
                                             </div>
                                         </div>
@@ -214,10 +217,9 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
-
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.person.mobile}"
+                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
                                             class="form-control" 
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -231,7 +233,7 @@
 
                                             autocomplete="off" 
                                             placeholder="Phone Number"
-                                            value="#{cc.attrs.controller.patient.person.phone}"
+                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
                                             class="form-control" validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>

@@ -497,7 +497,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fillBillSessions();
         return "/channel/channel_booking?faces-redirect=true";
     }
-    
+
     public String navigateToManageSessionQueueAtConsultantRoom() {
         System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
@@ -777,9 +777,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             settleSucessFully = false;
             return;
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
-            if(selectedSessionInstance.isCompleted()){
+            if (selectedSessionInstance.isCompleted()) {
                 JsfUtil.addErrorMessage("This Session Has Been Completed");
                 settleSucessFully = false;
                 return;
@@ -1478,23 +1478,27 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void markAsArrived() {
-        if (selectedServiceSession == null) {
+        if (selectedSessionInstance == null) {
             return;
         }
-        if (selectedServiceSession.getSessionDate() == null) {
+        if (selectedSessionInstance.getSessionDate() == null) {
             return;
         }
         if (arrivalRecord == null) {
             arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
+            arrivalRecord.setSessionDate(selectedSessionInstance.getSessionDate());
+            arrivalRecord.setSessionInstance(selectedSessionInstance);
             arrivalRecord.setCreatedAt(new Date());
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
         }
+        selectedSessionInstance.setArrived(true);
+        selectedSessionInstance.setArrivalRecord(arrivalRecord);
+        sessionInstanceFacade.edit(selectedSessionInstance);
         arrivalRecord.setRecordTimeStamp(new Date());
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
+        sendSmsOnChannelDoctorArrival();
     }
 
     public void markAsLeft() {
@@ -3301,11 +3305,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Session Selected");
             return null;
         }
-        if(patient.getPerson().getName().isEmpty()){
+        if (patient.getPerson().getName().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter a Name");
             return null;
         }
-        
+
         selectedBillSession.getBill().setPatient(patient);
         billFacade.edit(selectedBillSession.getBill());
         JsfUtil.addSuccessMessage("Patient Changed");

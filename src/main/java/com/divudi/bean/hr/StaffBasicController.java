@@ -622,83 +622,83 @@ public class StaffBasicController implements Serializable {
     }
 
     public String navigateToHrRoster() {
-        return "/hr/hr_roster";
+        return "/hr/hr_roster?faces-redirect=true";
     }
 
     public String navigateToHrShift() {
-        return "/hr/hr_shift";
+        return "/hr/hr_shift?faces-redirect=true";
     }
 
     public String navigateToHrPaysheetComponent() {
-        return "/hr/hr_paysheet_component";
+        return "/hr/hr_paysheet_component?faces-redirect=true";
     }
 
     public String navigateToHrPaysheetComponentSystem() {
-        return "/hr/hr_paysheet_component_system";
+        return "/hr/hr_paysheet_component_system?faces-redirect=true";
     }
 
     public String navigateToHrPhDate() {
-        return "/hr/hr_ph_date";
+        return "/hr/hr_ph_date?faces-redirect=true";
     }
 
     public String navigateToHrHrmVariables() {
-        return "/hr/hr_hrm_variables";
+        return "/hr/hr_hrm_variables?faces-redirect=true";
     }
 
     public String navigateToHrSalaryCycle() {
-        return "/hr/hr_salary_cycle";
+        return "/hr/hr_salary_cycle?faces-redirect=true";
     }
 
     public String navigateToHrStaffAdmin() {
-        return "/hr/hr_staff_admin";
+        return "/hr/hr_staff_admin?faces-redirect=true";
     }
 
     public String navigateToHrChangeStaff() {
-        return "/hr/hr_change_staff";
+        return "/hr/hr_change_staff?faces-redirect=true";
     }
 
     public String navigateToHrStaffCategory() {
-        return "/hr/hr_staff_category";
+        return "/hr/hr_staff_category?faces-redirect=true";
     }
 
     public String navigateToHrStaffGrade() {
-        return "/hr/hr_staff_grade";
+        return "/hr/hr_staff_grade?faces-redirect=true";
     }
 
     public String navigateToHrStaffDesignation() {
-        return "/hr/hr_staff_designation";
+        return "/hr/hr_staff_designation?faces-redirect=true";
     }
 
     public String navigateToHrStaffTransfer() {
-        return "/hr/hr_form_staff_transfer";
+        return "/hr/hr_form_staff_transfer?faces-redirect=true";
     }
 
     public String navigateToHrStaffBasicIndividual() {
-        return "/hr/hr_staff_basic_individual";
+        return "/hr/hr_staff_basic_individual?faces-redirect=true";
     }
 
     public String navigateToHrStaffPaysheetComponentIndividual() {
-        return "/hr/hr_staff_paysheet_component_individual";
+        return "/hr/hr_staff_paysheet_component_individual?faces-redirect=true";
     }
 
     public String navigateToHrStaffPaysheetComponentAll() {
-        return "/hr/hr_staff_paysheet_component_all";
+        return "/hr/hr_staff_paysheet_component_all?faces-redirect=true";
     }
 
     public String navigateToHrStaffLoanInstallment() {
-        return "/hr/hr_staff_loan_installment";
+        return "/hr/hr_staff_loan_installment?faces-redirect=true";
     }
 
     public String navigateToHrStaffLeaveEntitle() {
-        return "/hr/hr_staff_leave_entitle";
+        return "/hr/hr_staff_leave_entitle?faces-redirect=true";
     }
 
     public String navigateToHrStaffPaysheetComponentAllPerformanceAllovance() {
-        return "/hr/hr_staff_paysheet_component_all_performance_allovance";
+        return "/hr/hr_staff_paysheet_component_all_performance_allovance?faces-redirect=true";
     }
 
     public String navigateToHrStaffPaysheetComponentAllPerformanceAllovancePercentage() {
-        return "/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge";
+        return "/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge?faces-redirect=true";
     }
 
 }
