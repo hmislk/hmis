@@ -190,8 +190,14 @@ public class PatientInvestigationController implements Serializable {
     private List<String> sampleTubeLabels;
 
     public String navigateToPrintBarcodeFromMenu() {
-        return "/lab/sample_barcode_printing";
+        return "/lab/sample_barcode_printing?faces-redirect=true";
     }
+    
+    public String navigateToPatientSampelIndex() {
+        return "/lab/sample_index?faces-redirect=true";
+    }
+    
+    
 
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
         if (ptIx == null) {
@@ -1119,9 +1125,20 @@ public class PatientInvestigationController implements Serializable {
         return lstToReceiveSearch;
     }
 
+    @Deprecated
     public String navigateToSampleManagement() {
         prepareToSample();
         return "/lab/sample_management?faces-redirect=true";
+    }
+    
+    public String navigateToToCollelct() {
+        prepareToSample();
+        return "/lab/patient_investigations_to_collect?faces-redirect=true";
+    }
+    
+    public String navigateToCollelcted() {
+        prepareToSample();
+        return "/lab/patient_investigations_collected?faces-redirect=true";
     }
 
     public void prepareToSample() {
