@@ -98,7 +98,7 @@
                                 ajax="false" 
                                 value="Consulant Room"
                                 icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
+                                class=" ui-button-primary"
                                 action="#{bookingController.navigateToViewSessionData()}"
                                 />
 
@@ -106,9 +106,18 @@
                             <p:commandButton 
                                 ajax="false" 
                                 value="Manage Booking" 
-                                class="ui-button-warning"
+                                class="ui-button-warning mx-1"
                                 action="#{bookingController.navigateToManageBooking()}"
                                 icon="fa-solid fa-bars-progress" />
+
+                            <p:commandButton 
+                                id="btnArrival"
+                                process="btnArrival"
+                                update="acSessions"
+                                value="Mark Arrival " 
+                                class="ui-button-info"
+                                action="#{bookingController.markAsArrived()}"
+                                icon="fa-solid fa-check" />
 
                         </div>
                     </div>
@@ -116,7 +125,7 @@
                 <div class="row">
                     <div class="col-2">
                         <div >
-                            <div >
+                            <div>
                                 <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
                                 <p:selectOneListbox 
                                     id="acSpeciality"
@@ -127,7 +136,7 @@
                                     <p:ajax
                                         event="change"
                                         process="@this" 
-                                        update="acBookings scStaff acSessions"
+                                        update="acBookings scStaff acSessions pnlArrived"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
                                     <f:selectItem itemLabel="All" ></f:selectItem>
                                     <f:selectItems 
@@ -166,7 +175,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 p-0" >
+                    <div class="col-md-4 p-0"  >
                         <p:watermark for="acSessions" value="Select Session" ></p:watermark>
                         <p:selectOneListbox 
                             id="acSessions"
@@ -195,7 +204,14 @@
                                         </div>
                                     </h:panelGroup>
 
+                                    <h:panelGroup id="pnlArrived" rendered="#{s.arrived}">
+                                        <div>
+                                            <p:badge class="px-1" value="Arrived" severity="info" />
+                                        </div>
+                                    </h:panelGroup>
                                 </div>
+
+
                             </p:column>
                             <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{s.sessionDate}">
@@ -232,7 +248,7 @@
                             <p:ajax 
                                 event="change" 
                                 process="@this"
-                                update="acBookings acSessions"
+                                update="pnlArrived acBookings acSessions"
                                 listener="#{bookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
