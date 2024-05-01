@@ -10,7 +10,7 @@
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:growl/>
+                    <p:growl id="msg"/>
                     <p:focus id="selectFocus" context="gpSelect"/>
                     <p:focus id="detailFocus" context="gpDetail"/>
                     <p:panel header="Manage Pharmaceutical Item Categories">
@@ -22,7 +22,7 @@
                                                      value="Add" 
                                                      class="w-25 ui-button-success"
                                                      icon="fa fa-plus"
-                                                     update="gpDetail lstSelect detailFocus" 
+                                                     update="gpDetail lstSelect detailFocus msg" 
                                                      action="#{pharmaceuticalItemCategoryController.prepareAdd()}"  >
                                     </p:commandButton>
                                     <p:commandButton id="btnDelete" 
@@ -33,7 +33,7 @@
                                                      class="mx-1 w-25 ui-button-danger"
                                                      action="#{pharmaceuticalItemCategoryController.delete()}" 
                                                      process="lstSelect btnDelete"
-                                                     update="lstSelect gpDetail"
+                                                     update="lstSelect gpDetail msg"
                                                      value="Delete">
                                     </p:commandButton>
                                     <p:commandButton 
@@ -81,6 +81,8 @@
                                             <p:inputText autocomplete="off" value="#{pharmaceuticalItemCategoryController.current.saleMargin}" class="w-100" ></p:inputText>
                                             <h:outputText  value="Whole Sale Margin" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{pharmaceuticalItemCategoryController.current.wholeSaleMargin}" class="w-100" ></p:inputText>
+                                            <h:outputText  value="Profit Margin" ></h:outputText>
+                                            <p:inputText autocomplete="off" value="#{pharmaceuticalItemCategoryController.current.profitMargin}" class="w-100" ></p:inputText>
 
                                             <label for="txtDes" class="col-form-label">Description</label>
                                             <p:inputTextarea 
@@ -90,10 +92,10 @@
                                             <p:commandButton 
                                                 id="btnSave" 
                                                 value="Save"
-                                                class="w-25 ui-button-warning"
+                                                class="w-50 ui-button-warning"
                                                 icon="fas fa-floppy-disk"
                                                 process="gpDetail" 
-                                                update="lstSelect selectFocus" 
+                                                update="lstSelect selectFocus msg" 
                                                 action="#{pharmaceuticalItemCategoryController.saveSelected()}" >
                                             </p:commandButton>
 
