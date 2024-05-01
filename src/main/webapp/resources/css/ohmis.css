@@ -139,15 +139,15 @@ th.align-right-header .ui-column-title {
 
 .compact-datatable .ui-datatable-data tr td {
     padding: 2px 5px; /* Reduced padding */
-    font-size: 0.4rem; /* Smaller font size */
+    font-size: 0.8rem; /* Smaller font size */
 }
 
 .compact-datatable th {
     padding: 4px 5px; /* Reduced padding in headers */
-    font-size: 0.4rem; /* Smaller font size in headers */
+    font-size: 0.8rem; /* Smaller font size in headers */
 }
 
 .compact-datatable .ui-paginator {
     padding: 2px; /* Reduced padding in paginator */
-    font-size: 0.4rem; /* Smaller font size in paginator */
+    font-size: 0.8rem; /* Smaller font size in paginator */
 }
