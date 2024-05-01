@@ -67,7 +67,7 @@
                             <p:column headerText="ID" width="60" style="text-align: right;">
                                 <p:outputLabel value="#{bill.id}" />
                             </p:column>
-                            
+
                             <p:column headerText="Retired" width="60" style="text-align: right;">
                                 <p:outputLabel value="#{bill.retired?'Yes':''}" class="text-danger"/>
                             </p:column>
@@ -90,6 +90,16 @@
 
                             <p:column headerText="Dept ID" width="100" style="text-align: right;">
                                 <p:outputLabel value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Dept ID" 
+                                sortBy="#{bill.patient.person.name}"
+                                filterBy="#{bill.patient.person.name}"
+                                filterMatchMode="contains"
+                                width="100"
+                                style="text-align: right;">
+                                <p:outputLabel value="#{bill.patient.person.name}" />
                             </p:column>
 
                             <p:column headerText="Institution" width="200">

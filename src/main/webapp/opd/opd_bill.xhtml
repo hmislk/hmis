@@ -43,8 +43,9 @@
                                                 </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
-
-                                <common:patient_details 
+                                <p:focus  context="ccPatientDetails" ></p:focus>
+                                <common:patient_details
+                                    id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
                                 <p:panel 
@@ -115,7 +116,7 @@
                                                 process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
                                                 update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
-                                            <p:focus id="focusLstIx" for="acIx" ></p:focus>
+                                            <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
                                         </div>
                                     </div>
                                     <div class="row" >
