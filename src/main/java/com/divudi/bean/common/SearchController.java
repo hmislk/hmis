@@ -221,7 +221,10 @@ public class SearchController implements Serializable {
     boolean billPreview;
     private Long currentTokenId;
     
-
+    public String navigateToViewPettyCashBill(){
+        return "petty_cash_bill_reprint";
+    }
+    
     public String navigateToAllFinancialTransactionSummary() {
         billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary?faces-redirect=true";
