@@ -83,19 +83,19 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15">
 
-                            <p:column headerText="Cashier" width="10em">
+                            <p:column headerText="Bill Type">
                                 <h:outputLabel value="#{bill.billTypeAtomic}">
                                 </h:outputLabel>
                             </p:column>
                             
-                            <p:column headerText="Count" width="4em">
+                            <p:column headerText="Count" width="6em">
                                 <h:outputLabel value="#{bill.billCount}"/>
                                 <f:facet name="footer">
 
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Gross Total" width="8em">
+                            <p:column headerText="Gross Total" width="10em">
                                 <h:outputLabel value="#{bill.grossTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -106,7 +106,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Discount" width="8em">
+                            <p:column headerText="Discount" width="10em">
                                 <h:outputLabel value="#{bill.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -117,7 +117,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Value" width="8em">
+                            <p:column headerText="Net Value" width="10em">
                                 <h:outputLabel value="#{bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
