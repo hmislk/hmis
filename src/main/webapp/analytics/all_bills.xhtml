@@ -8,131 +8,178 @@
     <h:body>
         <ui:composition template="/analytics/index.xhtml">
             <ui:define name="report">
-                <p:panel>
-                    <f:facet name="header" >
-                        <h:outputLabel value="All BILL List"/>                          
-                    </f:facet>
-                    <h:panelGrid columns="2" class="my-2" >
-                        <h:outputLabel value="From Date"/>
-                        <p:datePicker class="w-100 mx-4" inputStyleClass="w-100"
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    showTime="true"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                        </p:datePicker>
-                        <h:outputLabel value="To Date"/>
-                        <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" 
-                                      showTime="true"
-                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                        </p:datePicker>
-                    </h:panelGrid>
-                    <h:panelGrid columns="6" class="my-2" >
-                        <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
-                                         action="#{searchController.fillAllBills}"/>
-                        <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                            <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
-                        </p:commandButton>
-                    </h:panelGrid>
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="ALL BILL LIST"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100"
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                            </p:datePicker>
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                            </p:datePicker>
 
-                    <p:dataTable rowIndexVar="i" id="tblBills" 
-                                 value="#{searchController.bills}" 
-                                 reflow="true"
-                                 var="bill"  
-                                 style="min-width: 100%;"  
-                                 paginator="true"
-                                 paginatorPosition="bottom"
-                                 rows ="10"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15"
-                                 >
-                        <p:column headerText="No" styleClass="alignTop" width="15">
-                            <h:outputLabel value="#{bill.id}"/>
-                        </p:column>
-                        <p:column headerText="Ins No" >                                
-                            <h:outputLabel value="#{bill.insId}"/>
-                        </p:column>
-                        <p:column headerText="Dept No" >                                
-                            <h:outputLabel value="#{bill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Bill Class" >                                
-                            <h:outputLabel value="#{bill.billClass}"/>
-                        </p:column>
-                        <p:column headerText="Bill Type" >                                
-                            <h:outputLabel value="#{bill.billType}"/>
-                        </p:column>
-                        <p:column headerText="Date/Time">
-                            <p:outputLabel value="#{bill.billDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                            </p:outputLabel>
-                        </p:column>
-                        <p:column headerText="Institution" >                                
-                            <h:outputLabel   value="#{bill.institution.name}"/>
-                        </p:column> 
-                        <p:column headerText="Department" >                                
-                            <h:outputLabel   value="#{bill.department.name}"/>
-                        </p:column> 
-                        <p:column headerText="User" >                                
-                            <h:outputLabel   value="#{bill.creater.webUserPerson.name}"/>
-                        </p:column> 
-                        <p:column headerText="Reference Bill ID" >                                
-                            <h:outputLabel   value="#{bill.referenceBill.id}"/>
-                        </p:column> 
-                        <p:column headerText="Retired" >                                
-                            <h:outputLabel   value="#{bill.retired}"/>
-                        </p:column> 
-                        <p:column headerText="Cancelled" >                                
-                            <h:outputLabel   value="#{bill.cancelled}"/>
-                        </p:column>
-                        <p:column headerText="Returned" >                                
-                            <h:outputLabel   value="#{bill.refunded}"/>
-                        </p:column>
-                        <p:column headerText="To Institution"  >                                
-                            <h:outputLabel value="#{bill.toInstitution.name}" />
-                        </p:column>
-                        <p:column headerText="To Department"  >                                
-                            <h:outputLabel value="#{bill.toDepartment.name}" />
-                        </p:column>
-                        <p:column headerText="Collecting Centre"  >                                
-                            <h:outputLabel value="#{bill.collectingCentre.name}" />
-                        </p:column>
-                        <p:column headerText="From Institution"  >                                
-                            <h:outputLabel value="#{bill.fromInstitution.name}" />
-                        </p:column>
-                        <p:column headerText="From Department"  >                                
-                            <h:outputLabel value="#{bill.fromDepartment.name}" />
-                        </p:column>
-                        <p:column headerText="Patient">                               
-                            <h:outputLabel value="#{bill.patient.person.name}" />
-                        </p:column>
-                        <p:column headerText="Phone">                              
-                            <h:outputLabel value="#{bill.patient.person.phone}" />
-                        </p:column>
-                        <p:column headerText="Payment Method" >                                
-                            <h:outputLabel value="#{bill.paymentMethod}" />
-                        </p:column>
-                        <p:column headerText="Discount Scheme" >                                
-                            <h:outputLabel value="#{bill.paymentScheme.name}" />
-                        </p:column>
-                        <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                            <h:outputLabel value="#{bill.total}" >
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Discount" styleClass="averageNumericColumn">
-                            <h:outputLabel value="#{bill.discount}" >
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                            <h:outputLabel value="#{bill.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </p:column>                         
-                    </p:dataTable>
+                            <h:outputText value="Institution" />
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.institution}"
+                                completeMethod="#{institutionController.completeIns}" 
+                                id="ins2"
+                                var="ix" 
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}"
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100"
+                                >
+                                <p:ajax listener="#{searchController.fillInstitutionInDepartment(searchController.institution)}" process="ins2" update="somDept" />
+                            </p:autoComplete>
+
+                            <h:outputText value="Department" />
+                            <p:selectOneMenu 
+                                id="somDept" 
+                                value="#{searchController.department}" 
+                                class="w-100 mx-4" 
+                                >
+                                <f:selectItem  itemLabel="Please select a Department"/>
+                                <f:selectItems 
+                                    value="#{searchController.departments}" 
+                                    var="d" 
+                                    itemLabel="#{d.name}" itemValue="#{d}" 
+                                    />
+                            </p:selectOneMenu>
 
 
 
-                </p:panel>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch"
+                                ajax="false" 
+                                value="Search" 
+                                action="#{searchController.fillAllBills}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" 
+                                     value="#{searchController.bills}" 
+                                     reflow="true"
+                                     scrollable="true"
+                                     var="bill"  
+                                     style="min-width: 100%;"  
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows ="10"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
+                            <p:column headerText="No" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{bill.id}"/>
+                            </p:column>
+                            <p:column headerText="Ins No" >                                
+                                <h:outputLabel value="#{bill.insId}"/>
+                            </p:column>
+                            <p:column headerText="Dept No" >                                
+                                <h:outputLabel value="#{bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Bill Class" >                                
+                                <h:outputLabel value="#{bill.billClass}"/>
+                            </p:column>
+                            <p:column headerText="Bill Type" >                                
+                                <h:outputLabel value="#{bill.billType}"/>
+                            </p:column>
+                            <p:column headerText="Date/Time">
+                                <p:outputLabel value="#{bill.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Institution" >                                
+                                <h:outputLabel   value="#{bill.institution.name}"/>
+                            </p:column> 
+                            <p:column headerText="Department" >                                
+                                <h:outputLabel   value="#{bill.department.name}"/>
+                            </p:column> 
+                            <p:column headerText="User" >                                
+                                <h:outputLabel   value="#{bill.creater.webUserPerson.name}"/>
+                            </p:column> 
+                            <p:column headerText="Reference Bill ID" >                                
+                                <h:outputLabel   value="#{bill.referenceBill.id}"/>
+                            </p:column> 
+                            <p:column headerText="Retired" >                                
+                                <h:outputLabel   value="#{bill.retired}"/>
+                            </p:column> 
+                            <p:column headerText="Cancelled" >                                
+                                <h:outputLabel   value="#{bill.cancelled}"/>
+                            </p:column>
+                            <p:column headerText="Returned" >                                
+                                <h:outputLabel   value="#{bill.refunded}"/>
+                            </p:column>
+                            <p:column headerText="To Institution"  >                                
+                                <h:outputLabel value="#{bill.toInstitution.name}" />
+                            </p:column>
+                            <p:column headerText="To Department"  >                                
+                                <h:outputLabel value="#{bill.toDepartment.name}" />
+                            </p:column>
+                            <p:column headerText="Collecting Centre"  >                                
+                                <h:outputLabel value="#{bill.collectingCentre.name}" />
+                            </p:column>
+                            <p:column headerText="From Institution"  >                                
+                                <h:outputLabel value="#{bill.fromInstitution.name}" />
+                            </p:column>
+                            <p:column headerText="From Department"  >                                
+                                <h:outputLabel value="#{bill.fromDepartment.name}" />
+                            </p:column>
+                            <p:column headerText="Patient">                               
+                                <h:outputLabel value="#{bill.patient.person.name}" />
+                            </p:column>
+                            <p:column headerText="Phone">                              
+                                <h:outputLabel value="#{bill.patient.person.phone}" />
+                            </p:column>
+                            <p:column headerText="Payment Method" >                                
+                                <h:outputLabel value="#{bill.paymentMethod}" />
+                            </p:column>
+                            <p:column headerText="Discount Scheme" >                                
+                                <h:outputLabel value="#{bill.paymentScheme.name}" />
+                            </p:column>
+                            <p:column headerText="Gross Value" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>                         
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+
 
 
             </ui:define>

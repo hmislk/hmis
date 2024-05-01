@@ -153,28 +153,28 @@ public class InvestigationController implements Serializable {
 
     @Deprecated
     public String navigateToManageInvestigationForEmr() {
-        return "/emr/admin/investigations";
+        return "/emr/admin/investigations?faces-redirect=true";
     }
 
     @Deprecated
     public String navigateToAddInvestigationForLab() {
         current = new Investigation();
-        return "/admin/lims/index";
+        return "/admin/lims/index?faces-redirect=true";
     }
 
     public String navigateToLimsAdminIndex() {
-        return "/admin/lims/index";
+        return "/admin/lims/index?faces-redirect=true";
     }
 
     @Deprecated
     public String navigateToAddInvestigationForAdmin() {
         current = new Investigation();
-        return "/admin/lims/investigation";
+        return "/admin/lims/investigation?faces-redirect=true";
     }
 
     public String navigateToAddInvestigation() {
         current = new Investigation();
-        return "/admin/lims/investigation";
+        return "/admin/lims/investigation?faces-redirect=true";
     }
 
     public String navigateToAddInvestigationForLabForExport() {
@@ -187,7 +187,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/lab/manage_investigation";
+        return "/lab/manage_investigation?faces-redirect=true";
     }
 
     // Method to generate the Excel file and initiate the download
@@ -233,7 +233,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/lab/value_sets";
+        return "/lab/value_sets?faces-redirect=true";
     }
 
     public String navigateToManageFlagsForLab() {
@@ -241,7 +241,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/lab/flags";
+        return "/admin/lims/flags?faces-redirect=true";
     }
 
     @Deprecated
@@ -250,7 +250,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to delete");
             return "";
         }
-        return "/admin/lims/investigation_single";
+        return "/admin/lims/investigation_single?faces-redirect=true";
     }
 
     public String navigateToManageInvestigation() {
@@ -258,12 +258,12 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to delete");
             return "";
         }
-        return "/admin/lims/investigation";
+        return "/admin/lims/investigation?faces-redirect=true";
     }
 
     public String navigateToListInvestigationsForAdmin() {
         fillItems();
-        return "/admin/items/investigation_list";
+        return "/admin/items/investigation_list?faces-redirect=true";
     }
 
     public String toAddManyIx() {
@@ -371,7 +371,7 @@ public class InvestigationController implements Serializable {
     }
 
     public String toUuploadJsonToInvestigations() {
-        return "/admin/lab/upload_investigations";
+        return "/admin/lab/upload_investigations?faces-redirect=true";
     }
 
     public String uploadJsonToCreateAnInvestigations() {
@@ -388,7 +388,7 @@ public class InvestigationController implements Serializable {
 
         } catch (IOException ex) {
         }
-        return "/lab/investigation_format";
+        return "/lab/investigation_format?faces-redirect=true";
     }
 
     public String uploadExcelToCreateAnInvestigations() {
@@ -462,7 +462,7 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return "/admin/lims/investigation_values";
+        return "/admin/lims/investigation_values?faces-redirect=true";
     }
 
     public String toLoadParentInvestigation() {
@@ -502,7 +502,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
         }
-        return "/admin/lims/pathology_format";
+        return "/admin/lims/pathology_format?faces-redirect=true";
     }
 
     public String navigateToManageCalculations() {
@@ -518,7 +518,7 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         ixCalController.setIx((Investigation) current.getReportedAs());
-        return "/admin/lims/calculation";
+        return "/admin/lims/calculation?faces-redirect=true";
     }
 
     public String navigateToReplaceableInvestigations() {
@@ -534,7 +534,7 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         itemForItemController.setParentItem(current);
-        return "/admin/lims/replaceable_ix";
+        return "/admin/lims/replaceable_ix?faces-redirect=true";
     }
 
     public String navigateToManageFees() {
@@ -548,7 +548,7 @@ public class InvestigationController implements Serializable {
         }
         itemFeeManager.setItem(current);
         itemFeeManager.fillFees();
-        return "/admin/lims/manage_fees";
+        return "/admin/lims/manage_fees?faces-redirect=true";
     }
 
     public void listDeletedIxs() {
@@ -637,7 +637,7 @@ public class InvestigationController implements Serializable {
         }
         sql += " order by i.name";
         allIxs = getFacade().findByJpql(sql, m);
-        return "/lab/investigation_list";
+        return "/lab/investigation_list?faces-redirect=true";
     }
 
     public void clearFields() {
@@ -1215,17 +1215,17 @@ public class InvestigationController implements Serializable {
         if (institution == null) {
             institution = getSessionController().getLoggedUser().getInstitution();
         }
-        return "/admin/lims/investigation";
+        return "/admin/lims/investigation?faces-redirect=true";
     }
 
     public String navigateToListInvestigation() {
         listAllIxs();
-        return "/admin/lims/investigation_list";
+        return "/admin/lims/investigation_list?faces-redirect=true";
     }
 
     public String navigateToManageReportTemplateNames() {
         listAllIxs();
-        return "/admin/lims/investigation_list";
+        return "/admin/lims/investigation_list?faces-redirect=true";
     }
 
     public void prepareAdd() {

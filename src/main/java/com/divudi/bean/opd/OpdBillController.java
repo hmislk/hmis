@@ -1624,7 +1624,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             b.setVat(b.getVat());
             b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
-            createPaymentsForBills(b, getLstBillEntries());
+            
             getBillFacade().edit(b);
             getBillBean().checkBillItemFeesInitiated(b);
             getBills().add(b);
@@ -1635,6 +1635,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
         saveBatchBill();
+        createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {

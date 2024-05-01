@@ -238,19 +238,19 @@
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>
-<!--                    <p:menuitem 
-                        ajax="false" 
-                        action="#{tokenController.navigateToTokenIndex()}" 
-                        value="Token Management" 
-                        icon="fa fa-file-medical" 
-                        rendered="true" />-->
+                    <!--                    <p:menuitem 
+                                            ajax="false" 
+                                            action="#{tokenController.navigateToTokenIndex()}" 
+                                            value="Token Management" 
+                                            icon="fa fa-file-medical" 
+                                            rendered="true" />-->
                     <p:menuitem 
                         ajax="false" 
                         action="#{reportController.navigatetoOPDLabReportByMenu()}" 
                         value="Lab Report Print" 
                         icon="fa fa-file-medical" 
                         rendered="#{webUserController.hasPrivilege('OpdLabReportSearch')}"
-                         />
+                        />
                     <p:menuitem 
                         ajax="false" 
                         action="#{cashierReportController.navigateToOpdSummeries()}" 
@@ -412,7 +412,7 @@
 
                     <p:menuitem 
                         ajax="false"
-                        action="#{patientInvestigationController.navigateToSampleManagement()}"
+                        action="#{patientInvestigationController.navigateToPatientSampelIndex()}"
                         value="Sampling" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
