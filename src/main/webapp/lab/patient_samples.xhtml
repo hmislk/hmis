@@ -9,19 +9,18 @@
     <h:body>
         <ui:composition template="/lab/sample_index.xhtml">
             <ui:define name="subcontent">
-
                 <h:form>
-
-
-                    <p:panelGrid columns="2" >
+                    <h:panelGrid columns="9" class="w-100" >
                         <p:outputLabel value="From" ></p:outputLabel>
                         <p:calendar 
                             value="#{patientSampleController.fromDate}" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                        <p:spacer width="10" ></p:spacer>
                         <p:outputLabel value="To" ></p:outputLabel>
                         <p:calendar 
                             value="#{patientSampleController.toDate}" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                        <p:spacer width="10" ></p:spacer>
                         <p:commandButton 
                             value="Prcess" 
                             action="#{patientSampleController.listPatientSamples()}" 
@@ -31,10 +30,11 @@
                             ajax="false" >
                         </p:commandButton>
 
-                    </p:panelGrid>
+                    </h:panelGrid>
 
 
                     <p:dataTable 
+                        class="compact-datatable"
                         id="tbl"
                         rowKey="#{item.id}"
                         value="#{patientSampleController.items}" 
@@ -46,20 +46,20 @@
                         paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
 
                         <p:column 
-                            sortBy="#{item.bill.deptId}" 
-                            filterBy="#{item.bill.insId}"
+                            sortBy="#{item.id}" 
+                            filterBy="#{item.id}"
                             filterMatchMode="contains">
                             <f:facet name="header">
-                                <h:outputText value="Ins ID"/>
+                                <h:outputText value="Sample ID"/>
                             </f:facet>
-                            <h:outputText value="#{item.bill.insId}"/>
+                            <h:outputText value="#{item.id}"/>
                         </p:column>
                         <p:column 
                             sortBy="#{item.bill.deptId}" 
                             filterBy="#{item.bill.insId}"
                             filterMatchMode="contains">
                             <f:facet name="header">
-                                <h:outputText value="Dept ID"/>
+                                <h:outputText value="Bill Number"/>
                             </f:facet>
                             <h:outputText value="#{item.bill.deptId}"/>
                         </p:column>
@@ -140,28 +140,6 @@
                         </p:column>
 
 
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputText value="Actions"/>
-                            </f:facet>
-                            <p:commandButton ajax="false" 
-                                             class="mx-1"
-                                             value="Edit" 
-                                             icon="pi pi-pencil" 
-                                             action="#{sampleController.navigateToEditItem()}">
-                                <f:setPropertyActionListener value="#{item}" target="#{sampleController.current}"></f:setPropertyActionListener>
-                            </p:commandButton>
-                            <p:commandButton ajax="false" 
-                                             class="mx-1"
-                                             value="Delete" 
-                                             icon="fa fa-trash" 
-                                             onclick="if (!confirm('Are you sure you want to delete this item?'))
-                                                         return false;" 
-                                             action="#{sampleController.delete()}">
-                                <f:setPropertyActionListener value="#{item}" target="#{sampleController.current}"></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </p:column>
 
                     </p:dataTable>
                 </h:form>
