@@ -1796,8 +1796,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
 
-        getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
-
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             JsfUtil.addSuccessMessage("User Credit Updated");
@@ -2336,6 +2334,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
