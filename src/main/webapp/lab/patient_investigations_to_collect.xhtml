@@ -4,11 +4,12 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
     <ui:composition 
-        template="/resources/template/template.xhtml">
+        template="/lab/sample_index.xhtml">
 
-        <ui:define name="content">
+        <ui:define name="subcontent">
 
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
                 You are NOT authorized
@@ -65,8 +66,8 @@
                                     actionListener="#{patientInvestigationController.listPatientInvestigationsWhereSamplingCompleting()}" 
                                     value="List Collected"   >
                                 </p:commandButton>
-                                
-                                 <p:commandButton 
+
+                                <p:commandButton 
                                     class="w-100 my-1" 
                                     id="btnToListSamples" 
                                     ajax="false" 
@@ -77,7 +78,7 @@
 
                             </div>
 
-                       
+
 
                             <div class="col-md-10">
                                 <h:panelGroup >
@@ -96,7 +97,15 @@
                                             <p:outputLabel value="#{smpIx.id}" />
                                         </p:column>
                                         <p:column headerText="Bill No" width="100">
-                                            <p:outputLabel value="#{smpIx.billItem.bill.insId}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
+                                            <p:commandLink 
+                                                id="billNo" 
+                                                target="_blank"
+                                                oncomplete="window.open('', 'newwindow', 'width=800,height=600'); return false;"
+                                                ajax="false" 
+                                                value="#{smpIx.billItem.bill.deptId}" 
+                                                action="#{billSearch.navigateToViewOpdBillNewWindow()}">
+                                                <f:setPropertyActionListener value="#{smpIx.billItem.bill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
                                         </p:column>
                                         <p:column headerText="Patient" >
                                             <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>

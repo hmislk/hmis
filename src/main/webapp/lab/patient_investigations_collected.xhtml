@@ -4,11 +4,12 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
     <ui:composition 
-        template="/resources/template/template.xhtml">
+        template="/lab/sample_index.xhtml">
 
-        <ui:define name="content">
+        <ui:define name="subcontent">
 
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
                 You are NOT authorized
@@ -19,14 +20,7 @@
                     <p:panel >
                         <f:facet name="header">
                             <h:outputLabel class="mt-2" value="Sample"/>
-                            <p:commandButton
-                                style="float: right;"
-                                class="ui-button-warning"
-                                icon="fa fa-barcode"
-                                value="To Barcode Printing" 
-                                ajax="false" 
-                                action="#{patientInvestigationController.navigateToPrintBarcodeFromMenu}" >
-                            </p:commandButton>
+
                         </f:facet>
                         <div class="row">
                             <div class="col-md-2">
@@ -50,13 +44,7 @@
                                     pattern="dd MMMM yy - hh:mm a" >
                                 </p:calendar>
 
-                                <p:commandButton 
-                                    class="w-100 mt-2" 
-                                    id="btnRefresh" 
-                                    ajax="false" 
-                                    actionListener="#{patientInvestigationController.listPatientInvestigationAwaitingSamplling()}" 
-                                    value="List to Collect"   >
-                                </p:commandButton>
+
 
                                 <p:commandButton 
                                     class="w-100 my-1" 
@@ -65,19 +53,12 @@
                                     actionListener="#{patientInvestigationController.listPatientInvestigationsWhereSamplingCompleting()}" 
                                     value="List Collected"   >
                                 </p:commandButton>
-                                
-                                 <p:commandButton 
-                                    class="w-100 my-1" 
-                                    id="btnToListSamples" 
-                                    ajax="false" 
-                                    immediate="true"
-                                    action="#{patientSampleController.navigateToListPatientSamples()}" 
-                                    value="To List Samples"   >
-                                </p:commandButton>
+
+
 
                             </div>
 
-                       
+
 
                             <div class="col-md-10">
                                 <h:panelGroup >
@@ -92,11 +73,23 @@
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="10,25,50"
                                         >
-                                        <p:column headerText="Patient Ix ID" width="120" sortBy="#{smpIx.id}" filterBy="#{smpIx.id}" filterMatchMode="contains">
-                                            <p:outputLabel value="#{smpIx.id}" />
-                                        </p:column>
-                                        <p:column headerText="Bill No" width="100">
-                                            <p:outputLabel value="#{smpIx.billItem.bill.insId}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
+                                        <p:column headerText="Bill Dept ID" width="100">
+                                            <p:commandLink 
+                                                id="billNo" 
+                                                ajax="true" 
+                                                value="#{smpIx.billItem.bill.deptId}" 
+                                                actionListener="#{billSearch.navigateToViewOpdBillNewWindow()}"
+                                                update="billDialog" 
+                                                oncomplete="PF('billDialogWidget').show();">
+                                                <f:setPropertyActionListener value="#{smpIx.billItem.bill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+
+                                            <p:dialog widgetVar="billDialogWidget" modal="true" width="800" height="600" header="Bill Details">
+                                                <h:panelGroup id="billDialog" layout="block">
+                                                    <opd:view_bill/>
+                                                </h:panelGroup>
+                                            </p:dialog>
+
                                         </p:column>
                                         <p:column headerText="Patient" >
                                             <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
