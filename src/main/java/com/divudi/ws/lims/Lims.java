@@ -252,11 +252,11 @@ public class Lims {
     }
 
     public String processSamplesFromBill(String billId, WebUser requestSendingUser) {
-        System.out.println("Processing generateSamplesFromBill for User");
-        System.out.println("billId = " + billId);
+//        System.out.println("Processing generateSamplesFromBill for User");
+//        System.out.println("billId = " + billId);
 
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
-        System.out.println("patientBills = " + patientBills);
+//        System.out.println("patientBills = " + patientBills);
         if (patientBills == null || patientBills.isEmpty()) {
             return constructErrorJson(1, "Bill Not Found. Please reenter.", billId);
         }
@@ -368,6 +368,7 @@ public class Lims {
 
         String tbis = "";
         String temTube = "";
+        
         if (tpiics == null || tpiics.isEmpty()) {
             return null;
         } else {
@@ -388,8 +389,8 @@ public class Lims {
         if (tbis.length() > 3) {
             tbis = tbis.substring(0, tbis.length() - 2);
         }
-        tbis += " - " + temTube;
-        jSONObject.put("tests", tbis);
+        jSONObject.put("container", temTube != null ? temTube : "");
+        jSONObject.put("tests", tbis != null ? tbis : "");
         return jSONObject;
     }
 
