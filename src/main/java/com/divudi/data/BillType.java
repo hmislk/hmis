@@ -41,7 +41,6 @@ public enum BillType {
     AdmissionBill,
     CashRecieveBill,
     PettyCash,
-    PettyCashReturn,
     AgentPaymentReceiveBill,
     AgentCreditNoteBill,
     AgentDebitNoteBill,
