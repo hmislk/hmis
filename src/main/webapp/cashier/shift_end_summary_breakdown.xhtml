@@ -7,7 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/cashier/index.xhtml">
-            <ui:define name="report">
+            <ui:define name="subcontent">
                 <h:form >
 
                     <p:panel>
@@ -18,7 +18,6 @@
                             <h:outputLabel value="Start Bill ID"/>
                             <p:inputText 
                                 class="w-100 mx-4" 
-
                                 id="fromDate" 
                                 value="#{searchController.startBillId}" 
                                 >      
@@ -31,18 +30,12 @@
                             </p:inputText>
 
                             <h:outputText value="Payment Method" />
-                            <p:selectOneMenu 
-                                id="cmbParentMethod" 
-                                value="#{searchController.paymentMethod}" 
-                                class="w-100 mx-4" 
-                                filter="true"
-                                filterMatchMode="contains"
-                                >
-                                <f:selectItem  itemLabel="All"/>
-                                <f:selectItems 
-                                    value="#{enumController.paymentMethods}" 
-                                    />
-                            </p:selectOneMenu>
+                            <p:selectManyMenu 
+                                id="cmbParentMethod" value="#{searchController.paymentMethods}" 
+                                class="w-100 mx-4" filter="true" filterMatchMode="contains">
+                                <f:selectItems value="#{enumController.paymentMethods}" var="method"
+                                               itemLabel="#{method.label}" itemValue="#{method}" />
+                            </p:selectManyMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
@@ -51,7 +44,7 @@
                                 id="btnSearch" 
                                 ajax="false" 
                                 value="Process" 
-                                action="#{searchController.processAllFinancialTransactionalSummarybyUserPayment}"/>
+                                action="#{searchController.processAllFinancialTransactionalSummarybySingleUserByIds}"/>
                             <p:commandButton 
                                 class="ui-button-success mx-2" 
                                 icon="fas fa-file-excel" 

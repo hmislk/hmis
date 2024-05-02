@@ -53,6 +53,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
+import com.divudi.entity.WebUser;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
@@ -144,10 +145,12 @@ public class SearchController implements Serializable {
     Date toDate;
     private Long startBillId;
     private Long endBillId;
+    private WebUser webUser;
 
     private int maxResult = 50;
     private BillType billType;
     private PaymentMethod paymentMethod;
+    private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
     private List<Payment> payments;
     private List<BillLight> billLights;
@@ -223,7 +226,7 @@ public class SearchController implements Serializable {
     private Bill preBill;
     boolean billPreview;
     private Long currentTokenId;
-    
+
     public String navigateToAllFinancialTransactionSummary() {
         billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary?faces-redirect=true";
@@ -242,14 +245,14 @@ public class SearchController implements Serializable {
         billSummaryRows = null;
         return "/analytics/financial_transaction_summary_Users?faces-redirect=true";
     }
-    
+
     public String navigateToFinancialTransactionSummaryByUserPayment() {
         departments = departmentController.getInstitutionDepatrments(sessionController.getInstitution());
         //System.out.println("departments = " + departments);
         billSummaryRows = null;
         return "/analytics/financial_transaction_summary_Users_PaymentMethod?faces-redirect=true";
     }
-    
+
     public String navigateToFinancialTransactionSummaryByDepartment() {
         department = sessionController.getDepartment();
         billSummaryRows = null;
@@ -1247,6 +1250,22 @@ public class SearchController implements Serializable {
 
     public void setEndBillId(Long endBillId) {
         this.endBillId = endBillId;
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
     }
 
     public class billsWithbill {
@@ -6821,8 +6840,8 @@ public class SearchController implements Serializable {
             netTotal += bss.getNetTotal();
         }
     }
-    
-       public void processAllFinancialTransactionalSummarybyUserPayment() {
+
+    public void processAllFinancialTransactionalSummarybyUserPayment() {
         billSummaryRows = null;
         grossTotal = 0.0;
         discount = 0.0;
@@ -6847,12 +6866,12 @@ public class SearchController implements Serializable {
                 + " where b.retired=:ret"
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.billTypeAtomic in :abts ";
-        
+
         if (department != null) {
-                jpql += " and b.department=:dept";
-                params.put("dept", getDepartment());
-            }
-        
+            jpql += " and b.department=:dept";
+            params.put("dept", getDepartment());
+        }
+
         jpql += " group by b.paymentMethod, b.creater.webUserPerson"
                 + " order by b.creater.webUserPerson";
 
@@ -6860,8 +6879,72 @@ public class SearchController implements Serializable {
         params.put("fromDate", getFromDate());
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
+
+        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (BillSummaryRow bss : billSummaryRows) {
+            grossTotal += bss.getGrossTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+            totalBillCount += bss.getBillCount();
+        }
+    }
+
+    public void processAllFinancialTransactionalSummarybySingleUserByIds() {
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        totalBillCount = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+
+        jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "sum(b.total), "
+                + "sum(b.discount), "
+                + "sum(b.netTotal), "
+                + "count(b), "
+                + "b.paymentMethod) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.creater=:wu "
+                + " and b.billTypeAtomic in :abts ";
+
+        if (startBillId != null) {
+            jpql += " and b.id > :sid ";
+            params.put("sid", startBillId);
+        }
+        if (endBillId != null) {
+            jpql += " and b.id < :eid ";
+            params.put("eid", endBillId);
+        }
+
+        if(paymentMethod!=null){
+            jpql += " and b.paymentMethod=:pm ";
+            params.put("pm", paymentMethod);
+        }
+        if(paymentMethods!=null){
+            jpql += " and b.paymentMethod in :pms ";
+            params.put("pms", paymentMethods);
+        }
+        jpql += " group by b.paymentMethod "
+                + " order by b.creater.webUserPerson";
+
+        params.put("wu", webUser);
+        params.put("ret", false);
+        params.put("abts", billTypesToFilter);
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
         
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        System.out.println("billSummaryRows = " + billSummaryRows);
         
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
@@ -6870,14 +6953,14 @@ public class SearchController implements Serializable {
             totalBillCount += bss.getBillCount();
         }
     }
-       
+
     public void processAllFinancialTransactionalSummarybyDepartment() {
         billSummaryRows = null;
         grossTotal = 0.0;
         discount = 0.0;
         netTotal = 0.0;
         totalBillCount = 0.0;
-        
+
         String jpql;
         Map params = new HashMap();
         List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
@@ -6910,16 +6993,15 @@ public class SearchController implements Serializable {
         params.put("abts", billTypesToFilter);
         params.put("dept", getDepartment());
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
             discount += bss.getDiscount();
             netTotal += bss.getNetTotal();
             totalBillCount += bss.getBillCount();
         }
-        
+
     }
-    
 
     public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department) {
         System.out.println("fillAllBills");
@@ -6961,7 +7043,7 @@ public class SearchController implements Serializable {
 
         System.out.println("jpql.toString() = " + jpql.toString());
         System.out.println("params = " + params);
-        
+
         // Execute the query
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         System.out.println("bills = " + bills);
@@ -9749,7 +9831,7 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
-    
-    
 
+    
+    
 }
