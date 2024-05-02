@@ -15,6 +15,9 @@
                             <h:outputLabel value="Financial Transaction Summary - Cashier PaymentMethod"/>                          
                         </f:facet>
                         <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="Cashier"/>
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"/>
+
                             <h:outputLabel value="Start Bill ID"/>
                             <p:inputText 
                                 class="w-100 mx-4" 
@@ -29,13 +32,14 @@
                                 value="#{searchController.endBillId}"  >                                                                              
                             </p:inputText>
 
-                            <h:outputText value="Payment Method" />
-                            <p:selectManyMenu 
-                                id="cmbParentMethod" value="#{searchController.paymentMethods}" 
-                                class="w-100 mx-4" filter="true" filterMatchMode="contains">
+                            <h:outputText value="Payment Methods" />
+                            <p:selectCheckboxMenu id="cmbParentMethod"
+                                                  multiple="true"
+                                                  value="#{searchController.paymentMethods}" class="w-100 mx-4"
+                                                  filter="true" filterMatchMode="contains">
                                 <f:selectItems value="#{enumController.paymentMethods}" var="method"
                                                itemLabel="#{method.label}" itemValue="#{method}" />
-                            </p:selectManyMenu>
+                            </p:selectCheckboxMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
@@ -72,8 +76,8 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15">
 
-                            <p:column headerText="Cashier" >
-                                <h:outputLabel value="#{bill.person.name}">
+                            <p:column headerText="Bill Type" >
+                                <h:outputLabel value="#{bill.billTypeAtomic.label}">
                                 </h:outputLabel>
                             </p:column>
 
