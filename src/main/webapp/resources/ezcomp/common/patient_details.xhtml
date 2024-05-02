@@ -5,7 +5,6 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-
       xmlns:c="http://java.sun.com/jsp/jstl/core">
 
     <!-- INTERFACE -->
@@ -13,7 +12,6 @@
         <cc:attribute name="editable" type="java.lang.Boolean"  />
         <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
-        <cc:attribute name="focus" type="java.lang.Boolean"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -56,13 +54,8 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.focus}" >
-                        <p:focus id="focusIx" for="txtQuickSearchPhoneNumber" />
-                        <p:focus context="txtQuickSearchPhoneNumber"/>
-
-
-                    </h:panelGroup>
-
+                    <p:focus id="focusIx" for="txtQuickSearchPhoneNumber" />
+                    <p:focus context="txtQuickSearchPhoneNumber"/>
 
                     <!-- Right aligned quick search -->
                     <h:panelGroup id="quickSearch" >
