@@ -186,25 +186,46 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Cash</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Cash" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCash()}" 
+                                                ></p:commandLink>
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedCash}</td>
                                         <td>#{financialTransactionController.financialReport.refundedCash}</td>
                                         <td>#{financialTransactionController.financialReport.netCashTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Card</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Card" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCard()}" 
+                                                ></p:commandLink>
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedCreditCard}</td>
                                         <td>#{financialTransactionController.financialReport.refundedCreditCard}</td>
                                         <td>#{financialTransactionController.financialReport.netCreditCardTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Voucher</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Voucher" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                                ></p:commandLink>
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedVoucher}</td>
                                         <td>#{financialTransactionController.financialReport.refundedVoucher}</td>
                                         <td>#{financialTransactionController.financialReport.netVoucherTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Other</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Other" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                                ></p:commandLink>
+
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedOtherNonCredit}</td>
                                         <td>#{financialTransactionController.financialReport.refundedOtherNonCredit}</td>
                                         <td>#{financialTransactionController.financialReport.netOtherNonCreditTotal}</td>

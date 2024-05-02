@@ -51,6 +51,14 @@ public class BillSummaryRow {
         this.person = person;
     }
     
+    public BillSummaryRow(Double grossTotal, Double discount, Double netTotal, Long billCount, PaymentMethod paymentMethod) {
+        this.grossTotal = grossTotal;
+        this.discount = discount;
+        this.netTotal = netTotal;
+        this.billCount = billCount;
+        this.paymentMethod = paymentMethod;
+     }
+    
     public BillTypeAtomic getBillTypeAtomic() {
         return billTypeAtomic;
     }

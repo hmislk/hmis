@@ -148,12 +148,43 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigateToCashierSummaryBreakdown() {
         return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
     }
-    
-    public String navigateToCashierSummaryBreakdownFromSummery(PaymentMethod pm) {
+
+    public String navigateToCashierSummaryBreakdownFromShiftClosingForCash() {
+        List<PaymentMethod> pms = new ArrayList<>();
+        pms.add(PaymentMethod.Cash);
+        return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
+    }
+
+    public String navigateToCashierSummaryBreakdownFromShiftClosingForCard() {
+        List<PaymentMethod> pms = new ArrayList<>();
+        pms.add(PaymentMethod.Card);
+        return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
+    }
+
+    public String navigateToCashierSummaryBreakdownFromShiftClosingForVoucher() {
+        List<PaymentMethod> pms = new ArrayList<>();
+        pms.add(PaymentMethod.Voucher);
+        return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
+    }
+
+    public String navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher() {
+        List<PaymentMethod> pms = PaymentMethod.asList();
+        pms.remove(PaymentMethod.Voucher);
+        pms.remove(PaymentMethod.Cash);
+        pms.remove(PaymentMethod.Card);
+        return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
+    }
+
+    public String navigateToCashierSummaryBreakdownFromShiftClosing(List<PaymentMethod> pms) {
+        searchController.setWebUser(sessionController.getLoggedUser());
+        searchController.setStartBillId(nonClosedShiftStartFundBill.getId());
+        searchController.setEndBillId(null);
+        searchController.setPaymentMethods(pms);
+        searchController.processAllFinancialTransactionalSummarybySingleUserByIds();
         return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
     }
 
