@@ -6,60 +6,40 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
-        <ui:composition template="/analytics/index.xhtml">
-            <ui:define name="report">
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form >
-                    
+
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="Financial Transaction Summary - Cashier PaymentMethod"/>                          
                         </f:facet>
                         <h:panelGrid columns="2" class="my-2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:datePicker 
+                            <h:outputLabel value="Cashier"/>
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"/>
+
+                            <h:outputLabel value="Start Bill ID"/>
+                            <p:inputText 
                                 class="w-100 mx-4" 
-                                inputStyleClass="w-100"
                                 id="fromDate" 
-                                value="#{searchController.fromDate}" 
-                                showTime="true"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                            </p:datePicker>
-                            <h:outputLabel value="To Date"/>
-                            <p:datePicker 
+                                value="#{searchController.startBillId}" 
+                                >      
+                            </p:inputText>
+                            <h:outputLabel value="End Bill ID"/>
+                            <p:inputText 
                                 class="w-100 mx-4" 
-                                inputStyleClass="w-100" 
                                 id="toDate" 
-                                value="#{searchController.toDate}" 
-                                showTime="true"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                            </p:datePicker>
-                            
-                            <h:outputText value="Department" />
-                            <p:selectOneMenu 
-                                id="somDept" 
-                                value="#{searchController.department}" 
-                                class="w-100 mx-4" 
-                                >
-                                <f:selectItem  itemLabel="Please select a Department"/>
-                                <f:selectItems 
-                                    value="#{searchController.departments}" 
-                                    var="d" 
-                                    itemLabel="#{d.name}" itemValue="#{d}" 
-                                    />
-                            </p:selectOneMenu>
-                            <h:outputText value="Payment Method" />
-                            <p:selectOneMenu 
-                                id="cmbParentMethod" 
-                                value="#{searchController.paymentMethod}" 
-                                class="w-100 mx-4" 
-                                filter="true"
-                                filterMatchMode="contains"
-                                >
-                                <f:selectItem  itemLabel="All"/>
-                                <f:selectItems 
-                                    value="#{enumController.paymentMethods}" 
-                                    />
-                            </p:selectOneMenu>
+                                value="#{searchController.endBillId}"  >                                                                              
+                            </p:inputText>
+
+                            <h:outputText value="Payment Methods" />
+                            <p:selectCheckboxMenu id="cmbParentMethod"
+                                                  multiple="true"
+                                                  value="#{searchController.paymentMethods}" class="w-100 mx-4"
+                                                  filter="true" filterMatchMode="contains">
+                                <f:selectItems value="#{enumController.paymentMethods}" var="method"
+                                               itemLabel="#{method.label}" itemValue="#{method}" />
+                            </p:selectCheckboxMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
@@ -68,7 +48,7 @@
                                 id="btnSearch" 
                                 ajax="false" 
                                 value="Process" 
-                                action="#{searchController.processAllFinancialTransactionalSummarybyUserPayment}"/>
+                                action="#{searchController.processAllFinancialTransactionalSummarybySingleUserByIds}"/>
                             <p:commandButton 
                                 class="ui-button-success mx-2" 
                                 icon="fas fa-file-excel" 
@@ -82,7 +62,7 @@
                                 </p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-                        
+
 
                         <p:dataTable 
                             rowIndexVar="i" id="tbl" 
@@ -96,18 +76,18 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15">
 
-                            <p:column headerText="Cashier" >
-                                <h:outputLabel value="#{bill.person.name}">
+                            <p:column headerText="Bill Type" >
+                                <h:outputLabel value="#{bill.billTypeAtomic.label}">
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Payment Method" styleClass="alignTop" width="10em">
                                 <h:outputLabel value="#{bill.paymentMethod}"/>
                                 <f:facet name="footer">
                                     <h:outputText value="Total"></h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column headerText="Count" width="8em">
                                 <h:outputLabel value="#{bill.billCount}"/>
                                 <f:facet name="footer">
