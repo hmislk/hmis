@@ -40,7 +40,7 @@
 
         </style>
 
-        <h:form id="form">
+        <h:form>
             <div class="row w-100">
                 <div class="col-12" >
 
@@ -168,6 +168,16 @@
                         <div class="col-2 ">
                             <div class="d-flex justify-content-end align-items-center mt-2">
                                 <div>
+                                    <p:commandButton 
+                                        id="btnArrival"
+                                        ajax="false"
+                                        styleClass=" rounded-button ui-button-success "
+                                        value="Mark Arrival " 
+                                        class="ui-button-info"
+                                        action="#{bookingController.markAsArrived()}"
+                                        icon="fa-solid fa-check" />
+                                </div>
+                                <div>
                                     <p:commandButton icon="fas fa-play" iconPos="right"
                                                      styleClass=" rounded-button ui-button-success " ajax="false"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
@@ -184,10 +194,10 @@
                                     </p:commandButton>
 
 
-                                    <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                      styleClass="rounded-button ui-button-info " ajax="false"
-                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                      rendered="#{s.started and not s.completed}">
+                                    <p:commandButton class="mx-2" icon="fas fa-play" iconPos="right"
+                                                     styleClass="rounded-button ui-button-info " ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{s.started and not s.completed}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>
