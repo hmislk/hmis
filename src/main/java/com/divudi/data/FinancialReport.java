@@ -634,7 +634,7 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForFloatMySafe() {
         if (paymentMethodsForFloatMySafe == null) {
             paymentMethodsForFloatMySafe = new ArrayList<>();
-            paymentMethodsForFloatMySafe.addAll(PaymentMethod.getActivePaymentMethods()); // Presuming cash management is part of 'My Safe' operations
+            paymentMethodsForFloatMySafe.addAll(PaymentMethod.asList()); // Presuming cash management is part of 'My Safe' operations
         }
         return paymentMethodsForFloatMySafe;
     }
