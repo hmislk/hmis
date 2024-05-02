@@ -6923,8 +6923,7 @@ public class SearchController implements Serializable {
         jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
-                + " and b.creater=:wu "
-                + " and b.billTypeAtomic in :abts ";
+                + " and b.creater=:wu ";
 
         if (billTypeAtomic == null) {
             jpql += "  and b.billTypeAtomic in :abts  ";
