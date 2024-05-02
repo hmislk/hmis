@@ -107,8 +107,35 @@
                     </h:panelGroup>
 
                     <!-- Print Preview Panel -->
-                    <h:panelGroup rendered="#{billSearch.printPreview}" >
-                        <div class="d-flex justify-content-center">
+                    <p:panel rendered="#{billSearch.printPreview}">
+                        <f:facet name="header" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Bill Preview" class="mt-2"></h:outputLabel>
+                                <div>
+                                    <h:panelGroup rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
+                                        <p:commandButton 
+                                            value="New OPD Bill" 
+                                            ajax="false" 
+                                            icon="fa fa-plus"
+                                            class="ui-button-success"
+                                            action="#{opdBillController.navigateToNewOpdBill()}" >
+                                        </p:commandButton>
+                                    </h:panelGroup> 
+
+                                    <h:panelGroup rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                        <p:commandButton 
+                                            value="New Collectiong Centre Bill" 
+                                            ajax="false" 
+                                            icon="fa fa-plus"
+                                            class="ui-button-success"
+                                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" >
+                                        </p:commandButton>
+                                    </h:panelGroup> 
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="d-flex justify-content-end">
                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -120,39 +147,38 @@
                                              icon="fa fa-print"
                                              ajax="false">
                             </p:commandButton> 
-                            <h:panelGroup rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
-                                <p:commandButton 
-                                    value="New OPD Bill" 
-                                    ajax="false" 
-                                    icon="fa fa-plus"
-                                    class="ui-button-success"
-                                    action="#{opdBillController.navigateToNewOpdBill()}" >
-                                </p:commandButton>
-                            </h:panelGroup> 
 
-                            <h:panelGroup rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                <p:commandButton 
-                                    value="New Collectiong Centre Bill" 
-                                    ajax="false" 
-                                    icon="fa fa-plus"
-                                    class="ui-button-success"
-                                    action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" >
-                                </p:commandButton>
-                            </h:panelGroup> 
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
-                            <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
-                            <prints:five_five_paper_without_headings 
-                                bill="#{billSearch.bill.cancelledBill}" 
-                                duplicate="#{opdBillController.duplicatePrint}"
-                                payments="#{opdBillController.payments}"/>
-                            <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
+                                <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                <prints:five_five_paper_without_headings 
+                                    bill="#{billSearch.bill.cancelledBill}" 
+                                    duplicate="#{opdBillController.duplicatePrint}" 
+                                    payments="#{opdBillController.payments}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >     
+                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>         
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >   
+                                <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
+                                <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            </h:panelGroup>
+
                         </h:panelGroup>
-                    </h:panelGroup>
+                    </p:panel>
                 </h:form>                
             </ui:define>
         </ui:composition>
