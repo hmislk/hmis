@@ -62,6 +62,7 @@ public class FinancialTransactionController implements Serializable {
     private Payment currentPayment;
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
+    private List<Bill> currentBills;
     private List<Bill> fundTransferBillsToReceive;
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
@@ -527,6 +528,22 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
 
+    public String navigateToCreateShiftEndSummaryBillByBills() {
+        resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
+        fillBillsFromShiftStartToNow();
+        if (nonClosedShiftStartFundBill != null) {
+            currentBill = new Bill();
+            currentBill.setBillType(BillType.ShiftEndFundBill);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
+            currentBill.setBillClassType(BillClassType.Bill);
+            currentBill.setReferenceBill(nonClosedShiftStartFundBill);
+        } else {
+            currentBill = null;
+        }
+        return "/cashier/shift_end_summery_bill?faces-redirect=true";
+    }
+
     public void fillPaymentsFromShiftStartToNow() {
         currentBillPayments = new ArrayList<>();
         if (nonClosedShiftStartFundBill == null) {
@@ -550,6 +567,35 @@ public class FinancialTransactionController implements Serializable {
             if (p.getBill().getBillTypeAtomic() == null) {
             }
             atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            calculateBillValuesFromBillTypes(p);
+        }
+//        calculateTotalFundsFromShiftStartToNow();
+        financialReport = new FinancialReport(atomicBillTypeTotals);
+    }
+
+    public void fillBillsFromShiftStartToNow() {
+        currentBills = new ArrayList<>();
+        if (nonClosedShiftStartFundBill == null) {
+            return;
+        }
+        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+        String jpql = "SELECT p "
+                + "FROM Bill p "
+                + "WHERE p.creater = :cr "
+                + "AND p.retired = :ret "
+                + "AND p.id > :cid "
+                + "ORDER BY p.id DESC";
+        Map<String, Object> m = new HashMap<>();
+        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("ret", false);
+        m.put("cid", shiftStartBillId);
+        currentBills = billFacade.findByJpql(jpql, m);
+        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
+        atomicBillTypeTotals = new AtomicBillTypeTotals();
+        for (Bill p : currentBills) {
+            if (p.getBillTypeAtomic() == null) {
+            }
+            atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBillTypeAtomic(), p.getPaymentMethod(), p.getNetTotal());
             calculateBillValuesFromBillTypes(p);
         }
 //        calculateTotalFundsFromShiftStartToNow();
@@ -589,6 +635,40 @@ public class FinancialTransactionController implements Serializable {
         }
     }
 
+    public void calculateBillValuesFromBillTypes(Bill p) {
+        if (p == null) {
+            return;
+        }
+        if (p.getBillType() == null) {
+            return;
+        }
+        if (p.getBillTypeAtomic() == null) {
+            return;
+        }
+
+        switch (p.getBillTypeAtomic().getBillCategory()) {
+            case BILL:
+                if (p.getNetTotal() != 0.0) {
+                    paymentMethodValues.addValue(p);
+                } else {
+                    paymentMethodValues.addValue(p);
+                }
+                break;
+            case CANCELLATION:
+            case REFUND:
+                if (p.getNetTotal() != 0.0) {
+                    paymentMethodValues.deductAbsoluteValue(p);
+                } else {
+                    paymentMethodValues.deductAbsoluteValue(p);
+                }
+                break;
+            default:
+                break;
+
+        }
+    }
+
+    
     public void calculateTotalFundsFromShiftStartToNow() {
         totalBillCancelledValue = totalOpdBillCanceledValue
                 + totalCcBillCanceledValue
@@ -1216,5 +1296,16 @@ public class FinancialTransactionController implements Serializable {
     public void setFinancialReport(FinancialReport financialReport) {
         this.financialReport = financialReport;
     }
+
+    public List<Bill> getCurrentBills() {
+        return currentBills;
+    }
+
+    public void setCurrentBills(List<Bill> currentBills) {
+        this.currentBills = currentBills;
+    }
+
+    
+    
 
 }
