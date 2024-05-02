@@ -4,6 +4,7 @@ package com.divudi.bean.cashTransaction;
 import java.util.HashMap;
 // </editor-fold>  
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -52,6 +53,8 @@ public class FinancialTransactionController implements Serializable {
     BillController billController;
     @Inject
     PaymentController paymentController;
+    @Inject
+    SearchController searchController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -144,6 +147,14 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigateToCashierSummaryBreakdown() {
+        return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
+    }
+    
+    public String navigateToCashierSummaryBreakdownFromSummery(PaymentMethod pm) {
+        return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
     }
 
     public String navigateToReceiveNewFundTransferBill() {
