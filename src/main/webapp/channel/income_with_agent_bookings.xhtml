@@ -12,29 +12,38 @@
 
             <ui:define name="subContent">
                 <h:form>
-                    <p:panel header="Income By Institution with agent bookings" >
-                        <p:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
+                    <p:panel header="Income By Institution with Agent Bookings" >
+                        <h:panelGrid columns="3" class="my-2" >
+                            <h:outputLabel value="From " />
+                            <h:outputLabel value=":" />
                             <p:datePicker 
-                                class="w-100"
+                                class="mx-4 w-100"
                                 inputStyleClass="form-control"
                                 showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
                                 value="#{channelReportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
-                            <h:outputLabel value="To : " />
-                            <p:datePicker 
-                                class="w-100"
-                                inputStyleClass="form-control"
-                                showTime="true"
-                                value="#{channelReportController.toDate}" 
+                                <h:outputLabel value="To" />
+                                <h:outputLabel value=":" />
+                                <p:datePicker
+                                    class="mx-4 w-100"
+                                    inputStyleClass="form-control"
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
+                                    value="#{channelReportController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
-                            <h:outputLabel  value="Institution"  ></h:outputLabel>
-                            <p:autoComplete  value="#{channelReportController.institution}" 
-                                             completeMethod="#{institutionController.completeIns}" 
+                                <h:outputLabel  value="Institution"  ></h:outputLabel>
+                                <h:outputLabel value=":" />
+                                <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportController.institution}"
+                                                 completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
-                        </p:panelGrid>
-                        <p:commandButton class="mt-2 mb-2" value="Process" action="#{channelReportController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+                        </h:panelGrid>
 
 
                         <p:panel header="Income With Agent Booking" >
@@ -56,7 +65,7 @@
 
                                 <p:columnGroup type="header" >
                                     <p:row>
-                                        <p:column rowspan="2" headerText="Detail" >
+                                        <p:column rowspan="2" headerText="Details" >
                                         </p:column>
                                         <p:column colspan="5" headerText="Collection" >
                                         </p:column>
