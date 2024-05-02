@@ -36,7 +36,7 @@
                                 <div class="col-md-7" >
                                     <div class="row w-100 m-1 p-1 boder-1">
                                         <div class="col-md-5">
-
+                                            <p:focus id="focusForAcIx" for="acStock" ></p:focus>
                                             <p:outputLabel 
                                                 class="w-100" 
                                                 for="acStock">Medicines/Devices</p:outputLabel>
@@ -111,7 +111,7 @@
                                                         styleClass="ui-button-success" 
                                                         action="#{pharmacySaleController.addBillItem()}" 
                                                         ajax="false" 
-                                                        process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
+                                                        process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} focusForAcIx" 
                                                         update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
                                                     </p:commandButton>
 
@@ -517,6 +517,7 @@
 
                                                 <common:patient_details  
                                                     editable="true"
+                                                    focus="false"
                                                     controller="#{pharmacySaleController}"/>
 
 
