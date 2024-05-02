@@ -113,9 +113,6 @@
                                       filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
                                 <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
                             </p:column>
-<!--                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
-                                <h:outputLabel value="#{bill.departmentName}" />
-                            </p:column>-->
                             <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
                                 <h:outputLabel value="#{bill.creater.name}" >                                      
                                 </h:outputLabel>
@@ -159,18 +156,18 @@
 
 
                             <p:column headerText="Actions">                                
-                                <p:commandLink 
+                                <p:commandButton
                                     ajax="false" 
                                     value="View Bill" 
                                     action="#{billSearch.navigateToViewOpdBill()}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                </p:commandLink>
+                                </p:commandButton>
                                 <p:spacer width="5" ></p:spacer>
                                 |
                                 <p:spacer width="5" ></p:spacer>
-                                <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill">
+                                <p:commandButton action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill">
                                     <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
-                                </h:commandLink>  
+                                </p:commandButton>  
                             </p:column>
 
 
