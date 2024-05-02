@@ -48,6 +48,12 @@ public enum PaymentMethod {
                 .filter(pm -> pm.contexts.contains(context))
                 .collect(Collectors.toList());
     }
+    
+//    public static List<PaymentMethod> getMethodsByContext(PaymentContext context) {
+//        return Arrays.stream(PaymentMethod.values())
+//                .filter(method -> method.contexts.contains(context))
+//                .collect(Collectors.toList());
+//    }
 
     private static boolean isDeprecated(PaymentMethod method) {
         try {
@@ -62,6 +68,30 @@ public enum PaymentMethod {
         return Arrays.stream(PaymentMethod.values())
                 .filter(pm -> !isDeprecated(pm))
                 .collect(Collectors.toList());
+    }
+
+    public String getInHandLabel() {
+        switch (this) {
+            case Cash:
+            case Agent:
+            case Card:
+            case Cheque:
+            case Credit:
+            case OnCall:
+            case OnlineSettlement:
+            case Slip:
+            case Staff:
+            case ewallet:
+                return label + " Received";
+            default:
+                return label;
+        }
+    }
+    
+    
+
+    public static List<PaymentMethod> asList() {
+        return Arrays.asList(PaymentMethod.values());
     }
 
 }
