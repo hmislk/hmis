@@ -2374,6 +2374,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
+        payments=null;
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -3671,6 +3672,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Payment> getPayments() {
+        if(payments==null){
+            payments = new ArrayList<>();
+        }
         return payments;
     }
 

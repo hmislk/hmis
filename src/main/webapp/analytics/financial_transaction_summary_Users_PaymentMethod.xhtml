@@ -47,6 +47,19 @@
                                     itemLabel="#{d.name}" itemValue="#{d}" 
                                     />
                             </p:selectOneMenu>
+                            <h:outputText value="Payment Method" />
+                            <p:selectOneMenu 
+                                id="cmbParentMethod" 
+                                value="#{searchController.paymentMethod}" 
+                                class="w-100 mx-4" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                >
+                                <f:selectItem  itemLabel="All"/>
+                                <f:selectItems 
+                                    value="#{enumController.paymentMethods}" 
+                                    />
+                            </p:selectOneMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
