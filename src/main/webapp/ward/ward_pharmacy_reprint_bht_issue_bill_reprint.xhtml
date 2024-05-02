@@ -26,6 +26,15 @@
                                 actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" 
                                 value="Requested List">
                             </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                style="float: right;"
+                                icon="fas fa-cancel"
+                                ajax="false"
+                                action="#{pharmacySaleBhtController.navigateToCancelBhtRequest}" 
+                                value="Cancel Request">
+                                <f:setPropertyActionListener target="#{pharmacySaleBhtController.bill}" value="#{pharmacyBillSearch.bill}"/>
+                            </p:commandButton>
                         </f:facet>
 
                         <div class="row">
