@@ -173,6 +173,12 @@
                                     <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <h:outputText value="#{b.deptId}" ></h:outputText>
                                     </p:column>
+                                    <p:column headerText="Bill Type" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.billType.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type Atomic" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.billTypeAtomic.label}" ></h:outputText>
+                                    </p:column>
                                     <p:column headerText="Net Total" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <h:outputText value="#{b.netTotal}" ></h:outputText>
                                     </p:column>
@@ -207,6 +213,18 @@
                                             icon="fa fa-money-bill-wave">
                                             <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
+
+
+                                        <p:commandButton 
+                                            id="viewBill"
+                                            icon="fa fa-fw fa-file-invoice-dollar"
+                                            action="/bill_summery" 
+                                            value="Edit for Admin"
+                                            rendered="true"
+                                            ajax="false">
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" />
+                                        </p:commandButton>
+
                                         <p:tooltip 
                                             for="btnRefund"
                                             value="To go to the Refunds, Click here" ></p:tooltip>
@@ -239,6 +257,14 @@
                                             <td>#{opdBillController.batchBill.id}</td>
                                         </tr>
                                         <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Bill Type</td>
+                                            <td>#{opdBillController.batchBill.billType.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Bill Type Atomic</td>
+                                            <td>#{opdBillController.batchBill.billTypeAtomic.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Ins ID</td>
                                             <td>#{opdBillController.batchBill.insId}</td>
                                         </tr>
@@ -256,7 +282,7 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                
+
                                 <p:dataTable value="#{opdBillController.payments}" var="p" >
                                     <p:column >
                                         <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
