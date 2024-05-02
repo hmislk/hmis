@@ -88,7 +88,7 @@ public class EnumController implements Serializable {
         }
         return new ArrayList<>();
     }
-
+    
     public <E extends Enum<E>> E getEnumValue(Class<E> enumType, String enumName) {
         for (E enumConstant : enumType.getEnumConstants()) {
             if (enumConstant.name().equals(enumName)) {
@@ -598,14 +598,6 @@ public class EnumController implements Serializable {
     public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
-    }
-
-    public PaymentMethod[] getAllPaymentMethods() {
-        return PaymentMethod.values();
-    }
-
-    public List<PaymentMethod> getActivePaymentMethods() {
-        return PaymentMethod.getActivePaymentMethods();
     }
 
     public BillType[] getChannelType() {
