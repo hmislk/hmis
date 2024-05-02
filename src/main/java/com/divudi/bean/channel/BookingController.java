@@ -749,6 +749,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (paymentMethod == null) {
             return true;
         }
+        if(paymentMethod == PaymentMethod.Agent){
+            if(institution == null){
+                return true;
+            }
+        }
         return false;
     }
 
