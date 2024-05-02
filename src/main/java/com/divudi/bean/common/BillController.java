@@ -1375,6 +1375,7 @@ public class BillController implements Serializable {
         ////// // System.out.println("Out Print");
     }
 
+    @Deprecated
     public void settleBill() {
         Date startTime = new Date();
         if (errorCheck()) {
@@ -1501,6 +1502,7 @@ public class BillController implements Serializable {
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
         tmp.setBillType(BillType.OpdBathcBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setCreatedAt(new Date());

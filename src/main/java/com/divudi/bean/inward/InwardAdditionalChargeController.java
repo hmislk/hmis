@@ -34,8 +34,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -71,15 +71,15 @@ public class InwardAdditionalChargeController implements Serializable {
         this.inwardBean = inwardBean;
     }
 
-      public String navigateToAddOutsideChargeFromMenu() {
+    public String navigateToAddOutsideChargeFromMenu() {
         makeNull();
         return "/inward/inward_bill_outside_charge?faces-redirect=true";
     }
-    
+
     public String navigateToAddOutsideChargeFromInpatientProfile() {
         return "/inward/inward_bill_outside_charge?faces-redirect=true";
     }
-    
+
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Select BHT");
@@ -120,7 +120,7 @@ public class InwardAdditionalChargeController implements Serializable {
         getBilledBillFacade().edit(current);
 
         JsfUtil.addSuccessMessage("Additional Charges Added");
-        
+
     }
 
     public void makeNull() {
@@ -128,18 +128,18 @@ public class InwardAdditionalChargeController implements Serializable {
         billItemList = null;
         inwardChargeType = null;
     }
-    
-    public void reset(){
+
+    public void reset() {
         PatientEncounter p = current.getPatientEncounter();
         current = null;
-        billItemList =null;
+        billItemList = null;
         getCurrent().setPatientEncounter(p);
         inwardChargeType = null;
         JsfUtil.addSuccessMessage("Cleared Successfully");
     }
-    
+
     public void makeChargesNull() {
-        inwardChargeType=null;
+        inwardChargeType = null;
         current.setFromInstitution(null);
         current.setTotal(null);
         current.setComments(null);
@@ -161,8 +161,7 @@ public class InwardAdditionalChargeController implements Serializable {
 
         if (getCurrent().getId() == null) {
             getBilledBillFacade().create(getCurrent());
-        }
-        else{
+        } else {
             getBilledBillFacade().edit(getCurrent());
         }
     }
@@ -175,7 +174,7 @@ public class InwardAdditionalChargeController implements Serializable {
         temBi.setNetValue(getCurrent().getTotal());
         temBi.setCreatedAt(new Date());
         temBi.setCreater(getSessionController().getLoggedUser());
-       
+
         if (temBi.getId() == null) {
             getBillItemFacade().create(temBi);
         }
@@ -273,7 +272,7 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public List<BillItem> getBillItemList() {
-        if(billItemList==null){
+        if (billItemList == null) {
             billItemList = new ArrayList<>();
         }
         return billItemList;
