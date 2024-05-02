@@ -49,11 +49,6 @@ public enum PaymentMethod {
                 .collect(Collectors.toList());
     }
     
-//    public static List<PaymentMethod> getMethodsByContext(PaymentContext context) {
-//        return Arrays.stream(PaymentMethod.values())
-//                .filter(method -> method.contexts.contains(context))
-//                .collect(Collectors.toList());
-//    }
 
     private static boolean isDeprecated(PaymentMethod method) {
         try {
