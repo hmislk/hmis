@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/lab/sample_index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <h:panelGrid columns="9" class="w-100" >
+                        <p:outputLabel value="From" ></p:outputLabel>
+                        <p:calendar 
+                            value="#{patientSampleController.fromDate}" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                        <p:spacer width="10" ></p:spacer>
+                        <p:outputLabel value="To" ></p:outputLabel>
+                        <p:calendar 
+                            value="#{patientSampleController.toDate}" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                        <p:spacer width="10" ></p:spacer>
+                        <p:commandButton 
+                            value="Prcess" 
+                            action="#{patientSampleController.listPatientSamples()}" 
+                            ajax="false" ></p:commandButton>
+                        <p:commandButton 
+                            value="Excel" 
+                            ajax="false" >
+                        </p:commandButton>
+
+                    </h:panelGrid>
+
+
+                    <p:dataTable 
+                        class="compact-datatable"
+                        id="tbl"
+                        rowKey="#{item.id}"
+                        value="#{patientSampleController.items}" 
+                        paginatorAlwaysVisible="false"
+                        var="item"
+                        paginator="true" 
+                        rows="10" 
+                        emptyMessage="No Speciman Types found"
+                        paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+                        <p:column 
+                            sortBy="#{item.id}" 
+                            filterBy="#{item.id}"
+                            filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Sample ID"/>
+                            </f:facet>
+                            <h:outputText value="#{item.id}"/>
+                        </p:column>
+                        <p:column 
+                            sortBy="#{item.bill.deptId}" 
+                            filterBy="#{item.bill.insId}"
+                            filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Bill Number"/>
+                            </f:facet>
+                            <h:outputText value="#{item.bill.deptId}"/>
+                        </p:column>
+
+                        <p:column sortBy="#{item.bill.patient.person.nameWithTitle}" 
+                                  filterBy="#{item.bill.patient.person.nameWithTitle}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Patient"/>
+                            </f:facet>
+                            <h:outputText value="#{item.bill.patient.person.nameWithTitle}"/>
+                        </p:column>
+
+                        <p:column 
+                            sortBy="#{item.patientInvestigation.billItem.item}" 
+                            filterBy="#{item.patientInvestigation.billItem.item}"
+                            filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Analyzer"/>
+                            </f:facet>
+                            <h:outputText value="#{item.machine.name}"/>
+                        </p:column>
+
+                        <!-- New columns with sorting and filtering -->
+                        <p:column sortBy="#{item.tube.name}" 
+                                  filterBy="#{item.tube.name}"
+                                  filterMatchMode="contains" 
+                                  headerText="Container">
+                            <h:outputText value="#{item.tube.name}" />
+                        </p:column>
+
+                        <p:column sortBy="#{item.sample.name}" 
+                                  filterBy="#{item.sample.name}"
+                                  filterMatchMode="contains" 
+                                  headerText="Specimen">
+                            <h:outputText value="#{item.sample.name}" />
+                        </p:column>
+
+                        <p:column sortBy="#{item.createdAt}" 
+                                  filterBy="#{item.createdAt}"
+                                  filterMatchMode="contains" 
+                                  headerText="Collected At">
+                            <h:outputText value="#{item.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="GMT+5:30" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column sortBy="#{item.creater.webUserPerson.nameWithTitle}" 
+                                  filterBy="#{item.creater.webUserPerson.nameWithTitle}"
+                                  filterMatchMode="contains" 
+                                  headerText="Collected By">
+                            <h:outputText value="#{item.creater.webUserPerson.nameWithTitle}" />
+                        </p:column>
+
+                        <p:column sortBy="#{item.idStr}" 
+                                  filterBy="#{item.idStr}"
+                                  filterMatchMode="contains" 
+                                  headerText="Barcode">
+                            <h:outputText value="#{item.idStr}" />
+                        </p:column>
+
+                        
+
+                        <p:column sortBy="#{item.receivedFromAnalyzer}" 
+                                  filterBy="#{item.receivedFromAnalyzer}"
+                                  filterMatchMode="contains" 
+                                  headerText="Received from Analyzer">
+                            <h:outputText value="#{item.receivedFromAnalyzer ? 'Yes' : 'No'}" />
+                        </p:column>
+
+                        <p:column sortBy="#{item.receivedFromAnalyzerAt}" 
+                                  filterBy="#{item.receivedFromAnalyzerAt}"
+                                  filterMatchMode="contains" 
+                                  headerText="Received Time">
+                            <h:outputText value="#{item.receivedFromAnalyzerAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="GMT+5:30" />
+                            </h:outputText>
+                        </p:column>
+
+
+
+                    </p:dataTable>
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

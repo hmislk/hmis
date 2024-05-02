@@ -950,6 +950,7 @@ public class PharmacyBillSearch implements Serializable {
         cb.setInstitution(getSessionController().getInstitution());
 
         cb.setComments(getComment());
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
 
         return cb;
     }
@@ -974,6 +975,7 @@ public class PharmacyBillSearch implements Serializable {
 
         cb.setComments(getBill().getComments());
         cb.setPaymentMethod(getPaymentMethod());
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
 
         return cb;
     }
@@ -1504,7 +1506,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);

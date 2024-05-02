@@ -8,19 +8,22 @@
     <h:body>
         <ui:composition template="/admin/lims/index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
-                    <p:panel>
-                        <f:facet name="header">
-                            <h:outputLabel value="Manage Investigation Calculations" class="mt-2"></h:outputLabel>
+
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel value="Manage Investigation Calculations" class="mt-2"></h:outputLabel>
+                        <h:form>
                             <p:commandButton 
                                 class="my-1"
                                 value="Back" 
                                 style="float: right;"
-                                action="/admin/lims/investigation" 
+                                action="#{investigationController.navigateToManageInvestigation}" 
                                 ajax="false" >
                             </p:commandButton>
-                        </f:facet>
+                        </h:form>
 
+                    </f:facet>
+                    <h:form >
                         <div class="row">
                             <div class="col-8">
                                 <p:selectBooleanCheckbox 
@@ -189,9 +192,11 @@
                                 </p:panel>
                             </div>
                         </div>
+                    </h:form>
 
-                    </p:panel>
-                </h:form>
+
+                </p:panel>
+
             </ui:define>
         </ui:composition>
     </h:body>

@@ -840,6 +840,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             }
         }
     }
+    
+    private PreBill batchBill;
 
     private void saveBatchBill() {
         PreBill tmp = new PreBill();
@@ -851,8 +853,14 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         tmp.setDepartment(getSessionController().getDepartment());
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
+        if(selectedCurrentlyWorkingStaff != null){
+            tmp.setFromStaff(selectedCurrentlyWorkingStaff);
+        }
+        tmp.setBillDate(new Date() );
+        tmp.setBillTime(new Date());
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpdBatchBillPre(tmp.getDepartment()));
         //Institution ID (INS ID)
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType(), BillNumberSuffix.NONE);
         tmp.setInsId(insId);
@@ -860,8 +868,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         //Department ID (DEPT ID)
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType());
         tmp.setDeptId(deptId);
+        
+        //System.out.println("tmp.getSessionId = " + tmp.getSessionId());
 
         getBillFacade().create(tmp);
+        
+        batchBill = tmp;
 
         double dbl = 0;
         double dblT = 0;
@@ -2106,6 +2118,14 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public PreBill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(PreBill batchBill) {
+        this.batchBill = batchBill;
     }
 
 }

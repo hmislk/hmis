@@ -4,63 +4,60 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
-    <h:head>
-    </h:head>
-    <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
-                <div class="container-fluid my-2" >
-                    <div class="card" >
-                        <div class="card-header" >
-                            <h2>EMR Analytics</h2>
-                        </div>
-                        <div class="card-body" >
-                            <div class="row" >
-                                <div class="col-md-3" >
-                                    <h:form >
-                                        <p:accordionPanel widgetVar="basic"  
-                                                          activeIndex="#{emrController.activeIndexOfReports}" 
-                                                          >
-                                            <p:tab title="Clinical">
-                                                <div class="d-grid gap-2">
-                                                </div>
-                                            </p:tab>
-                                            <p:tab title="Clinical Data">
-                                                <div class="d-grid gap-2">
-                                                    <h:commandButton value="List Visits"  styleClass="btn btn-primary mb-2"
-                                                                     action="#{patientEncounterController.navigateToListInstitutionEncounters()}"  >
-                                                    </h:commandButton>
-                                                    <h:commandButton  value="Daily Visits"  styleClass="btn btn-primary mb-2"
-                                                                      action="#{patientEncounterController.listAllEncounters()}" >
-                                                    </h:commandButton><!-- comment -->
-                                                </div>
-                                            </p:tab>
-                                            <p:tab title="Clinical Metadata">
-                                                <div class="d-grid gap-2">
-                                                    <h:commandButton value="Diagnosis" action="#{diagnosisController.navigateToListDiagnoses()}" styleClass="btn btn-primary mb-2" />
-                                                </div>
-                                            </p:tab>
-                                            <p:tab title="Pharmaceutical Metadata">
-                                                <div class="d-grid gap-2">
-                                                    <h:commandButton value="Generic Names (VTMs)" action="#{vtmController.navigateToListAllVtms()}" styleClass="btn btn-primary mb-2" />
-                                                    <h:commandButton value="Trade Names (ATMs)" action="#{atmController.navigateToListAllAtms()}" styleClass="btn btn-primary mb-2" />
-                                                    <h:commandButton value="Product Names (VMPs)" action="#{vmpController.navigateToListAllVmps()}" styleClass="btn btn-primary mb-2" />
-                                                    <h:commandButton value="Items (AMPs)" action="#{ampController.navigateToListAllAmps()}" styleClass="btn btn-primary mb-2" />
-                                                </div>
-                                            </p:tab>
-                                        </p:accordionPanel>
-                                    </h:form>
-                                </div>
-                                <div class="col-md-9" >
-                                    <ui:insert name="subcontent" >
 
-                                    </ui:insert>
-                                </div>
-                            </div>
-                        </div>
+
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <p:panel header="EMR Analytics" rendered="true">
+                <div class="row" >
+
+                    <div class="col-md-3" >
+                        <h:form>
+
+                            <p:accordionPanel widgetVar="basic"  
+                                              activeIndex="#{emrController.activeIndexOfReports}" 
+                                              >
+                                <p:tab title="Clinical">
+                                    <div class="d-grid gap-2">
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Clinical Data">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton value="List Visits"  class="w-100" 
+                                                         action="#{patientEncounterController.navigateToListInstitutionEncounters()}"  >
+                                        </p:commandButton>
+                                        <p:commandButton  value="Daily Visits"  class="w-100" 
+                                                          action="#{patientEncounterController.listAllEncounters()}" >
+                                        </p:commandButton><!-- comment -->
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Clinical Metadata">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton value="Diagnosis" action="#{diagnosisController.navigateToListDiagnoses()}" class="w-100"  />
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Pharmaceutical Metadata">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton value="Generic Names (VTMs)" action="#{vtmController.navigateToListAllVtms()}" class="w-100"  />
+                                        <p:commandButton value="Trade Names (ATMs)" action="#{atmController.navigateToListAllAtms()}" class="w-100"  />
+                                        <p:commandButton value="Product Names (VMPs)" action="#{vmpController.navigateToListAllVmps()}" class="w-100"  />
+                                        <p:commandButton value="Items (AMPs)" action="#{ampController.navigateToListAllAmps()}" class="w-100"  />
+                                    </div>
+                                </p:tab>
+                            </p:accordionPanel>
+
+                        </h:form>
                     </div>
+                    <div class="col-md-9">
+                        <ui:insert name="subcontent" >
+
+                        </ui:insert>
+                    </div>
+
                 </div>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+            </p:panel>
+        </ui:define>
+
+    </ui:composition>
+
 </html>

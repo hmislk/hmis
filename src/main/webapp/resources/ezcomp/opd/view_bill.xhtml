@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:p="http://primefaces.org/ui">
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <div class="row">
+            <div class="col-12">
+                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                    <f:selectItem itemLabel="Please Select Paper Type" />
+                    <f:selectItems value="#{enumController.paperTypes}" />
+                </p:selectOneMenu>
+                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                <h:panelGroup id="groupPrint" >
+                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                        <prints:five_five_paper_with_headings bill="#{billSearch.bill}"/>                        
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                        <prints:five_five_paper_without_headings bill="#{billSearch.bill}" />
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                        <prints:posOpdBill bill="#{billSearch.bill}"/>                        
+                    </h:panelGroup>
+                </h:panelGroup>
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>

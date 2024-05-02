@@ -36,7 +36,7 @@
                                          completeMethod="#{institutionController.completeCompany}" 
                                          forceSelection="true"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                        
+
                         <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                             <f:selectItem itemLabel="SelectPayment method"/>
                             <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
@@ -83,52 +83,52 @@
                         <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
                         <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
-                        <p:column selectionMode="multiple" style="width: 10px;"/>
+                        <p:column selectionMode="multiple" style="width: 10px;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
 
-                        <p:column headerText="Item Name" style="width: 250px!important;"  > 
+                        <p:column headerText="Item Name" style="width: 250px!important;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
 
                             <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
 
                         </p:column>  
-                        <p:column headerText="Code"> 
+                        <p:column headerText="Code" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"> 
 
                             <h:outputText id="code" value="#{bi.item.code}" >                                   
                             </h:outputText>
 
                         </p:column> 
 
-                        <p:column headerText="Ordered Qty" >  
+                        <p:column headerText="Ordered Qty" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                             <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
                         </p:column>  
 
-                        <p:column headerText="Receiving Qty"  >
+                        <p:column headerText="Receiving Qty" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
                             <p:cellEditor>  
-                                
+
                                 <f:facet name="output">  
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
                                 </f:facet>                        
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" onfocus="this.select()"/>
+                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
 
-                        <p:column headerText="Ordered Free Qty" >  
+                        <p:column headerText="Ordered Free Qty" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                             <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
                         </p:column>  
 
-                        <p:column headerText="Recieved Free Qty">   
+                        <p:column headerText="Recieved Free Qty" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">   
                             <p:cellEditor>  
                                 <f:facet name="output">  
                                     <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQtyInUnit}"/>
                                 </f:facet>                      
                                 <f:facet name="input">  
-                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" onfocus="this.select()"/>
+                                    <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" />
                                 </f:facet>
                             </p:cellEditor>                        
                         </p:column> 
 
-                        <p:column headerText="Purchase Rate">  
+                        <p:column headerText="Purchase Rate" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                             <p:cellEditor>  
                                 <f:facet name="output">  
                                     <h:panelGroup id="purchase">
@@ -144,7 +144,7 @@
                                 </f:facet>
                             </p:cellEditor>                       
                         </p:column>  
-                        <p:column headerText="Sale Price"  > 
+                        <p:column headerText="Sale Price" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"> 
                             <p:cellEditor>
                                 <f:facet name="output">
                                     <h:panelGroup id="retail">
@@ -155,14 +155,14 @@
                                     </h:panelGroup>
                                 </f:facet>  
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  onfocus="this.select()"> 
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </f:facet>
                             </p:cellEditor>                      
                         </p:column>  
 
-                        <p:column headerText="Total"  >  
+                        <p:column headerText="Total" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                             <h:panelGroup id="total">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
@@ -170,7 +170,7 @@
                             </h:panelGroup>
                         </p:column>  
 
-                        <p:column headerText="Date Of Expiry" >  
+                        <p:column headerText="Date Of Expiry" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                             <p:cellEditor >
                                 <f:facet name="output">
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
@@ -187,23 +187,24 @@
                         </p:column> 
 
 
-                        <p:column headerText="Batch No" >  
+                        <p:column headerText="Batch No" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                             <p:cellEditor >
                                 <f:facet name="output">
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}" onfocus="this.select()">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
                                     </p:inputText>
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
-                        <p:column headerText="Profit %" style="width:80px; text-align: left;">                    
-                            <h:outputText id="profMargin" value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate ) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
-                                <f:convertNumber pattern="0.0" ></f:convertNumber>
+                        <p:column headerText="Profit %" style="width:80px; text-align: left;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                    
+                            <h:outputText id="profMargin" value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
+                                <f:convertNumber pattern="0.0"></f:convertNumber>
                             </h:outputText>
                         </p:column>
-                        <p:column width="6%">
+
+                        <p:column width="6%" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
                             <p:commandButton 
                                 ajax="false"
                                 style="float: right;"
@@ -238,8 +239,8 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                                 <p:outputLabel value="Discount"/>
-                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" onfocus="this.select()">
-                                    <p:ajax process="@this" update="net ins diff" event="keyup"
+                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
+                                    <p:ajax process="@this" update="net ins" event="keyup"
                                             listener="#{grnController.netDiscount()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Net Total"/>
@@ -250,7 +251,7 @@
 
                             <p:panelGrid columns="2" id="ins">
                                 <p:outputLabel value="Invoice Total"/>
-                                <p:inputText id="insv"  value="#{grnController.insTotal}" onfocus="this.select()">
+                                <p:inputText id="insv"  value="#{grnController.insTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                     <p:ajax process="@this" update="diff" event="keyup"
                                             listener="#{grnController.calDifference()}"/>

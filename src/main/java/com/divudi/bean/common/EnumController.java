@@ -15,10 +15,12 @@ import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.Dashboard;
 import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.DiscountType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemListingStrategy;
+import com.divudi.data.ItemType;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
@@ -42,7 +44,10 @@ import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 
@@ -55,8 +60,43 @@ import javax.inject.Named;
 public class EnumController implements Serializable {
 
     private PaymentScheme paymentScheme;
+    private List<Class<? extends Enum<?>>> enumList;
 
     SessionNumberType[] sessionNumberTypes;
+
+    @PostConstruct
+    public void init() {
+        enumList = new ArrayList<>();
+        enumList.add(PaymentMethod.class);
+        enumList.add(PaperType.class);
+        enumList.add(ItemType.class);
+        enumList.add(DiscountType.class);
+    }
+
+    public List<String> getEnumValues(String enumClassName) {
+        try {
+            Class<?> enumClass = Class.forName(enumClassName);
+            if (enumClass.isEnum()) {
+                Object[] enumConstants = enumClass.getEnumConstants();
+                return Arrays.stream(enumConstants)
+                        .map(e -> ((Enum<?>) e).name())
+                        .collect(Collectors.toList());
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println("Enum class not found: " + e.getMessage());
+            return new ArrayList<>();
+        }
+        return new ArrayList<>();
+    }
+    
+    public <E extends Enum<E>> E getEnumValue(Class<E> enumType, String enumName) {
+        for (E enumConstant : enumType.getEnumConstants()) {
+            if (enumConstant.name().equals(enumName)) {
+                return enumConstant;
+            }
+        }
+        return null; // Return null if no match is found
+    }
 
     public Priority[] getPriorities() {
         return Priority.values();
@@ -74,8 +114,8 @@ public class EnumController implements Serializable {
     public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
-    
-    public SymanticType[] getSymanticTypes(){
+
+    public SymanticType[] getSymanticTypes() {
         return SymanticType.values();
     }
 
@@ -102,7 +142,7 @@ public class EnumController implements Serializable {
                     ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION};
         return sts;
     }
-    
+
     public ItemListingStrategy[] getInwardItemListingStrategys() {
         ItemListingStrategy[] sts
                 = {ItemListingStrategy.ALL_ITEMS,
@@ -116,7 +156,7 @@ public class EnumController implements Serializable {
     public RestAuthenticationType[] getRestAuthenticationTypes() {
         return RestAuthenticationType.values();
     }
-    
+
     public BillItemStatus[] getBillItemStatuses() {
         return BillItemStatus.values();
     }
@@ -534,11 +574,11 @@ public class EnumController implements Serializable {
 
         return p;
     }
-    
+
     public List<PaymentMethod> getPaymentMethodsForPurchases() {
         return PaymentMethod.getMethodsByContext(PaymentContext.PURCHASES);
     }
-    
+
     public CreditDuration[] getCreditDuration() {
         CreditDuration[] c = {CreditDuration.D30, CreditDuration.D60, CreditDuration.D90};
 
