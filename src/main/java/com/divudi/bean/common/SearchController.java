@@ -6905,11 +6905,13 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
         jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
                 + "sum(b.netTotal), "
-                + "count(b), "
-                + "b.paymentMethod) "
+                + "count(b),"
+                + "b.paymentMethod "
+                + ") "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.creater=:wu "
@@ -6932,7 +6934,7 @@ public class SearchController implements Serializable {
             jpql += " and b.paymentMethod in :pms ";
             params.put("pms", paymentMethods);
         }
-        jpql += " group by b.paymentMethod "
+        jpql += " group by b.paymentMethod, b.billTypeAtomic "
                 + " order by b.creater.webUserPerson";
 
         params.put("wu", webUser);
