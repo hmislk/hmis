@@ -142,6 +142,8 @@ public class SearchController implements Serializable {
     private SearchKeyword searchKeyword;
     Date fromDate;
     Date toDate;
+    private Long startBillId;
+    private Long endBillId;
 
     private int maxResult = 50;
     private BillType billType;
@@ -1229,6 +1231,22 @@ public class SearchController implements Serializable {
 
     public void setTotalBillCount(double totalBillCount) {
         this.totalBillCount = totalBillCount;
+    }
+
+    public Long getStartBillId() {
+        return startBillId;
+    }
+
+    public void setStartBillId(Long startBillId) {
+        this.startBillId = startBillId;
+    }
+
+    public Long getEndBillId() {
+        return endBillId;
+    }
+
+    public void setEndBillId(Long endBillId) {
+        this.endBillId = endBillId;
     }
 
     public class billsWithbill {
@@ -9735,5 +9753,7 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
+    
+    
 
 }
