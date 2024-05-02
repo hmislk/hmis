@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="Financial Transaction Summary - Cashier PaymentMethod"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="Cashier"/>
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"/>
+
+                            <h:outputLabel value="Start Bill ID"/>
+                            <p:inputText 
+                                class="w-100 mx-4" 
+                                id="fromDate" 
+                                value="#{searchController.startBillId}" 
+                                >      
+                            </p:inputText>
+                            <h:outputLabel value="End Bill ID"/>
+                            <p:inputText 
+                                class="w-100 mx-4" 
+                                id="toDate" 
+                                value="#{searchController.endBillId}"  >                                                                              
+                            </p:inputText>
+
+                            <h:outputText value="Payment Methods" />
+                            <p:selectCheckboxMenu id="cmbParentMethod"
+                                                  multiple="true"
+                                                  value="#{searchController.paymentMethods}" class="w-100 mx-4"
+                                                  filter="true" filterMatchMode="contains">
+                                <f:selectItems value="#{enumController.paymentMethods}" var="method"
+                                               itemLabel="#{method.label}" itemValue="#{method}" />
+                            </p:selectCheckboxMenu>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Process" 
+                                action="#{searchController.processAllFinancialTransactionalBillListBySingleUserByIds}"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:dataExporter 
+                                    fileName="All Financial Transactions - Cashier PaymentMethod" 
+                                    type="xlsx" 
+                                    target="tbl" >
+                                </p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <p:dataTable rowIndexVar="i" 
+                                     id="tblBills" 
+                                     value="#{searchController.bills}" 
+                                     var="bill"  
+                                     style="min-width: 100%;"  
+                                     rows ="10"
+                                     rowStyleClass="#{bill.cancelled?'text-danger':''} "
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,25,50"
+                                     >
+                            <p:column 
+                                headerText="No" 
+                                filterBy="#{bill.id}" 
+                                filterMatchMode="contains"
+                                sortBy="#{bill.id}"
+                                rendered="false"
+                                styleClass="alignTop" 
+                                width="15">
+                                <h:outputLabel value="#{bill.id}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
+                                <p:commandLink 
+                                    id="billNo" 
+                                    ajax="false" 
+                                    value="#{bill.deptId}" 
+                                    action="#{billSearch.navigateToViewOpdBill()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
+                            </p:column>
+                            <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
+                                <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                </h:commandLink>  
+                            </p:column>
+                            <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >
+                                <p:outputLabel id="billTime1" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                                <p:outputLabel id="billTime2" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
+                                      filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
+                                <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
+                            </p:column>
+<!--                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
+                                <h:outputLabel value="#{bill.departmentName}" />
+                            </p:column>-->
+                            <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
+                                <h:outputLabel value="#{bill.creater.name}" >                                      
+                                </h:outputLabel>
+                            </p:column>    
+                            <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
+                                      filterBy="#{bill.patient.person.name}" >                               
+                                <h:panelGroup id="pt">
+                                    <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                        <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
+                                    </h:commandLink>
+                                    <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="Remarks"   >  
+                                <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+
+                            </p:column>
+
+                            <p:column headerText="Gross Value" sortBy="#{bill.total}" 
+                                      styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                      styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+
+
+
+
+
+                            <p:column headerText="Actions">                                
+                                <p:commandLink 
+                                    ajax="false" 
+                                    value="View Bill" 
+                                    action="#{billSearch.navigateToViewOpdBill()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
+                                <p:spacer width="5" ></p:spacer>
+                                |
+                                <p:spacer width="5" ></p:spacer>
+                                <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                </h:commandLink>  
+                            </p:column>
+
+
+
+
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

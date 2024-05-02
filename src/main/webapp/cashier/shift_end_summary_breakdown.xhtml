@@ -89,10 +89,14 @@
                             </p:column>
 
                             <p:column headerText="Count" width="8em">
-                                <h:outputLabel value="#{bill.billCount}"/>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.navigateToListSingleUserBills}" >
+                                    <f:setPropertyActionListener value="#{bill.billTypeAtomic}" target="#{searchController.billTypeAtomic}" ></f:setPropertyActionListener>
+                                </p:commandButton>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.totalBillCount}">
-                                        <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
