@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -15,50 +16,88 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
-                            
+
                             <p:commandButton ajax="false" value="Cancel" action="petty_cash_bill_cancel" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
                             </p:commandButton>
-                            
+
+                            <p:commandButton  class="mx-1" value="Return" onclick="PF('confirmationDialog').show()">                           
+                            </p:commandButton>
                         </f:facet>
 
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Person Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Person Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
-                                        <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
-                                    </p:panelGrid>
-                                </p:panel>
-                                <p:panel header="Bill Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pettyCashBillSearch.bill.insId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
-                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </p:panelGrid>
-                            
-                        </p:panel>
+
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Person Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Person Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+
                     </p:panel>
 
+                    <p:dialog header="Return PettyCash" widgetVar="confirmationDialog" resizable="false" showEffect="fade" hideEffect="fade" width="1000">
 
+                        <h:panelGrid id="pnlPaymentDetails" columns="2" class="w-100">
+                            <p:outputLabel value="Payment Method" />
+                            <h:panelGroup>
+                                <div class="d-flex">
+                                    <p:selectOneMenu id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                        <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                    </p:selectOneMenu>
 
+                                    <div class="mx-1">
+                                        <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                            <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
 
+                                        <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            <p:outputLabel value="Comment" />
+                            <p:inputText class="w-100 my-1 " value="#{pettyCashBillController.comment}" placeholder="Comment" /> 
+                            <p:outputLabel value="Amount" />
+                            <p:inputText class="w-100 " value="#{pettyCashBillController.returnAmount}" placeholder="Return Amount" /> 
+                        </h:panelGrid>
+
+                        <h:panelGroup id="printPnl" class="m-2" rendered="#{pettyCashBillController.printPriview}">
+                            <f:facet name="header" class="m-2">
+                                <p:commandButton class="my-2" value="Print"/>
+                            </f:facet>
+                            <bi:petty bill="#{pettyCashBillController.currentReturnBill}" />
+                        </h:panelGroup>
+
+                        <f:facet name="footer">
+                            <h:panelGroup class="mb-2">
+                                <p:commandButton disabled="#{pettyCashBillController.printPriview}" id="btnSettle" process="btnSettle pnlPaymentDetails" update="printPnl" value="Settle"  action="#{pettyCashBillController.settleReturnBill()}"/>
+                                <p:commandButton class="mx-1" value="cancel" onclick="PF('confirmationDialog').hide()" type="button" />
+                            </h:panelGroup>
+                        </f:facet>
+                    </p:dialog>
                     <h:panelGroup >
-                       <bi:petty   bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
+                        <bi:petty bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
                     </h:panelGroup>
-
-
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>
