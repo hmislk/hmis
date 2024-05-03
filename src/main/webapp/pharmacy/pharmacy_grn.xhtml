@@ -86,7 +86,7 @@
 
                         <p:column selectionMode="multiple" style="width: 10px;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
 
-                        <p:column headerText="Item Name" style="width: 350px!important;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
+                        <p:column headerText="Item Name" style="width: 250px!important;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
 
                             <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
 
@@ -216,7 +216,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        <p:column style="width:90px;" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
                             <p:commandButton 
                                 ajax="false"
                                 style="float: right;"
