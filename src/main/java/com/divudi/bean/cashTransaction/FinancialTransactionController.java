@@ -14,6 +14,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.AtomicBillTypeTotals;
+import com.divudi.data.BillFinanceType;
 import static com.divudi.data.BillType.CollectingCentreBill;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FinancialReport;
@@ -578,15 +579,23 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
                 + "FROM Bill p "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
+                + "AND p.billTypeAtomic in :btas "
                 + "AND p.id > :cid "
                 + "ORDER BY p.id DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("btas", billTypesToFilter);
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         currentBills = billFacade.findByJpql(jpql, m);
@@ -599,6 +608,8 @@ public class FinancialTransactionController implements Serializable {
             calculateBillValuesFromBillTypes(p);
         }
         financialReport = new FinancialReport(atomicBillTypeTotals);
+        nonClosedShiftStartFundBill.setTotal(paymentMethodValues.getTotalValue());
+        nonClosedShiftStartFundBill.setNetTotal(paymentMethodValues.getTotalValue());
     }
 
     public void calculateBillValuesFromBillTypes(Payment p) {
@@ -645,26 +656,29 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
 
-        switch (p.getBillTypeAtomic().getBillCategory()) {
-            case BILL:
-                if (p.getNetTotal() != 0.0) {
-                    paymentMethodValues.addValue(p);
-                } else {
-                    paymentMethodValues.addValue(p);
-                }
-                break;
-            case CANCELLATION:
-            case REFUND:
-                if (p.getNetTotal() != 0.0) {
-                    paymentMethodValues.deductAbsoluteValue(p);
-                } else {
-                    paymentMethodValues.deductAbsoluteValue(p);
-                }
-                break;
-            default:
-                break;
-
-        }
+        paymentMethodValues.addValue(p);
+        
+        
+//        switch (p.getBillTypeAtomic().getBillCategory()) {
+//            case BILL:
+//                if (p.getNetTotal() != 0.0) {
+//                    paymentMethodValues.addValue(p);
+//                } else {
+//                    paymentMethodValues.addValue(p);
+//                }
+//                break;
+//            case CANCELLATION:
+//            case REFUND:
+//                if (p.getNetTotal() != 0.0) {
+//                    paymentMethodValues.deductAbsoluteValue(p);
+//                } else {
+//                    paymentMethodValues.deductAbsoluteValue(p);
+//                }
+//                break;
+//            default:
+//                break;
+//
+//        }
     }
 
     
