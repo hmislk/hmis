@@ -686,7 +686,8 @@
 
                     <p:tab title="Status" >
                         <p:outputLabel value="Mark As Present / Absent"/>
-                        <p:selectBooleanButton onLabel="Absent" offLabel="Absent"  value="#{bookingController.selectedBillSession.absent}" >
+                        <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{channelBillController.billSession.bill.refunded==true
+                                                     or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
                             <p:ajax process="@this" listener="#{bookingController.updateSelectedBillSessionPatient()}" ></p:ajax>
                         </p:selectBooleanButton>
 

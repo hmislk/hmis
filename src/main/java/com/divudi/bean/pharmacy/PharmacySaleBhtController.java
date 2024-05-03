@@ -229,6 +229,13 @@ public class PharmacySaleBhtController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    public String navigateToCancelBhtRequest(){
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/inward/bht_bill_cancel?faces-redirect=true;";
+    }
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
         onEdit(tmp);
