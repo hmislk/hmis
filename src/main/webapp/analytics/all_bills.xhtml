@@ -78,104 +78,107 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" 
-                                     value="#{searchController.bills}" 
-                                     reflow="true"
-                                     scrollable="true"
-                                     var="bill"  
-                                     style="min-width: 100%;"  
-                                     paginator="true"
-                                     paginatorPosition="bottom"
-                                     rows ="10"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
-                            <p:column headerText="No" styleClass="alignTop" width="15">
-                                <h:outputLabel value="#{bill.id}"/>
-                            </p:column>
-                            <p:column headerText="Ins No" >                                
-                                <h:outputLabel value="#{bill.insId}"/>
-                            </p:column>
-                            <p:column headerText="Dept No" >                                
-                                <h:outputLabel value="#{bill.deptId}"/>
-                            </p:column>
-                            <p:column headerText="Bill Class" >                                
-                                <h:outputLabel value="#{bill.billClass}"/>
-                            </p:column>
-                            <p:column headerText="Bill Type" >                                
-                                <h:outputLabel value="#{bill.billType}"/>
-                            </p:column>
-                            <p:column headerText="Date/Time">
-                                <p:outputLabel value="#{bill.billDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Institution" >                                
-                                <h:outputLabel   value="#{bill.institution.name}"/>
-                            </p:column> 
-                            <p:column headerText="Department" >                                
-                                <h:outputLabel   value="#{bill.department.name}"/>
-                            </p:column> 
-                            <p:column headerText="User" >                                
-                                <h:outputLabel   value="#{bill.creater.webUserPerson.name}"/>
-                            </p:column> 
-                            <p:column headerText="Reference Bill ID" >                                
-                                <h:outputLabel   value="#{bill.referenceBill.id}"/>
-                            </p:column> 
-                            <p:column headerText="Retired" >                                
-                                <h:outputLabel   value="#{bill.retired}"/>
-                            </p:column> 
-                            <p:column headerText="Cancelled" >                                
-                                <h:outputLabel   value="#{bill.cancelled}"/>
-                            </p:column>
-                            <p:column headerText="Returned" >                                
-                                <h:outputLabel   value="#{bill.refunded}"/>
-                            </p:column>
-                            <p:column headerText="To Institution"  >                                
-                                <h:outputLabel value="#{bill.toInstitution.name}" />
-                            </p:column>
-                            <p:column headerText="To Department"  >                                
-                                <h:outputLabel value="#{bill.toDepartment.name}" />
-                            </p:column>
-                            <p:column headerText="Collecting Centre"  >                                
-                                <h:outputLabel value="#{bill.collectingCentre.name}" />
-                            </p:column>
-                            <p:column headerText="From Institution"  >                                
-                                <h:outputLabel value="#{bill.fromInstitution.name}" />
-                            </p:column>
-                            <p:column headerText="From Department"  >                                
-                                <h:outputLabel value="#{bill.fromDepartment.name}" />
-                            </p:column>
-                            <p:column headerText="Patient">                               
-                                <h:outputLabel value="#{bill.patient.person.name}" />
-                            </p:column>
-                            <p:column headerText="Phone">                              
-                                <h:outputLabel value="#{bill.patient.person.phone}" />
-                            </p:column>
-                            <p:column headerText="Payment Method" >                                
-                                <h:outputLabel value="#{bill.paymentMethod}" />
-                            </p:column>
-                            <p:column headerText="Discount Scheme" >                                
-                                <h:outputLabel value="#{bill.paymentScheme.name}" />
-                            </p:column>
-                            <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{bill.discount}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>                         
-                        </p:dataTable>
 
+                        <div style="width: 100%; overflow-x: auto;">
+                            <p:dataTable rowIndexVar="i" id="tblBills" 
+                                         value="#{searchController.bills}" 
+                                         reflow="true"
+                                         scrollable="true"
+                                         var="bill"  
+                                         style="width:600em;"  
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows ="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         >
+                                <p:column headerText="No" styleClass="alignTop" width="15">
+                                    <h:outputLabel value="#{bill.id}"/>
+                                    <h:outputLabel value="#{bill.retired}"/>
+                                </p:column>
+                                <p:column headerText="Ins No" >                                
+                                    <h:outputLabel value="#{bill.insId}"/>
+                                </p:column>
+                                <p:column headerText="Dept No" >                                
+                                    <h:outputLabel value="#{bill.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Bill Class" >                                
+                                    <h:outputLabel value="#{bill.billClass}"/>
+                                </p:column>
+                                <p:column headerText="Bill Type" >                                
+                                    <h:outputLabel value="#{bill.billType}"/>
+                                </p:column>
+                                <p:column headerText="Date/Time">
+                                    <p:outputLabel value="#{bill.billDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Institution" >                                
+                                    <h:outputLabel   value="#{bill.institution.name}"/>
+                                </p:column> 
+                                <p:column headerText="Department" >                                
+                                    <h:outputLabel   value="#{bill.department.name}"/>
+                                </p:column> 
+                                <p:column headerText="User" >                                
+                                    <h:outputLabel   value="#{bill.creater.webUserPerson.name}"/>
+                                </p:column> 
+                                <p:column headerText="Reference Bill ID" >                                
+                                    <h:outputLabel   value="#{bill.referenceBill.id}"/>
+                                </p:column> 
+                                <p:column headerText="Retired" >                                
+                                    <h:outputLabel   value="#{bill.retired}"/>
+                                </p:column> 
+                                <p:column headerText="Cancelled" >                                
+                                    <h:outputLabel   value="#{bill.cancelled}"/>
+                                </p:column>
+                                <p:column headerText="Returned" >                                
+                                    <h:outputLabel   value="#{bill.refunded}"/>
+                                </p:column>
+                                <p:column headerText="To Institution"  >                                
+                                    <h:outputLabel value="#{bill.toInstitution.name}" />
+                                </p:column>
+                                <p:column headerText="To Department"  >                                
+                                    <h:outputLabel value="#{bill.toDepartment.name}" />
+                                </p:column>
+                                <p:column headerText="Collecting Centre"  >                                
+                                    <h:outputLabel value="#{bill.collectingCentre.name}" />
+                                </p:column>
+                                <p:column headerText="From Institution"  >                                
+                                    <h:outputLabel value="#{bill.fromInstitution.name}" />
+                                </p:column>
+                                <p:column headerText="From Department"  >                                
+                                    <h:outputLabel value="#{bill.fromDepartment.name}" />
+                                </p:column>
+                                <p:column headerText="Patient">                               
+                                    <h:outputLabel value="#{bill.patient.person.name}" />
+                                </p:column>
+                                <p:column headerText="Phone">                              
+                                    <h:outputLabel value="#{bill.patient.person.phone}" />
+                                </p:column>
+                                <p:column headerText="Payment Method" >                                
+                                    <h:outputLabel value="#{bill.paymentMethod}" />
+                                </p:column>
+                                <p:column headerText="Discount Scheme" >                                
+                                    <h:outputLabel value="#{bill.paymentScheme.name}" />
+                                </p:column>
+                                <p:column headerText="Gross Value" styleClass="averageNumericColumn">
+                                    <h:outputLabel value="#{bill.total}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discount" styleClass="averageNumericColumn">
+                                    <h:outputLabel value="#{bill.discount}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                    <h:outputLabel value="#{bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>                         
+                            </p:dataTable>
 
+                        </div>
 
                     </p:panel>
                 </h:form>

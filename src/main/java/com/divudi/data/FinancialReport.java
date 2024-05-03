@@ -255,12 +255,12 @@ public class FinancialReport {
     }
 
     public double getCashCollectedTransferIn() {
-        cashCollectedTransferIn = atomicBillTypeTotals.getTotal(getBillTypesForCashCollectedTransferIn(), getPaymentMethodsForCashCollectedTransferIn());
+        cashCollectedTransferIn = atomicBillTypeTotals.getTotal(getBillTypesForCashCollectedTransferIn());
         return cashCollectedTransferIn;
     }
 
     public double getBankWithdrawals() {
-        bankWithdrawals = atomicBillTypeTotals.getTotal(getBillTypesForBankWithdrawals(), getPaymentMethodsForBankWithdrawals());
+        bankWithdrawals = atomicBillTypeTotals.getTotal(getBillTypesForBankWithdrawals());
         return bankWithdrawals;
     }
 
@@ -285,17 +285,17 @@ public class FinancialReport {
     }
 
     public double getCashGivenOutTransferOut() {
-        cashGivenOutTransferOut = atomicBillTypeTotals.getTotal(getBillTypesForCashGivenOutTransferOut(), getPaymentMethodsForCashGivenOutTransferOut());
+        cashGivenOutTransferOut = atomicBillTypeTotals.getTotal(getBillTypesForCashGivenOutTransferOut());
         return cashGivenOutTransferOut;
     }
 
     public double getBankDeposits() {
-        bankDeposits = atomicBillTypeTotals.getTotal(getBillTypesForBankDeposits(), getPaymentMethodsForBankDeposits());
+        bankDeposits = atomicBillTypeTotals.getTotal(getBillTypesForBankDeposits());
         return bankDeposits;
     }
 
     public double getShortExcess() {
-        shortExcess = atomicBillTypeTotals.getTotal(getBillTypesForShortExcess(), getPaymentMethodsForShortExcess());
+        shortExcess = atomicBillTypeTotals.getTotal(getBillTypesForShortExcess());
         return shortExcess;
     }
 
@@ -680,7 +680,7 @@ public class FinancialReport {
         if (billTypesForCashCollectedTransferIn == null) {
             billTypesForCashCollectedTransferIn = new ArrayList<>();
             // Assuming specific transactions associated with cash collected through transfers
-            // Example: billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+             billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         }
         return billTypesForCashCollectedTransferIn;
     }
@@ -698,9 +698,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForBankWithdrawals() {
         if (billTypesForBankWithdrawals == null) {
             billTypesForBankWithdrawals = new ArrayList<>();
-            // Bank withdrawals may not typically be associated with specific bill types, but for completeness:
-            // Example: billTypesForBankWithdrawals.add(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
-            // Adjust based on how your system tracks these operations
+            billTypesForBankWithdrawals.add(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         }
         return billTypesForBankWithdrawals;
     }
@@ -805,7 +803,7 @@ public class FinancialReport {
         if (billTypesForCashGivenOutTransferOut == null) {
             billTypesForCashGivenOutTransferOut = new ArrayList<>();
             // Include specific transactions related to cash given out for transfers
-            // Example: billTypesForCashGivenOutTransferOut.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            billTypesForCashGivenOutTransferOut.add(BillTypeAtomic.FUND_TRANSFER_BILL);
             // Adjust as needed for your operations
         }
         return billTypesForCashGivenOutTransferOut;
