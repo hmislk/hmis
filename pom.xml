@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-    <artifactId>ucfm2</artifactId>
+    <artifactId>digasiri3</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>ucfm2</name>
+    <name>digasiri3</name>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
