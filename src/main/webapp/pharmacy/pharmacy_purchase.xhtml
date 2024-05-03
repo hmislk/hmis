@@ -10,6 +10,7 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
         <h:form id="bill">
+            <p:growl id="msg"/>
             <p:panel rendered="#{!pharmacyPurchaseController.printPreview}" style="height: 100vh">
                 <f:facet name="header" > 
                     <h:outputText styleClass="fas fa-shopping-bag"/>
@@ -148,7 +149,7 @@
                                                 id="calDoe"
                                                 pattern="dd MM yy" 
                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
-                                        <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{pharmacyPurchaseController.setBatch()}"/>
+                                        <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{pharmacyPurchaseController.setBatch()}"/>
                                     </p:calendar> 
                                 </div>
                                 <div class="col-1">
@@ -165,7 +166,7 @@
                                                      icon="fas fa-plus"
                                                      action="#{pharmacyPurchaseController.addItem}" 
 
-                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
+                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
 
                                 </div>
                             </div>
@@ -233,14 +234,14 @@
                     
                     <p:column headerText="P. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
                         <p:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="width: 70px; text-align: right;">
-                            <f:ajax event="blur" render="profMargin @this retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
                         </p:inputText>
                         <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
                     </p:column>              
 
                     <p:column headerText="S. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                   
                         <p:inputText autocomplete="off" id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price" style="width: 70px; text-align: right;">
-                            <f:ajax event="blur" render="profMargin @this total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
                         </p:inputText>
                         <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
                     </p:column>  
