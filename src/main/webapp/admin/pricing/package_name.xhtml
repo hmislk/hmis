@@ -86,11 +86,14 @@
                                     <h:outputText value="Active Status" ></h:outputText>
                                 </div>
                                 <div class="col-5">
+                                    
                                     <p:selectBooleanButton
                                         value="#{packageNameController.current.inactive}" 
-                                        offLabel="Inactive"
-                                        onLabel="Active"
+                                        offLabel="Active"
+                                        onLabel="Inactive"
+                                        styleClass="#{not packageNameController.current.inactive ? 'ui-button-info': packageNameController.current.inactive ? 'ui-button-danger' : ''}"
                                         >
+                                        <p:ajax process="@this" update="gpDetail"/>
                                     </p:selectBooleanButton>
                                 </div>
                             </div>
@@ -100,7 +103,7 @@
                                 id="btnSave" 
                                 value="Save" 
                                 process="gpDetail btnSave"
-                                update="lstSelect selectFocus"
+                                update="lstSelect selectFocus msg"
                                 action="#{packageNameController.saveSelected()}" 
                                 class="ui-button-info m-1"
                                 >
