@@ -24,7 +24,7 @@
                                         value="Shift End Funds"
                                         icon=""
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillByBills()}" >
                                     </p:commandButton>
 
 
@@ -62,6 +62,20 @@
                                         icon=""
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCashierSummary()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        value="Cashier Summary Breakdown"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}" >
+                                    </p:commandButton>
+                                    
+                                     <p:commandButton 
+                                        value="Cashier Bill List"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToListSingleUserBills()}" >
                                     </p:commandButton>
 
                                 </div>

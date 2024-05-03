@@ -30,7 +30,7 @@
                             <p:defaultCommand target="btnSave"/>
                         </f:facet>
 
-                        <p:tabView class="w-100" id="gpDetail" >
+                        <p:tabView class="w-100" id="gpDetail" activeIndex="#{investigationController.adminTabIndex}" >
                             <p:tab title="Basic Details">
                                 <h:panelGrid id="gpDetailText" columns="3" class="w-100">
 
@@ -371,7 +371,7 @@
                                         class="w-100" 
                                         ajax="false" 
                                         value="Flags" 
-                                        action="/admin/lims/flags" >
+                                        action="#{investigationController.navigateToManageFlagsForLab()}" >
                                     </p:commandButton>
                                     
                                     <p:commandButton 

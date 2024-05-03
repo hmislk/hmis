@@ -11,6 +11,18 @@
             <ui:define name="subcontent">
 
                 <h:form>
+                    
+                    
+                    <p:panelGrid columns="2" >
+                        <p:outputLabel value="From Date" ></p:outputLabel>
+                        <p:calendar value="#{sampleController.fromDate}" ></p:calendar>
+                        <p:outputLabel value="To Date" ></p:outputLabel>
+                        <p:calendar value="#{sampleController.toDate}" ></p:calendar>
+                        <p:commandButton value="Prcess" action="#{sampleController.listSamples()}" ajax="false" ></p:commandButton>
+                        
+                    </p:panelGrid>
+                    
+                    
                     <p:dataTable value="#{sampleController.items}" 
                                  paginatorAlwaysVisible="false"
                                  var="item"

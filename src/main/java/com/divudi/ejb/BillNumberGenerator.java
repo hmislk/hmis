@@ -549,6 +549,42 @@ public class BillNumberGenerator {
         return billNumber;
 
     }
+    
+    public String generateDailyBillNumberForOpdBatchBillPre(Department department) {
+        return generateDailyBillNumberForOpdBatchBillPre(department, null,null );
+    }
+    
+    public String generateDailyBillNumberForOpdBatchBillPre(Department department, Category cat, Staff fromStaff) {
+        String sql = "SELECT count(b) FROM Bill b "
+                + " where b.billType=:bTp1 "
+                + " and b.billDate=:bd "
+                + " and (type(b)=:class1 or type(b)=:class2) ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
+        }
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (fromStaff != null) {
+            sql += " and b.fromStaff=:staff ";
+            hm.put("staff", fromStaff);
+        }
+
+        hm.put("bTp1", BillType.OpdBathcBillPre);
+        hm.put("bd", new Date());
+        hm.put("class1", BilledBill.class);
+        hm.put("class2", PreBill.class);
+
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        //System.out.println("dd = " + dd);
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
 
     public String generateDailyBillNumberForOpd(Department department, Category cat, Staff fromStaff) {
         String sql = "SELECT count(b) FROM Bill b "

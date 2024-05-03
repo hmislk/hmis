@@ -118,10 +118,11 @@
                             ajax="false" 
                             action="#{opdPreSettleController.navigateToSettleOpdPreBills()}" 
                             actionListener="#{searchController.makeListNull}"  
-                            value="Accept Payments for OPD Bills"
+                            value="Accept Payments for OPD Batch Bills"
                             icon="fa fa-money-bill-alt"></p:menuitem>
-                        <p:menuitem 
+                        <p:menuitem
                             ajax="false" 
+                            rendered="false"
                             action="/opd_search_pre_batch_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"  
                             value="Accept Payment for OPD Batch Bills"
@@ -237,19 +238,19 @@
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>
-<!--                    <p:menuitem 
-                        ajax="false" 
-                        action="#{tokenController.navigateToTokenIndex()}" 
-                        value="Token Management" 
-                        icon="fa fa-file-medical" 
-                        rendered="true" />-->
+                    <!--                    <p:menuitem 
+                                            ajax="false" 
+                                            action="#{tokenController.navigateToTokenIndex()}" 
+                                            value="Token Management" 
+                                            icon="fa fa-file-medical" 
+                                            rendered="true" />-->
                     <p:menuitem 
                         ajax="false" 
                         action="#{reportController.navigatetoOPDLabReportByMenu()}" 
                         value="Lab Report Print" 
                         icon="fa fa-file-medical" 
                         rendered="#{webUserController.hasPrivilege('OpdLabReportSearch')}"
-                         />
+                        />
                     <p:menuitem 
                         ajax="false" 
                         action="#{cashierReportController.navigateToOpdSummeries()}" 
@@ -411,7 +412,7 @@
 
                     <p:menuitem 
                         ajax="false"
-                        action="#{patientInvestigationController.navigateToSampleManagement()}"
+                        action="#{patientInvestigationController.navigateToPatientSampelIndex()}"
                         value="Sampling" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
@@ -883,7 +884,7 @@
                         ajax="false"  
                         value="Channel Sheduling"  
                         action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
+<!--                    <p:menuitem ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>-->
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false"></p:menuitem>
                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard?faces-redirect=true" rendered="false"/>

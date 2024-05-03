@@ -15,11 +15,17 @@
                 <h:form >
 
 
-                    <p:panel header="Manage Investigatio Field value suggestions and defaults" >
-                        <p:commandButton 
-                                value="Back" 
-                                class="my-1"
-                                action="/admin/lims/investigation" ajax="false" ></p:commandButton>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="Manage Investigation Field value suggestions and defaults" />
+                            <div style="float: right;">
+                                <p:commandButton value="Back" 
+                                                 class="my-1"
+                                                 action="#{investigationController.navigateToManageInvestigation}" 
+                                                 ajax="false" />
+                            </div>
+                        </f:facet>
+
 
                         <p:panelGrid columns="1" >
 
@@ -38,7 +44,7 @@
                                     <f:selectItems value="#{investigationItemController.currentIxItems}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv}"  />
                                     <p:ajax event="change" process="acIiv acIx" update="lstIi" />
                                 </p:selectOneMenu>
-                                
+
                                 <h:outputLabel value="Value" ></h:outputLabel>
                                 <h:panelGroup >
                                     <p:inputText autocomplete="off" id="txtAdd" value="#{investigationItemController.addingString}" maxlength="250" />
@@ -52,7 +58,7 @@
 
                             <p:dataTable id="lstIi" value="#{investigationItemController.current.investigationItemValues}" var="iivt" >
                                 <p:column  headerText="Code">
-                                    
+
                                     <p:inputText autocomplete="off" value="#{iivt.code}" style="width: 70px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>

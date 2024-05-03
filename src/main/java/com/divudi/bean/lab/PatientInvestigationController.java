@@ -50,6 +50,7 @@ import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.lab.SampleTubeLabel;
 import com.divudi.java.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
@@ -187,11 +188,17 @@ public class PatientInvestigationController implements Serializable {
 
     private List<PatientReportItemValue> patientReportItemValues;
 
-    private List<String> sampleTubeLabels;
+    private List<SampleTubeLabel> sampleTubeLabels;
 
     public String navigateToPrintBarcodeFromMenu() {
-        return "/lab/sample_barcode_printing";
+        return "/lab/sample_barcode_printing?faces-redirect=true";
     }
+    
+    public String navigateToPatientSampelIndex() {
+        return "/lab/sample_index?faces-redirect=true";
+    }
+    
+    
 
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
         if (ptIx == null) {
@@ -1119,9 +1126,22 @@ public class PatientInvestigationController implements Serializable {
         return lstToReceiveSearch;
     }
 
+    @Deprecated
     public String navigateToSampleManagement() {
         prepareToSample();
         return "/lab/sample_management?faces-redirect=true";
+    }
+    
+    public String navigateToToCollelct() {
+//        prepareToSample();
+        listPatientInvestigationAwaitingSamplling();
+        return "/lab/patient_investigations_to_collect?faces-redirect=true";
+    }
+    
+    public String navigateToCollelcted() {
+//        prepareToSample();
+        listPatientInvestigationsWhereSamplingCompleting();
+        return "/lab/patient_investigations_collected?faces-redirect=true";
     }
 
     public void prepareToSample() {
@@ -1241,7 +1261,7 @@ public class PatientInvestigationController implements Serializable {
 
             // Get the "Barcodes" JSON array from the JSON object
             JSONArray barcodes = root.getJSONArray("Barcodes");
-            String defaultTemplate = "<div style='width: 250px; padding: 8px; border: 1px solid #000; font-family: Arial, sans-serif; font-size: 11px;'>"
+            String defaultTemplate = "<div style='width: 5cm; height:2.5cm; padding: 8px; border: 1px solid #000; font-family: Arial, sans-serif; font-size: 11px;'>"
                     + "<div style='margin: 2px 0;'>"
                     + " Name: " + "{name} ({age}) <br/>"
                     + " Gender: " + "{sex} <br/>"
@@ -1253,12 +1273,17 @@ public class PatientInvestigationController implements Serializable {
                     + "Ins ID: " + "{insId} <br/>"
                     + "Dept ID: " + "{deptId}" + "</div>"
                     + "</div>";
-            String template = congConfigOptionApplicationController.getLongTextValueByKey("Template for Sample Tube Sticker Printing", defaultTemplate);
+            String templateAbove = congConfigOptionApplicationController.getLongTextValueByKey("Template for Sample Tube Sticker Printing - Above Barcode", defaultTemplate);
+            String templateBelow = congConfigOptionApplicationController.getLongTextValueByKey("Template for Sample Tube Sticker Printing - Below Barcode", "");
             sampleTubeLabels = new ArrayList<>();
             for (int i = 0; i < barcodes.length(); i++) {
                 // Get each object in the array and convert it to a string
                 JSONObject singleBarcode = barcodes.getJSONObject(i);
-                sampleTubeLabels.add(createLabelsFromJsonAndTemplate(template, singleBarcode));
+                SampleTubeLabel stl = new SampleTubeLabel();
+                stl.setTextAboveBarcode(createLabelsFromJsonAndTemplate(templateAbove, singleBarcode));
+                stl.setTextBelowBarcode(createLabelsFromJsonAndTemplate(templateBelow, singleBarcode));
+                stl.setBarcode(singleBarcode.optString("barcode", "N/A"));
+                sampleTubeLabels.add(stl);
             }
         } catch (Exception e) {
             System.err.println("Error processing barcode JSON: " + e.getMessage());
@@ -1946,11 +1971,11 @@ public class PatientInvestigationController implements Serializable {
         this.activeIndexOfManageInvestigation = activeIndexOfManageInvestigation;
     }
 
-    public List<String> getSampleTubeLabels() {
+    public List<SampleTubeLabel> getSampleTubeLabels() {
         return sampleTubeLabels;
     }
 
-    public void setSampleTubeLabels(List<String> sampleTubeLabels) {
+    public void setSampleTubeLabels(List<SampleTubeLabel> sampleTubeLabels) {
         this.sampleTubeLabels = sampleTubeLabels;
     }
 

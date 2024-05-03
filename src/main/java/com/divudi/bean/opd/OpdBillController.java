@@ -182,9 +182,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     @Inject
     OpdTokenController opdTokenController;
-    
+
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Class Variables
@@ -296,7 +298,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public String navigateToOpdAnalyticsIndex() {
         return "/opd/analytics/index?faces-redirect=true";
     }
-    
+
     public String navigateToOpdOriginalBillPrint() {
         return "/opd/original_bill_reprint?faces-redirect=true";
     }
@@ -331,7 +333,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         System.out.println("jpql = " + jpql);
         lstBillItems = billItemFacade.findByJpql(jpql, m);
         if (lstBillItems == null) {
-            return ;
+            return;
         }
         for (BillItem i : lstBillItems) {
             System.out.println("i = " + i);
@@ -1622,7 +1624,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             b.setVat(b.getVat());
             b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
-            createPaymentsForBills(b, getLstBillEntries());
+            
             getBillFacade().edit(b);
             getBillBean().checkBillItemFeesInitiated(b);
             getBills().add(b);
@@ -1633,6 +1635,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
         saveBatchBill();
+        createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
@@ -2315,8 +2318,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
 
         clearBillItemValues();
-        setItemLight(itemLight);
-        //JsfUtil.addSuccessMessage("Item Added");
+        boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
+        if(clearItemAfterAddingToOpdBill){
+            setItemLight(null);
+        }else{
+            setItemLight(itemLight);
+        }
+        JsfUtil.addSuccessMessage("Added");
     }
 
     private void addStaffToBillFees(List<BillFee> tmpBfs) {
@@ -2366,6 +2374,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
+        payments=null;
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -3663,6 +3672,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Payment> getPayments() {
+        if(payments==null){
+            payments = new ArrayList<>();
+        }
         return payments;
     }
 

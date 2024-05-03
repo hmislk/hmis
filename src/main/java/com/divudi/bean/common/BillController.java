@@ -63,6 +63,7 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.AppEmail;
+import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
@@ -1374,6 +1375,7 @@ public class BillController implements Serializable {
         ////// // System.out.println("Out Print");
     }
 
+    @Deprecated
     public void settleBill() {
         Date startTime = new Date();
         if (errorCheck()) {
@@ -1500,6 +1502,7 @@ public class BillController implements Serializable {
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
         tmp.setBillType(BillType.OpdBathcBill);
+        tmp.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setCreatedAt(new Date());
@@ -3166,6 +3169,32 @@ public class BillController implements Serializable {
         }
         billFacade.edit(bill);
         JsfUtil.addSuccessMessage("Ref Doctor Updated");
+    }
+    
+    public String findBatchBillSessionID(String deptID){
+        String jpql = "select b from Bill b "
+                + "where b.billType=:bt "
+                + " and type(b)=:type "
+                + " and b.deptId=:id"
+                + " and b.retired=:ret"
+                + " and b.deptId is not null "
+                + " and b.cancelled=false";
+        
+        Map m = new HashMap();
+        m.put("bt", BillType.OpdBathcBillPre);
+        m.put("id", deptID);
+        m.put("type", PreBill.class);
+        m.put("ret", false);
+        
+        Bill b = billFacade.findFirstByJpql(jpql, m);
+        //System.out.println("b = " + b);
+        //System.out.println("b.getSessionId() = " + b.getSessionId());
+        if((b.getSessionId() == null) || ("".equals(b.getSessionId().trim()))){
+            return "*0*";
+        }else{
+            return b.getSessionId();
+        }
+        
     }
 
     public BillFacade getEjbFacade() {

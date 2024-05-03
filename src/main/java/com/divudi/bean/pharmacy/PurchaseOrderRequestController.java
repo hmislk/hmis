@@ -5,8 +5,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
@@ -72,17 +74,22 @@ public class PurchaseOrderRequestController implements Serializable {
     CommonController commonController;
     @Inject
     ConfigOptionController optionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    EnumController enumController;
 
     private Bill currentBill;
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     private boolean printPreview;
+    private double totalBillItemsCount;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     PharmacyCalculation pharmacyBillBean;
     private PaymentMethodData paymentMethodData;
-    
+
     @Inject
     NotificationController notificationController;
 
@@ -325,7 +332,7 @@ public class PurchaseOrderRequestController implements Serializable {
                 b.setRetireComments("Retired at Finalising PO");
 
             }
-
+            totalBillItemsCount = totalBillItemsCount + qty;
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
 //            b.setPharmaceuticalBillItem(null);
             if (b.getId() == null) {
@@ -386,20 +393,22 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+
 //
 //        if (checkItemPrice()) {
 //            JsfUtil.addErrorMessage("Please enter purchase price for all");
 //            return;
 //        }
-
         saveBill();
         saveBillComponent();
 
         JsfUtil.addSuccessMessage("Request Saved");
 //
 //        resetBillValues();
-
-        
 
     }
 
@@ -427,11 +436,21 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
         }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+
         finalizeBill();
+        totalBillItemsCount = 0;
         finalizeBillComponent();
+        if (totalBillItemsCount == 0) {
+            JsfUtil.addErrorMessage("Please add item quantities for the bill");
+            return;
+        }
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
-        
+
     }
 
     public void calTotal() {
@@ -494,7 +513,11 @@ public class PurchaseOrderRequestController implements Serializable {
             currentBill = new BilledBill();
             currentBill.setBillType(BillType.PharmacyOrder);
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-            PaymentMethod pm = optionController.getEnumValueByKey("Pharmacy Purchase Order Default Payment Method", PaymentMethod.class, OptionScope.APPLICATION, null, null, null); 
+
+            String key = "Pharmacy Purchase Order Default Payment Method";
+            String strEnumValue = configOptionApplicationController.getEnumValueByKey(key);
+            PaymentMethod pm = enumController.getEnumValue(PaymentMethod.class, strEnumValue);
+
             currentBill.setPaymentMethod(pm);
         }
         return currentBill;
@@ -607,6 +630,14 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    public double getTotalBillItemsCount() {
+        return totalBillItemsCount;
+    }
+
+    public void setTotalBillItemsCount(double totalBillItemsCount) {
+        this.totalBillItemsCount = totalBillItemsCount;
     }
 
 }

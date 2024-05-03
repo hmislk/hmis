@@ -72,7 +72,7 @@
                         id="itemList" >  
 
                         <f:facet name="header">  
-                            <div>
+                            <div class="d-flex justify-content-between align-items-center">
                                 <h:outputLabel value="Returning Item"></h:outputLabel>
                                 <p:commandButton  
                                     value="Fill All" 
@@ -80,12 +80,10 @@
                                     process="@this"
                                     update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
                                     class="ui-button-warning"
-                                    style="float: right;"
                                     icon="fa-solid fa-fill">
                                 </p:commandButton>
                             </div>
-
-                        </f:facet>  
+                        </f:facet> 
 
                         <p:column headerText="Item Name" style="width:50px!important;">  
 
@@ -103,11 +101,13 @@
 
 
                         <p:column headerText="Batch No" style="width:25px!important;">                       
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                           
                         </p:column>  
 
                         <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            </h:outputText>  
                         </p:column>
 
 

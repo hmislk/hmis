@@ -2335,6 +2335,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;

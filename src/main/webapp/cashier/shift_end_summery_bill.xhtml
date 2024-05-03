@@ -8,7 +8,7 @@
 
     <h:body>
         <h:form>
-            <ui:composition template="./index.xhtml">
+            <ui:composition template="/cashier/index.xhtml">
 
                 <ui:define name="subcontent">
                     <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
@@ -69,6 +69,14 @@
                                         <p:spacer width="70" />
                                         <p:spacer width="70" />
                                         <p:spacer width="70" />
+                                        <p:outputLabel value="Start Bill ID" ></p:outputLabel>
+                                        <p:outputLabel value=":" class="mx-2"/>
+                                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.id}" >
+                                        </p:outputLabel>
+                                        <p:spacer width="70" />
+                                        <p:spacer width="70" />
+                                        <p:spacer width="70" />
+
                                         <p:outputLabel value="Total Value" ></p:outputLabel>
                                         <p:outputLabel value=":" class="mx-2"/>
                                         <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.netTotal}" ></p:outputLabel>
@@ -178,25 +186,46 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Cash</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Cash" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCash()}" 
+                                                ></p:commandLink>
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedCash}</td>
                                         <td>#{financialTransactionController.financialReport.refundedCash}</td>
                                         <td>#{financialTransactionController.financialReport.netCashTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Card</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Card" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCard()}" 
+                                                ></p:commandLink>
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedCreditCard}</td>
                                         <td>#{financialTransactionController.financialReport.refundedCreditCard}</td>
                                         <td>#{financialTransactionController.financialReport.netCreditCardTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Voucher</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Voucher" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                                ></p:commandLink>
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedVoucher}</td>
                                         <td>#{financialTransactionController.financialReport.refundedVoucher}</td>
                                         <td>#{financialTransactionController.financialReport.netVoucherTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Other</td>
+                                        <td>
+                                            <p:commandLink 
+                                                value="Other" 
+                                                action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
+                                                ></p:commandLink>
+
+                                        </td>
                                         <td>#{financialTransactionController.financialReport.collectedOtherNonCredit}</td>
                                         <td>#{financialTransactionController.financialReport.refundedOtherNonCredit}</td>
                                         <td>#{financialTransactionController.financialReport.netOtherNonCreditTotal}</td>

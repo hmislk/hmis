@@ -15,6 +15,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -1030,6 +1031,7 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         getSaleBill().copyValue(getPreBill());
 
         getSaleBill().setBillType(BillType.PharmacyWholeSale);
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1729,6 +1731,7 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyWholesalePre);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
@@ -1742,6 +1745,7 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         if (saleBill == null) {
             saleBill = new BilledBill();
             saleBill.setBillType(BillType.PharmacyWholeSale);
+            saleBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE);
         }
         return saleBill;
     }

@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    
+
     <h:head>
         <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     </h:head>
@@ -14,26 +14,20 @@
 
         <h:outputStylesheet library="css" name="stickerprints.css" />
 
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/lab/sample_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Sample Collection" >
                         <f:facet name="header">
-                            <p:commandButton 
-                                value="To Sampling" 
-                                ajax="false"  
-                                style="float: right;"
-                                action="/lab/sample_management" 
-                                actionListener="#{patientInvestigationController.navigateToSampleManagement()}">
-                            </p:commandButton>
+
                         </f:facet>
-                        <div class="d-flex justify-content-end gap-2">
+                        <div class="d-flex gap-2">
                             <p:outputLabel value="Enter Bill ID" class="mt-2"></p:outputLabel>
                             <p:inputText 
                                 value="#{patientInvestigationController.inputBillId}" >
                             </p:inputText>
                             <p:commandButton 
-                                value="Collect Sample &amp; Print Barcodes" 
+                                value="Generate Sample Stickers to Print" 
                                 ajax="false" 
                                 action="#{patientInvestigationController.prepareSampleCollection()}" >
                             </p:commandButton>
@@ -41,57 +35,41 @@
 
                     </p:panel>
 
-                    <h:panelGroup id="labelview">
-                        <div>
-                            <ui:repeat value="#{patientInvestigationController.sampleTubeLabels}" var="label" >
-                                    <h:outputText escape="false" value="#{label}" ></h:outputText>
-                                    
-                                    <br/>
-                            </ui:repeat>
-                        </div>
-                    </h:panelGroup>
-
-
-                    <p:commandButton value="Print" ajax="false"  >
+                    <p:commandButton value="Print*" ajax="false"  >
                         <p:printer target="labelview" ></p:printer>
                     </p:commandButton>
 
-                    <h:panelGroup id="print" >
-                        <ui:repeat value="#{patientInvestigationController.patientSamples}" var="ps" >
-                            <div style="page-break-after: always; width: 97vw;height: 97vh;border: none; margin: 0px;overflow: hidden; text-align: center; vertical-align: central" >
-                                <table style="width:100%;height: " >
-                                    <tr>
-                                        <td>
-                                            <h:outputLabel value="#{ps.bill.patient.person.nameWithTitle}"
-                                                           style="font-size: 8px" ></h:outputLabel>
-
-                                        </td>
-                                        <td rowspan="3">
-
-                                            <p:barcode cache="false" value="#{ps.idStr}" type="code128" width="130px" ></p:barcode>
-
-
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <h:outputLabel value="ESR"
-                                                           style="font-size: 8px" ></h:outputLabel>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <h:outputLabel value="Serum"
-                                                           style="font-size: 8px" ></h:outputLabel>
-                                        </td>
-                                    </tr>
-                                </table>
-
-                            </div>
-                        </ui:repeat>
+                    <h:panelGroup id="labelview">
+                        <div class="w-100" >
+                            <ui:repeat
+                                value="#{patientInvestigationController.sampleTubeLabels}"
+                                var="label" 
+                                >
+                                <div style="#{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}" >
+                                    <div class="row">
+                                        <div class="col-12" >
+                                            <h:outputText escape="false" value="#{label.textAboveBarcode}" ></h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="background-color: red; width: 100%;">
+                                        <div class="col-12 w-100"  >
+                                            <p:barcode value="#{label.barcode}"  type="code128"></p:barcode>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12" >
+                                             <h:outputText escape="false" value="#{label.textBelowBarcode}" ></h:outputText>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </div>
                     </h:panelGroup>
                 </h:form>
             </ui:define>
         </ui:composition>
+
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
     </h:body>
 </html>

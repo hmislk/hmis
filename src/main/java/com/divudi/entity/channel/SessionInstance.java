@@ -207,6 +207,11 @@ public class SessionInstance implements Serializable {
     private Long paidPatientCount;
     private Long completedPatientCount;
     private Long remainingPatientCount;
+    
+    private boolean arrived;
+    
+    @ManyToOne
+    private ArrivalRecord arrivalRecord;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -1207,6 +1212,22 @@ public class SessionInstance implements Serializable {
 
     public void setLastCompletedBillSession(BillSession lastCompletedBillSession) {
         this.lastCompletedBillSession = lastCompletedBillSession;
+    }
+
+    public boolean isArrived() {
+        return arrived;
+    }
+
+    public void setArrived(boolean arrived) {
+        this.arrived = arrived;
+    }
+
+    public ArrivalRecord getArrivalRecord() {
+        return arrivalRecord;
+    }
+
+    public void setArrivalRecord(ArrivalRecord arrivalRecord) {
+        this.arrivalRecord = arrivalRecord;
     }
     
     
