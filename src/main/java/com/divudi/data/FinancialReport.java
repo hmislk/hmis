@@ -680,7 +680,7 @@ public class FinancialReport {
         if (billTypesForCashCollectedTransferIn == null) {
             billTypesForCashCollectedTransferIn = new ArrayList<>();
             // Assuming specific transactions associated with cash collected through transfers
-            // Example: billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+             billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         }
         return billTypesForCashCollectedTransferIn;
     }
@@ -803,7 +803,7 @@ public class FinancialReport {
         if (billTypesForCashGivenOutTransferOut == null) {
             billTypesForCashGivenOutTransferOut = new ArrayList<>();
             // Include specific transactions related to cash given out for transfers
-            // Example: billTypesForCashGivenOutTransferOut.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            billTypesForCashGivenOutTransferOut.add(BillTypeAtomic.FUND_TRANSFER_BILL);
             // Adjust as needed for your operations
         }
         return billTypesForCashGivenOutTransferOut;
