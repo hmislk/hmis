@@ -749,9 +749,46 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (paymentMethod == null) {
             return true;
         }
-        if(paymentMethod == PaymentMethod.Agent){
-            if(institution == null){
+      
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution == null) {
                 return true;
+            }
+        }
+      
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                return true;
+            }
+        }
+      
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
+            if (paymentMethod == PaymentMethod.Card) {
+                if (paymentMethodData.getCreditCard().getInstitution() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getCreditCard().getNo() == null) {
+                    return true;
+                }
+            }
+            if (paymentMethod == PaymentMethod.Cheque) {
+                if (paymentMethodData.getCheque().getNo() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getCheque().getInstitution() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getCheque().getDate()== null) {
+                    return true;
+                }
+            }
+            if (paymentMethod == PaymentMethod.Slip) {
+                if (paymentMethodData.getSlip().getInstitution() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getSlip().getDate() == null) {
+                    return true;
+                }
             }
         }
         return false;
