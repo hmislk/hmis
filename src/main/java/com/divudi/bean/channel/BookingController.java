@@ -1539,6 +1539,31 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
     }
+    
+    public void markAsNotArrived() {
+        if (selectedSessionInstance == null) {
+            return;
+        }
+        if (selectedSessionInstance.getSessionDate() == null) {
+            return;
+        }
+        if (arrivalRecord == null) {
+            arrivalRecord = new ArrivalRecord();
+            arrivalRecord.setSessionDate(selectedSessionInstance.getSessionDate());
+            arrivalRecord.setSessionInstance(selectedSessionInstance);
+            arrivalRecord.setCreatedAt(new Date());
+            arrivalRecord.setCreater(sessionController.getLoggedUser());
+            fpFacade.create(arrivalRecord);
+        }
+        selectedSessionInstance.setArrived(false);
+        selectedSessionInstance.setArrivalRecord(arrivalRecord);
+        sessionInstanceFacade.edit(selectedSessionInstance);
+        arrivalRecord.setRecordTimeStamp(new Date());
+        arrivalRecord.setApproved(false);
+        fpFacade.edit(arrivalRecord);
+        sendSmsOnChannelDoctorArrival();
+        System.out.println("this not arrived");
+    }
 
     public void markAsLeft() {
         if (selectedServiceSession == null) {
