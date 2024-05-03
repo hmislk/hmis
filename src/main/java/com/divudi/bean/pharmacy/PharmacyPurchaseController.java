@@ -116,6 +116,7 @@ public class PharmacyPurchaseController implements Serializable {
     List<PharmacyStockRow> rows;
 
     BillListWithTotals billListWithTotals;
+    private double billItemsTotalQty;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -124,7 +125,6 @@ public class PharmacyPurchaseController implements Serializable {
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
-        
     }
 
     public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
@@ -134,7 +134,6 @@ public class PharmacyPurchaseController implements Serializable {
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
-        
     }
 
     public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment() {
@@ -144,7 +143,6 @@ public class PharmacyPurchaseController implements Serializable {
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
-        
     }
 
     public void fillItemVicePurchaseAndGoodReceive() {
@@ -188,7 +186,6 @@ public class PharmacyPurchaseController implements Serializable {
 
         rows = lsts;
 
-        
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
@@ -256,12 +253,12 @@ public class PharmacyPurchaseController implements Serializable {
         billItems = null;
     }
 
-    public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill(){
+    public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill() {
         makeNull();
         getBill();
         return "/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true";
     }
-    
+
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
 
@@ -320,25 +317,27 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void setBatch(BillItem pid) {
-        Date date = pid.getPharmaceuticalBillItem().getDoe();
-        DateFormat df = new SimpleDateFormat("ddMMyyyy");
-        String reportDate = df.format(date);
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+            Date date = pid.getPharmaceuticalBillItem().getDoe();
+            DateFormat df = new SimpleDateFormat("ddMMyyyy");
+            String reportDate = df.format(date);
 // Print what date is today!
-        //       //System.err.println("Report Date: " + reportDate);
-        pid.getPharmaceuticalBillItem().setStringValue(reportDate);
-
+            //       //System.err.println("Report Date: " + reportDate);
+            pid.getPharmaceuticalBillItem().setStringValue(reportDate);
+        }
         onEdit(pid);
     }
 
     public void setBatch() {
-        Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
-        DateFormat df = new SimpleDateFormat("ddMMyyyy");
-        String reportDate = df.format(date);
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+            Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
+            DateFormat df = new SimpleDateFormat("ddMMyyyy");
+            String reportDate = df.format(date);
 // Print what date is today!
-        //       //System.err.println("Report Date: " + reportDate);
-        getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(reportDate);
+            //       //System.err.println("Report Date: " + reportDate);
+            getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(reportDate);
+        }
 
-        //     onEdit(pid);
     }
 
     public String errorCheck() {
@@ -436,12 +435,12 @@ public class PharmacyPurchaseController implements Serializable {
         //   saveBillComponent();
 
         Payment p = createPayment(getBill());
-
+        billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
-
+            billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
@@ -473,7 +472,10 @@ public class PharmacyPurchaseController implements Serializable {
 
             getBill().getBillItems().add(i);
         }
-
+        if (billItemsTotalQty == 0.0) {
+            JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
+            return;
+        }
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
 
         getBillFacade().edit(getBill());
@@ -485,7 +487,6 @@ public class PharmacyPurchaseController implements Serializable {
         printPreview = true;
         //   recreate();
 
-        
     }
 
     public void removeItem(BillItem bi) {
@@ -627,10 +628,10 @@ public class PharmacyPurchaseController implements Serializable {
 
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
-        }else{
+        } else {
             getBillFacade().edit(getBill());
         }
-        
+
     }
 
     public BillItem getBillItem(Item i) {
@@ -839,6 +840,14 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public double getBillItemsTotalQty() {
+        return billItemsTotalQty;
+    }
+
+    public void setBillItemsTotalQty(double billItemsTotalQty) {
+        this.billItemsTotalQty = billItemsTotalQty;
     }
 
 }

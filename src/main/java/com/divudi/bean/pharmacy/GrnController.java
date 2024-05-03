@@ -135,7 +135,7 @@ public class GrnController implements Serializable {
         createGrnWholesale();
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
-    
+
     public String navigateToReceiveWholesale() {
         grnBill = null;
         dealor = null;
@@ -153,21 +153,21 @@ public class GrnController implements Serializable {
         calGrossTotal();
     }
 
-    public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem){
+    public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem) {
         List<BillItem> tmpBillItems = new ArrayList<>();
-        for (BillItem i : getBillItems()){
-            if(i.getReferanceBillItem()==referenceBillItem){
+        for (BillItem i : getBillItems()) {
+            if (i.getReferanceBillItem() == referenceBillItem) {
                 tmpBillItems.add(i);
             }
         }
         return tmpBillItems;
     }
-    
+
     public void duplicateItem(BillItem originalBillItemToDuplicate) {
         BillItem newBillItemCreatedByDuplication = new BillItem();
         double totalQuantityOfBillItemsRefernceToOriginalItem = 0.0;
         double totalFreeQuantityOfBillItemsRefernceToOriginalItem = 0.0;
-        
+
         double remainFreeQty = 0.0;
         double remainQty = 0.0;
         if (originalBillItemToDuplicate != null) {
@@ -177,25 +177,25 @@ public class GrnController implements Serializable {
             newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
             newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
             newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
-            
+
             List<BillItem> tmpBillItems = findAllBillItemsRefernceToOriginalItem(originalBillItemToDuplicate.getReferanceBillItem());
-           
-            for(BillItem bi:tmpBillItems){
+
+            for (BillItem bi : tmpBillItems) {
                 totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
                 totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
             }
             remainQty = originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
             remainFreeQty = originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
-            
+
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
-            
+
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQty(remainFreeQty);
             newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty);
-            
+
             newBillItemCreatedByDuplication.setTmpQty(remainQty);
             newBillItemCreatedByDuplication.setTmpFreeQty(remainFreeQty);
-            
+
             newBillItemCreatedByDuplication.setPreviousRecieveQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
             newBillItemCreatedByDuplication.setPreviousRecieveFreeQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit());
             getBillItems().add(newBillItemCreatedByDuplication);
@@ -241,13 +241,14 @@ public class GrnController implements Serializable {
             }
         }
 
-        Date date = pid.getPharmaceuticalBillItem().getDoe();
-        DateFormat df = new SimpleDateFormat("ddMMyyyy");
-        String reportDate = df.format(date);
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+            Date date = pid.getPharmaceuticalBillItem().getDoe();
+            DateFormat df = new SimpleDateFormat("ddMMyyyy");
+            String reportDate = df.format(date);
 // Print what date is today!
-        //       //System.err.println("Report Date: " + reportDate);
-        pid.getPharmaceuticalBillItem().setStringValue(reportDate);
-
+            //       //System.err.println("Report Date: " + reportDate);
+            pid.getPharmaceuticalBillItem().setStringValue(reportDate);
+        }
     }
 
     public Date getToDate() {
@@ -600,7 +601,7 @@ public class GrnController implements Serializable {
                 ph.setBillItem(bi);
                 double tmpQty = bi.getQty();
                 double tmpFreeQty = remainFreeQty;
-                
+
                 bi.setPreviousRecieveQtyInUnit((double) tmpQty);
                 bi.setPreviousRecieveFreeQtyInUnit((double) tmpFreeQty);
 
@@ -609,7 +610,7 @@ public class GrnController implements Serializable {
 
                 ph.setFreeQtyInUnit((double) tmpFreeQty);
                 ph.setFreeQty((double) tmpFreeQty);
-                
+
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
 
@@ -618,7 +619,6 @@ public class GrnController implements Serializable {
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
                 bi.setPharmaceuticalBillItem(ph);
-                
 
                 getBillItems().add(bi);
                 //  getBillItems().r
@@ -682,7 +682,7 @@ public class GrnController implements Serializable {
         generateBillComponentAll();
         calGrossTotal();
     }
-    
+
     public void createGrnWholesale() {
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -706,6 +706,7 @@ public class GrnController implements Serializable {
         setBatch(tmp);
         onEdit(tmp);
     }
+    
 
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
