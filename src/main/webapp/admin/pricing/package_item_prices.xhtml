@@ -11,68 +11,150 @@
             <h:form id="form"  >
                 <p:growl id="msg"/>
                 <p:panel header="Manage Package Item Fees" >
-                    <p:panelGrid columns="1" styleClass="alignTop">
-                        <p:panelGrid columns="2" >
-                            <h:outputLabel value="Select Package" />
-                            <p:autoComplete widgetVar="aIx" id="acIx" converter="pac" forceSelection="true" 
-                                            value="#{packageItemFeeController.currentPackege}" completeMethod="#{packageNameController.completePack}" 
-                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="@this" update="cur gpVeda dtbFee" ></p:ajax>
-                            </p:autoComplete>
-                        </p:panelGrid>
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Package" >
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel value="Select Package"  class="mt-2"/></div>
+                                    <div class="col-9">
+                                        <p:autoComplete 
+                                            widgetVar="aIx" 
+                                            id="acIx" 
+                                            converter="pac" 
+                                            forceSelection="true" 
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                                    value="#{packageItemFeeController.currentPackege}" 
+                                                    completeMethod="#{packageNameController.completePack}" 
+                                                    var="ix" 
+                                                    itemLabel="#{ix.name}" 
+                                                    itemValue="#{ix}" size="30">
+                                        <p:ajax event="itemSelect" process="@this" update="cur gpVeda dtbFee" ></p:ajax>
+                                    </p:autoComplete></div>
+                                    
+                                    
+                                </div>
+                                <div class="mt-2">
+                                    <p:selectOneListbox id="cur" value="#{packageItemFeeController.currentIx}" class="w-100">
+                                        <f:selectItems value="#{packageItemFeeController.items}" var="pk" itemLabel="#{pk.item.name}" itemValue="#{pk.item}"/>
+                                        <f:ajax execute="@this" render="gpVeda dtbFee"/>
+                                    </p:selectOneListbox>
+                                </div>
 
-                        <h:selectOneListbox id="cur" value="#{packageItemFeeController.currentIx}">
-                            <f:selectItems value="#{packageItemFeeController.items}" var="pk" itemLabel="#{pk.item.name}" itemValue="#{pk.item}"/>
-                            <f:ajax execute="@this" render="gpVeda dtbFee"/>
-                        </h:selectOneListbox>
-
-                        <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
-                            <p:panel   >                                    
+                            </p:panel>
+                        </div>
+                        <div class="col-6">
+                            <p:panel id ="gpVeda">                                    
                                 <f:facet name="header" >
                                     <h:outputLabel value="Charge Detail" ></h:outputLabel>
-                                    <h:outputText style="float:right;" id="lblTotal" value="Total : #{packageItemFeeController.total}"/>
+                                    <h:outputLabel style="float:right;" id="lblTotal" value="Total #{packageItemFeeController.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </f:facet>
-                                <h:panelGrid columns="2">
-                                    <h:outputText value="Fee Name"/>
-                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{packageItemFeeController.currentFee.name}"/>
-                                    <h:outputText value="Fee Type"/>
-                                    <h:selectOneListbox id="cmbFeeType" size="1" value="#{packageItemFeeController.currentFee.feeType}" >
-                                        <f:selectItem itemLabel="Please select the type"/>
-                                        <f:selectItem itemLabel="Staff Fee" itemValue="Staff" />
-                                        <f:selectItem itemLabel="Hospital Fee" itemValue="OwnInstitution" />
-                                        <f:selectItem itemLabel="Outside Fee" itemValue="OtherInstitution" />
-                                    </h:selectOneListbox>
 
-                                    <h:outputText value="Speciality"/>
-                                    <p:autoComplete  forceSelection="true" id="cmbSpe" value="#{packageItemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
-                                        <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
-                                    </p:autoComplete>
+                                <div class="row">
+                                    <div class="col-2"><h:outputText value="Fee Name" class="mt-2"/></div>
+                                    <div class="col-5"><p:inputText autocomplete="off" id="txtFeeName" value="#{packageItemFeeController.currentFee.name}" class="w-100"/></div>
+                                </div>
 
+                                <div class="row mt-1">
+                                    <div class="col-2"><h:outputText value="Fee Type"/></div>
+                                    <div class="col-5">
+                                        <p:selectOneMenu id="cmbFeeType"  value="#{packageItemFeeController.currentFee.feeType}" class="w-100">
+                                            <f:selectItem itemLabel="Please select the type"/>
+                                            <f:selectItem itemLabel="Staff Fee" itemValue="Staff" />
+                                            <f:selectItem itemLabel="Hospital Fee" itemValue="OwnInstitution" />
+                                            <f:selectItem itemLabel="Outside Fee" itemValue="OtherInstitution" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
 
-                                    <h:outputText value="Staff"/>
-                                    <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{packageItemFeeController.currentFee.staff}" completeMethod="#{packageItemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
-                                        <f:ajax execute="cmbSpe" event="keypress"/>
-                                    </p:autoComplete>
-                                    <h:outputText value="Institution"/>
-                                    <h:selectOneListbox id="cmbInstitution" size="1" value="#{packageItemFeeController.currentFee.institution}" >
-                                        <f:selectItem itemLabel="Please select an Institution"/>
-                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                        <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/> 
-                                    </h:selectOneListbox>
-                                    <h:outputText value="Department"/>
-                                    <h:selectOneListbox id="cmbDepartment" size="1" value="#{packageItemFeeController.currentFee.department}" >
-                                        <f:selectItem itemLabel="Please select an Institution"/>
-                                        <f:selectItems value="#{packageItemFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
-                                    </h:selectOneListbox>
-                                    <h:outputText value="Fee"/>
-                                    <h:inputText autocomplete="off" id="txtFee" value="#{packageItemFeeController.currentFee.fee}"/>
-                                    <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add" action="#{packageItemFeeController.saveCharge}" styleClass="buttons">
-                                        <f:ajax render="dtbFee gpVeda msg" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
-                                    </h:commandButton>
-                                    <p:defaultCommand target="btnAddTo"/>
-                                </h:panelGrid>
+                                <div class="row mt-1">
+                                    <div class="col-2"><h:outputText value="Speciality"/></div>
+                                    <div class="col-5">
+                                        <p:autoComplete  
+                                            forceSelection="true" 
+                                            id="cmbSpe" 
+                                            inputStyleClass="form-control"
+                                            value="#{packageItemFeeController.currentFee.speciality}" 
+                                            completeMethod="#{specialityController.completeSpeciality}" 
+                                            var="sp" itemLabel="#{sp.name}" 
+                                            itemValue="#{sp}" 
+                                            size="30"  
+                                            class="w-100">
+                                            <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
 
+                                <div class="row mt-1">
+                                    <div class="col-2"><h:outputText value="Staff"/></div>
+                                    <div class="col-5">
+                                        <p:autoComplete  
+                                            forceSelection="true" 
+                                            id="cmbDoc" 
+                                            value="#{packageItemFeeController.currentFee.staff}" 
+                                            completeMethod="#{packageItemFeeController.completeStaff}" 
+                                            var="st" 
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{st.person.nameWithTitle}" 
+                                            itemValue="#{st}" 
+                                            size="30"  
+                                            class="w-100">
+                                            <f:ajax execute="cmbSpe" event="keypress"/>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2"><h:outputText value="Institution" class="mt-2"/></div>
+                                    <div class="col-5">
+                                        <p:selectOneMenu id="cmbInstitution" value="#{packageItemFeeController.currentFee.institution}" class="w-100">
+                                            <f:selectItem itemLabel="Please select an Institution"/>
+                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                            <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/> 
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2"><h:outputText value="Department"/></div>
+                                    <div class="col-5">
+                                        <p:selectOneMenu id="cmbDepartment" value="#{packageItemFeeController.currentFee.department}" class="w-100">
+                                            <f:selectItem itemLabel="Please select an Institution"/>
+                                            <f:selectItems value="#{packageItemFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2"><h:outputText value="Fee"/></div>
+                                    <div class="col-5">
+                                        <p:inputText autocomplete="off" id="txtFee" value="#{packageItemFeeController.currentFee.fee}" class="w-100">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                                <p:commandButton 
+                                    id="btnAddTo" 
+                                    value="Add Fee" 
+                                    class="ui-button-warning mt-2"
+                                    icon="fa fa-plus"
+                                    action="#{packageItemFeeController.saveCharge}" 
+                                    >
+                                    <f:ajax render="dtbFee gpVeda msg" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
+                                </p:commandButton>
+
+                                <p:defaultCommand target="btnAddTo"/>
+
+                            </p:panel>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <p:panel header="Package Prices" >
                                 <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{packageItemFeeController.charges}" var="bi" >
                                     <p:column headerText="Fee Name">
                                         <h:outputLabel value="#{bi.name}"/>
@@ -89,30 +171,25 @@
                                     <p:column headerText="Fee">
                                         <h:outputLabel value="#{bi.fee}"/>
                                     </p:column>
-                                   
+
                                     <p:column headerText="Remove">
-                                        <h:commandButton id="remove" value="Remove" action="#{packageItemFeeController.removeFee}" >
+                                        <p:commandButton 
+                                            id="remove" 
+                                            value="Remove" 
+                                            class="ui-button-danger" 
+                                            icon="fas fa-trash"
+                                            action="#{packageItemFeeController.removeFee}" >
                                             <f:setPropertyActionListener value="#{bi}" target="#{packageItemFeeController.removedPackageFee}"/>
                                             <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee" process="remove dtbFee" />
-                                        </h:commandButton>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
-
                             </p:panel>
-
-                        </h:panelGrid>
-
-                    </p:panelGrid>
-
-
-
-
+                        </div>
+                    </div>
 
                 </p:panel>
             </h:form>
-
         </h:panelGroup>
-
     </ui:define>
-
 </ui:composition>
