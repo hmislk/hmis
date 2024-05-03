@@ -48,6 +48,10 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.entity.Payment;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -58,10 +62,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -98,6 +98,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ServiceSessionBean serviceSessionBean;
     @EJB
     BillSessionFacade billSessionFacade;
+    @EJB
+    PaymentFacade paymentFacade;
     //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Injects">
@@ -118,6 +120,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
 
+    private Bill batchBill;
     private boolean printPreview;
     //Interface Data
     private PaymentScheme paymentScheme;
@@ -151,6 +154,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private ItemLight itemLight;
     private List<ItemLight> opdPackages;
     private boolean patientDetailsEditable;
+    private List<Payment> payments;
 
     //</editor-fold>
     private void savePatient() {
@@ -214,31 +218,52 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     private void saveBatchBill() {
-        Bill tmp = new BilledBill();
-        tmp.setBillType(BillType.OpdBathcBill);
-        tmp.setPaymentScheme(paymentScheme);
-        tmp.setPaymentMethod(paymentMethod);
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        getBillFacade().create(tmp);
+        batchBill = new BilledBill();
+        batchBill.setBillType(BillType.OpdBathcBill);
+        batchBill.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        batchBill.setPaymentScheme(paymentScheme);
+        batchBill.setPaymentMethod(paymentMethod);
+        batchBill.setCreatedAt(new Date());
+        batchBill.setCreater(getSessionController().getLoggedUser());
+        
+        batchBill.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        batchBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        batchBill.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        batchBill.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        batchBill.setStaff(staff);
+        batchBill.setReferredBy(referredBy);
+        batchBill.setCreditCompany(creditCompany);
+
+        getBillBean().setPaymentMethodData(batchBill, paymentMethod, getPaymentMethodData());
+
+        batchBill.setBillDate(new Date());
+        batchBill.setBillTime(new Date());
+        batchBill.setPatient(getPatient());
+        batchBill.setPaymentMethod(paymentMethod);
+        batchBill.setPaymentScheme(getPaymentScheme());
+
+        batchBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(batchBill.getDepartment(), batchBill.getToDepartment(), batchBill.getBillType(), BillClassType.BilledBill));
+        batchBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(batchBill.getInstitution(), batchBill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+        
+        getBillFacade().create(batchBill);
 
         double dbl = 0;
         double dblTot = 0;
         for (Bill b : bills) {
-            b.setBackwardReferenceBill(tmp);
+            b.setBackwardReferenceBill(batchBill);
             dbl += b.getNetTotal();
             dblTot += b.getTotal();
             getBillFacade().edit(b);
 
-            tmp.getForwardReferenceBills().add(b);
+            batchBill.getForwardReferenceBills().add(b);
         }
 
-        tmp.setNetTotal(dbl);
-        tmp.setTotal(dblTot);
-        getBillFacade().edit(tmp);
+        batchBill.setNetTotal(dbl);
+        batchBill.setTotal(dblTot);
+        batchBill.setDiscount(dblTot-dbl);
+        getBillFacade().edit(batchBill);
 
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
     }
 
     public void cancellAll() {
@@ -297,6 +322,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         saveBatchBill();
+        payments = createPayments(getBatchBill(), paymentMethod);
         saveBillItemSessions();
 
         clearBillItemValues();
@@ -313,6 +339,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
         temp.setBillType(BillType.OpdBill);
+        temp.setBillTypeAtomic(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
 
         temp.setBillPackege((Packege) currentBillItem.getItem());
 
@@ -349,6 +376,92 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return temp;
 
+    }
+
+    public List<Payment> createPayments(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    break;
+                case Cash:
+                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
+            ps.add(p);
+        }
+        return ps;
     }
 
     private boolean errorCheck() {
@@ -501,6 +614,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         setYearMonthDay(null);
         setBills(null);
         paymentMethodData = null;
+        payments = null;
         setChequeBank(null);
 
         setCurrentBillItem(null);
@@ -967,11 +1081,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void setItemLight(ItemLight itemLight) {
-        this.itemLight=itemLight;
+        this.itemLight = itemLight;
         if (this.itemLight != null) {
             getCurrentBillItem().setItem(itemController.findItem(this.itemLight.getId()));
         }
     }
+
     public void feeChangeListener(BillFee bf) {
         if (bf.getFeeGrossValue() == null) {
             bf.setFeeGrossValue(0.0);
@@ -983,7 +1098,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         bf.setTmpChangedValue(bf.getFeeGrossValue());
         calTotals();
     }
-  
+
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }
@@ -1000,6 +1115,25 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
+    public List<Payment> getPayments() {
+        if (payments == null) {
+            payments = new ArrayList<>();
+        }
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }

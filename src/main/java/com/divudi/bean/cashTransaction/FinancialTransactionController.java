@@ -598,7 +598,6 @@ public class FinancialTransactionController implements Serializable {
             atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBillTypeAtomic(), p.getPaymentMethod(), p.getNetTotal());
             calculateBillValuesFromBillTypes(p);
         }
-//        calculateTotalFundsFromShiftStartToNow();
         financialReport = new FinancialReport(atomicBillTypeTotals);
     }
 

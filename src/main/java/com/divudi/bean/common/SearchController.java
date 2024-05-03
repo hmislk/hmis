@@ -163,6 +163,7 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
+    private BillTypeAtomic billTypeAtomic;
 
     BillSummaryRow billSummaryRow;
     Bill cancellingIssueBill;
@@ -1266,6 +1267,14 @@ public class SearchController implements Serializable {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
     public class billsWithbill {
@@ -6890,7 +6899,85 @@ public class SearchController implements Serializable {
         }
     }
 
+    public void processAllFinancialTransactionalBillListBySingleUserByIds() {
+        if (startBillId == null && endBillId == null) {
+            JsfUtil.addErrorMessage("Enter at leat on bill number");
+            return;
+        }
+        if (webUser == null) {
+            webUser = sessionController.getLoggedUser();
+        }
+        billSummaryRows = null;
+        grossTotal = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        totalBillCount = 0.0;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.creater=:wu ";
+
+        if (billTypeAtomic == null) {
+            jpql += "  and b.billTypeAtomic in :abts  ";
+            params.put("abts", billTypesToFilter);
+        } else {
+            jpql += "  and b.billTypeAtomic=:abt  ";
+            params.put("abt", billTypeAtomic);
+        }
+
+        if (startBillId != null) {
+            jpql += " and b.id > :sid ";
+            params.put("sid", startBillId);
+        }
+        if (endBillId != null) {
+            jpql += " and b.id < :eid ";
+            params.put("eid", endBillId);
+        }
+
+        if (paymentMethod != null) {
+            jpql += " and b.paymentMethod=:pm ";
+            params.put("pm", paymentMethod);
+        }
+        if (paymentMethods != null) {
+            jpql += " and b.paymentMethod in :pms ";
+            params.put("pms", paymentMethods);
+        }
+        jpql += " order by b.paymentMethod, b.billTypeAtomic ";
+
+        params.put("wu", webUser);
+        params.put("ret", false);
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+
+        bills = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        System.out.println("billSummaryRows = " + bills);
+
+        for (Bill bss : bills) {
+            grossTotal += bss.getTotal();
+            discount += bss.getDiscount();
+            netTotal += bss.getNetTotal();
+            totalBillCount ++;
+        }
+    }
+
     public void processAllFinancialTransactionalSummarybySingleUserByIds() {
+        if (startBillId == null && endBillId == null) {
+            JsfUtil.addErrorMessage("Enter at leat on bill number");
+            return;
+        }
+        if (webUser == null) {
+            webUser = sessionController.getLoggedUser();
+        }
         billSummaryRows = null;
         grossTotal = 0.0;
         discount = 0.0;
@@ -6905,11 +6992,13 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
         jpql = "select new com.divudi.light.common.BillSummaryRow("
+                + "b.billTypeAtomic, "
                 + "sum(b.total), "
                 + "sum(b.discount), "
                 + "sum(b.netTotal), "
-                + "count(b), "
-                + "b.paymentMethod) "
+                + "count(b),"
+                + "b.paymentMethod "
+                + ") "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.creater=:wu "
@@ -6924,15 +7013,15 @@ public class SearchController implements Serializable {
             params.put("eid", endBillId);
         }
 
-        if(paymentMethod!=null){
+        if (paymentMethod != null) {
             jpql += " and b.paymentMethod=:pm ";
             params.put("pm", paymentMethod);
         }
-        if(paymentMethods!=null){
+        if (paymentMethods != null) {
             jpql += " and b.paymentMethod in :pms ";
             params.put("pms", paymentMethods);
         }
-        jpql += " group by b.paymentMethod "
+        jpql += " group by b.paymentMethod, b.billTypeAtomic "
                 + " order by b.creater.webUserPerson";
 
         params.put("wu", webUser);
@@ -6941,11 +7030,11 @@ public class SearchController implements Serializable {
 
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
-        
+
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         System.out.println("billSummaryRows = " + billSummaryRows);
-        
+
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
             discount += bss.getDiscount();
@@ -9244,6 +9333,11 @@ public class SearchController implements Serializable {
         return "/lab/search_for_reporting_ondemand";
     }
 
+    public String navigateToListSingleUserBills() {
+        processAllFinancialTransactionalBillListBySingleUserByIds();
+        return "/cashier/shift_end_summary_bill_list";
+    }
+
     public SearchController() {
     }
 
@@ -9832,6 +9926,4 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
-    
-    
 }

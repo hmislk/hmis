@@ -17,23 +17,45 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />  
                     <p:panel rendered="#{!pharmacySaleController3.billPreview}">
+                        <i class="fas fa-shopping-cart rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
                         <p:panel>
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" disabled="true"  class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-                            <i class="fas fa-shopping-cart rounded-circle shadow-lg" style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;"></i>
-
+                
                         </p:panel>
 
                         <p:panel class="w-100">
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
                                 <h:outputLabel value="Pharmacy Retail Bill (Sale 4)" class="mx-4"></h:outputLabel>
+                                <p:commandButton accesskey="n" 
+                                                 icon="fa fa-plus"
+                                                 value="New Bill"  
+                                                 style="float: right;"
+                                                 ajax="false" action="pharmacy_bill_retail_sale"
+                                                 class="mx-1 ui-button-warning"
+                                                 actionListener="#{pharmacySaleController3.resetAll()}"  ></p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    accesskey="s"
+                                    value="Settle"
+                                    icon="fa fa-check"
+                                    style="float: right;"
+                                    class="ui-button-success mx-1"
+                                    onclick="if (!confirm('Are you sure?'))
+                                                                            return false"
+                                                                        action="#{pharmacySaleController3.settleBillWithPay}" ></p:commandButton>
                             </f:facet>
 
                             <div class="row">
                                 <div class="col-md-7" >
+                                    <p:panel>
+                                         <f:facet name="header" >
+                                            <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
+                                            <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                        </f:facet>
                                     <div class="row w-100 m-1 p-1 boder-1">
                                         <div class="col-md-5">
 
@@ -110,7 +132,6 @@
                                                         value="Add" 
                                                         styleClass="ui-button-success" 
                                                         action="#{pharmacySaleController3.addBillItem()}" 
-                                                        ajax="false" 
                                                         process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
                                                         update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" >
                                                     </p:commandButton>
@@ -148,7 +169,7 @@
                                     <p:focus id="focusQty" for="txtQty"></p:focus>
                                     <p:focus id="focusItem" for="acStock"></p:focus>
 
-
+                                    </p:panel>
 
 
                                     <p:panel id="pBis">
@@ -308,6 +329,9 @@
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
+                                        <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{pharmacySaleController3}"/>
                                         <div class="row">
                                             <div class="col">
                                                 <p:panel class="w-100">
@@ -335,30 +359,7 @@
                                                                         listener="#{pharmacySaleController3.changeListener()}"/>
                                                             </p:selectOneMenu>
                                                         </div>
-                                                        <div class="col-md-7">
-                                                            <p:commandButton 
-                                                                ajax="false" 
-                                                                accesskey="s"
-                                                                value="Settle"
-                                                                icon="fa fa-check"
-                                                                class="ui-button-success mx-1"
-                                                                onclick="if (!confirm('Are you sure?'))
-                                                                            return false"
-                                                                action="#{pharmacySaleController3.settleBillWithPay}" >
-                                                                <f:facet name="title" >
-                                                                    <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
-                                                                    <h:outputLabel value="ettle"  ></h:outputLabel>
-                                                                </f:facet>
-                                                            </p:commandButton>
-
-                                                            <p:commandButton accesskey="n" 
-                                                                             icon="fa fa-plus"
-                                                                             value="New Bill"  
-                                                                             ajax="false" action="pharmacy_bill_retail_sale"
-                                                                             class="mx-1 ui-button-warning"
-                                                                             actionListener="#{pharmacySaleController3.resetAll()}"  ></p:commandButton>
-
-                                                        </div>
+                                                        
 
                                                     </div>
                                                     <div class="row" >
@@ -515,9 +516,7 @@
 
                                                 </p:panel>
 
-                                                <common:patient_details  
-                                                    editable="true"
-                                                    controller="#{pharmacySaleController3}"/>
+                                                
 
 
 
