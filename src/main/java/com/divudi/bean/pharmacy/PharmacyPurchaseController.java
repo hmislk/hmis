@@ -116,6 +116,7 @@ public class PharmacyPurchaseController implements Serializable {
     List<PharmacyStockRow> rows;
 
     BillListWithTotals billListWithTotals;
+    private double billItemsTotalQty;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -436,12 +437,12 @@ public class PharmacyPurchaseController implements Serializable {
         //   saveBillComponent();
 
         Payment p = createPayment(getBill());
-
+        billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
-
+            billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
@@ -473,7 +474,10 @@ public class PharmacyPurchaseController implements Serializable {
 
             getBill().getBillItems().add(i);
         }
-
+        if (billItemsTotalQty == 0.0){
+            JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
+            return ;
+        }
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
 
         getBillFacade().edit(getBill());
@@ -839,6 +843,14 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public double getBillItemsTotalQty() {
+        return billItemsTotalQty;
+    }
+
+    public void setBillItemsTotalQty(double billItemsTotalQty) {
+        this.billItemsTotalQty = billItemsTotalQty;
     }
 
 }

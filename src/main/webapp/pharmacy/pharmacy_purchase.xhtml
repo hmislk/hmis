@@ -10,6 +10,7 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
         <h:form id="bill">
+            <p:growl id="msg"/>
             <p:panel rendered="#{!pharmacyPurchaseController.printPreview}" style="height: 100vh">
                 <f:facet name="header" > 
                     <h:outputText styleClass="fas fa-shopping-bag"/>
@@ -165,7 +166,7 @@
                                                      icon="fas fa-plus"
                                                      action="#{pharmacyPurchaseController.addItem}" 
 
-                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
+                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
 
                                 </div>
                             </div>
