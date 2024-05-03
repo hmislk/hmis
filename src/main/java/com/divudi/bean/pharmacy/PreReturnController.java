@@ -9,6 +9,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
@@ -133,6 +134,7 @@ public class PreReturnController implements Serializable {
         double dbl = 0 - getReturnBill().getTotal();
 
         getReturnBill().setBillType(BillType.PharmacyPre);
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         getReturnBill().setTotal(dbl);
         getReturnBill().setNetTotal(dbl);
 

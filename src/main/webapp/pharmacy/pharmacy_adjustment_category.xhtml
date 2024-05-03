@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                 template="/pharmacy/admin/index.xhtml"
+                template="/pharmacy/admin/index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -12,53 +12,53 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
+                <p:growl id="msg"/>
+                <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
 
 
                 <p:panel header="Manage Adjustment Category" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
-
-                        <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >
-                                <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{adjustmentCategoryController.current}" style="min-width: 223px">
-                                        <f:selectItems  value="#{adjustmentCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax render="gpDetail" execute="lstSelect" >
-                                        </f:ajax>
-                                    </h:selectOneListbox>
-                                </h:panelGrid>
-                                <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add" action="#{adjustmentCategoryController.prepareAdd()}" styleClass="buttons" >
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
-                                        </f:ajax>
-                                    </h:commandButton>
-                                    <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{adjustmentCategoryController.delete()}"  value="Delete"  >
-                                    </h:commandButton>
-                                </h:panelGrid>
-                            </p:panel>
-                        </h:panelGrid  >
-
-                        <p:panel>
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
+                    <div class="row">
+                        <div class="col-5">
+                            <p:commandButton id="btnAdd"
+                                             update="lstSelect gpDetail msg" 
+                                             icon="fas fa-plus"
+                                             process="btnAdd"
+                                             class="ui-button-success w-25"
+                                             value="Add" action="#{adjustmentCategoryController.prepareAdd()}">
+                            </p:commandButton>
+                            <p:commandButton id="btnDelete" 
+                                             update="lstSelect gpDetail msg" process="btnDelete"
+                                             icon="fas fa-trash"
+                                             class=" m-1 ui-button-danger w-25"
+                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                         return false;" action="#{adjustmentCategoryController.delete()}"  value="Delete"  >
+                            </p:commandButton>
+                            <p:selectOneListbox  id="lstSelect" value="#{adjustmentCategoryController.current}" class="w-100" filter="true" >
+                                <f:selectItems  value="#{adjustmentCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+                        </div>
+                        <div class="col-7">
+                            <p:panel class="w-100" id="gpDetail" header="Details of the Categories">
+                                <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{adjustmentCategoryController.current.name}"  ></h:inputText>
-                                    
+                                    <p:inputText autocomplete="off" id="txtName" value="#{adjustmentCategoryController.current.name}"  ></p:inputText>
+
                                 </h:panelGrid>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save" action="#{adjustmentCategoryController.saveSelected()}" styleClass="buttons">
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
-                                        </f:ajax>
-                                    </h:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
-                            </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid>
+                                <p:commandButton id="btnSave" value="Save" 
+                                                 process="btnSave gpDetail" 
+                                                 update="lstSelect msg" 
+                                                 class=" m-2 ui-button-warning w-25"
+                                                 icon="fas fa-save"
+                                                 action="#{adjustmentCategoryController.saveSelected()}" >
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </p:panel>
+                        </div>
+                    </div>
                 </p:panel>
             </h:form>
 

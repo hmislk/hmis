@@ -63,20 +63,20 @@
                                     icon="fas fa-search" 
                                     ajax="false" 
                                     value="Search All" 
-                                    action="#{searchController.createPharmacyPreTable}"/>
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashier}"/>
 
                                 <p:commandButton 
                                     ajax="false" 
                                     class=" ui-button-warning w-100 my-1" 
                                     icon="fas fa-search" 
                                     value="Search Not Paid Only" 
-                                    action="#{searchController.createPharmacyPreTableNotPaid}"/>
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierNotPaid()}"/>
                                 <p:commandButton 
                                     ajax="false" 
                                     class=" ui-button-warning w-100" 
                                     icon="fas fa-search" 
                                     value="Search Paid Only" 
-                                    action="#{searchController.createPharmacyPreTablePaid}"/>
+                                    action="#{searchController.fillPharmacyPreBillsToAcceptAtCashierGetPaid()}"/>
                                 <h:outputLabel/>
 
                                 <p:defaultCommand target="btnSearch"/>

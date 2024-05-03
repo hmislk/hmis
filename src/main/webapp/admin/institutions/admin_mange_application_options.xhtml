@@ -82,13 +82,17 @@
                                 id="valueInputLongText" value="#{configOptionController.option.optionValue}"
                                 rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="true"/>
 
-                            <!-- For ENUM, dynamically populate options -->
                             <p:selectOneMenu 
-                                class="w-100" 
-                                id="valueInputEnum" value="#{configOptionController.option.enumValue}"
-                                rendered="#{configOptionController.option.valueType eq 'ENUM'}" converter="enumConverter">
-                                <f:selectItems value="#{configOptionController.getEnumValues(configOptionController.option.enumType)}" var="enumVal"
-                                               itemLabel="#{enumVal}" itemValue="#{enumVal}" />
+                                id="enumValueSelector"
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{configOptionController.option.optionValue}" 
+                                rendered="#{configOptionController.option.valueType eq 'ENUM'}">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{enumController.getEnumValues(configOptionController.option.enumType)}"
+                                               var="enumVal"
+                                               itemLabel="#{enumVal}"
+                                               itemValue="#{enumVal}" />
                             </p:selectOneMenu>
 
                             <p:selectBooleanCheckbox id="valueInputBoolean" value="#{configOptionController.option.optionValue}"

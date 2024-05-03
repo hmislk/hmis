@@ -8,115 +8,96 @@
 
     <h:body>
 
-         <ui:composition template="/emr/reports/index.xhtml">
+        <ui:composition template="/emr/reports/index.xhtml">
 
 
             <ui:define name="subcontent">
                 <h:form>
+                    <p:panel header="Visits">
+                        <h:panelGrid columns="2" class="w-100">
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker
+                                id="fromDate"
+                                value="#{patientEncounterController.fromDate}"
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker id="toDate"
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                          value="#{patientEncounterController.toDate}" />
 
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between">
-                            <h5 class="card-title">Visits</h5>
-                            <div>
-                                <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel">
-                                    <p:dataExporter type="xls" target="visitTable" fileName="visitData" />
-                                </p:commandButton>
-                            </div>
+                        </h:panelGrid>
+                        <p:commandButton ajax="false" value="Process"
+                                         icon="fa-solid fa-arrows-rotate"
+                                         class="ui-button-warning" 
+                                         action="#{patientEncounterController.listInstitutionEncounters}" />
+                        <p:commandButton value="Excel" ajax="false"  
+                                         icon="fa-solid fa-file-excel"
+                                         class="ui-button-success mx-2" >
+                            <p:dataExporter type="xls" target="tblVisits" fileName="visits" />
+                        </p:commandButton>
+                        <div class="my-2">
+                            <p:dataTable id="tblVisits" value="#{patientEncounterController.items}"
+                                         var="visit" paginator="true" rows="10" 
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
+                                <p:column sortBy="#{visit.patient.person.nameWithTitle}" headerText="Patient Name"
+                                          filterBy="#{visit.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                   
+                                    <h:outputText value="#{visit.patient.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputText value="Date / Time" />
+                                    </f:facet>
+                                    <h:outputText value="#{visit.encounterDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  ></f:convertDateTime>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputText value="Comments" />
+                                    </f:facet>
+                                    <h:outputText value="#{visit.comments}" />
+                                </p:column>
+                                <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputText value="Visit Weight" />
+                                    </f:facet>
+                                    <h:outputText value="#{visit.weight}" />
+                                </p:column>
+                                <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputText value="BP" />
+                                    </f:facet>
+                                    <h:outputText value="#{visit.sbp}" />
+                                    <h:outputText value="/" />
+                                    <h:outputText value="#{visit.dbp}" />
+                                    <h:outputText value=" mmHg" />
+                                </p:column>
+                                <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputText value="BMI" />
+                                    </f:facet>
+                                    <h:outputText value="#{visit.bmi}" />
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputText value="Actions" />
+                                    </f:facet>
+                                    <p:commandButton ajax="false" 
+                                                     value="View"
+                                                     action="#{pastPatientEncounterController.navigateToViewPastEncounter()}">
+                                        <f:setPropertyActionListener value="#{visit}" target="#{pastPatientEncounterController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
                         </div>
 
-                        <div class="card-body">
+                    </p:panel>
 
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <label for="fromDate">From date</label>
-                                        </div>
-                                        <div class="col-md-8">
-                                            <p:datePicker
-                                                id="fromDate"
-                                                value="#{patientEncounterController.fromDate}"
-                                                showTime="true"
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="toDate">To date</label>
-                                        </div>
-                                        <div class="col-md-8">
-                                            <p:datePicker id="toDate"
-                                                          showTime="true"
-                                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                          value="#{patientEncounterController.toDate}" />
-                                        </div>
-                                        <div class="col-md-4"></div>
-                                        <div class="col-md-8">
-                                            <p:commandButton ajax="false" value="Process"
-                                                             action="#{patientEncounterController.listInstitutionEncounters}" />
-                                            <p:commandButton value="Download Excel" ajax="false">
-                                                <p:dataExporter type="xls" target="tblVisits" fileName="visits" />
-                                            </p:commandButton>
-                                        </div>
-                                    </div>
-
-                                    <p:dataTable id="tblVisits" value="#{patientEncounterController.items}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                        <p:column sortBy="#{visit.patient.person.nameWithTitle}" filterBy="#{visit.patient.person.nameWithTitle}">
-                                            <f:facet name="header">
-                                                <h:outputText value="Patient Name" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.patient.person.nameWithTitle}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
-                                            <f:facet name="header">
-                                                <h:outputText value="Date / Time" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.encounterDate}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
-                                            <f:facet name="header">
-                                                <h:outputText value="Comments" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.comments}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}">
-                                            <f:facet name="header">
-                                                <h:outputText value="VisitWeight" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.weight}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
-                                            <f:facet name="header">
-                                                <h:outputText value="BP" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.sbp}" />
-                                            <h:outputText value="/" />
-                                            <h:outputText value="#{visit.dbp}" />
-                                            <h:outputText value=" mmHg" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
-                                            <f:facet name="header">
-                                                <h:outputText value="BMI" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.bmi}" />
-                                        </p:column>
-                                        <p:column >
-                                            <f:facet name="header">
-                                                <h:outputText value="Actions" />
-                                            </f:facet>
-                                            <p:commandButton ajax="false" 
-                                                             value="View"
-                                                             action="#{patientEncounterController.navigateToOldOpdVisitFromSearch()}">
-                                                <f:setPropertyActionListener value="#{visit}" target="#{patientEncounterController.current}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                        </p:column>
-                                    </p:dataTable>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
 
                 </h:form>
             </ui:define>

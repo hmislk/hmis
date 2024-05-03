@@ -58,6 +58,12 @@
                         value="OPD Token" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{opdTokenController.navigateToOpdQueue()}" 
+                        value="OPD Queue" 
+                        icon="fa fa-users" 
+                        rendered="true" />
                     <p:submenu 
                         id="smOpdBilling"
                         label="Billing"
@@ -112,10 +118,11 @@
                             ajax="false" 
                             action="#{opdPreSettleController.navigateToSettleOpdPreBills()}" 
                             actionListener="#{searchController.makeListNull}"  
-                            value="Accept Payments for OPD Bills"
+                            value="Accept Payments for OPD Batch Bills"
                             icon="fa fa-money-bill-alt"></p:menuitem>
-                        <p:menuitem 
+                        <p:menuitem
                             ajax="false" 
+                            rendered="false"
                             action="/opd_search_pre_batch_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"  
                             value="Accept Payment for OPD Batch Bills"
@@ -231,19 +238,19 @@
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>
-                    <p:menuitem 
-                        ajax="false" 
-                        action="#{tokenController.navigateToTokenIndex()}" 
-                        value="Token Management" 
-                        icon="fa fa-file-medical" 
-                        rendered="true" />
+                    <!--                    <p:menuitem 
+                                            ajax="false" 
+                                            action="#{tokenController.navigateToTokenIndex()}" 
+                                            value="Token Management" 
+                                            icon="fa fa-file-medical" 
+                                            rendered="true" />-->
                     <p:menuitem 
                         ajax="false" 
                         action="#{reportController.navigatetoOPDLabReportByMenu()}" 
                         value="Lab Report Print" 
                         icon="fa fa-file-medical" 
                         rendered="#{webUserController.hasPrivilege('OpdLabReportSearch')}"
-                         />
+                        />
                     <p:menuitem 
                         ajax="false" 
                         action="#{cashierReportController.navigateToOpdSummeries()}" 
@@ -405,7 +412,7 @@
 
                     <p:menuitem 
                         ajax="false"
-                        action="#{patientInvestigationController.navigateToSampleManagement()}"
+                        action="#{patientInvestigationController.navigateToPatientSampelIndex()}"
                         value="Sampling" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
@@ -783,8 +790,7 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index?faces-redirect=true"  value="Reports" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index?faces-redirect=true"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/pharmacy/pharmacy_analytics?faces-redirect=true"  value="Theatre Analytics" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
                 </p:submenu>
 
                 <p:submenu   
@@ -858,7 +864,7 @@
                     <p:menuitem 
                         ajax="false"  
                         value="Channel Queue"  
-                        action="#{bookingController.navigateToChannelQueueFromMenu()}" 
+                        action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem 
@@ -878,7 +884,7 @@
                         ajax="false"  
                         value="Channel Sheduling"  
                         action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
+<!--                    <p:menuitem ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>-->
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false"></p:menuitem>
                     <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard?faces-redirect=true" rendered="false"/>
@@ -903,7 +909,7 @@
                         <p:menuitem  ajax="false"  value="Debit Note Search"  action="/channel/channel_debit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
-                    <p:menuitem ajax="false" action="/reportCashier/report_cashier?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/analytics/opd/index?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
 

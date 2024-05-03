@@ -4,10 +4,12 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
@@ -63,9 +65,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     private PharmacyBillSearch pharmacyBillSearch;
     @Inject
-    OpdPreBillController opdPreBillController;
+    OpdTabPreBillController opdTabPreBillController;
     @Inject
     OpdPreSettleController opdPreSettleController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
+    @Inject
+    OpdPreBillController opdPreBillController;
+ 
 
     // </editor-fold> 
     private Token currentToken;
@@ -270,8 +277,23 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.makeNull();
         opdPreBillController.setPatient(currentToken.getPatient());
         opdPreBillController.setToken(currentToken);
+        
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
+    
+     public String navigateToNewOpdBillForCashierTabView() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
+        opdTabPreBillController.setSelectedCurrentlyWorkingStaff(currentToken.getStaff());
+        return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
+    }
+
 
     public void navigateToNewOpdBill() {
         if (currentToken == null) {
@@ -279,9 +301,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        opdPreBillController.makeNull();
-        opdPreBillController.setPatient(currentToken.getPatient());
-        opdPreBillController.setToken(currentToken);
+        opdTabPreBillController.makeNull();
+        opdTabPreBillController.setPatient(currentToken.getPatient());
+        opdTabPreBillController.setToken(currentToken);
     }
 
     public void fillOpdTokens() {
@@ -300,9 +322,9 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             j += " and t.counter =:ct";
             m.put("ct", counter);
         }
-        j += " order by t.id DESC";
+        j += " order by t.id ASC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-        //System.out.println("currentTokens " + currentTokens);
+        
     }
 
     public String getTokenStatus(Token token) {
@@ -346,10 +368,27 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToTokenIndex() {
-        resetClassVariables();
-        return "/opd/token/index?faces-redirect=true";
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetClassVariables();
+                return "/opd/token/index?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            resetClassVariables();
+            return "/opd/token/index?faces-redirect=true";
+        }
     }
 
+    public String navigateToOpdQueue() {
+        fillOpdTokens();
+        return "/opd/token/opd_queue?faces-redirect=true";
+    }
+    
     public String navigateToManageOpdTokensCompleted() {
         counter = null;
         fillOpdTokensCompleted();

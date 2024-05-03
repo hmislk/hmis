@@ -65,6 +65,15 @@
                                     actionListener="#{patientInvestigationController.listPatientInvestigationsWhereSamplingCompleting()}" 
                                     value="List Collected"   >
                                 </p:commandButton>
+                                
+                                 <p:commandButton 
+                                    class="w-100 my-1" 
+                                    id="btnToListSamples" 
+                                    ajax="false" 
+                                    immediate="true"
+                                    action="#{patientSampleController.navigateToListPatientSamples()}" 
+                                    value="To List Samples"   >
+                                </p:commandButton>
 
                             </div>
 
@@ -83,7 +92,7 @@
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="10,25,50"
                                         >
-                                        <p:column headerText="Sampale ID" width="120" sortBy="#{smpIx.id}" filterBy="#{smpIx.id}" filterMatchMode="contains">
+                                        <p:column headerText="Patient Ix ID" width="120" sortBy="#{smpIx.id}" filterBy="#{smpIx.id}" filterMatchMode="contains">
                                             <p:outputLabel value="#{smpIx.id}" />
                                         </p:column>
                                         <p:column headerText="Bill No" width="100">

@@ -24,6 +24,8 @@ public class ArrivalRecord extends FingerPrintRecord implements Serializable {
     ServiceSession serviceSession;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date sessionDate;
+    
+    private SessionInstance sessionInstance;
 
     public ServiceSession getServiceSession() {
         return serviceSession;
@@ -41,6 +43,14 @@ public class ArrivalRecord extends FingerPrintRecord implements Serializable {
 
     public void setSessionDate(Date sessionDate) {
         this.sessionDate = sessionDate;
+    }
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
     }
     
     

@@ -21,6 +21,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -952,12 +953,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
             bi.setDiscountRate(calculateBillItemDiscountRate(bi));
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
-            
-            
+
             bi.setGrossValue(bi.getRate() * bi.getQty());
             bi.setDiscount(bi.getDiscountRate() * bi.getQty());
             bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
-            
+
         }
     }
 
@@ -1334,7 +1334,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return false;
     }
 
-    private void savePreBillFinally(Patient pt) {
+    private void savePreBillFinallyForRetailSale(Patient pt) {
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }
@@ -1367,6 +1367,45 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setInsId(insId);
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
+
+    }
+
+    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        }
+        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getPreBill().setCreater(getSessionController().getLoggedUser());
+
+        getPreBill().setPatient(pt);
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+        getPreBill().setToStaff(toStaff);
+        getPreBill().setToInstitution(toInstitution);
+
+        getPreBill().setComments(comment);
+
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
+
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setPaymentMethod(getPaymentMethod());
+        getPreBill().setPaymentScheme(getPaymentScheme());
+
+        getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setInsId(insId);
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setDeptId(deptId);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
     }
@@ -1381,6 +1420,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getSaleBill().copyValue(getPreBill());
 
         getSaleBill().setBillType(BillType.PharmacySale);
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1606,7 +1646,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt);
+        savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -1781,7 +1821,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt);
+        savePreBillFinallyForRetailSale(pt);
         savePreBillItemsFinally(tmpBillItems);
 
         saveSaleBill();
@@ -1792,8 +1832,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
-
-        getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
@@ -2333,6 +2371,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;

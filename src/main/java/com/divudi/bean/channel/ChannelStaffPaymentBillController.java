@@ -114,7 +114,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private SessionInstance sessionInstance;
     boolean considerDate = false;
     BillFee billFee;
-    
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -410,8 +409,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
 
-        
-
     }
 
     public void calculateSessionDueFees() {
@@ -463,7 +460,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("class", BilledBill.class);
         List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
-        
+
     }
 
     public void calculateDueFeesAgency() {
@@ -502,8 +499,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("bt", BillType.ChannelAgent);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-        
 
     }
 
@@ -618,7 +613,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
         tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
-
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
@@ -631,8 +626,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return tmp;
     }
-    
-     private Bill createPaymentBillForSession() {
+
+    private Bill createPaymentBillForSession() {
         BilledBill tmp = new BilledBill();
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
@@ -651,8 +646,19 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setInstitution(getSessionController().getInstitution());
         tmp.setNetTotal(0 - totalPaying);
         tmp.setPaymentMethod(paymentMethod);
-        tmp.setStaff(sessionInstance.getStaff());
-        tmp.setToStaff(sessionInstance.getStaff());
+        if (sessionInstance == null || sessionInstance.getStaff() == null) {
+            if (currentStaff != null) {
+                tmp.setStaff(currentStaff);
+                tmp.setToStaff(currentStaff);
+            } else {
+                // Handle the case when both sessionInstance and currentStaff are null
+                // Depending on your requirements, you might throw an exception or handle it differently
+                throw new IllegalStateException("Both sessionInstance and currentStaff are null.");
+            }
+        } else {
+            tmp.setStaff(sessionInstance.getStaff());
+            tmp.setToStaff(sessionInstance.getStaff());
+        }
         tmp.setTotal(0 - totalPaying);
 
         return tmp;
@@ -841,7 +847,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         getSmsFacade().edit(e);
         JsfUtil.addSuccessMessage("SMS Sent");
     }
-    
+
     public void sendSmsAfterSessionPayment() {
         Sms e = new Sms();
         e.setCreatedAt(new Date());
@@ -910,7 +916,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return s;
     }
-    
+
     private String generateSessionPaymentSms(Bill b, SessionInstance si) {
         String s;
         String template;
@@ -918,14 +924,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 "dd MMM");
         //System.out.println("date = " + date);
         String time = "";
-        if(si.getSessionTime()!=null){
+        if (si.getSessionTime() != null) {
             time = CommonController.getDateFormat(
-                si.getSessionTime(),
-                "hh:mm a");
-        }else if(si.getOriginatingSession().getStartingTime()!=null){
+                    si.getSessionTime(),
+                    "hh:mm a");
+        } else if (si.getOriginatingSession().getStartingTime() != null) {
             time = CommonController.getDateFormat(
-                si.getOriginatingSession().getStartingTime(),
-                "hh:mm a");
+                    si.getOriginatingSession().getStartingTime(),
+                    "hh:mm a");
         }
         template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment();
         s = genarateTemplateForSms(b, sessionInstance, template);
@@ -980,14 +986,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return s;
     }
-    
+
     public String genarateTemplateForSms(Bill b, SessionInstance sii, String template) {
         String s;
         if (b == null) {
             s = "error in bill";
             return s;
         }
-        
+
         SessionInstance si = sii;
         ServiceSession oss = si.getOriginatingSession();
 
@@ -1017,7 +1023,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return s;
     }
-
 
     public void settleBillAgent() {
         if (errorCheckForAgency()) {

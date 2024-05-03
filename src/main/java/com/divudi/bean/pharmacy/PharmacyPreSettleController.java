@@ -14,6 +14,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -379,6 +380,7 @@ public class PharmacyPreSettleController implements Serializable {
         getSaleBill().copyValue(getPreBill());
 
         getSaleBill().setBillType(BillType.PharmacySale);
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
 
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -410,6 +412,7 @@ public class PharmacyPreSettleController implements Serializable {
         getSaleReturnBill().copyValue(getPreBill());
 
         getSaleReturnBill().setBillType(BillType.PharmacySale);
+        getSaleReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
         getSaleReturnBill().setReferenceBill(getPreBill());
         getSaleReturnBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleReturnBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -872,7 +875,7 @@ public class PharmacyPreSettleController implements Serializable {
                 return "";
             } else {
                 setPreBill(args);
-                return "/pharmacy/pharmacy_bill_pre_settle";
+                return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
             }
         } else {
             searchController.makeListNull();
@@ -885,6 +888,7 @@ public class PharmacyPreSettleController implements Serializable {
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyPre);
+            preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
         }
         return preBill;
     }
@@ -900,7 +904,6 @@ public class PharmacyPreSettleController implements Serializable {
     public Bill getSaleBill() {
         if (saleBill == null) {
             saleBill = new BilledBill();
-            //  saleBill.setBillType(BillType.PharmacySale);
         }
         return saleBill;
     }
@@ -909,6 +912,7 @@ public class PharmacyPreSettleController implements Serializable {
         if (saleReturnBill == null) {
             saleReturnBill = new RefundBill();
             saleReturnBill.setBillType(BillType.PharmacySale);
+            saleReturnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         }
         return saleReturnBill;
     }
