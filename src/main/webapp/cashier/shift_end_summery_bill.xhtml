@@ -231,7 +231,7 @@
                                         <td>#{financialTransactionController.financialReportByBills.netOtherNonCreditTotal}</td>
                                     </tr>
                                     <tr>
-                                        <td>Float My-Safe</td>
+                                        <td>Float My-Safe (Start Funds)</td>
                                         <td>#{financialTransactionController.financialReportByPayments.floatMySafe}</td>
                                         <td></td> <!-- Assuming no refunded column for My-Safe -->
                                         <td>#{financialTransactionController.financialReportByPayments.floatMySafe}</td> <!-- Assuming My-Safe equals net for floats -->
@@ -241,20 +241,20 @@
                                         <td>Float Collected Handovers</td>
                                         <td>#{financialTransactionController.financialReportByPayments.floatCollected}</td>
                                         <td>#{financialTransactionController.financialReportByPayments.collectionHandover}</td> <!-- Assuming no refunded column for floats -->
-                                        <td>#{financialTransactionController.financialReportByPayments.floatCollected}</td> <!-- Assuming collected equals net for floats -->
+                                        <td>#{financialTransactionController.financialReportByPayments.floatCollected - financialTransactionController.financialReportByPayments.floatCollected}</td> <!-- Assuming collected equals net for floats -->
                                     </tr>
                                     <tr>
                                         <td>Bank Transaction</td>
                                         <td>#{financialTransactionController.financialReportByPayments.bankWithdrawals}</td>
                                         <td>#{financialTransactionController.financialReportByPayments.bankDeposits}</td> <!-- Assuming no refunded column for bank withdrawals -->
-                                        <td>#{financialTransactionController.financialReportByPayments.bankWithdrawals}</td> <!-- Assuming withdrawals equals net -->
+                                        <td>#{financialTransactionController.financialReportByPayments.bankWithdrawals - financialTransactionController.financialReportByPayments.bankDeposits}</td> <!-- Assuming withdrawals equals net -->
                                     </tr>
 
                                     <tr>
-                                        <td>Cash Given Out (Transfer Out)</td>
-                                        <td>#{financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}</td>
-                                        <td></td> <!-- Assuming no refunded column for cash given out -->
-                                        <td>#{financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}</td> <!-- Assuming cash given out equals net -->
+                                        <td>Cash In / Outs</td>
+                                        <td>#{financialTransactionController.financialReportByPayments.cashCollectedTransferIn}</td>
+                                        <td>#{financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}</td> <!-- Assuming no refunded column for cash given out -->
+                                        <td>#{financialTransactionController.financialReportByPayments.cashCollectedTransferIn - financialTransactionController.financialReportByPayments.cashGivenOutTransferOut}</td> <!-- Assuming cash given out equals net -->
                                     </tr>
                                     <tr>
                                         <td>Short Excess</td>
