@@ -71,10 +71,12 @@ public class FinancialTransactionController implements Serializable {
     private List<Payment> paymentsFromShiftSratToNow;
     private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
+    @Deprecated
     private PaymentMethodValues paymentMethodValues;
-    private AtomicBillTypeTotals atomicBillTypeTotals;
-    private FinancialReport financialReport;
-
+    private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
+    private AtomicBillTypeTotals atomicBillTypeTotalsByPayments;
+    private FinancialReport financialReportByBills;
+    private FinancialReport financialReportByPayments;
     //Billed Totals
     private double totalOpdBillValue;
     private double totalPharmecyBillValue;
@@ -533,6 +535,7 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         fillBillsFromShiftStartToNow();
+        fillPaymentsFromShiftStartToNow();
         if (nonClosedShiftStartFundBill != null) {
             currentBill = new Bill();
             currentBill.setBillType(BillType.ShiftEndFundBill);
@@ -562,16 +565,16 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
         currentBillPayments = paymentFacade.findByJpql(jpql, m);
-        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
-        atomicBillTypeTotals = new AtomicBillTypeTotals();
+//        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : currentBillPayments) {
             if (p.getBill().getBillTypeAtomic() == null) {
             }
-            atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
-            calculateBillValuesFromBillTypes(p);
+            atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+//            calculateBillValuesFromBillTypes(p);
         }
 //        calculateTotalFundsFromShiftStartToNow();
-        financialReport = new FinancialReport(atomicBillTypeTotals);
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
 
     public void fillBillsFromShiftStartToNow() {
@@ -584,6 +587,10 @@ public class FinancialTransactionController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_DECREASE));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
 
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
@@ -599,51 +606,54 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         currentBills = billFacade.findByJpql(jpql, m);
-        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
-        atomicBillTypeTotals = new AtomicBillTypeTotals();
+//        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
+        atomicBillTypeTotalsByBills = new AtomicBillTypeTotals();
         for (Bill p : currentBills) {
             if (p.getBillTypeAtomic() == null) {
+            } else {
+                System.out.println("p = " + p);
+                System.out.println("p = " + p.getBillTypeAtomic());
             }
-            atomicBillTypeTotals.addOrUpdateAtomicRecord(p.getBillTypeAtomic(), p.getPaymentMethod(), p.getNetTotal());
-            calculateBillValuesFromBillTypes(p);
+            atomicBillTypeTotalsByBills.addOrUpdateAtomicRecord(p.getBillTypeAtomic(), p.getPaymentMethod(), p.getNetTotal());
+//            calculateBillValuesFromBillTypes(p);
         }
-        financialReport = new FinancialReport(atomicBillTypeTotals);
-        nonClosedShiftStartFundBill.setTotal(paymentMethodValues.getTotalValue());
-        nonClosedShiftStartFundBill.setNetTotal(paymentMethodValues.getTotalValue());
+        financialReportByBills = new FinancialReport(atomicBillTypeTotalsByBills);
+        nonClosedShiftStartFundBill.setTotal(financialReportByBills.getTotal());
+        nonClosedShiftStartFundBill.setNetTotal(financialReportByBills.getTotal());
     }
 
-    public void calculateBillValuesFromBillTypes(Payment p) {
-        if (p.getBill() == null) {
-            return;
-        }
-        if (p.getBill().getBillType() == null) {
-            return;
-        }
-        if (p.getBill().getBillTypeAtomic() == null) {
-            return;
-        }
-
-        switch (p.getBill().getBillTypeAtomic().getBillCategory()) {
-            case BILL:
-                if (p.getPaidValue() != 0.0) {
-                    paymentMethodValues.addValue(p);
-                } else {
-                    paymentMethodValues.addValue(p.getBill());
-                }
-                break;
-            case CANCELLATION:
-            case REFUND:
-                if (p.getPaidValue() != 0.0) {
-                    paymentMethodValues.deductAbsoluteValue(p);
-                } else {
-                    paymentMethodValues.deductAbsoluteValue(p.getBill());
-                }
-                break;
-            default:
-                break;
-
-        }
-    }
+//    public void calculateBillValuesFromBillTypes(Payment p) {
+//        if (p.getBill() == null) {
+//            return;
+//        }
+//        if (p.getBill().getBillType() == null) {
+//            return;
+//        }
+//        if (p.getBill().getBillTypeAtomic() == null) {
+//            return;
+//        }
+//
+//        switch (p.getBill().getBillTypeAtomic().getBillCategory()) {
+//            case BILL:
+//                if (p.getPaidValue() != 0.0) {
+//                    paymentMethodValues.addValue(p);
+//                } else {
+//                    paymentMethodValues.addValue(p.getBill());
+//                }
+//                break;
+//            case CANCELLATION:
+//            case REFUND:
+//                if (p.getPaidValue() != 0.0) {
+//                    paymentMethodValues.deductAbsoluteValue(p);
+//                } else {
+//                    paymentMethodValues.deductAbsoluteValue(p.getBill());
+//                }
+//                break;
+//            default:
+//                break;
+//
+//        }
+//    }
 
     public void calculateBillValuesFromBillTypes(Bill p) {
         if (p == null) {
@@ -657,8 +667,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         paymentMethodValues.addValue(p);
-        
-        
+
 //        switch (p.getBillTypeAtomic().getBillCategory()) {
 //            case BILL:
 //                if (p.getNetTotal() != 0.0) {
@@ -681,7 +690,6 @@ public class FinancialTransactionController implements Serializable {
 //        }
     }
 
-    
     public void calculateTotalFundsFromShiftStartToNow() {
         totalBillCancelledValue = totalOpdBillCanceledValue
                 + totalCcBillCanceledValue
@@ -1294,20 +1302,20 @@ public class FinancialTransactionController implements Serializable {
         return paymentMethodValues;
     }
 
-    public AtomicBillTypeTotals getAtomicBillTypeTotals() {
-        return atomicBillTypeTotals;
+    public AtomicBillTypeTotals getAtomicBillTypeTotalsByBills() {
+        return atomicBillTypeTotalsByBills;
     }
 
-    public void setAtomicBillTypeTotals(AtomicBillTypeTotals atomicBillTypeTotals) {
-        this.atomicBillTypeTotals = atomicBillTypeTotals;
+    public void setAtomicBillTypeTotalsByBills(AtomicBillTypeTotals atomicBillTypeTotalsByBills) {
+        this.atomicBillTypeTotalsByBills = atomicBillTypeTotalsByBills;
     }
 
-    public FinancialReport getFinancialReport() {
-        return financialReport;
+    public FinancialReport getFinancialReportByBills() {
+        return financialReportByBills;
     }
 
-    public void setFinancialReport(FinancialReport financialReport) {
-        this.financialReport = financialReport;
+    public void setFinancialReportByBills(FinancialReport financialReportByBills) {
+        this.financialReportByBills = financialReportByBills;
     }
 
     public List<Bill> getCurrentBills() {
@@ -1318,6 +1326,21 @@ public class FinancialTransactionController implements Serializable {
         this.currentBills = currentBills;
     }
 
+    public AtomicBillTypeTotals getAtomicBillTypeTotalsByPayments() {
+        return atomicBillTypeTotalsByPayments;
+    }
+
+    public void setAtomicBillTypeTotalsByPayments(AtomicBillTypeTotals atomicBillTypeTotalsByPayments) {
+        this.atomicBillTypeTotalsByPayments = atomicBillTypeTotalsByPayments;
+    }
+
+    public FinancialReport getFinancialReportByPayments() {
+        return financialReportByPayments;
+    }
+
+    public void setFinancialReportByPayments(FinancialReport financialReportByPayments) {
+        this.financialReportByPayments = financialReportByPayments;
+    }
     
     
 
