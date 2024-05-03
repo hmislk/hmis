@@ -749,16 +749,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (paymentMethod == null) {
             return true;
         }
+      
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
                 return true;
             }
         }
+      
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
                 return true;
             }
         }
+      
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
             if (paymentMethod == PaymentMethod.Card) {
                 if (paymentMethodData.getCreditCard().getInstitution() == null) {

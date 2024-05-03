@@ -606,12 +606,12 @@
                                                         var="ri" 
                                                         itemLabel="#{ri.name}" 
                                                         itemValue="#{ri}"
-                                                        size="10"
+                                                        scrollHeight="500"
                                                         inputStyleClass="form-control"
                                                         class="w-100">
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
-                                            <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
-                                            <p:column headerText="Code">#{ri.institutionCode}</p:column>
+                                            <p:column headerText="Referring Institution Name" style="padding: 2px;">#{ri.name}</p:column>
+                                            <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
                                         </p:autoComplete>
 
 
@@ -666,11 +666,11 @@
                                                         itemValue="#{ix}" 
                                                         inputStyleClass="form-control"
                                                         class="w-100" 
-                                                        size="10">
-                                            <p:column headerText="Name" >
+                                                        scrollHeight="500">
+                                            <p:column headerText="Name" style="padding: 2px;">
                                                 <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Code" >
+                                            <p:column headerText="Code" style="padding: 2px;">
                                                 <h:outputText value="#{ix.code}" ></h:outputText>
                                             </p:column>
                                         </p:autoComplete>
@@ -695,12 +695,12 @@
                                                         minQueryLength="4"
                                                         itemLabel="#{ix.name}" 
                                                         itemValue="#{ix}" 
-                                                        size="10" >
+                                                        scrollHeight="500" >
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
-                                            <p:column headerText="Collecting Centre Name">
+                                            <p:column headerText="Collecting Centre Name" style="padding: 2px;">
                                                 <h:outputText value="#{ix.name}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Code">
+                                            <p:column headerText="Code" style="padding: 2px;">
                                                 <h:outputText value="#{ix.institutionCode}" ></h:outputText>
                                             </p:column>
 
