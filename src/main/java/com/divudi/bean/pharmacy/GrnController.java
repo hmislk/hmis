@@ -110,7 +110,7 @@ public class GrnController implements Serializable {
     private double difference;
 
     public double calDifference() {
-        difference = Math.abs(insTotal) - Math.abs(grnBill.getTotal());
+        difference = Math.abs(insTotal) - Math.abs(grnBill.getNetTotal());
         return difference;
     }
 
@@ -789,9 +789,8 @@ public class GrnController implements Serializable {
     public void netDiscount() {
         //getGrnBill().setNetTotal(getGrnBill().getTotal() + getGrnBill().getDiscount());
         double grossTotal = 0.0;
-        if (getGrnBill().getDiscount() > 0) {
-            ChangeDiscountLitener();
-        }
+        ChangeDiscountLitener();
+        
         calDifference();
     }
 
