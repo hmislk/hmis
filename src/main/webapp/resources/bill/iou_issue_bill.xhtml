@@ -23,7 +23,6 @@
                 <div class="fiveinchbill " style="page-break-after: always" >
                     <div style="font-weight: bold;text-align: left;font-size: 10pt" class="row mt-2 d-flex align-items-center">
                         <div class="col-12">
-                            <h:outputLabel value="#{cc.attrs.bill.billType}"/>
                             <div class="d-flex justify-content-center" style="font-size: 20px; font-weight: 700"> 
                                 <h:outputLabel value="IOU PAYMENT" rendered="#{cc.attrs.bill.billType eq 'IouIssue'}" /><h:outputLabel value=" - REFUND" rendered="#{cc.attrs.bill.refunded}" style="margin-left: 10px;" /> 
                                 <h:outputLabel rendered="#{cc.attrs.bill.billType eq 'IouReturn'}" value="IOU PAYMENT RETURN"/><h:outputLabel value=" - REFUND" rendered="#{cc.attrs.bill.refunded}" style="margin-left: 10px;" /> 
