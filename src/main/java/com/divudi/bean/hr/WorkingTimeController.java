@@ -9,6 +9,8 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.FeeController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.OpdPreBillController;
 import com.divudi.bean.common.SessionController;
 
@@ -95,6 +97,10 @@ public class WorkingTimeController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     BillController billController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    FeeController feeController;
 
     List<WorkingTime> selectedItems;
     private WorkingTime current;
@@ -195,11 +201,11 @@ public class WorkingTimeController implements Serializable {
         bill.setDepartment(sessionController.getDepartment());
         bill.setInstitution(sessionController.getInstitution());
         billController.save(bill);
-        
+
         Payment paymentForProfessionalPayment = createPayment(bill, paymentMethod);
-        
-        createBillFeesAndSave(bill,paymentForProfessionalPayment,staffBillFeesForPayment);
-        
+
+        createBillFeesAndSave(bill, paymentForProfessionalPayment, staffBillFeesForPayment);
+
         workingTimeForPayment.setProfessinoalPaymentBill(bill);
         save(workingTimeForPayment);
         printPreview = true;
@@ -232,12 +238,51 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void createBillFeesAndSave(Bill b, Payment p, List<BillFee> payingBillFees) {
-        for (BillFee bf : payingBillFees) {
-            saveBillItemForPaymentBill(b, bf, p);
-            bf.setPaidValue(bf.getFeeValue());
-            bf.setSettleValue(bf.getFeeValue());
-            billFeeFacade.edit(bf);
+        int serviceFeeQty=0;
+        int admissionQty=0;
+        if (payingBillFees != null) {
+            for (BillFee bf : payingBillFees) {
+                saveBillItemForPaymentBill(b, bf, p);
+                bf.setPaidValue(bf.getFeeValue());
+                bf.setSettleValue(bf.getFeeValue());
+                billFeeFacade.edit(bf);
+            }
+            serviceFeeQty = payingBillFees.size();
         }
+        
+        BillItem admiddionFeeItem = new BillItem();
+        admiddionFeeItem.setBill(b);
+        admiddionFeeItem.setQty((double)admissionCount);
+        admiddionFeeItem.setCreatedAt(new Date());
+        admiddionFeeItem.setCreater(sessionController.getLoggedUser());
+        admiddionFeeItem.setItem(itemController.findItemByName("Doctor Payment for Admissions", sessionController.getDepartment()));
+        billItemFacade.create(admiddionFeeItem);
+        BillFee admissionFee = new BillFee();
+        admissionFee.setBillItem(admiddionFeeItem);
+        admissionFee.setFeeValue(admissionFeeValue);
+        admissionFee.setFee(feeController.findFee("Doctor Payment for Admission Fee"));
+        billFeeFacade.create(admissionFee);
+        
+        BillItem serviceBillItem = new BillItem();
+        serviceBillItem.setBill(b);
+        serviceBillItem.setQty((double)serviceFeeQty );
+        serviceBillItem.setCreatedAt(new Date());
+        serviceBillItem.setCreater(sessionController.getLoggedUser());
+        serviceBillItem.setItem(itemController.findItemByName("Doctor Payment for Services", sessionController.getDepartment()));
+        billItemFacade.create(serviceBillItem);
+        BillFee serviceFee = new BillFee();
+        serviceFee.setBillItem(serviceBillItem);
+        serviceFee.setFeeValue(admissionFeeValue);
+        serviceFee.setFee(feeController.findFee("Doctor Payment for Services"));
+        billFeeFacade.create(serviceFee);
+
+        BillItem shiftPaymentItem;
+        BillFee shiftPaymentFee;
+        BillItem otherFeeItem;
+        BillFee otherFeeFee;
+
+        b.getBillItems().add(serviceBillItem);
+
     }
 
     private void saveBillItemForPaymentBill(Bill b, BillFee bf, Payment p) {
@@ -257,7 +302,7 @@ public class WorkingTimeController implements Serializable {
         saveBillFee(i, p);
         b.getBillItems().add(i);
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
@@ -275,12 +320,12 @@ public class WorkingTimeController implements Serializable {
 
         if (bf.getId() == null) {
             billFeeFacade.create(bf);
-        }else{
+        } else {
             billFeeFacade.edit(bf);
         }
         createBillFeePaymentAndPayment(bf, p);
     }
-    
+
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -541,8 +586,6 @@ public class WorkingTimeController implements Serializable {
         }
         return items;
     }
-
-
 
     public Staff getStaff() {
         return staff;
