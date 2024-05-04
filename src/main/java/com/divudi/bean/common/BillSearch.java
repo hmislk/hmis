@@ -52,6 +52,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import com.divudi.entity.Doctor;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -223,6 +224,22 @@ public class BillSearch implements Serializable {
 
     private boolean opdBillCancellationSameDay = false;
     private boolean opdBillRefundAllowedSameDay = false;
+    
+    //Edit Bill details
+    private Doctor referredBy;
+    
+    public void editBillDetails(){
+        Bill editedBill=bill;
+        if (bill==null) {
+            return;
+        }
+        if(referredBy==null){
+            return;
+        }
+        
+        editedBill.setReferredBy(referredBy);
+        billFacade.edit(editedBill);
+    }
 
     public void preparePatientReportByIdForRequests() {
         bill = null;
@@ -3801,6 +3818,14 @@ public class BillSearch implements Serializable {
 
     public void setOpdBillRefundAllowedSameDay(boolean opdBillRefundAllowedSameDay) {
         this.opdBillRefundAllowedSameDay = opdBillRefundAllowedSameDay;
+    }
+
+    public Doctor getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(Doctor referredBy) {
+        this.referredBy = referredBy;
     }
 
     public class PaymentSummary {
