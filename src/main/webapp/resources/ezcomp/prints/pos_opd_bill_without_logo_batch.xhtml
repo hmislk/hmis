@@ -445,6 +445,17 @@
 
                 </div>
 
+                <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
+                    <div class="d-flex gap-2 justify-content-center" style="font-size: 11px;">
+                        <h:outputLabel value="Dublicate Printing By"/>
+                        <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                        <h:outputLabel value="at"/>
+                        <h:outputLabel value="#{sessionController.currentDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                        </h:outputLabel>
+                    </div>
+                </h:panelGroup>
+
                 <div class="footer">
                     <br/>
                     The Greatest Wealth is Health!
@@ -458,7 +469,7 @@
 
             </div>
         </ui:repeat>
-   
+
     </cc:implementation>
 
 </html>

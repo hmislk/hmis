@@ -93,8 +93,8 @@
                                 <h:panelGroup id="groupPrint" >
                                     <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                            <ui:repeat value="#{opdBillController.bills}" var="ffb">
-                                                <prints:five_five_paper_with_headings bill="#{ffb}"/>                        
+                                            <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -149,7 +149,7 @@
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}">
                                         <prints:pos_opd_bill_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedBatchPaper'}">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}">
                                         <prints:pos_opd_bill_without_logo_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
