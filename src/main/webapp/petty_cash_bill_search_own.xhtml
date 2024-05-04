@@ -80,10 +80,14 @@
                                             id="billNo" 
                                             ajax="false" 
                                             value="#{bill.insId}" 
-                                            action="petty_cash_bill_reprint">
+                                            action="#{pettyCashBillController.NavigatePettyAndIouReprint()}"
+                                            actionListener="#{pettyCashBillController.fillBillsReferredByCurrentBill()}"
+                                            >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
                                         </p:commandLink>
+                                       
+
                                     </p:column>
                                     <p:column headerText="Invoice No" >
                                         <h:outputLabel  value="#{bill.invoiceNumber}"  />
@@ -133,11 +137,13 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>                         
+                                    </p:column>   
+                                    <p:column headerText="Bill Type" >
+                                        <p:badge value="Iou Issue" severity="success" styleClass="mr-2" rendered="#{bill.billType eq 'IouIssue'}"></p:badge>
+                                        <p:badge value="Petty Issue" severity="info" styleClass="mr-2" rendered="#{bill.billType eq 'PettyCash'}"></p:badge>
+                                    </p:column>  
                                     <p:column headerText="Comments" >
-                                        <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                        <h:outputLabel  rendered="#{bill.comments ne null}" value="#{bill.comments}" >
                                         </h:outputLabel>
                                     </p:column>
                                 </p:dataTable>
