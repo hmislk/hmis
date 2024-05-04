@@ -20,26 +20,26 @@
         <div class="posbillBreak">            
 
 
-<!--            <div class="institutionName" style="text-align: center!important;
-                 font-weight: bold!important;
-                 font-size: 18px!important;
-                 font-weight: bold;">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-            </div>-->
-<!--            <div class="institutionContact" >
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
-                </div>
-                <div >
-                    <h:outputLabel value="Telephone : " ></h:outputLabel>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}, "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
-                </div>
-                <div >
-                    <h:outputLabel value="Fax : " ></h:outputLabel>
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
-                </div>
-            </div>-->
+            <!--            <div class="institutionName" style="text-align: center!important;
+                             font-weight: bold!important;
+                             font-size: 18px!important;
+                             font-weight: bold;">
+                            <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                        </div>-->
+            <!--            <div class="institutionContact" >
+                            <div>
+                                <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                            </div>
+                            <div >
+                                <h:outputLabel value="Telephone : " ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.department.telephone1}, "/>
+                                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                            </div>
+                            <div >
+                                <h:outputLabel value="Fax : " ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                            </div>
+                        </div>-->
 
             <div class="headingBill">
                 <h:outputLabel value="INVOICE"   />
@@ -454,6 +454,17 @@
                 </table>
 
             </div>
+
+            <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
+                <div class="d-flex gap-2 justify-content-center" style="font-size: 11px;">
+                    <h:outputLabel value="Dublicate Printing By"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                    <h:outputLabel value="at"/>
+                    <h:outputLabel value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                    </h:outputLabel>
+                </div>
+            </h:panelGroup>
 
             <div class="footer">
                 <br/>
