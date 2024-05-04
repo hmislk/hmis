@@ -231,14 +231,17 @@ public class BillSearch implements Serializable {
     public void editBillDetails(){
         Bill editedBill=bill;
         if (bill==null) {
+            JsfUtil.addErrorMessage("Bill Error !");
             return;
         }
         if(referredBy==null){
+            JsfUtil.addErrorMessage("Pleace Select Reffering Doctor !");
             return;
         }
         
         editedBill.setReferredBy(referredBy);
         billFacade.edit(editedBill);
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void preparePatientReportByIdForRequests() {
