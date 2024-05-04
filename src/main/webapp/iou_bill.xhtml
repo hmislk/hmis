@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel rendered="#{!iouBillController.printPreview}" >
+                    <f:facet name="header" >
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="Petty Bill" class="mt-2"/>
+                            <p:commandButton 
+                                value="New Bill" 
+                                ajax="false" 
+                                class="ui-button-warning"
+                                icon="fa fa-plus"
+                                action="#{iouBillController.prepareNewBill()}" >
+                            </p:commandButton>
+                        </div>
+
+                    </f:facet>
+
+                    <div class="d-flex justify-content-end my-2">
+                        <div class="d-flex">
+                            <div class="d-flex gap-2">
+                                <p:selectOneMenu   id="cmbPs" value="#{iouBillController.current.paymentMethod}">                                                                     
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                    <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                </p:selectOneMenu>
+
+                                <p:inputText value="#{iouBillController.comment}" id="comment"/>
+                                <p:watermark value="Comment" for="comment"/>
+                            </div>
+                            <div>
+                                <h:panelGroup id="creditCard" style="display: #{iouBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <pa:creditCard paymentMethodData="#{iouBillController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cheque" style="display: #{iouBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <pa:cheque paymentMethodData="#{iouBillController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="slip" style="display: #{iouBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <pa:slip paymentMethodData="#{iouBillController.paymentMethodData}"/>
+                                </h:panelGroup>
+                            </div>
+                            <div style="margin-left: 10px;">
+                                <p:commandButton  
+                                    value="Settle"
+                                    class=" ui-button-success "
+                                    icon="fa fa-check"
+                                    action="#{iouBillController.settleBill()}" 
+                                    ajax="false"  
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Details of Preson">
+                                <p:tabView id="tvPt" style="min-height: 250px;"  >
+                                    <p:ajax event="tabChange"  process="@this" listener="#{iouBillController.onTabChange}" />
+                                    <p:tab id="tabStaff" title="Staff" >
+                                        <p:autoComplete   
+                                            id="cmbDoc1" 
+                                            value="#{iouBillController.current.staff}" 
+                                            completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                            forceSelection="true"
+                                            var="ix" 
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" 
+                                            size="20"
+                                            inputStyleClass="form-control"
+                                            style="width: 400px;">
+                                            <p:ajax event="itemSelect" process="acPt"/>
+                                            <p:column style="width: 150px; padding: 3px;">
+                                                #{ix.code}
+                                            </p:column>
+                                            <p:column style="width: 250px; padding: 3px;">
+                                                #{ix.person.nameWithTitle}
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:tab> 
+
+                                    <p:tab id="tabSearchPerson" title="Search Person">
+                                        <p:autoComplete 
+                                            widgetVar="aPt" 
+                                            id="acPt" 
+                                            forceSelection="true"
+                                            value="#{iouBillController.current.person}" 
+                                            completeMethod="#{personController.completePerson}" 
+                                            var="apt" 
+                                            itemLabel="#{apt.name}" 
+                                            itemValue="#{apt}" 
+                                            size="30"  
+                                            inputStyleClass="form-control"
+                                            style="width: 400px;">
+                                            <p:column style="width: 400px; padding: 3px;">
+                                                #{apt.name}
+                                            </p:column>
+                                            <p:ajax event="itemSelect" process="acPt" update="panSearch"/>
+                                        </p:autoComplete>   
+
+                                        <p:panelGrid id="panSearch" columns="2" >
+                                            <h:outputLabel  rendered="#{iouBillController.current.person!=null}" value="Name" />
+                                            <h:outputLabel rendered="#{iouBillController.current.person!=null}" value="#{iouBillController.current.person.name}" ></h:outputLabel>
+                                            <h:outputLabel  rendered="#{iouBillController.current.person!=null}" value="Sex" />
+                                            <h:outputLabel rendered="#{iouBillController.current.person!=null}" value="#{iouBillController.current.person.sex}" ></h:outputLabel>
+                                            <h:outputLabel  rendered="#{iouBillController.current.person!=null}" value="Adress" />
+                                            <h:outputLabel rendered="#{iouBillController.current.person!=null}" value="#{iouBillController.current.person.address}" ></h:outputLabel>
+                                        </p:panelGrid>
+
+
+                                    </p:tab>
+                                    <p:tab id="tabNew" title="New Person"  >
+                                        <div class="row">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Title"/>
+                                            </div>
+                                            <div class="col-5">
+                                                <p:selectOneMenu  
+                                                    id="cmbTitle" 
+                                                    class="w-100"
+                                                    value="#{iouBillController.newPerson.title}"  >
+                                                    <f:selectItem itemLabel="Select Title"/>
+                                                    <f:selectItems value="#{iouBillController.title}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                        <div class="row my-1">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Name"/>
+                                            </div>
+                                            <div class="col-5">
+                                                <p:inputText 
+                                                    class="w-100"
+                                                    autocomplete="off"  
+                                                    id="txtNewPtName" 
+                                                    value="#{iouBillController.newPerson.name}">
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Sex"/>
+                                            </div>
+                                            <div class="col-5">
+                                                <p:selectOneMenu 
+                                                    id="txtNewSex"  
+                                                    class="w-100"
+                                                    value="#{iouBillController.newPerson.sex}" >
+                                                    <f:selectItem itemLabel="Select Sex"/>
+                                                    <f:selectItem itemLabel="Male" itemValue="Male"/>
+                                                    <f:selectItem itemLabel="Female" itemValue="Female"/>
+                                                    <f:selectItem itemLabel="Unknown" itemValue="Unknown"/>
+                                                    <f:selectItem itemLabel="Other" itemValue="Other"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                        <div class="row my-1">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Address"/>
+                                            </div>
+                                            <div class="col-5">
+                                                <p:autoComplete 
+                                                    id="acNewPtArea" 
+                                                    completeMethod="#{areaController.completeArea}" 
+                                                    var="pta" 
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    itemLabel="#{pta.name}" 
+                                                    itemValue="#{pta}" 
+                                                    forceSelection="true" 
+                                                    value="#{iouBillController.newPerson.area}" >
+                                                </p:autoComplete>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Phone"/>
+                                            </div>
+                                            <div class="col-5">
+                                                <p:inputText  
+                                                    id="txtNewPtPhone" 
+                                                    autocomplete="off" 
+                                                    maxlength="11" 
+                                                    class="w-100"
+                                                    value="#{iouBillController.newPerson.phone}">
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+
+                                    </p:tab>
+                                </p:tabView>
+                            </p:panel>
+                        </div>
+                        <div class="col-6">
+                            <p:panel header="Payment Details">
+                                <div class="row">
+                                    <div class="col-3"><p:outputLabel value="Amount" /></div>
+                                    <div class="col-9"><p:inputText class="w-100" autocomplete="off" value="#{iouBillController.current.netTotal}"/></div>
+                                </div>
+
+                                <div class="row my-1">
+                                    <div class="col-3"><p:outputLabel value="Petty Cash Voucher No"/></div>
+                                    <div class="col-9"><p:inputText class="w-100" autocomplete="off"  value="#{iouBillController.current.intInvoiceNumber}" /></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-3"><p:outputLabel value="Description"/></div>
+                                    <div class="col-9"><p:inputTextarea class=" w-100" value="#{iouBillController.current.comments}"/></div>
+                                </div>
+
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <p:panel rendered="#{iouBillController.printPreview}" >
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="Petty Payment Bill" ></h:outputLabel>
+                            <p:commandButton 
+                                value="New Bill" 
+                                ajax="false" 
+                                class="ui-button-warning"
+                                icon="fa fa-plus"
+                                action="#{iouBillController.prepareNewBill()}" >
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+                    <div class="d-flex justify-content-end">
+                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                            <f:selectItem itemLabel="Please Select Paper Type" />
+                            <f:selectItems value="#{enumController.paperTypes}" />
+                        </p:selectOneMenu>
+                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                        <p:commandButton value="Print" 
+                                         class="ui-button-info m-1"
+                                         icon="fa fa-print"
+                                         ajax="false">
+                            <p:printer target="gpBillPreview" />
+                        </p:commandButton> 
+                    </div>
+
+                    <h:panelGroup   id="gpBillPreview">
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                            <bi:iou_issue_bill bill="#{iouBillController.current}" billController="#{iouBillController}" dup="false"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </p:panel>  
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>
