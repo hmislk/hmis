@@ -78,9 +78,9 @@
                                                         action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCash()}" 
                                                         ></p:commandLink>
                                                 </td>
-                                                <td>#{financialTransactionController.financialReportByPayments.collectedCash}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.refundedCash}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.netCashTotal}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.collectedCash}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.refundedCash}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.netCashTotal}</td>
                                             </tr>
                                             <tr>
                                                 <td>
@@ -89,9 +89,9 @@
                                                         action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForCard()}" 
                                                         ></p:commandLink>
                                                 </td>
-                                                <td>#{financialTransactionController.financialReportByPayments.collectedCreditCard}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.refundedCreditCard}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.netCreditCardTotal}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.collectedCreditCard}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.refundedCreditCard}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.netCreditCardTotal}</td>
                                             </tr>
                                             <tr>
                                                 <td>
@@ -100,9 +100,9 @@
                                                         action="#{financialTransactionController.navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher()}" 
                                                         ></p:commandLink>
                                                 </td>
-                                                <td>#{financialTransactionController.financialReportByPayments.collectedVoucher}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.refundedVoucher}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.netVoucherTotal}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.collectedVoucher}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.refundedVoucher}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.netVoucherTotal}</td>
                                             </tr>
                                             <tr>
                                                 <td>
@@ -112,9 +112,9 @@
                                                         ></p:commandLink>
 
                                                 </td>
-                                                <td>#{financialTransactionController.financialReportByPayments.collectedOtherNonCredit}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.refundedOtherNonCredit}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.netOtherNonCreditTotal}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.collectedOtherNonCredit}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.refundedOtherNonCredit}</td>
+                                                <td>#{financialTransactionController.financialReportByBills.netOtherNonCreditTotal}</td>
                                             </tr>
                                             <tr>
                                                 <td>Float My-Safe (Start Funds)</td>
@@ -147,11 +147,37 @@
                                                 <td>Short Excess</td>
                                                 <td colspan="2"></td>
                                                 <td>
-                                                    <h:outputText value="#{financialTransactionController.currentBill.netTotal}" ></h:outputText>
+                                                    #{financialTransactionController.currentBill.netTotal} 
                                                     <h:outputText value=" - " ></h:outputText>
-                                                    <h:outputText value="#{financialTransactionController.financialReportByPayments.total}" ></h:outputText>
+                                                        #{(financialTransactionController.financialReportByBills.collectedCash +
+                                                          financialTransactionController.financialReportByBills.collectedCreditCard +
+                                                          financialTransactionController.financialReportByBills.collectedVoucher +
+                                                          financialTransactionController.financialReportByBills.collectedOtherNonCredit +
+                                                          financialTransactionController.financialReportByPayments.floatMySafe +
+                                                          financialTransactionController.financialReportByPayments.floatCollected +
+                                                          financialTransactionController.financialReportByPayments.bankWithdrawals +
+                                                          financialTransactionController.financialReportByPayments.cashCollectedTransferIn) -
+                                                          (financialTransactionController.financialReportByBills.refundedCash +
+                                                          financialTransactionController.financialReportByBills.refundedCreditCard +
+                                                          financialTransactionController.financialReportByBills.refundedVoucher +
+                                                          financialTransactionController.financialReportByBills.refundedOtherNonCredit +
+                                                          financialTransactionController.financialReportByPayments.bankDeposits +
+                                                          financialTransactionController.financialReportByPayments.cashGivenOutTransferOut)}
                                                     <h:outputText value=" = " ></h:outputText>
-                                                    <h:outputText value="#{financialTransactionController.currentBill.netTotal - financialTransactionController.financialReportByPayments.total}" >
+                                                    <h:outputText value="#{financialTransactionController.currentBill.netTotal - (financialTransactionController.financialReportByBills.collectedCash +
+                                                                           financialTransactionController.financialReportByBills.collectedCreditCard +
+                                                                           financialTransactionController.financialReportByBills.collectedVoucher +
+                                                                           financialTransactionController.financialReportByBills.collectedOtherNonCredit +
+                                                                           financialTransactionController.financialReportByPayments.floatMySafe +
+                                                                           financialTransactionController.financialReportByPayments.floatCollected +
+                                                                           financialTransactionController.financialReportByPayments.bankWithdrawals +
+                                                                           financialTransactionController.financialReportByPayments.cashCollectedTransferIn) -
+                                                                           (financialTransactionController.financialReportByBills.refundedCash +
+                                                                           financialTransactionController.financialReportByBills.refundedCreditCard +
+                                                                           financialTransactionController.financialReportByBills.refundedVoucher +
+                                                                           financialTransactionController.financialReportByBills.refundedOtherNonCredit +
+                                                                           financialTransactionController.financialReportByPayments.bankDeposits +
+                                                                           financialTransactionController.financialReportByPayments.cashGivenOutTransferOut)}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </td>
@@ -160,18 +186,18 @@
                                             <tr class="table-primary"> <!-- Use a different class for the total row for emphasis -->
                                                 <td>Total</td>
                                                 <td colspan="2"></td>
-                                                <td>#{(financialTransactionController.financialReportByPayments.collectedCash +
-                                                      financialTransactionController.financialReportByPayments.collectedCreditCard +
-                                                      financialTransactionController.financialReportByPayments.collectedVoucher +
-                                                      financialTransactionController.financialReportByPayments.collectedOtherNonCredit +
+                                                <td>#{(financialTransactionController.financialReportByBills.collectedCash +
+                                                      financialTransactionController.financialReportByBills.collectedCreditCard +
+                                                      financialTransactionController.financialReportByBills.collectedVoucher +
+                                                      financialTransactionController.financialReportByBills.collectedOtherNonCredit +
                                                       financialTransactionController.financialReportByPayments.floatMySafe +
                                                       financialTransactionController.financialReportByPayments.floatCollected +
                                                       financialTransactionController.financialReportByPayments.bankWithdrawals +
                                                       financialTransactionController.financialReportByPayments.cashCollectedTransferIn) -
-                                                      (financialTransactionController.financialReportByPayments.refundedCash +
-                                                      financialTransactionController.financialReportByPayments.refundedCreditCard +
-                                                      financialTransactionController.financialReportByPayments.refundedVoucher +
-                                                      financialTransactionController.financialReportByPayments.refundedOtherNonCredit +
+                                                      (financialTransactionController.financialReportByBills.refundedCash +
+                                                      financialTransactionController.financialReportByBills.refundedCreditCard +
+                                                      financialTransactionController.financialReportByBills.refundedVoucher +
+                                                      financialTransactionController.financialReportByBills.refundedOtherNonCredit +
                                                       financialTransactionController.financialReportByPayments.bankDeposits +
                                                       financialTransactionController.financialReportByPayments.cashGivenOutTransferOut)}
                                                     <br/>
@@ -294,10 +320,10 @@
 
 
 
-                        <h:panelGroup rendered="true">
+                        <h:panelGroup rendered="false">
                             <p:dataTable 
                                 id="tblPayments" 
-                                value="#{financialTransactionController.paymentsFromShiftSratToNow}" 
+                                value="#{financialTransactionController.currentBillPayments}" 
                                 var="bp" 
                                 paginator="true"
                                 paginatorPosition="bottom"
@@ -313,20 +339,16 @@
                                     <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Bill ID" >
-                                    <h:outputText value="#{bp.bill.id}" ></h:outputText>
+                                    <h:outputText value="#{bp.bill.insId}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Bill Type" >
                                     <h:outputText value="#{bp.bill.billType}" ></h:outputText>
                                 </p:column>
-
-                                <p:column headerText="Bill Class" >
-                                    <h:outputText value="#{bp.bill.billClass}" ></h:outputText>
-                                </p:column>
                                 <p:column headerText="Bill Type Atomic" >
                                     <h:outputText value="#{bp.bill.billTypeAtomic}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Bill Type Atomic Cash Type" >
-                                    <h:outputText value="#{bp.bill.billTypeAtomic.billFinanceType}" ></h:outputText>
+                                <p:column headerText="Bill Type Atomic" >
+                                    <h:outputText value="#{bp.bill.billClass}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Value" >
                                     <h:outputText value="#{bp.paidValue}" />
