@@ -86,6 +86,7 @@ public class Category implements Serializable {
     private String entityClass;
     @JsonIgnore
     boolean filled;
+    private double profitMargin;
 
     @ManyToOne
     private Institution institution;
@@ -306,6 +307,14 @@ public class Category implements Serializable {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public double getProfitMargin() {
+        return profitMargin;
+    }
+
+    public void setProfitMargin(double profitMargin) {
+        this.profitMargin = profitMargin;
     }
 
 }

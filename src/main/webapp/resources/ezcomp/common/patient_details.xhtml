@@ -5,6 +5,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+
       xmlns:c="http://java.sun.com/jsp/jstl/core">
 
     <!-- INTERFACE -->
@@ -12,6 +13,7 @@
         <cc:attribute name="editable" type="java.lang.Boolean"  />
         <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
+        <cc:attribute name="focus" type="java.lang.Boolean"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -54,36 +56,44 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
+                    <h:panelGroup rendered="#{cc.attrs.focus}" >
+                        <p:focus id="focusIx" for="txtQuickSearchPhoneNumber" />
+                        <p:focus context="txtQuickSearchPhoneNumber"/>
+
+
+                    </h:panelGroup>
+
+
                     <!-- Right aligned quick search -->
                     <h:panelGroup id="quickSearch" >
                         <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
-                            
-                                <p:inputText 
-                                    id="txtQuickSearchPhoneNumber"
-                                    value="#{patientController.quickSearchPhoneNumber}"
-                                    placeholder="Phone Number"
-                                    class="form-control-sm mx-1"
-                                    onfocus="this.select()" 
-                                    />
-                                <p:commandButton 
-                                    id="btnSearchbyPhoneNo"
-                                    icon="fa fa-search" 
-                                    title="Quick Search from Phone Number"
-                                    action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
-                                    process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                    update="ptImp selectPatient editPatient viewPatient"
-                                    ajax="false"
-                                    styleClass="btn-sm mx-1"/>
-                                <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
-                                <p:commandButton 
-                                    id="btnAddNewPatient"
-                                    icon="fa fa-plus-circle" 
-                                    title="Add New Patient"
-                                    action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
-                                    process="btnAddNewPatient"
-                                    update="ptImp selectPatient editPatient viewPatient"
-                                    styleClass="btn-sm mx-1"/>
-
+                            <p:focus  for="txtQuickSearchPhoneNumber" />
+                            <p:inputText 
+                                autocomplete="off"
+                                id="txtQuickSearchPhoneNumber"
+                                value="#{patientController.quickSearchPhoneNumber}"
+                                placeholder="Phone Number"
+                                class="form-control-sm mx-1"
+                                onfocus="this.select()" 
+                                />
+                            <p:commandButton 
+                                id="btnSearchbyPhoneNo"
+                                icon="fa fa-search" 
+                                title="Quick Search from Phone Number"
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                ajax="false"
+                                styleClass="btn-sm mx-1"/>
+                            <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                            <p:commandButton 
+                                id="btnAddNewPatient"
+                                icon="fa fa-plus-circle" 
+                                title="Add New Patient"
+                                action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
+                                process="btnAddNewPatient"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                styleClass="btn-sm mx-1"/>
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:panelGroup>
@@ -97,6 +107,9 @@
                         </p:column>
                         <p:column headerText="Phone Number">
                             #{ps.person.phone}
+                        </p:column>
+                        <p:column headerText="Mobile Number">
+                            #{ps.person.mobile}
                         </p:column>
                         <p:column>
                             <p:commandButton 
@@ -127,7 +140,6 @@
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
                                                            itemLabel="#{i.label}" itemValue="#{i}"/>
-                                            <p:ajax process="cmbTitle" update="cmbSex" ></p:ajax>
                                             <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
@@ -169,7 +181,7 @@
 
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="blur" execute="@this" render="dpDob" />
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -178,7 +190,7 @@
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="blur" execute="@this"  render="dpDob"  />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -187,20 +199,21 @@
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="blur" execute="@this"  render="dpDob" />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
-                                                <p:datePicker 
-
+                                                <p:datePicker  
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
+                                                    yearNavigator="true"
+                                                    monthNavigator="true"
                                                     inputStyleClass="form-control"
                                                     pattern="#{sessionController.applicationPreference.longDateFormat}"
                                                     placeholder="Date of Birth (dd/mm/yyyy)"
                                                     >
-                                                    <f:ajax event="dateSelect" execute="@this" render="year month day" />
+                                                    <p:ajax event="dateSelect" process="@this" update="year month day" />
                                                 </p:datePicker>
                                             </div>
                                         </div>
@@ -211,10 +224,9 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
-
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.person.mobile}"
+                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
                                             class="form-control" 
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -228,7 +240,7 @@
 
                                             autocomplete="off" 
                                             placeholder="Phone Number"
-                                            value="#{cc.attrs.controller.patient.person.phone}"
+                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
                                             class="form-control" validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
@@ -251,7 +263,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtNic"
-
+                                            autocomplete="off"
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
                                             class="form-control"/>
@@ -262,7 +274,7 @@
                                     <div class="col-md-8 p-1">
                                         <p:inputText
                                             id="txtAddress"
-
+                                            autocomplete="off"
                                             placeholder="Address"
                                             value="#{cc.attrs.controller.patient.person.address}"
                                             class="form-control"/>
@@ -293,7 +305,9 @@
                                 <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
 
-                                <p:tooltip for="year" value="#{cc.attrs.controller.patient.person.ageAsString}"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="year" value="Age- Years Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="month" value="Age- Month Component"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="day" value="Age- Days Component"  showDelay="0" hideDelay="0"></p:tooltip>
 
 
                             </h:panelGroup>

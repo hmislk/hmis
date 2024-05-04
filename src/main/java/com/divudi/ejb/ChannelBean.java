@@ -138,7 +138,6 @@ public class ChannelBean {
         return lg.intValue();
     }
 
-    
     public int getBillSessionsCount(SessionInstance si) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -155,7 +154,6 @@ public class ChannelBean {
         return lg.intValue();
     }
 
-    
     @Deprecated
     public int getBillSessionsCountWithOutCancelRefund(ServiceSession ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -196,7 +194,6 @@ public class ChannelBean {
         return lg.intValue();
     }
 
-    
     @Deprecated
     public int getBillSessionsCountCrditBill(ServiceSession ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -218,7 +215,7 @@ public class ChannelBean {
 
         return lg.intValue();
     }
-    
+
     public int getBillSessionsCountCrditBill(SessionInstance si) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -341,7 +338,6 @@ public class ChannelBean {
         }
     }
 
-    
 //    
 //    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
 //        int sessionDayCount = 0;
@@ -485,9 +481,6 @@ public class ChannelBean {
 //
 //        return createdSessions;
 //    }
-
-    
-    
 //    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNew(List<ServiceSession> inputSessions, Date d) {
 //        int sessionDayCount = 0;
 //        List<ServiceSession> createdSessions = new ArrayList<>();
@@ -577,7 +570,6 @@ public class ChannelBean {
 //
 //        return createdSessions;
 //    }
-
     public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions, Date d) {
         int sessionDayCount = 0;
         List<SessionInstance> sessionInstances = new ArrayList<>();
@@ -676,6 +668,55 @@ public class ChannelBean {
                     return dateCompare;
                 } else {
                     // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                }
+            }
+        });
+        return sessionInstances;
+    }
+
+    public List<SessionInstance> listTodaysSesionInstances() {
+        return listTodaysSessionInstances(null, null, null);
+    }
+
+    
+
+    public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
+
+        // Initializing the parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("sd", new Date());
+
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (ongoing != null && ongoing) {
+            conditions.add("(i.started = true and i.completed = false)");
+        }
+        if (completed != null && completed) {
+            conditions.add("i.completed = true");
+        }
+        if (pending != null && pending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+
+        // Sorting logic remains unchanged
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                } else {
                     return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
                 }
             }
@@ -800,8 +841,6 @@ public class ChannelBean {
 //        return createdSessions;
 //    }
 //
-
-
     public Date calSessionTime(ServiceSession serviceSession) {
         Calendar starting = Calendar.getInstance();
         starting.setTime(serviceSession.getStartingTime());

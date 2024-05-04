@@ -4,7 +4,8 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.Area;
+
+import com.divudi.entity.channel.SessionInstanceActivity;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,7 +15,7 @@ import javax.persistence.PersistenceContext;
  * @author Buddhika
  */
 @Stateless
-public class SessionInstanceActivityFacade extends AbstractFacade<Area> {
+public class SessionInstanceActivityFacade extends AbstractFacade<SessionInstanceActivity> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -24,7 +25,7 @@ public class SessionInstanceActivityFacade extends AbstractFacade<Area> {
     }
 
     public SessionInstanceActivityFacade() {
-        super(Area.class);
+        super(SessionInstanceActivity.class);
     }
     
 }

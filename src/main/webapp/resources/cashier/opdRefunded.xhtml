@@ -78,7 +78,7 @@
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
-            <p:column headerText="Checque" styleClass="averageNumericColumn" >
+            <p:column headerText="Cheque" styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="Cheque"/>
                 </f:facet> 
@@ -96,10 +96,6 @@
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
-            </p:column>
-
-            <p:column exportable="false">
-                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
             </p:column>
 
             <p:columnGroup type="footer">  

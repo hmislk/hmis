@@ -155,6 +155,7 @@ public class ItemsDistributorsController implements Serializable {
         getFacade().edit(getCurrent());
         JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
+        listItemForDistributer();
     }
 
     /**
@@ -289,7 +290,7 @@ public class ItemsDistributorsController implements Serializable {
 
         searchItems = getFacade().findByJpql(sql, tmp);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Check enterd data/Item distributor(/faces/pharmacy/pharmacy_item_by_distributor.xhtml)");
+        
 
     }
 

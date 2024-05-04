@@ -8,12 +8,12 @@
       >
     <h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Category Stock Summery" >
+                    <p:panel header="Category Stock Summary" >
 
                         <h:panelGrid columns="8" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
@@ -33,7 +33,7 @@
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl"  value="#{reportsStock.stockRecords}" var="i" style="width: 500px;" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Category Stock Summery - #{reportsStock.department.name} "/>   <br/>                                 
+                                    <h:outputLabel value="Category Stock Summary - #{reportsStock.department.name} "/>   <br/>                                 
                                 </f:facet> 
 
                                 <p:column headerText="Category"

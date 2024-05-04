@@ -11,11 +11,18 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
+import com.divudi.data.OptionScope;
+import com.divudi.data.TriggerType;
+import com.divudi.data.TriggerTypeParent;
+import com.divudi.entity.AppEmail;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Notification;
 import com.divudi.facade.NotificationFacade;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +50,12 @@ public class NotificationController implements Serializable {
     SessionController sessionController;
     @Inject
     UserNotificationController userNotificationController;
+    @Inject
+    SecurityController securityController;
+    @Inject
+    CommonController commonController;
+    @Inject
+    ConfigOptionController configOptionController;
     @EJB
     private NotificationFacade ejbFacade;
     private Notification current;
@@ -71,40 +84,298 @@ public class NotificationController implements Serializable {
         items = null;
     }
 
-    
-    public void createNotification(Bill bill){
-        if(bill==null){
+    public void createNotification(Bill bill) {
+        System.out.println("createNotification");
+        if (bill == null) {
             return;
         }
+        System.out.println("bill = " + bill.getBillTypeAtomic());
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
+             case INWARD_PHARMACY_REQUEST:
+                 createInwardBHTIssueFromPharmacyRequestNotifications(bill);
+                break;
             case PHARMACY_TRANSFER_REQUEST:
-                createPharmacyTransferRequestNotification(bill);
+                createPharmacyTransferRequestNotifications(bill);
                 break;
             case PHARMACY_ORDER:
-                createPharmacyReuestForBht(bill);
+                createPharmacyOrderRequest(bill);
+                break;
+            case OPD_BILL_CANCELLATION:
+                createOpdBillCancellationNotification(bill);
+                break;
+            case OPD_BATCH_BILL_CANCELLATION:
+                createOpdBatchBillCancellationNotification(bill);
+                break;
+            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                //No Notification is necessary
+                break;
+            case PHARMACY_DIRECT_ISSUE:
+                createPharmacyDirectIssueNotifications(bill);
+                break;
+            case PHARMACY_ORDER_APPROVAL:
+                createPharmacyPurcheseOrderApprovelNotifications(bill);
                 break;
             default:
                 throw new AssertionError();
         }
     }
     
-    private void createPharmacyTransferRequestNotification(Bill bill){
-        Notification nn = new Notification();
-        nn.setBill(bill);
-        nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
-        getFacade().create(nn);
+    private void createPharmacyTransferRequestNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardBHTIssueFromPharmacyRequestNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INPATIENT_ORDER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createPharmacyDirectIssueNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_ISSUE)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
     }
     
-     private void createPharmacyReuestForBht(Bill bill){
-        Notification nn = new Notification();
-        nn.setBill(bill);
-        nn.setMessage("New Request for Medicines from " + bill.getFromDepartment().getName() );
-        getFacade().create(nn);
-        userNotificationController.createUserNotifications(nn);
-        
+    private void createPharmacyPurcheseOrderApprovelNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.PURCHASE_ORDER_APPROVAL)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
     }
-    
+
+    private String createTemplateForNotificationMessage(BillTypeAtomic bt) {
+        String message = null;
+        if (bt == null) {
+            return null;
+        }
+
+        if (bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
+        if (bt == BillTypeAtomic.PHARMACY_ORDER) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Order Request Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
+        if (bt == BillTypeAtomic.OPD_BILL_CANCELLATION) {
+            message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
+        if (bt == BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION) {
+            message = configOptionController.getLongTextValueByKey("Message Template for OPD Batch Bill Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
+        if (bt == BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION) {
+            message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
+        if (message == null || message == "" || message.isEmpty()) {
+            message = "New Request from ";
+        }
+
+        return message;
+    }
+
+    private void createOpdBillCancellationNotification(Bill bill) {
+
+        String messageBody = "";
+        messageBody = "<!DOCTYPE html>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
+                + "<head>"
+                + "<title>"
+                + "Cancellation of Bill Number "
+                + bill.getInsId()
+                + "</title>"
+                + "</head>"
+                + "<h:body>";
+        messageBody += "<p>";
+        messageBody += "Bill No : " + bill.getInsId() + "<br/>";
+        messageBody += "Bill Date : " + bill.getBillDate() + "<br/>";
+        messageBody += "Bill Value : " + bill.getNetTotal() + "<br/>";
+        messageBody += "Billed By : " + bill.getCreater().getWebUserPerson().getNameWithTitle() + "<br/>";
+        messageBody += "Cancelled Date : " + new Date() + "<br/>";
+        messageBody += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + "<br/>";
+        messageBody += "</p>";
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+
+        String temId = bill.getId() + "";
+        temId = securityController.encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        ed = securityController.encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        messageBody += "<p>"
+                + "Your Report is attached"
+                + "<br/>"
+                + "Please visit "
+                + "<a href=\""
+                + url
+                + "\">this link</a>"
+                + " to view or print the bill.The link will expire in one month for privacy and confidentially issues."
+                + "<br/>"
+                + "</p>";
+
+        messageBody += "</h:body></html>";
+
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.OPD_BILL_CANCELLATION)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            switch (tt.getMedium()) {
+                case EMAIL:
+                    nn.setMessage(messageBody);
+                    break;
+                case SMS:
+                    nn.setMessage("OPD Bill Cancelled.");
+                    break;
+                case SYSTEM_NOTIFICATION:
+                    nn.setMessage("OPD Bill Cancelled.");
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+
+    }
+
+    private void createOpdBatchBillCancellationNotification(Bill bill) {
+
+        String messageBody = "";
+        messageBody = "<!DOCTYPE html>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
+                + "<head>"
+                + "<title>"
+                + "Cancellation of Bill Number "
+                + bill.getInsId()
+                + "</title>"
+                + "</head>"
+                + "<h:body>";
+        messageBody += "<p>";
+        messageBody += "Bill No : " + bill.getInsId() + "<br/>";
+        messageBody += "Bill Date : " + bill.getBillDate() + "<br/>";
+        messageBody += "Bill Value : " + bill.getNetTotal() + "<br/>";
+        messageBody += "Billed By : " + bill.getCreater().getWebUserPerson().getNameWithTitle() + "<br/>";
+        messageBody += "Cancelled Date : " + new Date() + "<br/>";
+        messageBody += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + "<br/>";
+        messageBody += "</p>";
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+
+        String temId = bill.getId() + "";
+        temId = securityController.encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        ed = securityController.encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        messageBody += "<p>"
+                + "Your Report is attached"
+                + "<br/>"
+                + "Please visit "
+                + "<a href=\""
+                + url
+                + "\">this link</a>"
+                + " to view or print the bill.The link will expire in one month for privacy and confidentially issues."
+                + "<br/>"
+                + "</p>";
+
+        messageBody += "</h:body></html>";
+
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.OPD_BILL_CANCELLATION)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            switch (tt.getMedium()) {
+                case EMAIL:
+                    nn.setMessage(messageBody);
+                    break;
+                case SMS:
+                    nn.setMessage("OPD Batch Bill Cancelled.");
+                    break;
+                case SYSTEM_NOTIFICATION:
+                    nn.setMessage("OPD Batch Bill Cancelled.");
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createPharmacyOrderRequest(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.PURCHASE_ORDER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+            System.out.println("Created Notification");
+        }
+    }
+
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

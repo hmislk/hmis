@@ -134,10 +134,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " from Token t"
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
+                + " and t.tokenType=:ty"
                 + " and t.completed=:com";
         Map m = new HashMap();
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
+        m.put("ty", TokenType.PHARMACY_TOKEN);
         m.put("com", false);
         if (counter != null) {
             j += " and t.counter =:ct";
@@ -157,11 +159,13 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " from Token t"
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
+                + " and t.tokenType=:ty"
                 + " and t.completed=:com";
         Map m = new HashMap();
 
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
+        m.put("ty", TokenType.PHARMACY_TOKEN);
         m.put("com", true);
         if (counter != null) {
             j += " and t.counter =:ct";
@@ -187,6 +191,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
                 + " and t.called=:cal "
+                + " and t.tokenType=:ty"
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
         m.put("dep", sessionController.getDepartment());
@@ -194,6 +199,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("cal", true); // Tokens that are called
         m.put("prog", false); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
+        m.put("ty", TokenType.PHARMACY_TOKEN);
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -204,6 +210,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " from Token t"
                 + " where t.department=:dep"
                 + " and t.tokenDate=:date "
+                + " and t.tokenType=:ty"
                 + " and t.called=:cal "
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
@@ -215,6 +222,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("date", new Date());
         m.put("cal", true); // Tokens that are called
         m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.PHARMACY_TOKEN);
         m.put("com", false); // Tokens that are not completed
         j += " order by t.id";
         currentTokensCounterWise = tokenFacade.findByJpql(j, m, TemporalType.DATE);
@@ -226,23 +234,25 @@ public class TokenController implements Serializable, ControllerWithPatient {
         }
         String j = "Select t "
                 + " from Token t"
-                + " where t.bill=:bill"; // Add conditions to filter out tokens that are in progress or completed
+                + " where t.bill=:bill"
+                + " and t.tokenType=:ty"; // Add conditions to filter out tokens that are in progress or completed
         Map<String, Object> m = new HashMap<>();
         m.put("bill", bill);
+        m.put("ty", TokenType.PHARMACY_TOKEN);
         return tokenFacade.findFirstByJpql(j, m);
     }
 
     public Token findToken(Long id) {
-        System.out.println("findToken");
-        System.out.println("id = " + id);
         if (id == null) {
             return null;
         }
         String j = "Select t "
                 + " from Token t "
-                + " where t.id=:id";
+                + " where t.id=:id"
+                + " and t.tokenType=:ty";
         Map<String, Object> m = new HashMap<>();
         m.put("id", id);
+        m.put("ty", TokenType.PHARMACY_TOKEN);
         Token st = tokenFacade.findFirstByJpql(j, m);
         return st;
     }

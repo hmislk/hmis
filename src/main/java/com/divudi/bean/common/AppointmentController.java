@@ -189,7 +189,7 @@ public class AppointmentController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Inward appoinment(/faces/inward/inward_appointment.xhtml)");
+        
     }
     
     public void dateChangeListen() {

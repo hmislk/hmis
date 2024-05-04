@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="billSearch" class="com.divudi.bean.common.BillSearch"  />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="opd_pos_bill.css" ></h:outputStylesheet>
+        <div class="posbillBreak">            
+
+            <div class="headingBill" style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">
+                <h:outputLabel value="Pharmacy Summary"   />
+
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+            
+            <div class="w-100">
+                <p:panelGrid columns="2" class="w-100" style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">
+                    <h:outputText value="From Date"/>
+                    <p:outputLabel value="#{cc.attrs.billSearch.fromDate}"  style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+                    
+                    <h:outputText value="To Date"/>
+                    <p:outputLabel value="#{cc.attrs.billSearch.toDate}"  style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+                    
+                    <h:outputText value="Department"/>
+                    <h:outputText value="#{cc.attrs.billSearch.department.name}"/>
+                    
+                    <h:outputText value="User" rendered="#{cc.attrs.billSearch.user ne null}"/>
+                    <h:outputText value="#{cc.attrs.billSearch.user.name}" rendered="#{cc.attrs.billSearch.user ne null}"/>
+                </p:panelGrid>
+            </div>
+            
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <table id="tbl" style="width: 100%;" >
+                <thead>
+                    <tr>
+                        <th style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">Bill Type</th>
+                        <th width="40%" style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">Payment Method</th>
+                        <th style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">User</th>
+                        <th style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important;">Count</th>
+                        <th width="20%" style="font-size: 12px!important;font-family:Arial, Helvetica, sans-serif!important; text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{cc.attrs.billSearch.billSummeries}" var="bs">
+                        <tr>
+                            <td>
+                                <h:outputText value="#{bs.billType.label}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{bs.paymentMethod}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{bs.webUser.webUserPerson.name}" />
+                            </td>
+                            <td style="text-align: center;">
+                                <h:outputText value="#{bs.count}" />
+                            </td>
+                            <td style="text-align: right;">
+                                <h:outputText value="#{bs.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div>
+                <table style="width: 100%; margin-left:0.5cm; font-size: 15px!important;font-family:Arial, Helvetica, sans-serif!important;font-weight: bold;">
+                    <h:panelGroup rendered="#{cc.attrs.billSearch.cashTotal ne 0.00}">
+                        <tr>
+                            <td><h:outputText value="Cash Total" /></td>
+                            <td>
+                                <h:outputText value="#{cc.attrs.billSearch.cashTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.billSearch.creditTotal ne 0.00}">
+                        <tr>
+                            <td><h:outputText value="Credit Total" /></td>
+                            <td>
+                                <h:outputText value="#{cc.attrs.billSearch.creditTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.billSearch.slipTotal ne 0.00}">
+                        <tr>
+                            <td> <h:outputText value="Slip Total" /> </td>
+                            <td>
+                                <h:outputText value="#{cc.attrs.billSearch.slipTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.billSearch.creditCardTotal ne 0.00}">
+                        <tr>
+                            <td><h:outputText value="Card Total" /></td>
+                            <td>
+                                <h:outputText value="#{cc.attrs.billSearch.creditCardTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.billSearch.multiplePaymentsTotal ne 0.00}">
+                        <tr>
+                            <td><h:outputText value="Multiple Payments Total" /></td>
+                            <td>
+                                <h:outputText value="#{cc.attrs.billSearch.multiplePaymentsTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.billSearch.patientDepositsTotal ne 0.00}">
+                        <tr>
+                            <td><h:outputText value="Patient Deposits Total" /></td>
+                            <td>
+                                <h:outputText value="#{cc.attrs.billSearch.patientDepositsTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                </table>
+
+
+            </div>
+        </div>
+    </cc:implementation>
+</html>

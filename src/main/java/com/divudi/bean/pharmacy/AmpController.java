@@ -104,6 +104,14 @@ public class AmpController implements Serializable {
         this.file = file;
     }
 
+    public String navigateToCreateItemList() {
+        return "/pharmacy/list_amps?faces-redirect=true"; // Then navigate
+    }
+
+    public String navigateToCreateMedicineList() {
+        return "/pharmacy/list_medicines?faces-redirect=true"; // Then navigate
+    }
+
     public void uploadAmps() {
         try {
             Workbook workbook = new XSSFWorkbook(file.getInputStream());
@@ -199,7 +207,7 @@ public class AmpController implements Serializable {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void fillPricesForItemSupplierPrices() {
@@ -224,7 +232,7 @@ public class AmpController implements Serializable {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Prices For Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public void fillSuppliersForItemSupplierPrices() {
@@ -236,7 +244,7 @@ public class AmpController implements Serializable {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Suppliers For Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
+        
     }
 
     public List<Amp> getListToRemove() {
@@ -331,7 +339,7 @@ public class AmpController implements Serializable {
 
         items = getFacade().findByJpql(sql, m);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
+        
     }
 
     public void createItemList() {
@@ -349,7 +357,7 @@ public class AmpController implements Serializable {
 
         items = getFacade().findByJpql(sql, m);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
+        
     }
 
     public void createItemListPharmacy() {
@@ -399,7 +407,7 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotItem(false, DepartmentType.Store);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/pharmacy Item List(/faces/dataAdmin/pharmacy_item_list.xhtml)");
+        
     }
 
     public void pharmacyNoDeleteItem() {
@@ -408,7 +416,7 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotItem(true, DepartmentType.Store);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/pharmacy Item List(/faces/dataAdmin/pharmacy_item_list.xhtml)");
+        
     }
 
     public void storeDeleteItem() {
@@ -417,7 +425,7 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/Store Item list(delete)(/faces/dataAdmin/store_item_list.xhtml)");
+        
     }
 
     public void storeNoDeleteItem() {
@@ -426,7 +434,7 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/Store Item list(no delete)(/faces/dataAdmin/store_item_list.xhtml)");
+        
     }
 
     public void onTabChange(TabChangeEvent event) {
@@ -722,7 +730,7 @@ public class AmpController implements Serializable {
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());
-                return;
+                JsfUtil.addSuccessMessage("Taken the category from VMP");
             } else {
                 JsfUtil.addErrorMessage("No category");
                 return;
@@ -861,8 +869,6 @@ public class AmpController implements Serializable {
         }
         return items;
     }
-    
-    
 
     public List<Amp> findItems() {
         String jpql = "select i "

@@ -1,14 +1,14 @@
 @media print{
     .posbill{
-        position: relative!important;  
-        margin-top: -2cm!important;       
+        position: relative!important;
+        margin-top: -2cm!important;
         width: 100%;
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
         font-family:Arial, Helvetica, sans-serif!important;
         /*        font:*/
-        font-size: 11px!important; 
+        font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
 
 
@@ -19,15 +19,15 @@
         padding: 5px!important;
         width: 12cm!important;
         height: 14cm!important;
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         /*        border: 1px solid!important;*/
         font-size: 130%;
         text-transform: capitalize!important;
-        
+
     }
 
     .channelRecipt_24_2x9_3{
@@ -35,34 +35,34 @@
         padding: 5px!important;
         width: 24.2cm!important;
         height: 9.3cm!important;
-         
-        font-family: sans-serif!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+
+        font-family: sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         /*        border: 1px solid!important;*/
         text-transform: capitalize!important;
     }
-    
+
     .channelCoop{
-         
+
         border: 1px solid!important;
         padding: 5px!important;
         width: 12cm!important;
         height: 9.5cm!important;
-         
-        margin: auto!important; 
+
+        margin: auto!important;
     }
 
     .posbillBreak{
-        position: relative!important;  
-        margin-top: -2cm!important;       
+        position: relative!important;
+        margin-top: -2cm!important;
         width: 100%;
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
         font-family:Arial, Helvetica, sans-serif!important;
         /*        font:*/
-        font-size: 11px!important; 
+        font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
         page-break-after:always!important;
 
@@ -75,11 +75,11 @@
         }*/
 
     .a4bill{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -99,13 +99,13 @@
 
     .institutionContact{
         position: relative!important;
-        text-align: center!important;   
+        text-align: center!important;
         font-size: 12px!important;
         font-family:monospace;
     }
 
     .billDetails{
-        text-align: center!important;   
+        text-align: center!important;
         font-size: 12px!important;
         font-family:Arial, Helvetica, sans-serif!important;
     }
@@ -117,50 +117,48 @@
 
 
 @media screen{
-    .fiveinchbill{
-        position: relative!important;
-        padding: 5px!important;
-        width: 12cm!important;
-        height: 14cm!important;
+    .fiveinchbill {
+        position: relative;
+        padding: 5px;
+        width: 12cm; /* Consider adjusting if too wide for the screen */
+        height: auto; /* Changed to 'auto' to accommodate content */
+        min-height: 18cm; /* Ensures it doesn't shrink below 18cm */
         border: 1px solid;
-         
-        font-family: sans-serif!important; 
-        /*margin: auto!important;*/ 
-        background-size: 100% auto!important; 
+        font-family: sans-serif;
         background-color: lightgray;
-        /*        border: 1px solid!important;*/
-        font-size: 100%!important;
-        text-transform: capitalize!important;
-        margin: 2cm!important;
-        
+        background-size: 100% auto;
+        font-size: 100%;
+        text-transform: capitalize;
+        margin: 0 auto; /* Adjusted to '0 auto' to center horizontally without pushing down */
     }
+
     .posbill{
         position: relative!important;
 
-        width:400px!important; 
+        width:400px!important;
 
-        font-family: monospace!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        font-family: monospace!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 100%;
 
-        font-size: 11px!important; 
+        font-size: 11px!important;
         page-break-after:always!important;
     }
 
     .posbillBreak{
         position: relative!important;
 
-        width:400px!important; 
+        width:400px!important;
 
-        font-family: monospace!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        font-family: monospace!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 100%;
 
-        font-size: 11px!important; 
+        font-size: 11px!important;
         page-break-after:always!important;
 
     }
@@ -170,35 +168,35 @@
         padding: 5px!important;
         width: 24.2cm!important;
         height: 9.3cm!important;
-         
-        font-family: sans-serif!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+
+        font-family: sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         text-transform: capitalize!important;
     }
 
     .channelCoop{
         position: relative!important;
-         
-        font-family: sans-serif!important; 
+
+        font-family: sans-serif!important;
         border: 1px solid!important;
         padding: 5px!important;
         width: 12cm!important;
         height: 9.5cm!important;
-         
-        margin: auto!important; 
+
+        margin: auto!important;
         background-size: 100% auto!important;
     }
 
     .posbillBreak{
         position: relative!important;
 
-        width:400px!important; 
+        width:400px!important;
 
-        font-family: monospace!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        font-family: monospace!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 100%;
 
@@ -209,10 +207,10 @@
 
     .a4bill{
 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -231,13 +229,13 @@
 
     .institutionContact{
         position: relative!important;
-        text-align: center!important;   
+        text-align: center!important;
         font-size: 12px!important;
         font-family:monospace;
     }
 
     .billDetails{
-        text-align: center!important;   
+        text-align: center!important;
         font-size: 12px!important;
         font-family:Arial, Helvetica, sans-serif!important;
     }
@@ -248,19 +246,19 @@
 
 .institutionContact{
     position: relative!important;
-    text-align: center!important;   
+    text-align: center!important;
     font-size: 12px!important;
     font-family:monospace;
 }
 
 .billDetails{
-    text-align: center!important;   
+    text-align: center!important;
     font-size: 12px!important;
     font-family:Arial, Helvetica, sans-serif!important;
 }
 
 .billDetailsFiveFiveBHT{
-    text-align: center!important;   
+    text-align: center!important;
     font-size: 10px!important;
     font-family:Arial, Helvetica, sans-serif!important;
 }
@@ -273,13 +271,13 @@
     font-weight: bold;
 }
 
-.billDetailsFiveFive{   
+.billDetailsFiveFive{
     font-size: 14px!important;
     font-family:verdana, Helvetica, sans-serif!important;
 }
 
 .itemHeadings{
-    text-align: center!important;   
+    text-align: center!important;
     font-size: 13px!important;
     font-family:Arial, Helvetica, sans-serif!important;
     font-weight: bold;
@@ -293,7 +291,7 @@
 }
 
 .itemsBlock{
-    text-align: center!important;   
+    text-align: center!important;
     font-size: 13px!important;
     font-family:verdana, Helvetica, sans-serif!important;
     text-transform: capitalize!important;
@@ -301,7 +299,7 @@
 
 
 itemsBlockRight{
-    text-align: right!important;   
+    text-align: right!important;
     font-size: 13px!important;
     font-family:verdana, Helvetica, sans-serif!important;
     text-transform: capitalize!important;
@@ -310,14 +308,14 @@ itemsBlockRight{
 
 
 .itemsBlockRightFiveFive{
-    text-align: right!important;   
+    text-align: right!important;
     font-size: 12px!important;
     font-family:Arial, Helvetica, sans-serif!important;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
 .footer{
-    text-align: center!important;   
+    text-align: center!important;
     font-size: 12px!important;
     font-family: monospace;
 

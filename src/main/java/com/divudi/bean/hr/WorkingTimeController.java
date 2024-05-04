@@ -19,17 +19,30 @@ import com.divudi.entity.hr.WorkingTime;
 import com.divudi.facade.WorkingTimeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.data.BillClassType;
+import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
+import com.divudi.entity.BillFeePayment;
+import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Payment;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
+import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.BillFeePaymentFacade;
+import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +68,16 @@ public class WorkingTimeController implements Serializable {
 
     @EJB
     private WorkingTimeFacade ejbFacade;
+    @EJB
+    BillItemFacade billItemFacade;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    BillFeeFacade billFeeFacade;
+    @EJB
+    BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
 
     private static final long serialVersionUID = 1L;
 
@@ -77,14 +100,13 @@ public class WorkingTimeController implements Serializable {
     private WorkingTime current;
     private List<WorkingTime> items = null;
     String selectText = "";
-    Doctor doctor;
     private Staff staff;
     private List<Admission> staffAdmissionsForPayments;
     private List<BillFee> staffBillFeesForPayment;
     private Integer staffBillFeesForPaymentCount;
     private Integer admissionCount;
     private List<WorkingTime> staffWorkingTimesForPayment;
-     private List<WorkingTime> staffPaymentsCompleted;
+    private List<WorkingTime> staffPaymentsCompleted;
     private WorkingTime workingTimeForPayment;
     private Double totalStaffWorkingPayment;
     private Double billFeeValue;
@@ -95,6 +117,7 @@ public class WorkingTimeController implements Serializable {
     private boolean printPreview;
     Date fromDate;
     Date toDate;
+    private PaymentMethod paymentMethod;
 
     public List<WorkingTime> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -150,24 +173,124 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void settleStaffPayments() {
-
-        Bill bill = new Bill();
-        bill.setBillDate(new Date());
-        bill.setBillTime(new Date());
-        bill.setBillType(BillType.OpdProfessionalFeePayment);
-        bill.setBillTypeAtomic(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
-        bill.setNetTotal(totalStaffWorkingPayment);
-        bill.setTotal(totalStaffWorkingPayment);
+        Bill bill = new BilledBill();
+        bill.setBillDate(Calendar.getInstance().getTime());
+        bill.setBillTime(Calendar.getInstance().getTime());
+        bill.setBillType(BillType.PaymentBill);
+        bill.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        bill.setCreatedAt(Calendar.getInstance().getTime());
+        bill.setCreater(getSessionController().getLoggedUser());
+        bill.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        String id = billNumberGenerator.departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY);
+        bill.setDeptId(id);
+        bill.setInsId(id);
         bill.setDiscount(0.0);
+        bill.setDiscountPercent(0.0);
+        bill.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        bill.setNetTotal(0 - totalStaffWorkingPayment);
+        bill.setPaymentMethod(paymentMethod);
+        bill.setStaff(staff);
+        bill.setToStaff(staff);
+        bill.setTotal(0 - totalStaffWorkingPayment);
         bill.setDepartment(sessionController.getDepartment());
         bill.setInstitution(sessionController.getInstitution());
         billController.save(bill);
-
+        
+        Payment paymentForProfessionalPayment = createPayment(bill, paymentMethod);
+        
+        createBillFeesAndSave(bill,paymentForProfessionalPayment,staffBillFeesForPayment);
+        
         workingTimeForPayment.setProfessinoalPaymentBill(bill);
         save(workingTimeForPayment);
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
 
+    }
+
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setPaidValue(bill.getNetTotal());
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+
+        if (p.getId() == null) {
+            paymentFacade.create(p);
+        }
+
+    }
+
+    public void createBillFeesAndSave(Bill b, Payment p, List<BillFee> payingBillFees) {
+        for (BillFee bf : payingBillFees) {
+            saveBillItemForPaymentBill(b, bf, p);
+            bf.setPaidValue(bf.getFeeValue());
+            bf.setSettleValue(bf.getFeeValue());
+            billFeeFacade.edit(bf);
+        }
+    }
+
+    private void saveBillItemForPaymentBill(Bill b, BillFee bf, Payment p) {
+        BillItem i = new BillItem();
+        i.setReferanceBillItem(bf.getBillItem());
+        i.setReferenceBill(bf.getBill());
+        i.setPaidForBillFee(bf);
+        i.setBill(b);
+        i.setCreatedAt(Calendar.getInstance().getTime());
+        i.setCreater(getSessionController().getLoggedUser());
+        i.setDiscount(0.0);
+        i.setGrossValue(bf.getFeeValue());
+        i.setNetValue(bf.getFeeValue());
+        i.setQty(1.0);
+        i.setRate(bf.getFeeValue());
+        billItemFacade.create(i);
+        saveBillFee(i, p);
+        b.getBillItems().add(i);
+    }
+    
+    public void saveBillFee(BillItem bi, Payment p) {
+        BillFee bf = new BillFee();
+        bf.setCreatedAt(Calendar.getInstance().getTime());
+        bf.setCreater(getSessionController().getLoggedUser());
+        bf.setBillItem(bi);
+        bf.setPatienEncounter(bi.getBill().getPatientEncounter());
+        bf.setPatient(bi.getBill().getPatient());
+        bf.setFeeValue(0 - bi.getNetValue());
+        bf.setFeeGrossValue(0 - bi.getGrossValue());
+        bf.setSettleValue(0 - bi.getNetValue());
+        bf.setCreatedAt(new Date());
+        bf.setDepartment(getSessionController().getDepartment());
+        bf.setInstitution(getSessionController().getInstitution());
+        bf.setBill(bi.getBill());
+
+        if (bf.getId() == null) {
+            billFeeFacade.create(bf);
+        }else{
+            billFeeFacade.edit(bf);
+        }
+        createBillFeePaymentAndPayment(bf, p);
+    }
+    
+    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
+        BillFeePayment bfp = new BillFeePayment();
+        bfp.setBillFee(bf);
+        bfp.setAmount(bf.getSettleValue());
+        bfp.setInstitution(getSessionController().getInstitution());
+        bfp.setDepartment(getSessionController().getDepartment());
+        bfp.setCreater(getSessionController().getLoggedUser());
+        bfp.setCreatedAt(new Date());
+        bfp.setPayment(p);
+        billFeePaymentFacade.create(bfp);
     }
 
     public void calculateStaffPayments() {
@@ -419,13 +542,7 @@ public class WorkingTimeController implements Serializable {
         return items;
     }
 
-    public Doctor getDoctor() {
-        return doctor;
-    }
 
-    public void setDoctor(Doctor doctor) {
-        this.doctor = doctor;
-    }
 
     public Staff getStaff() {
         return staff;
@@ -587,8 +704,17 @@ public class WorkingTimeController implements Serializable {
     public void setStaffPaymentsCompleted(List<WorkingTime> staffPaymentsCompleted) {
         this.staffPaymentsCompleted = staffPaymentsCompleted;
     }
-    
-    
+
+    public PaymentMethod getPaymentMethod() {
+        if (paymentMethod == null) {
+            paymentMethod = PaymentMethod.Cash;
+        }
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 
     /**
      *

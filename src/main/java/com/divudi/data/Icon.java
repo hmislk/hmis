@@ -84,6 +84,7 @@ public enum Icon {
     Goods_Receipt("Goods Receipt"),
     Return_Received_Goods("Return Received Goods"),
     Return_without_Receipt("Return without Receipt"),
+    Multiple_Purchase_Order_Cancellation("Multiple Purchase Order Cancellation"),
     
     pharmacy_issue("Pharmacy - Issue"),
     pharmacy_search_issue_bill("Pharmacy - Search Issue Bill"),

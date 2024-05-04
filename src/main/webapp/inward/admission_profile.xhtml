@@ -190,7 +190,7 @@
                                     value="Add Services for Surgeries" 
 
                                     icon="fa fa-briefcase"
-                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
+                                    action="#{billBhtController.navigateToAddServicesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
@@ -215,7 +215,7 @@
                                     value="Add Services for Surgeries" 
 
                                     icon="fa fa-briefcase"
-                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
+                                    action="#{billBhtController.navigateToAddServicesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
@@ -282,12 +282,11 @@
                                 <p:commandButton 
                                     value="Pharmacy BHT Request" 
                                     action="#{admissionController.navigateToPharmacyBhtRequest}" 
-                                    actionListener="#{pharmacySaleBhtController.resetAll}"
                                     icon="fa fa-prescription-bottle-alt"
                                     class="w-100">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 
-                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                        target="#{pharmacyRequestForBhtController.patientEncounter}" />
                                 </p:commandButton>
 
 

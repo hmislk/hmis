@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/pharmacy/pharmacy_summery_index.xhtml"
+                template="/pharmacy/pharmacy_analytics.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
@@ -12,15 +12,15 @@
             <p:panel  styleClass="noBorder summeryBorder" header="Sale Detail By Bill">
                 <h:panelGrid columns="4" class="w-100">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete value="#{pharmacySaleReport.department}" completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete value="#{pharmacySaleReportController.department}" completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
 
@@ -36,9 +36,9 @@
                         value="Process" 
                         icon="fa-solid fa-arrows-rotate"
                         class="ui-button-warning" 
-                        action="#{pharmacySaleReport.listPharmactRetailBills()}"/>
+                        action="#{pharmacySaleReportController.listPharmactRetailBills()}"/>
                     <p:commandButton 
-                        actionListener="#{pharmacySaleReport.createSaleReportByDateDetail()}" 
+                        actionListener="#{pharmacySaleReportController.createSaleReportByDateDetail()}" 
                         ajax="false" 
                         value="Excel"
                         icon="fa-solid fa-file-excel"
@@ -57,7 +57,7 @@
 
 
                 <p:dataTable id="sum1" 
-                             value="#{pharmacySaleReport.bills}" 
+                             value="#{pharmacySaleReportController.bills}" 
                              var="i"
                              paginator="true"
                              rows="20"

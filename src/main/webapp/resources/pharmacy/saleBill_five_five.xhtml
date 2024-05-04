@@ -41,7 +41,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------------------------"   />                          
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -253,7 +253,7 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------------------------"   />                        
             </div>
 
 
@@ -359,7 +359,7 @@
 
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------------------------"   />                          
             </div>
 
 
@@ -417,17 +417,18 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-
-                    <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Balance" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
-                            <h:outputLabel value="#{cc.attrs.bill.cashPaid-cc.attrs.bill.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale'}">
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Balance" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 0px;">
+                                <h:outputLabel value="#{cc.attrs.bill.cashPaid-cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <!--                    <tr>
                                             <td class="totalsBlock" style="text-align: left; width: 60%;">
@@ -445,7 +446,7 @@
                             <h:outputLabel   value="Number of Items Count" />
                         </td>
                         <td  class="totalsBlock">
-                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
+                            <h:outputLabel style="float: right;"  value="#{cc.attrs.bill.billItems.size()}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

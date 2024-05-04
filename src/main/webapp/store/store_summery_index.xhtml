@@ -17,80 +17,9 @@
                     <div class="row">
                         <div class="col-md-3">
                             <h:form>
-                                <p:accordionPanel >
 
-                                    <p:tab title=" Cashier">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="#{commonReport.navigateToCashierDetailedReport}" actionListener="#{commonReport.recreteModal}"></p:commandButton>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Cashier Summary" action="store_report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" Sale Report All">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Summary Report By Date" action="store_report_sale_by_date_summery" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" Sale Report By Payment Method ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Summary Report By Date" action="store_report_sale_by_date_summery_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="store_report_sale_by_date_detail_payment_method" actionListener="#{storeSaleReport.makeNull}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" GRN ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Summary" action="store_report_grn_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Expenses" action="store_report_grn_detail_expencess" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Summary By Supplier" action="store_report_grn_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" Purchase ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Purchase Summary" action="store_report_purchase_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Purchase Summary By Supplier" action="store_report_purchase_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" GRN Payment ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Payment Summary" action="store_report_grnPayment_detail" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="GRN Payment Summary By Supplier" action="store_report_grnPayment_detail_by_supplier" actionListener="#{storeSaleReport.makeNull}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" Issue Report ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit Issue by bill" action="store_report_unit_issue_bill.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit by Department" action="store_report_unit_issue_department.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Summary" action="store_report_unit_issue_department_by_departmaent" actionListener="#{storeSaleReport.makeNull}"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Department Unit Issue by Department - Detailed" action="store_report_unit_issue_department_by_departmaent_item_vice" actionListener="#{storeSaleReport.makeNull}"/>
 
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
-                                                             value="Department Unit Issue by Bill Item" 
-                                                             action="store_report_unit_issue_bill_item.xhtml" disabled="false"/>
 
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
-                                                             value="Department Unit Issue by Item(Batch)" 
-                                                             action="store_unit_report_by_item.xhtml"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
-                                                             value="Department Unit Issue by Item" 
-                                                             action="store_unit_report_by_item_1.xhtml"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false"
-                                                             value="BHT Issue by Item" 
-                                                             action="store_report_bht_issue_by_item.xhtml" disabled="true"/>
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Unit Issue Category Wise Summery" action="store_report_unit_issue_bill_1.xhtml" actionListener="#{storeSaleReport.makeNull}"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" Transfer Report ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Transfer Issue Summary Report By Date" action="store_report_issue_by_date_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="true"/>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title=" Asset Transfer Report ">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" styleClass="linkButton" ajax="false" value="Transfer Issue Summary Report By Date" action="store_report_asset_issue_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="fasle"/>
-                                        </div>
-                                    </p:tab>
-
-                                </p:accordionPanel>
 
                             </h:form>
                         </div>

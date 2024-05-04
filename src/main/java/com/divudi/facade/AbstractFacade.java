@@ -149,6 +149,26 @@ public abstract class AbstractFacade<T> {
         return t;
     }
 
+    public T findFreshByJpql(String jpql, Map<String, Object> parameters) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        qry.setHint("javax.persistence.cache.storeMode", "REFRESH"); // Bypass cache
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String param = entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof Date) {
+                qry.setParameter(param, (Date) value, TemporalType.DATE);
+            } else {
+                qry.setParameter(param, value);
+            }
+        }
+        qry.setMaxResults(1);
+        try {
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
     public T findFirstByJpql(String jpql, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         Set s = parameters.entrySet();
@@ -182,8 +202,16 @@ public abstract class AbstractFacade<T> {
 
     public void create(T entity) {
         getEntityManager().persist(entity);
-        //getEntityManager().flush();
+    }
 
+    public void createAndFlush(T entity) {
+        getEntityManager().persist(entity);
+        getEntityManager().flush(); // Immediately write to the database
+    }
+    
+    public void editAndFlush(T entity) {
+        getEntityManager().merge(entity);
+        getEntityManager().flush(); // Immediately write to the database
     }
 
     public void refresh(T entity) {

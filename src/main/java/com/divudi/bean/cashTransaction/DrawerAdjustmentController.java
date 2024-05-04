@@ -138,7 +138,7 @@ public class DrawerAdjustmentController implements Serializable {
 
         double difference = ballance - getValue();
 
-//        System.err.println("Cash Ballance " + cashBallance);
+//        System.err.println("Cash Balance " + cashBallance);
 //        System.err.println("Difference  " + difference);
         CashTransaction cashTransaction = new CashTransaction();
         cashTransaction.setCreatedAt(new Date());

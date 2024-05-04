@@ -26,6 +26,8 @@ import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -188,21 +190,33 @@ public class Lims {
             @PathParam("billId") String billId,
             @PathParam("username") String username,
             @PathParam("password") String password) {
+        return processSamplesFromBill(billId, username, password);
+    }
+
+    @GET
+    @Path("/samples1/{billId}/{username}/{password}")
+    @Produces("application/json")
+    public String generateSamplesFromBill1(
+            @PathParam("billId") String billId,
+            @PathParam("username") String username,
+            @PathParam("password") String password) {
 
         // Validation
-//        System.out.println("generateSamplesFromBill");
-//        System.out.println("billId = " + billId);
+        System.out.println("generateSamplesFromBill");
+        System.out.println("billId = " + billId);
         String validationError = validateInput(billId, username, password);
-//        System.out.println("validationError = " + validationError);
+        System.out.println("validationError = " + validationError);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }
 
         // Fetch necessary data
         WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
+        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
-
+        System.out.println("ptSamples = " + ptSamples);
         // Check if necessary data is present
         if (requestSendingUser == null) {
             return constructErrorJson(1, "Username / password mismatch.", billId);
@@ -212,9 +226,10 @@ public class Lims {
         }
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
-        if (ptSamples != null || !ptSamples.isEmpty()) {
+        if (ptSamples == null || ptSamples.isEmpty()) {
             for (Bill b : patientBills) {
                 JSONObject j = constructPatientSampleJson(b);
+                System.out.println("j = " + j);
                 if (j != null) {
                     array.put(j);
                 }
@@ -234,6 +249,69 @@ public class Lims {
         jSONObjectOut.put("Barcodes", array);
         String js = jSONObjectOut.toString();
         return js;
+    }
+
+    public String processSamplesFromBill(String billId, WebUser requestSendingUser) {
+//        System.out.println("Processing generateSamplesFromBill for User");
+//        System.out.println("billId = " + billId);
+
+        List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
+//        System.out.println("patientBills = " + patientBills);
+        if (patientBills == null || patientBills.isEmpty()) {
+            return constructErrorJson(1, "Bill Not Found. Please reenter.", billId);
+        }
+
+        List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
+        System.out.println("ptSamples = " + ptSamples);
+
+        JSONArray array = new JSONArray();
+        Set<Long> uniqueIds = new HashSet<>();
+
+        if (ptSamples != null && !ptSamples.isEmpty()) {
+            for (PatientSample ps : ptSamples) {
+                if (uniqueIds.add(ps.getId())) {
+                    JSONObject j = constructPatientSampleJson(ps);
+                    if (j != null) {
+                        array.put(j);
+                    }
+                }
+            }
+        } else {
+            for (Bill b : patientBills) {
+                JSONObject j = constructPatientSampleJson(b);
+                System.out.println("j = " + j);
+                if (j != null) {
+                    array.put(j);
+                }
+            }
+        }
+
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("Barcodes", array);
+        return jSONObjectOut.toString();
+    }
+
+    public String processSamplesFromBill(String billId, String username, String password) {
+        System.out.println("Processing generateSamplesFromBill");
+        System.out.println("billId = " + billId);
+
+        String validationError = validateInput(billId, username, password);
+        System.out.println("validationError = " + validationError);
+        if (validationError != null) {
+            return constructErrorJson(1, validationError, billId);
+        }
+
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
+        if (requestSendingUser == null) {
+            return constructErrorJson(1, "Username / password mismatch.", billId);
+        }
+
+        return processSamplesFromBill(billId, requestSendingUser);
+    }
+
+    public String generateSamplesForInternalUse(String billId, WebUser user) {
+        return processSamplesFromBill(billId, user);
     }
 
     private String validateInput(String billId, String username, String password) {
@@ -274,8 +352,8 @@ public class Lims {
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", ps.getPatient().getId() != null ? ps.getPatient().getId() : "");
-            
+            jSONObject.put("barcode", ps.getIdStr() != null ? ps.getIdStr() : "");
+
             Bill bill = ps.getBill();
             if (bill == null) {
                 return null;
@@ -290,6 +368,7 @@ public class Lims {
 
         String tbis = "";
         String temTube = "";
+        
         if (tpiics == null || tpiics.isEmpty()) {
             return null;
         } else {
@@ -310,40 +389,42 @@ public class Lims {
         if (tbis.length() > 3) {
             tbis = tbis.substring(0, tbis.length() - 2);
         }
-        tbis += " - " + temTube;
-        jSONObject.put("tests", tbis);
+        jSONObject.put("container", temTube != null ? temTube : "");
+        jSONObject.put("tests", tbis != null ? tbis : "");
         return jSONObject;
     }
 
-    private JSONObject constructPatientSampleJson(Bill b) {
+    private JSONObject constructPatientSampleJson(Bill bill) {
+        System.out.println("constructPatientSampleJson");
+        System.out.println("b = " + bill);
         JSONObject jSONObject = new JSONObject();
-        if (b == null) {
+        if (bill == null) {
             return null;
         } else {
-            Patient patient = b.getPatient();
+            Patient patient = bill.getPatient();
+            System.out.println("patient = " + patient);
             if (patient == null) {
                 return null;
             } else {
                 Person person = patient.getPerson();
+                System.out.println("person = " + person);
                 if (person != null) {
                     jSONObject.put("name", person.getName() != null ? person.getName() : "");
                     jSONObject.put("age", person.getAgeAsString() != null ? person.getAgeAsString() : "");
                     jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
                 }
             }
-            jSONObject.put("barcode", b.getIdStr() != null ? b.getIdStr() : "");
-            Bill bill = b;
-            if (bill == null) {
-                return null;
-            } else {
-                jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
-                jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
-                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
-            }
-            jSONObject.put("id", b.getIdStr() != null ? b.getIdStr() : "");
+            jSONObject.put("barcode", bill.getIdStr() != null ? bill.getIdStr() : "");
+
+            jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
+            jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
+            jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+
+            jSONObject.put("id", bill.getIdStr() != null ? bill.getIdStr() : "");
         }
 
-        List<BillItem> bis = findBillItems(b);
+        List<BillItem> bis = findBillItems(bill);
+        System.out.println("bis = " + bis);
 
         String tbis = "";
         String temTube = "";
@@ -618,8 +699,9 @@ public class Lims {
     }
 
     public List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
-        //// // System.out.println("strBillId = " + strBillId);
+        System.out.println("strBillId = " + strBillId);
         Long billId = stringToLong(strBillId);
+        System.out.println("billId = " + billId);
         List<Bill> temBills;
         if (billId != null) {
             temBills = prepareSampleCollectionByBillId(billId);
@@ -630,17 +712,34 @@ public class Lims {
     }
 
     public List<Bill> prepareSampleCollectionByBillId(Long bill) {
-        //// // System.out.println("prepareSampleCollectionByBillId = ");
+        System.out.println("prepareSampleCollectionByBillId");
         Bill b = billFacade.find(bill);
-        List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
-        if (bs == null || bs.isEmpty()) {
-            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+        if (b == null) {
             return null;
         }
-        return bs;
+        List<Bill> bs = new ArrayList<>();
+        if (b.getBillTypeAtomic() != null) {
+            if (b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+            } else {
+                bs.add(b);
+                return bs;
+            }
+        }
+        if (b.getBillType() == BillType.OpdBathcBill) {
+            bs.addAll(validBillsOfBatchBill(b));
+            return bs;
+        } else {
+            bs.add(b);
+            return bs;
+        }
     }
 
     public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
+        System.out.println("prepareSampleCollectionByBillNumber");
+        System.out.println("insId = " + insId);
         String j = "Select b from Bill b where b.insId=:id order by b.id desc";
         Map m = new HashMap();
         m.put("id", insId);
@@ -650,20 +749,31 @@ public class Lims {
         }
         List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
-            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+//            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
             return null;
         }
         return bs;
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
+        System.out.println("validBillsOfBatchBill");
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb "
+                + " and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findByJpql(j, m);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        System.out.println("tbs = " + tbs);
+        return tbs;
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {
+        System.out.println("getPatientSamplesForBillId");
+        System.out.println("temBills = " + temBills);
+        System.out.println("wu = " + wu);
         List<PatientSample> pss = prepareSampleCollectionByBillsForRequestss(temBills, wu);
         return pss;
     }

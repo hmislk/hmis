@@ -195,9 +195,6 @@ public class UserPreference implements Serializable {
     private boolean needNicForPatientRegistration;
     private boolean needPhoneNumberForPatientRegistration;
 
-    private boolean channellingSendSmsOnBooking;
-    private boolean channellingSendSmsOnCancelling;
-    private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
     private String pharmacyBillFooter;
     private String pharmacyBillHeader;
@@ -239,23 +236,44 @@ public class UserPreference implements Serializable {
     private String inpatientFinalBillPrintHeader;
     private String changeTextCasesPatientName;
 
+    private boolean sendSmsOnChannelBooking;
+    private boolean sendSmsOnChannelBookingCancellation;
+    private boolean sendSmsOnChannelDoctorArrival;
+    private boolean sendSmsOnChannelBookingCompletion;
+    private boolean sendSmsOnChannelBookingNoShow;
+    private boolean sendSmsOnChannelBookingDocterPayment;
+
     @Lob
     private String smsTemplateForChannelBooking;
+    @Lob
+    private String smsTemplateForChannelBookingCancellation;
+    @Lob
+    private String smsTemplateForChannelDoctorArrival;
+    @Lob
+    private String smsTemplateForChannelBookingCompletion;
+    @Lob
+    private String smsTemplateForChannelBookingNoShow;
+    @Lob
+    private String smsTemplateForChannelBookingDoctorPayment;
+
     private boolean opdSettleWithoutPatientArea;
     private boolean opdBillingAftershiftStart;
 
     private Integer numberOfOPDBillCopies;
     private Integer numberOfCCBillCopies;
     private Integer numberOfChannellingBillCopies;
-    
-    private boolean docterPaymentSMS;
-    private String docterPaymentSMSTemplate;
+
     @Lob
     private String inwardAddmissionStatemenetEnglish;
     @Lob
     private String inwardAddmissionStatemenetSinhala;
 
+    private String channelingBillHeaderTemplate;
 
+    private boolean showBarCodeInChannelBookingBill;
+    private boolean genarateOpdTokenNumbersToCounterWise;
+
+    @Deprecated
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -263,6 +281,7 @@ public class UserPreference implements Serializable {
         return applicationInstitution;
     }
 
+    @Deprecated
     public void setApplicationInstitution(ApplicationInstitution applicationInstitution) {
         this.applicationInstitution = applicationInstitution;
     }
@@ -793,28 +812,28 @@ public class UserPreference implements Serializable {
         this.needPhoneNumberForPatientRegistration = needPhoneNumberForPatientRegistration;
     }
 
-    public boolean isChannellingSendSmsOnBooking() {
-        return channellingSendSmsOnBooking;
+    public boolean isSendSmsOnChannelBooking() {
+        return sendSmsOnChannelBooking;
     }
 
-    public void setChannellingSendSmsOnBooking(boolean channellingSendSmsOnBooking) {
-        this.channellingSendSmsOnBooking = channellingSendSmsOnBooking;
+    public void setSendSmsOnChannelBooking(boolean sendSmsOnChannelBooking) {
+        this.sendSmsOnChannelBooking = sendSmsOnChannelBooking;
     }
 
-    public boolean isChannellingSendSmsOnCancelling() {
-        return channellingSendSmsOnCancelling;
+    public boolean isSendSmsOnChannelBookingCancellation() {
+        return sendSmsOnChannelBookingCancellation;
     }
 
-    public void setChannellingSendSmsOnCancelling(boolean channellingSendSmsOnCancelling) {
-        this.channellingSendSmsOnCancelling = channellingSendSmsOnCancelling;
+    public void setSendSmsOnChannelBookingCancellation(boolean sendSmsOnChannelBookingCancellation) {
+        this.sendSmsOnChannelBookingCancellation = sendSmsOnChannelBookingCancellation;
     }
 
-    public boolean isChannellingSendSmsOnArrival() {
-        return channellingSendSmsOnArrival;
+    public boolean isSendSmsOnChannelDoctorArrival() {
+        return sendSmsOnChannelDoctorArrival;
     }
 
-    public void setChannellingSendSmsOnArrival(boolean channellingSendSmsOnArrival) {
-        this.channellingSendSmsOnArrival = channellingSendSmsOnArrival;
+    public void setSendSmsOnChannelDoctorArrival(boolean sendSmsOnChannelDoctorArrival) {
+        this.sendSmsOnChannelDoctorArrival = sendSmsOnChannelDoctorArrival;
     }
 
     public boolean isSendBulkSms() {
@@ -1234,6 +1253,9 @@ public class UserPreference implements Serializable {
     }
 
     public String getSmsTemplateForChannelBooking() {
+        if (smsTemplateForChannelBooking == null || smsTemplateForChannelBooking.isEmpty()) {
+            smsTemplateForChannelBooking = "Dear {patient_name},\n\nYour appointment with  {doctor} is confirmed for {appointment_time} on {appointment_date}. Your serial no. is {serial_no}. Please arrive 10 minutes early. Thank you.";
+        }
         return smsTemplateForChannelBooking;
     }
 
@@ -1284,7 +1306,7 @@ public class UserPreference implements Serializable {
         }
         return copiesList;
     }
-    
+
     @Transient
     public List<Integer> getChannellingBillCopiesList() {
         int copies = getNumberOfChannellingBillCopies(); // Ensures the default is applied if null or 0
@@ -1322,20 +1344,23 @@ public class UserPreference implements Serializable {
         this.numberOfChannellingBillCopies = numberOfChannellingBillCopies;
     }
 
-    public boolean isDocterPaymentSMS() {
-        return docterPaymentSMS;
+    public boolean isSendSmsOnChannelBookingDocterPayment() {
+        return sendSmsOnChannelBookingDocterPayment;
     }
 
-    public void setDocterPaymentSMS(boolean docterPaymentSMS) {
-        this.docterPaymentSMS = docterPaymentSMS;
+    public void setSendSmsOnChannelBookingDocterPayment(boolean sendSmsOnChannelBookingDocterPayment) {
+        this.sendSmsOnChannelBookingDocterPayment = sendSmsOnChannelBookingDocterPayment;
     }
 
-    public String getDocterPaymentSMSTemplate() {
-        return docterPaymentSMSTemplate;
+    public String getSmsTemplateForChannelBookingDoctorPayment() {
+        if(smsTemplateForChannelBookingDoctorPayment==null||smsTemplateForChannelBookingDoctorPayment.isEmpty()){
+            smsTemplateForChannelBookingDoctorPayment  = "Dear {doctor} {dept_id}, Your Payment of the {session_name} on {date} Patient Count - {patient_count} and the total is {net_total}. Thank you.";
+        }
+        return smsTemplateForChannelBookingDoctorPayment;
     }
 
-    public void setDocterPaymentSMSTemplate(String docterPaymentSMSTemplate) {
-        this.docterPaymentSMSTemplate = docterPaymentSMSTemplate;
+    public void setSmsTemplateForChannelBookingDoctorPayment(String smsTemplateForChannelBookingDoctorPayment) {
+        this.smsTemplateForChannelBookingDoctorPayment = smsTemplateForChannelBookingDoctorPayment;
     }
 
     public String getInwardAddmissionStatemenetEnglish() {
@@ -1352,6 +1377,90 @@ public class UserPreference implements Serializable {
 
     public void setInwardAddmissionStatemenetSinhala(String inwardAddmissionStatemenetSinhala) {
         this.inwardAddmissionStatemenetSinhala = inwardAddmissionStatemenetSinhala;
+    }
+
+    public String getChannelingBillHeaderTemplate() {
+        return channelingBillHeaderTemplate;
+    }
+
+    public void setChannelingBillHeaderTemplate(String channelingBillHeaderTemplate) {
+        this.channelingBillHeaderTemplate = channelingBillHeaderTemplate;
+    }
+
+    public boolean isShowBarCodeInChannelBookingBill() {
+        return showBarCodeInChannelBookingBill;
+    }
+
+    public void setShowBarCodeInChannelBookingBill(boolean showBarCodeInChannelBookingBill) {
+        this.showBarCodeInChannelBookingBill = showBarCodeInChannelBookingBill;
+    }
+
+    public String getSmsTemplateForChannelDoctorArrival() {
+        if(smsTemplateForChannelDoctorArrival==null || smsTemplateForChannelDoctorArrival.isEmpty()){
+            smsTemplateForChannelDoctorArrival = "Dear {patient_name},\n\nDr. {doctor} has arrived and will see you shortly. Please ensure you are ready for your appointment at {appointment_time} on {appointment_date}. Thank you.";
+        }
+        return smsTemplateForChannelDoctorArrival;
+    }
+
+    public void setSmsTemplateForChannelDoctorArrival(String smsTemplateForChannelDoctorArrival) {
+        this.smsTemplateForChannelDoctorArrival = smsTemplateForChannelDoctorArrival;
+    }
+
+    public String getSmsTemplateForChannelBookingCompletion() {
+        if(smsTemplateForChannelBookingCompletion==null||smsTemplateForChannelBookingCompletion.isEmpty()){
+            smsTemplateForChannelBookingCompletion  = "Dear {patient_name},\n\nYour appointment with {doctor} on {appointment_date} at {appointment_time} has been successfully completed. We hope everything went well. For follow-up or queries, contact us. Thank you.";
+        }
+        return smsTemplateForChannelBookingCompletion;
+    }
+
+    public void setSmsTemplateForChannelBookingCompletion(String smsTemplateForChannelBookingCompletion) {
+        this.smsTemplateForChannelBookingCompletion = smsTemplateForChannelBookingCompletion;
+    }
+
+    public boolean isSendSmsOnChannelBookingCompletion() {
+        return sendSmsOnChannelBookingCompletion;
+    }
+
+    public void setSendSmsOnChannelBookingCompletion(boolean sendSmsOnChannelBookingCompletion) {
+        this.sendSmsOnChannelBookingCompletion = sendSmsOnChannelBookingCompletion;
+    }
+
+    public boolean isSendSmsOnChannelBookingNoShow() {
+        return sendSmsOnChannelBookingNoShow;
+    }
+
+    public void setSendSmsOnChannelBookingNoShow(boolean sendSmsOnChannelBookingNoShow) {
+        this.sendSmsOnChannelBookingNoShow = sendSmsOnChannelBookingNoShow;
+    }
+
+    public String getSmsTemplateForChannelBookingCancellation() {
+        if (smsTemplateForChannelBookingCancellation == null || smsTemplateForChannelBookingCancellation.isEmpty()) {
+            smsTemplateForChannelBookingCancellation = "Dear {patient_name},\n\nYour appointment with {doctor} on {appointment_date} at {appointment_time} has been cancelled as per your request. If you need to reschedule, please contact us. Thank you.";
+        }
+        return smsTemplateForChannelBookingCancellation;
+    }
+
+    public void setSmsTemplateForChannelBookingCancellation(String smsTemplateForChannelBookingCancellation) {
+        this.smsTemplateForChannelBookingCancellation = smsTemplateForChannelBookingCancellation;
+    }
+
+    public String getSmsTemplateForChannelBookingNoShow() {
+        if(smsTemplateForChannelBookingNoShow==null || smsTemplateForChannelBookingNoShow.isEmpty()){
+            smsTemplateForChannelBookingNoShow  = "Dear {patient_name},\n\nWe noticed you missed Your appointment with {doctor} on {appointment_date} at {appointment_time}, and the doctor has left. To reschedule, please contact us.";
+        }
+        return smsTemplateForChannelBookingNoShow;
+    }
+
+    public void setSmsTemplateForChannelBookingNoShow(String smsTemplateForChannelBookingNoShow) {
+        this.smsTemplateForChannelBookingNoShow = smsTemplateForChannelBookingNoShow;
+    }
+
+    public boolean isGenarateOpdTokenNumbersToCounterWise() {
+        return genarateOpdTokenNumbersToCounterWise;
+    }
+
+    public void setGenarateOpdTokenNumbersToCounterWise(boolean genarateOpdTokenNumbersToCounterWise) {
+        this.genarateOpdTokenNumbersToCounterWise = genarateOpdTokenNumbersToCounterWise;
     }
 
 }

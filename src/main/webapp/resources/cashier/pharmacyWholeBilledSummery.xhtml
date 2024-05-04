@@ -89,9 +89,9 @@
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
 
-            <p:column headerText="Checque" style=" text-align: right" >
+            <p:column headerText="Cheque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Cheque'}" value="#{bPh.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>

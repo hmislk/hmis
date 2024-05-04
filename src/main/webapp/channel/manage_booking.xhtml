@@ -9,9 +9,11 @@
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:pat="http://java.sun.com/jsf/composite/patient"
+                xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
+
         <h:form id="form">
             <!--            
             #{bookingController.selectedBillSession.bill.billItems}
@@ -47,9 +49,17 @@
 
                 </f:facet>
                 <p:tabView id="detail">
-                    <p:tab title="Booking" id="booking">
+                    <p:tab title="Booking" id="booking" class="w-100">
+                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToCancel}" class="w-100 bg-danger text-white p-2" layout="block">
+                            <i class="fas fa-ban text-white m-3"></i>
+                            <h:outputText value="Marked to Cancel" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{bookingController.selectedBillSession.markedToRefund}"  class="w-100 bg-danger text-white p-2" layout="block">
+                            <i class="fas fa-undo-alt  text-white m-3" ></i>
+                            <h:outputText value="Marked to Refund"  />
+                        </h:panelGroup>
+                        <!-- More Labels and Output Below -->
                         <h:panelGrid columns="2" >
-
                             <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance ne 0.0}">
                                 <div class="ui-message-error ui-widget ui-corner-all">
                                     <span class="ui-message-error-icon"/>
@@ -57,6 +67,8 @@
                                         <h:outputText value="NOT PAID YET" ></h:outputText>
                                     </span>
                                 </div>
+
+
 
                                 <h:panelGrid columns="2">
                                     <p:outputLabel value="Name"/>
@@ -197,7 +209,7 @@
                                     <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.creater.webUserPerson.nameWithTitle}" />
                                     <p:outputLabel style="color: red" value="Refund At" />
                                     <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.createdAt}" >
-                                        <f:convertNumber pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertNumber>
+                                        <!--                                        <f:convertNumber pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertNumber>-->
                                     </p:outputLabel> 
                                 </h:panelGrid>
 
@@ -254,9 +266,9 @@
                                 </h:panelGrid>                            
                             </p:panel>
 
-                            <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                            <p:panel header="Settling" class="mx-4" style="margin-bottom: 40%" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                 <h:panelGrid columns="2">
-                                    <p:outputLabel value="Bill Id"/>
+                                    <p:outputLabel value="Bill ID"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}"/>
                                     <p:outputLabel value="Payment Method"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
@@ -273,7 +285,6 @@
                                     </p:outputLabel>
                                 </h:panelGrid>                            
                             </p:panel>
-
                         </h:panelGrid>
 
                     </p:tab>
@@ -397,7 +408,7 @@
                                     <p:outputLabel value="#{bi.feeValue}"/> 
                                 </p:column>
                                 <p:column headerText="Return Value">
-                                    <p:inputText value="#{bi.tmpChangedValue}" disabled="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                    <p:inputText value="#{bi.tmpChangedValue}">
                                         <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
                                         <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
                                     </p:inputText>
@@ -437,9 +448,10 @@
                         <p:panel  id="set">
                             <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
 
-                            <p:outputLabel value="Payment Method"/>
+                            <p:outputLabel rendered="false" value="Payment Method"/>
                             <p:selectOneMenu  
                                 class="mx-2"
+                                rendered="false"
                                 style="width: 10em;"
                                 id="cmbSettlePs" value="#{channelBillController.settlePaymentMethod}">  
                                 <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
@@ -468,11 +480,86 @@
                                 value="Settle Credit Booking"
                                 process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                 update="gpSettlePrint"
-                                action="#{channelBillController.settleCredit}" 
                                 disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                             or channelBillController.billSession.bill.cancelled==true
                                             or  channelBillController.billSession.bill.paidAmount ne 0}" 
-                                oncomplete="PF('dlgSettle').show();"/>
+                                oncomplete="PF('dlgPreSettle').show();"/>
+                            <p:dialog 
+                                id="dialogChannelPreSettle"
+                                closable="true"
+                                header="Choose Payment Method" 
+                                widgetVar="dlgPreSettle" 
+                                width="900"
+                                height="200"
+                                modal="true">
+                                <div class="row">
+                                    <p:spacer height="40px" />
+                                    <div class="col-4">
+                                        <p:commandButton 
+                                            id="setBtn1"  
+                                            class="ui-button-success mt-2 btn-lg" 
+                                            icon="fa-solid fa-money-bill"
+                                            value="Settle with Cash"
+                                            style="height: 90px; width: 250px;"
+                                            process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn1"
+                                            update="gpSettlePrint"
+                                            action="#{channelBillController.settleCreditWithCash}" 
+                                            disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                                        or channelBillController.billSession.bill.cancelled==true
+                                                        or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            oncomplete="PF('dlgSettle').show();">
+                                            <style>
+                                                .fa-money-bill {
+                                                    font-size: 25px !important;
+                                                }
+                                            </style>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:commandButton 
+                                            id="setBtn2"  
+                                            class="ui-button-warning mt-2 btn-lg" 
+                                            icon="fa-solid fa-credit-card"
+                                            value="Settle With Card"
+                                            style="height: 90px; width: 250px"
+                                            process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn2"
+                                            update="gpSettlePrint"
+                                            action="#{channelBillController.settleCreditWithCard}" 
+                                            disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                                        or channelBillController.billSession.bill.cancelled==true
+                                                        or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            oncomplete="PF('dlgSettle').show();">
+                                            <style>
+                                                .fa-credit-card {
+                                                    font-size: 25px !important;
+                                                }
+                                            </style>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:commandButton 
+                                            id="setBtn3"  
+                                            class="ui-button-danger mt-2 btn-lg"
+                                            icon="fa-solid fa-file-invoice-dollar"
+                                            value="Settle With Credit"
+                                            style="height: 90px; width: 250px"
+                                            process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn3"
+                                            update="gpSettlePrint"
+                                            action="#{channelBillController.settleCreditWithCredit}" 
+                                            disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                                        or channelBillController.billSession.bill.cancelled==true
+                                                        or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            oncomplete="PF('dlgSettle').show();">
+                                            <style>
+                                                .fa-file-invoice-dollar {
+                                                    font-size: 25px !important;
+                                                }
+                                            </style>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </p:dialog>
+
                             <h:panelGroup id="gpSettlePrint" >
 
                                 <p:dialog 
@@ -482,13 +569,14 @@
                                     widgetVar="dlgSettle" 
                                     width="900"
                                     height="700"
-                                    modal="true">
+                                    modal="true"
+                                    onShow="PF('dlgPreSettle').hide();">
 
                                     <div class="d-flex justify-content-between">
                                         <p:commandButton
                                             class="ui-button-secondary mx-2"
                                             icon="fa-solid fa-arrow-left"
-                                            action="#{bookingController.navigateBackToBookings()}"
+                                            action="#{bookingController.navigateBackToBookingsLoagingBillSessions()}"
                                             value="Back to Channel Booking"
                                             process="@this"
                                             update="@all">
@@ -502,9 +590,12 @@
                                                 style="width: 13em;">
                                                 <f:selectItem itemLabel="Please Select Paper Type" />
                                                 <f:selectItems value="#{enumController.paperTypes}" />
+                                                <p:ajax event="itemSelect" process="@this" update="gpSettleBillPreview" />
                                             </p:selectOneMenu>
                                             <p:commandButton 
-                                                ajax="false" 
+                                                id="btnRefresh"
+                                                process="@this"
+                                                update="gpSettleBillPreview"
                                                 icon="fa fa-sync-alt" 
                                                 class="ui-button" 
                                                 title="Redraw Bill">
@@ -542,58 +633,82 @@
                     </p:tab>
 
 
-                    <p:tab title="Change" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Title"/>
-                            <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
-                                <f:selectItems value="#{billController.title}"/>
-                            </p:selectOneMenu>
-                            <p:outputLabel value="Name"/>
+                    <p:tab 
+                        title="Change Patient"
+                        id="change" 
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                        <p:panelGrid columns="2" class="w-100">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
+                                <p:commandButton ajax="false" value="Change Patient" action="#{bookingController.changePatient()}" ></p:commandButton>
+                            </f:facet>
+                            <p:panel header="Current Patient for Booking" >
+                                <ezcommon:patient patient="#{bookingController.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                            </p:panel>
+                            <ezcommon:patient_details controller="#{bookingController}" ></ezcommon:patient_details>
+                        </p:panelGrid>
+                    </p:tab>
+
+                    <p:tab 
+                        title="Change Appointment Details"
+                        id="changeNumber" 
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:outputLabel value="Patient Name"/>
                             <p:inputText autocomplete="off" 
                                          readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}"
                                          value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
-                            <p:outputLabel value="Patient"/>
+                            <p:outputLabel value="Patient Phoone Number"/>
                             <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"  disabled="#{!webUserController.hasPrivilege('ClinicalPatientPhoneNumberEdit')}"/>
-                            <p:outputLabel value="Current Serial No"/>
+                            <p:outputLabel value="Current Appointment No"/>
                             <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                 <p:outputLabel value="#{bis.billSession.serialNo}">                                        
                                 </p:outputLabel>
                             </ui:repeat>
-                            <p:outputLabel value="Serial No"/>
+                            <p:outputLabel value="Appointment No"/>
                             <p:inputText autocomplete="off" value="#{bookingController.serealNo}">                                        
                             </p:inputText>
-                            <p:outputLabel value="Mark As Absent"/>
-                            <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
-                            </p:selectBooleanCheckbox>
-
-                            <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
-                                             disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                         or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
                             <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
                                              disabled="#{bookingController.selectedBillSession.bill.cancelled==true
                                                          or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
 
+                            <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
+                                             disabled="#{bookingController.selectedBillSession.bill.cancelled==true
+                                                         or bookingController.selectedBillSession.bill.refunded==true}" />
                         </h:panelGrid>
 
 
 
                     </p:tab>
 
+                    <p:tab title="Status" >
+                        <p:outputLabel value="Mark As Present / Absent"/>
+                        <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{channelBillController.billSession.bill.refunded==true
+                                                     or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
+                            <p:ajax process="@this" listener="#{bookingController.updateSelectedBillSessionPatient()}" ></p:ajax>
+                        </p:selectBooleanButton>
 
-                    <p:tab title="Search">
+                    </p:tab>
+
+                    <p:tab title="Search" rendered="false">
 
                         <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" pattern="dd MMMM yyyy" >   
                             <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                         </p:calendar>
-                        <p:calendar id="calTo"  value="#{channelSearchController.toDate}" pattern="dd MMMM yyyy" >   
+                        <p:calendar class="mx-2" id="calTo"  value="#{channelSearchController.toDate}" pattern="dd MMMM yyyy" >
                             <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                         </p:calendar>
 
                         <p:inputText id="txtBsSearch" value="#{channelSearchController.txtSearch}" placeholder="ID" >
                         </p:inputText>
 
-                        <p:commandButton id="btnBsSearch" 
-                                         value="Search" action="#{channelSearchController.searchForBillSessions}" 
+                        <p:commandButton id="btnBsSearch"
+                                         class="ui-button-warning mx-2" icon="fas fa-search"
+                                         value="Search" action="#{channelSearchController.searchForBillSessions}"
+                                         ajax="false"
                                          process="txtBsSearch calFrom calTo btnBsSearch" 
                                          update="bSessionSearch">
 
@@ -604,7 +719,7 @@
                                      filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
-                            <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
+                            <p:column headerText="Booking ID" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
                                 <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}"> #{bs.bill.bookingId}
                                     <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                     <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
@@ -612,7 +727,7 @@
                                     <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Sepeciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
+                            <p:column headerText="Speciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
                                 <h:commandLink action="channel_booking" actionListener="#{bookingController.resetToStartFromSpeciality}">#{bs.serviceSession.staff.speciality.name}
                                     <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                     <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>

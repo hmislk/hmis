@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head >
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+        <ui:insert name="title" >
+            <title>
+                <h:panelGroup rendered="#{sessionController.logged}" >
+                    <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
+                    <h:outputText value=" - " ></h:outputText>
+                    <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                    <h:outputText value="- " ></h:outputText>
+                    <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not sessionController.logged}" >
+                    <h:outputText value="Hospital Information Management System" ></h:outputText>
+                </h:panelGroup>
+            </title>
+        </ui:insert>
+
+        <h:outputStylesheet library="css" name="ohmis.css"/>
+        <link rel="stylesheet" 
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
+        <h:outputScript library="js" name="jsfcrud.js"/>
+    </h:head>
+    <h:body >
+        <style>
+            body {
+                background-color: var(--surface-a); /* Adjust the variable as needed */
+            }
+            .no-padding-margin-border > .ui-panel-content,
+            .no-padding-margin-border > .ui-panel-titlebar {
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+            }
+
+            .companyWaterMark {
+                position: fixed; /* Use absolute if you're positioning inside a specific container */
+                right: 0;
+                bottom: 0;
+                z-index: 1000; /* Ensures it stays on top of other content, adjust as necessary */
+                opacity: 0.5; /* Adjust for desired transparency */
+                font-size: 12px; /* Adjust font size as needed */
+                padding: 10px;
+                text-align: left;
+            }
+
+            .deptAndUser{
+                position: fixed; /* Use absolute if you're positioning inside a specific container */
+                left:0;
+                bottom: 0;
+                z-index: 1000; /* Ensures it stays on top of other content, adjust as necessary */
+                opacity: 0.5; /* Adjust for desired transparency */
+                font-size: 12px; /* Adjust font size as needed */
+                text-align: left;
+                padding: 10px;
+            }
+
+            /* Optionally, adjust the space between the lines */
+            .companyWaterMark h4 {
+                margin: 0;
+                line-height: 1.2; /* Adjust line height for better readability */
+            }
+
+
+        </style>
+        
+        
+        <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
+            <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
+                    <ui:insert name="login">
+                        <ez:login/>
+                    </ui:insert>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
+                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
+                        <!--<f:event rendered="#{applicationController.hasAwebsiteAsFrontEnd}" type="preRenderView" listener="#{sessionController.redirectToIndex1}" />-->
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+            <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
+
+                
+
+<!--                <div class="companyWaterMark d-flex align-items-center">
+                    <div class="mx-2">
+                        <img src="../../resources/image/CompanyLogo/companyLogo.png" width="50px"/>
+                    </div>
+                    <div>
+                        <h6><h:outputLabel class="text-left" value="Powered by"/></h6>
+                        <h5><h:outputLabel value="CareCode Solutions"/></h5>
+                    </div>
+                </div>-->
+
+                <h:panelGroup
+                    rendered="#{sessionController.department ne null}" 
+                    class="m-0 p-0 no-padding-margin-border"
+                    style=" padding: 0 !important;
+                    margin: 0 !important;
+                    border: none !important;">
+                    <ez:user_icon_bar rendered="false"/>
+                    <ui:insert name="content" class="m-0 p-0 borderless" >
+
+                    </ui:insert>
+                </h:panelGroup>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">
+                <ez:select_department class="w-100"/>
+            </h:panelGroup>
+            <ez:footer/>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionController.firstLogin}" >
+            <ez:first_login/>
+        </h:panelGroup>
+        <div class="d-flex justify-content-center align-items-center">
+            <p:growl id="growl" life="2000"  />
+        </div>
+
+
+
+    </h:body>
+</html>

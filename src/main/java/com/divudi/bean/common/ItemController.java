@@ -33,6 +33,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.ItemMapping;
 import com.divudi.entity.UserPreference;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemMappingFacade;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -78,6 +79,8 @@ public class ItemController implements Serializable {
     private ItemFeeFacade itemFeeFacade;
     @EJB
     ItemMappingFacade itemMappingFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
     /**
      * Managed Beans
      */
@@ -137,6 +140,8 @@ public class ItemController implements Serializable {
     boolean masterItem;
 
     ReportKeyWord reportKeyWord;
+
+    private List<Item> packaes;
 
     public void processDepartmentItemCount() {
         // Query for count of items without a department
@@ -919,8 +924,18 @@ public class ItemController implements Serializable {
         getInvestigationsAndServices();
     }
 
+    public List<Department> fillInstitutionDepatrments() {
+        Map m = new HashMap();
+        m.put("ins", current.getInstitution());
+        String sql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and d.institution=:ins "
+                + " order by d.name";
+        departments = departmentFacade.findByJpql(sql, m);
+        return departments;
+    }
+
     public List<Department> getDepartments() {
-        departments = departmentController.getInstitutionDepatrments(institution);
         return departments;
     }
 
@@ -1257,7 +1272,6 @@ public class ItemController implements Serializable {
 //        return suggestions;
 //
 //    }
-
     public List<Item> completeAmpItemAll(String query) {
         String sql;
         HashMap tmpMap = new HashMap();
@@ -1453,6 +1467,19 @@ public class ItemController implements Serializable {
         }
         return suggestions;
 
+    }
+
+    public List<Item> fillpackages() {
+        List<Item> suggestions;
+        String sql;
+        sql = "select c from Item c where c.retired=false"
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + " and type(c)=Packege "
+                    + " order by c.name";
+            //////// // System.out.println(sql);
+            packaes = getFacade().findByJpql(sql);
+            //System.out.println("packaes = " + packaes);
+            return packaes;
     }
 
     public List<Item> completePackage(String query) {
@@ -1722,7 +1749,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeOpdItemsByNamesAndCode(String query) {
-        if (sessionController.getLoggedPreference().isInstitutionRestrictedBilling()) {
+        if (sessionController.getApplicationPreference().isInstitutionRestrictedBilling()) {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, true);
         } else {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, false);
@@ -2162,6 +2189,8 @@ public class ItemController implements Serializable {
      */
     private void recreateModel() {
         items = null;
+        allItems = null;
+        itemApplicationController.setItems(null);
     }
 
     /**
@@ -2176,6 +2205,13 @@ public class ItemController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+    }
+
+    public void saveSelectedWithItemLight() {
+        saveSelected(getCurrent());
+        JsfUtil.addSuccessMessage("Saved");
+        recreateModel();
+        getAllItems();
     }
 
     public void saveSelected(Item item) {
@@ -2194,7 +2230,6 @@ public class ItemController implements Serializable {
      *
      */
     public void delete() {
-
         if (getCurrent() != null) {
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
@@ -2205,11 +2240,24 @@ public class ItemController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        allItems = null;
         getAllItems();
         getItems();
         current = null;
-        getCurrent();
+    }
+
+    public void deleteWithItemLight() {
+        if (getCurrent() == null) {
+            JsfUtil.addSuccessMessage("No such item");
+            return;
+        }
+        getCurrent().setRetired(true);
+        getCurrent().setRetiredAt(new Date());
+        getCurrent().setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(getCurrent());
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+        recreateModel();
+        getAllItems();
+        selectedItemLight = null;
     }
 
     public Institution getInstitution() {
@@ -2416,8 +2464,12 @@ public class ItemController implements Serializable {
             String temSql;
             HashMap h = new HashMap();
             temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false ";
-            h.put("t1", Investigation.class);
-            h.put("t2", Service.class);
+            h
+                    .put("t1", Investigation.class
+                    );
+            h
+                    .put("t2", Service.class
+                    );
 
             if (institution != null) {
                 temSql += " and i.institution=:ins ";
@@ -2641,6 +2693,19 @@ public class ItemController implements Serializable {
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
+
+    }
+
+    public List<Item> getPackaes() {
+        if(packaes==null){
+            packaes = fillpackages();
+        }
+        // System.out.println("getPackaes = " + packaes);   
+        return packaes;
+    }
+
+    public void setPackaes(List<Item> packaes) {
+        this.packaes = packaes;
     }
 
     @FacesConverter("itemLightConverter")

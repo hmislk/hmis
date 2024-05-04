@@ -171,7 +171,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         settleBill(BillType.CollectingCentrePaymentReceiveBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCPAY);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Collecting center/Collecting center payment(/faces/lab/collecting_centre_bill.xhtml)");
+        
     }
 
     public void channellAgencyPaymentRecieveSettleBill() {
@@ -181,7 +181,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         settleBill(BillType.AgentPaymentReceiveBill, HistoryType.ChannelDeposit, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNPAY);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Agent/Agent payment(/faces/agent_bill.xhtml)");
+        
     }
 
     public void channelAgencyCreditNoteSettleBill() {

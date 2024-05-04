@@ -124,7 +124,7 @@ public class DealorDueController implements Serializable {
 
     
     public void fillUnsettledCreditPharmacyBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_GRN_WHOLESALE , BillTypeAtomic.PHARMACY_DIRECT_PURCHASE};
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL , BillTypeAtomic.PHARMACY_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
     }
@@ -141,7 +141,7 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process Pharmacy Due)(/faces/dealorPayment/dealor_due.xhtml )");
+        
     }
 
     public void fillPharmacyDue1() {
@@ -174,7 +174,7 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process Store Due)(/faces/dealorPayment/dealor_due.xhtml)");
+        
     }
 
     public void fillPharmacyStoreDue() {
@@ -186,7 +186,7 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process All Due)(/faces/dealorPayment/dealor_due.xhtml)");
+        
     }
 
     private void fillIDealorDue(List<BillType> billTypeBilled, List<BillType> billTypeReturned) {
@@ -242,7 +242,7 @@ public class DealorDueController implements Serializable {
 
         createAgeTable(billTypesListBilled, billTypesListReturn);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due by age(Process Store Due Age)(/faces/inward/discharge_book_no_changes_due.xhtml)");
+        
     }
 
     public void fillPharmacyDueAge() {
@@ -255,7 +255,7 @@ public class DealorDueController implements Serializable {
 
         createAgeTable(billTypesListBilled, billTypesListReturn);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due by age(Process Pharmacy Due Age)(/faces/inward/discharge_book_no_changes_due.xhtml)");
+        
     }
 
     public void fillPharmacyStoreDueAge() {
@@ -267,7 +267,7 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         createAgeTable(billTypesListBilled, billTypesListReturn);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due by age(Process All Due Age)(/faces/inward/discharge_book_no_changes_due.xhtml)");
+        
     }
 
     private void createAgeTable(List<BillType> billTypesBilled, List<BillType> billTypesReturned) {

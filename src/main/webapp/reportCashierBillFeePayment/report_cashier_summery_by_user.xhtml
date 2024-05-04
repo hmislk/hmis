@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/reportCashier/report_cashier.xhtml"
+                template="/analytics/opd/index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -20,12 +20,12 @@
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.currentDateTime}">
+                                    maxdate="#{commonController.endOfDayOnCurrentDate}">
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{opdPreBillReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.currentDateTime}" >
+                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >
                         </p:calendar>
                         <h:outputLabel value="Department"/>
                         <au:department value="#{opdPreBillReportController.toDepartment}" />
@@ -36,7 +36,7 @@
                                         value="#{opdPreBillReportController.webUser}" ></p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="6" class="my-2" >
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                        <p:commandButton id="btnRefresh" ajax="false" value="Process"
                                          class="ui-button-warning" icon="fas fa-refresh"
                                          action="#{opdPreBillReportController.createCashierTableByUser()}" />  
                         <p:defaultCommand target="btnRefresh"/>

@@ -8,17 +8,18 @@
       xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/emr/reports/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form >
-                    <p:panelGrid columns="3" >
-                        <h:outputLabel value="From" ></h:outputLabel>
+                    <p:panel header="Daily Visits">
+                        <h:panelGrid columns="2" class="w-100">
+                        <h:outputLabel value="From Date" ></h:outputLabel>
                         <p:calendar value="#{patientEncounterController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                        <h:outputLabel value="" ></h:outputLabel>
+                       
 
-                        <h:outputLabel value="To" ></h:outputLabel>
+                        <h:outputLabel value="To Date" ></h:outputLabel>
                         <p:calendar value="#{patientEncounterController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                        <h:outputLabel value="" ></h:outputLabel>
+                        
 
 
                         <h:outputLabel value="Speciality" ></h:outputLabel>
@@ -29,7 +30,7 @@
                                         >
                             <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
                         </p:autoComplete>
-                        <h:outputLabel value="" ></h:outputLabel>
+                        
 
                         <h:outputLabel value="Doctor" ></h:outputLabel>
                         <p:autoComplete value="#{patientEncounterController.doctor}"
@@ -43,13 +44,13 @@
                                      listener="#{practiceBookingController.listBillSessions}" />                                                
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Process" 
+                                         icon="fa-solid fa-arrows-rotate"
+                                         class="ui-button-warning" 
                                         action="/clinical/clinical_reports_all_opd_visits" 
                                         actionListener="#{patientEncounterController.listAllEncounters()}"  ></p:commandButton>
-                    </p:panelGrid>
+                    </h:panelGrid>
 
-                    <p:panel id="pList" >
-
-                        <p:dataTable value="#{patientEncounterController.items}" var="pe" 
+                        <p:dataTable value="#{patientEncounterController.items}" var="pe" id="pList" 
                                      emptyMessage="No Patient Encounters during the selected period">
                             <p:column headerText="Visit Date/Time" >
                                 <h:outputLabel value="#{pe.createdAt}" >

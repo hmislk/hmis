@@ -12,7 +12,7 @@
       >
 
     <h:body>
-        <ui:composition template="/reportCashier/report_cashier.xhtml">
+        <ui:composition template="/analytics/opd/index.xhtml">
             <ui:define name="subcontent">
 
                 <h:panelGroup rendered="true" >
@@ -47,7 +47,7 @@
                                 </p:selectBooleanCheckbox>
                             </h:panelGrid>
                             <div class="d-flex my-2">
-                                <p:commandButton id="btnRefresh" ajax="false" value="Refresh" class="ui-button-warning" icon="fas fa-refresh"
+                                <p:commandButton id="btnRefresh" ajax="false" value="Process" class="ui-button-warning" icon="fas fa-refresh"
                                                  action="#{commonReport.createUserOPDSeviceCount}" />  
                                 <p:defaultCommand target="btnRefresh"/>
 

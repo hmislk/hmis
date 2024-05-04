@@ -7,6 +7,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
@@ -18,14 +19,17 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
@@ -50,8 +54,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -73,7 +77,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     BillNumberGenerator billNumberBean;
-    //////////////////
+    @EJB
+    BillSessionFacade billSessionFacade;
     @EJB
     private SmsFacade smsFacade;
     @EJB
@@ -106,6 +111,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     PaymentMethod paymentMethod;
     Speciality speciality;
     private ServiceSession selectedServiceSession;
+    private SessionInstance sessionInstance;
     boolean considerDate = false;
     BillFee billFee;
 
@@ -177,6 +183,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         speciality = null;
         serviceSessions = null;
         serviceSessionList = null;
+        sessionInstance = null;
+        currentStaff = null;
+        dueBillFees = new ArrayList<BillFee>();
+        payingBillFees = new ArrayList<BillFee>();
+        totalPaying = 0.0;
+        totalDue = 0.0;
+        recreateModel();
     }
 
     public StaffFacade getStaffFacade() {
@@ -193,12 +206,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
-        currentStaff = null;
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-
+//        currentStaff = null;
+//        dueBillFees = new ArrayList<BillFee>();
+//        payingBillFees = new ArrayList<BillFee>();
+//        totalPaying = 0.0;
+//        totalDue = 0.0;
     }
 
 //    public List<Staff> completeStaff(String query) {
@@ -223,7 +235,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         Map m = new HashMap();
 
         if (getSpeciality() != null) {
-            if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getApplicationPreference().isShowOnlyMarkedDoctors()) {
 
                 sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                         + " and pi.type=:typ "
@@ -311,7 +323,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             return;
         }
         if (considerDate) {
-            if (getToDate().getTime()>commonFunctions.getEndOfDay().getTime()) {
+            if (getToDate().getTime() > commonFunctions.getEndOfDay().getTime()) {
                 JsfUtil.addErrorMessage("You Can't search after current Date");
                 return;
             }
@@ -335,7 +347,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
             hm.put("to", getToDate());
-        }else{
+        } else {
             sql += " and b.bill.appointmentAt <= :nd";
             hm.put("nd", commonFunctions.getEndOfDay());
         }
@@ -344,12 +356,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sql += " and b.bill.singleBillSession.serviceSession.originatingSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
-        
+
         sql += " and b.bill.singleBillSession.absent=false "
                 + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
                 + " b.bill.singleBillSession.serviceSession.sessionTime,"
                 + " b.bill.singleBillSession.serialNo ";
-        
 
         hm.put("stf", getCurrentStaff());
         //hm.put("ins", sessionController.getInstitution());
@@ -360,7 +371,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         //// // System.out.println("dueBillFees.size() = " + dueBillFees.size());
         //// // System.out.println("hm = " + hm);
         //// // System.out.println("sql = " + sql);
-        
+
         HashMap m = new HashMap();
         sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "
@@ -383,7 +394,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sql += " and b.bill.singleBillSession.serviceSession.originatingSession=:ss";
             m.put("ss", getSelectedServiceSession());
         }
-        
+
         sql += " and b.bill.singleBillSession.absent=true "
                 + " and b.bill.singleBillSession.serviceSession.originatingSession.refundable=false "
                 + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
@@ -394,11 +405,61 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("bt", bts);
         m.put("ftp", FeeType.Staff);
         m.put("class", BilledBill.class);
-        List<BillFee>nonRefundableBillFees=new ArrayList<>();
-        nonRefundableBillFees=billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        List<BillFee> nonRefundableBillFees = new ArrayList<>();
+        nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
-        
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
+
+    }
+
+    public void calculateSessionDueFees() {
+        Date startTime = new Date();
+        if (getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Select Specility");
+            return;
+        }
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        String sql = " SELECT b "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.singleBillSession.sessionInstance=:si";
+        sql += " order by b.bill.singleBillSession.serialNo ";
+        hm.put("si", getSessionInstance());
+        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("class", BilledBill.class);
+        dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        HashMap m = new HashMap();
+        sql = " SELECT b "
+                + " FROM BillFee b "
+                + " where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.refunded=false  "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.singleBillSession.sessionInstance=:si "
+                + " and b.bill.singleBillSession.absent=true "
+                + " and b.bill.singleBillSession.serviceSession.originatingSession.refundable=false ";
+        sql += " order by b.bill.singleBillSession.serialNo ";
+        m.put("si", getSessionInstance());
+        m.put("bt", bts);
+        m.put("ftp", FeeType.Staff);
+        m.put("class", BilledBill.class);
+        List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        dueBillFees.addAll(nonRefundableBillFees);
 
     }
 
@@ -438,8 +499,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("bt", BillType.ChannelAgent);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
-        
-        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Pay agent(/faces/channel/channel_payment_bill_search.xhtml)");
 
     }
 
@@ -554,7 +613,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
         tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
-
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
@@ -568,11 +627,49 @@ public class ChannelStaffPaymentBillController implements Serializable {
         return tmp;
     }
 
+    private Bill createPaymentBillForSession() {
+        BilledBill tmp = new BilledBill();
+        tmp.setBillDate(Calendar.getInstance().getTime());
+        tmp.setBillTime(Calendar.getInstance().getTime());
+        tmp.setBillType(BillType.ChannelProPayment);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+        tmp.setCreatedAt(Calendar.getInstance().getTime());
+        tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setDepartment(getSessionController().getDepartment());
+
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+
+        tmp.setDiscount(0.0);
+        tmp.setDiscountPercent(0.0);
+
+        tmp.setInstitution(getSessionController().getInstitution());
+        tmp.setNetTotal(0 - totalPaying);
+        tmp.setPaymentMethod(paymentMethod);
+        if (sessionInstance == null || sessionInstance.getStaff() == null) {
+            if (currentStaff != null) {
+                tmp.setStaff(currentStaff);
+                tmp.setToStaff(currentStaff);
+            } else {
+                // Handle the case when both sessionInstance and currentStaff are null
+                // Depending on your requirements, you might throw an exception or handle it differently
+                throw new IllegalStateException("Both sessionInstance and currentStaff are null.");
+            }
+        } else {
+            tmp.setStaff(sessionInstance.getStaff());
+            tmp.setToStaff(sessionInstance.getStaff());
+        }
+        tmp.setTotal(0 - totalPaying);
+
+        return tmp;
+    }
+
     private Bill createPaymentBillAgent() {
         BilledBill tmp = new BilledBill();
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
         tmp.setBillType(BillType.ChannelAgencyCommission);
+        tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
@@ -605,25 +702,44 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            System.out.println("currentStaff = " + currentStaff);
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
 
         if (checkBillFeeValue()) {
-            System.out.println("checkBillFeeValue = " + checkBillFeeValue());
             JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
 
         performCalculations();
         if (totalPaying == 0) {
-            System.out.println("totalPaying = " + totalPaying);
             JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            System.out.println("paymentMethod = " + paymentMethod);
+            JsfUtil.addErrorMessage("Please select a payment method");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean errorCheckForSessionPayments() {
+        if (sessionInstance == null) {
+            JsfUtil.addErrorMessage("Error. No Session Instance");
+            return true;
+        }
+        if (checkBillFeeValue()) {
+            JsfUtil.addErrorMessage("There is a Credit Bill");
+            return true;
+        }
+
+        performCalculations();
+        if (totalPaying == 0) {
+            JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
+            return true;
+        }
+        if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
@@ -656,24 +772,61 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void settleBill() {
-        System.out.println("errorCheck() = " + errorCheck());
         if (errorCheck()) {
             return;
         }
         calculateTotalPay();
-        Bill b = createPaymentBill();
+        Bill b = createPaymentBillForSession();
         current = b;
         getBillFacade().create(b);
-        saveBillCompo(b);
-        System.out.println("sessionController.getDepartmentPreference().isDocterPaymentSMS() = " + sessionController.getDepartmentPreference().isDocterPaymentSMS());
-        if(sessionController.getDepartmentPreference().isDocterPaymentSMS()){
+        saveBillItemsAndFees(b);
+        if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment()) {
             sendSmsAfterDocPayment();
         }
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
-    
+
+    public void settleSessionPaymentBill() {
+        if (errorCheckForSessionPayments()) {
+            return;
+        }
+        calculateTotalPay();
+        Bill b = createPaymentBill();
+
+        getBillFacade().create(b);
+        List<BillItem> bis = saveBillItemsAndFees(b);
+        if (bis != null && !bis.isEmpty()) {
+            BillSession bs = createBillSession(bis.get(0), sessionInstance);
+            b.setSingleBillSession(bs);
+            b.setSingleBillItem(bis.get(0));
+        }
+        current = b;
+        if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment()) {
+            sendSmsAfterSessionPayment();
+        }
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Successfully Paid");
+    }
+
+    private BillSession createBillSession(BillItem billItem, SessionInstance si) {
+        BillSession bs = new BillSession();
+        bs.setAbsent(false);
+        bs.setBill(billItem.getBill());
+        bs.setBillItem(billItem);
+        bs.setCreatedAt(new Date());
+        bs.setCreater(getSessionController().getLoggedUser());
+        bs.setDepartment(si.getDepartment());
+        bs.setInstitution(si.getInstitution());
+        bs.setSessionInstance(si);
+        bs.setSessionDate(si.getSessionDate());
+        bs.setSessionTime(si.getSessionTime());
+        bs.setStaff(si.getOriginatingSession().getStaff());
+        billSessionFacade.create(bs);
+        return bs;
+    }
+
     public void sendSmsAfterDocPayment() {
         Sms e = new Sms();
         e.setCreatedAt(new Date());
@@ -682,7 +835,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(current.getStaff().getPerson().getPhone());
-        e.setSendingMessage(DocPaymentSms(current));
+        e.setSendingMessage(generateDoctorPaymentSms(current));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
         e.setPending(false);
@@ -694,9 +847,31 @@ public class ChannelStaffPaymentBillController implements Serializable {
         getSmsFacade().edit(e);
         JsfUtil.addSuccessMessage("SMS Sent");
     }
-    
-    private String DocPaymentSms(Bill b) {
+
+    public void sendSmsAfterSessionPayment() {
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(current);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(sessionInstance.getStaff().getPerson().getMobile());
+        e.setSendingMessage(generateSessionPaymentSms(current, sessionInstance));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.DoctorPayment);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+
+    private String generateDoctorPaymentSms(Bill b) {
         String s;
+        String template;
         String date = CommonController.getDateFormat(b.getBillDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
@@ -705,22 +880,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 "hh:mm a");
         //System.out.println("time = " + time);
         ServiceSession ss = null;
-        if (b != null && b.getSingleBillSession()!= null && b.getSingleBillSession().getServiceSession() != null
-                && b.getSingleBillSession().getServiceSession().getOriginatingSession() != null) {
-            ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getSessionInstance() != null
+                && b.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) {
+            ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         }
-//        if (b != null) {
-//            System.out.println("b = " + b);
-//            if (b.getSingleBillSession() != null) {
-//                System.out.println("b.getSingleBillSession() = " + b.getSingleBillSession());
-//                if(b.getSingleBillSession().getServiceSession()!=null){
-//                    System.out.println("b.getSingleBillSession().getServiceSession() = " + b.getSingleBillSession().getServiceSession());
-//                    if(b.getSingleBillSession().getServiceSession().getOriginatingSession()!=null){
-//                        System.out.println("b.getSingleBillSession().getServiceSession().getOriginatingSession() = " + b.getSingleBillSession().getServiceSession().getOriginatingSession());
-//                    }
-//                }
-//            }
-//        }
         if (ss != null && ss.getStartingTime() != null) {
             time = CommonController.getDateFormat(
                     ss.getStartingTime(),
@@ -728,47 +891,88 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             //System.out.println("Null Error");
         }
-        if (sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate()== null) {
+        if (sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment() == null) {
             String doc = b.getStaff().getPerson().getNameWithTitle();
             s = "Dear "
-                    + doc
-                    + ""
+                    + "{doctor}"
+                    + "{dept_id}"
                     + "Your Payment of the "
-                    + b.getInsId()
-                    + " @  Medical Services"
+                    + ""
+                    + "{session_name}"
                     + " on "
-                    + date
+                    + "{date} "
                     + ""
                     + "Patient Count - "
-                    +b.getBillItems().size()
+                    + "{patient_count}"
                     + " and the total is "
-                    + b.getTotal()
-                    
+                    + "{net_total}"
                     + ". Thank you";
-
+            sessionController.getDepartmentPreference().setSmsTemplateForChannelBookingDoctorPayment(doc);
+            template = doc;
         } else {
-            s = genarateTemplateForSms(b);
+            template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment();
         }
+        s = genarateTemplateForSms(b, template);
+
         return s;
     }
-    
-    public String genarateTemplateForSms(Bill b) {
-        String s;
-//         ss = null;
 
-//        ServiceSession ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
+    private String generateSessionPaymentSms(Bill b, SessionInstance si) {
+        String s;
+        String template;
+        String date = CommonController.getDateFormat(si.getSessionDate(),
+                "dd MMM");
+        //System.out.println("date = " + date);
+        String time = "";
+        if (si.getSessionTime() != null) {
+            time = CommonController.getDateFormat(
+                    si.getSessionTime(),
+                    "hh:mm a");
+        } else if (si.getOriginatingSession().getStartingTime() != null) {
+            time = CommonController.getDateFormat(
+                    si.getOriginatingSession().getStartingTime(),
+                    "hh:mm a");
+        }
+        template = sessionController.getDepartmentPreference().getSmsTemplateForChannelBookingDoctorPayment();
+        s = genarateTemplateForSms(b, sessionInstance, template);
+        return s;
+    }
+
+    public String genarateTemplateForSms(Bill b, String input) {
+        String s;
+        if (b == null) {
+            s = "error in bill";
+            return s;
+        }
+        if (b.getSingleBillSession() == null) {
+            s = "error in bill session";
+            return s;
+        }
+        if (b.getSingleBillSession().getSessionInstance() == null) {
+            s = "error in session Instance";
+            return s;
+        }
+        if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
+            s = "error in Originating Session";
+            return s;
+        }
+
+        SessionInstance si = b.getSingleBillSession().getSessionInstance();
+        ServiceSession oss = si.getOriginatingSession();
+
         String time = CommonController.getDateFormat(
-                b.getBillTime(),
+                oss.getStartingTime(),
                 sessionController.getApplicationPreference().getShortTimeFormat());
 
-        String date = CommonController.getDateFormat(b.getBillDate(),
+        String date = CommonController.getDateFormat(si.getSessionDate(),
                 "dd MMM");
 
         String doc = b.getStaff().getPerson().getNameWithTitle();
         int no = b.getBillItems().size();
         double total = b.getTotal();
-        
-        String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
+        String sessionName = oss.getName();
+
+//        String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
         s = input.replace("{doctor}", doc)
                 .replace("{patient_count}", String.valueOf(no))
                 .replace("{doc}", doc)
@@ -776,7 +980,46 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 .replace("{date}", date)
                 .replace("{No}", String.valueOf(no))
                 .replace("{ins_id}", b.getInsId())
-                .replace("{net_total}", String.valueOf(total));
+                .replace("{dept_id}", b.getDeptId())
+                .replace("{net_total}", String.valueOf(-total))
+                .replace("{session_name}", sessionName);
+
+        return s;
+    }
+
+    public String genarateTemplateForSms(Bill b, SessionInstance sii, String template) {
+        String s;
+        if (b == null) {
+            s = "error in bill";
+            return s;
+        }
+
+        SessionInstance si = sii;
+        ServiceSession oss = si.getOriginatingSession();
+
+        String time = CommonController.getDateFormat(
+                oss.getStartingTime(),
+                sessionController.getApplicationPreference().getShortTimeFormat());
+
+        String date = CommonController.getDateFormat(si.getSessionDate(),
+                "dd MMM");
+
+        String doc = b.getStaff().getPerson().getNameWithTitle();
+        int no = b.getBillItems().size();
+        double total = b.getTotal();
+        String sessionName = oss.getName();
+
+//        String input = sessionController.getDepartmentPreference().getDocterPaymentSMSTemplate();
+        s = template.replace("{doctor}", doc)
+                .replace("{patient_count}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", time)
+                .replace("{date}", date)
+                .replace("{No}", String.valueOf(no))
+                .replace("{ins_id}", b.getInsId())
+                .replace("{dept_id}", b.getDeptId())
+                .replace("{net_total}", String.valueOf(-total))
+                .replace("{session_name}", sessionName);
 
         return s;
     }
@@ -789,24 +1032,30 @@ public class ChannelStaffPaymentBillController implements Serializable {
         Bill b = createPaymentBillAgent();
         current = b;
         getBillFacade().create(b);
-        saveBillCompo(b);
+        saveBillItemsAndFees(b);
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
 
-    private void saveBillCompo(Bill b) {
-        System.out.println("save bill true");
+    private List<BillItem> saveBillItemsAndFees(Bill b) {
+        List<BillItem> bis = new ArrayList<>();
         for (BillFee bf : getPayingBillFees()) {
-            saveBillItemForPaymentBill(b, bf);
-//            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
+            BillItem i = saveBillItemForPaymentBill(b, bf);
             bf.setPaidValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
-            //////// // System.out.println("marking as paid");
+            BillFee nbf = new BillFee();
+            nbf.setBillItem(i);
+            nbf.setBill(b);
+            nbf.setReferenceBillFee(bf);
+            nbf.setFeeValue(bf.getFeeValue());
+            billFeeFacade.create(nbf);
+            bis.add(i);
         }
+        return bis;
     }
 
-    private void saveBillItemForPaymentBill(Bill b, BillFee bf) {
+    private BillItem saveBillItemForPaymentBill(Bill b, BillFee bf) {
         BillItem i = new BillItem();
         i.setReferanceBillItem(bf.getBillItem());
         i.setReferenceBill(bf.getBill());
@@ -816,14 +1065,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
         i.setCreater(getSessionController().getLoggedUser());
         i.setDiscount(0.0);
         i.setGrossValue(bf.getFeeValue());
-//        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-//            i.setItem(bf.getBillItem().getItem());
-//        }
         i.setNetValue(bf.getFeeValue());
         i.setQty(1.0);
         i.setRate(bf.getFeeValue());
         getBillItemFacade().create(i);
         b.getBillItems().add(i);
+        return i;
     }
 
     public BillFacade getEjbFacade() {
@@ -853,12 +1100,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void setCurrent(Bill current) {
-        currentStaff = null;
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        recreateModel();
+//        currentStaff = null;
+//        dueBillFees = new ArrayList<BillFee>();
+//        payingBillFees = new ArrayList<BillFee>();
+//        totalPaying = 0.0;
+//        totalDue = 0.0;
+//        recreateModel();
         this.current = current;
     }
 
@@ -1033,14 +1280,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
-//        dueBillFees = new ArrayList<BillFee>();
-//        payingBillFees = new ArrayList<BillFee>();
-//        totalPaying = 0.0;
-//        totalDue = 0.0;
-//        printPreview = false;
-//
-//        calculateDueFees();
-//        performCalculations();
     }
 
     public List<BillFee> getFilteredBillFee() {
@@ -1086,6 +1325,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
+    }
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
     }
 
     /**
@@ -1139,6 +1386,5 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
 }

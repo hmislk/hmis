@@ -20,6 +20,7 @@
                                 icon="fa-solid fa-rotate-left">
                             </p:commandButton>
 
+
                             <div class="d-flex mt-2" style="float: right;">
                                 <p:outputLabel  value="Recievable Amount" /> 
                                 <p:outputLabel  value=":" style="width: 30px; text-align: center;" /> 
@@ -28,18 +29,30 @@
 
                         </div>
                     </f:facet>
-                    
+
                     <p:dataTable 
                         var="ph" 
                         value="#{preReturnController.billItems}"
                         scrollable="true" 
-                        scrollHeight="250"
+                        scrollHeight="350"
                         id="itemList"
                         class="m-2"
                         >  
 
                         <f:facet name="header">  
-                            Returning Item
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputLabel value="Returning Item"></h:outputLabel>
+                                <p:commandButton  
+                                    value="Fill All" 
+                                    action="#{preReturnController.fillReturningQty}" 
+                                    process="@this"
+                                    update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
+                                    class="ui-button-warning"
+                                    style="float: right;"
+                                    icon="fa-solid fa-fill">
+                                </p:commandButton>
+                            </div>
+
                         </f:facet>  
 
                         <p:column headerText="Item Name" style="width:50px!important;">  
@@ -57,11 +70,13 @@
 
 
                         <p:column headerText="Batch No" style="width:25px!important;">                       
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                        
                         </p:column>  
 
                         <p:column headerText="Date of Expiry" style="width:25px!important;">                     
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            </h:outputText> 
                         </p:column>
 
 

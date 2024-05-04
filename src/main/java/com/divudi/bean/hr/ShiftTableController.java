@@ -255,7 +255,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill New)(/faces/hr/hr_shift_table.xhtml)");
+        
     }
 
     public void fetchShiftTable() {
@@ -344,7 +344,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill Old Roster)(/faces/hr/hr_shift_table.xhtml)");
+        
     }
 
     public void fetchShiftTableByStaff() {
@@ -608,7 +608,7 @@ public class ShiftTableController implements Serializable {
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Roster table and vertify time(/faces/hr/hr_report_shift_table.xhtml)");
+        
     }
 
     public double fetchWorkTime(Staff staff, Date date) {

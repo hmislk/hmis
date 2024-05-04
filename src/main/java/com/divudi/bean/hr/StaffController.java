@@ -378,7 +378,7 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff payrol(selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
+        
     }
 
     public void createResignedStaffTable() {
@@ -503,7 +503,7 @@ public class StaffController implements Serializable {
         ////System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
 
     }
 
@@ -692,7 +692,8 @@ public class StaffController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false  and"
                     + " ((p.person.name) like :q or  "
-                    + " (p.code) like :q )"
+                    + " (p.code) like :q or "
+                    + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
             //////System.out.println(sql);
             HashMap hm = new HashMap();

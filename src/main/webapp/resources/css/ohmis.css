@@ -113,3 +113,41 @@ th.align-right-header .ui-column-title {
 .no-header-table .ui-datatable-header {
     display: none;
 }
+
+.square-image {
+    width: 100%; /* or another fixed width */
+    padding-top: 100%; /* same as width to maintain aspect ratio */
+    position: relative; /* allows absolute positioning inside */
+}
+
+.square-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* cover, so it fills the area, cropping if necessary */
+}
+
+.img-prominent {
+    filter: none; /* No filter for marked activities, image is clear */
+}
+
+.img-light {
+    filter: brightness(50%); /* Dim the image for unmarked activities */
+}
+
+.compact-datatable .ui-datatable-data tr td {
+    padding: 2px 5px; /* Reduced padding */
+    font-size: 0.8rem; /* Smaller font size */
+}
+
+.compact-datatable th {
+    padding: 4px 5px; /* Reduced padding in headers */
+    font-size: 0.8rem; /* Smaller font size in headers */
+}
+
+.compact-datatable .ui-paginator {
+    padding: 2px; /* Reduced padding in paginator */
+    font-size: 0.8rem; /* Smaller font size in paginator */
+}

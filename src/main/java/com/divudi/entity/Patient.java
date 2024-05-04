@@ -40,6 +40,7 @@ public class Patient implements Serializable {
     Long id;
 
     private Long patientPhoneNumber;
+    private Long patientMobileNumber;
     @ManyToOne
     Person person;
     //personaI dentification Number
@@ -119,6 +120,9 @@ public class Patient implements Serializable {
             
     @Transient
     private String phoneNumberStringTransient;
+    
+    @Transient
+    private String mobileNumberStringTransient;
 
     private Boolean cardIssues;
 
@@ -578,6 +582,7 @@ public class Patient implements Serializable {
         this.editingMode = editingMode;
     }
 
+    @Transient
     public String getPhoneNumberStringTransient() {
         if (this.getPerson() == null) {
             return null;
@@ -585,18 +590,43 @@ public class Patient implements Serializable {
         phoneNumberStringTransient = this.getPerson().getPhone();
         return phoneNumberStringTransient;
     }
+    
+    @Transient
+    public String getMobileNumberStringTransient() {
+        if (this.getPerson() == null) {
+            return null;
+        }
+        mobileNumberStringTransient = this.getPerson().getMobile();
+        return mobileNumberStringTransient;
+    }
 
+    @Transient
     public void setPhoneNumberStringTransient(String phoneNumberStringTransient) {
         try {
             if (this.getPerson() == null) {
                 return;
             }
-            this.getPerson().setMobile(phoneNumberStringTransient);
+            this.getPerson().setPhone(phoneNumberStringTransient);
             this.patientPhoneNumber = commonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
             this.phoneNumberStringTransient = phoneNumberStringTransient;
         } catch (Exception e) {
         }
     }
+    
+    
+    @Transient
+    public void setMobileNumberStringTransient(String mobileNumberStringTransient) {
+        try {
+            if (this.getPerson() == null) {
+                return;
+            }
+            this.getPerson().setMobile(mobileNumberStringTransient);
+            this.patientMobileNumber = commonFunctions.removeSpecialCharsInPhonenumber(mobileNumberStringTransient);  
+            this.mobileNumberStringTransient = mobileNumberStringTransient;
+        } catch (Exception e) {
+        }
+    }
+    
 
     public Long getPatientPhoneNumber() {
         return patientPhoneNumber;
@@ -605,5 +635,15 @@ public class Patient implements Serializable {
     public void setPatientPhoneNumber(Long patientPhoneNumber) {
         this.patientPhoneNumber = patientPhoneNumber;
     }
+
+    public Long getPatientMobileNumber() {
+        return patientMobileNumber;
+    }
+
+    public void setPatientMobileNumber(Long patientMobileNumber) {
+        this.patientMobileNumber = patientMobileNumber;
+    }
+    
+    
 
 }

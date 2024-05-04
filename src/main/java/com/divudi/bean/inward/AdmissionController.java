@@ -41,6 +41,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
+import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalFindingValue;
@@ -86,6 +87,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     InpatientClinicalDataController inpatientClinicalDataController;
     @Inject
     CommonFunctionsController commonFunctionsController;
+    @Inject
+    PharmacyRequestForBhtController pharmacyRequestForBhtController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -181,16 +184,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
     }
-    
+
     public void fillCurrentPatientAllergies(Patient pt) {
-        if (pt==null) {
+        if (pt == null) {
             return;
         }
-        patientAllergies =new ArrayList<>();
-        Map params =new HashMap<>();
+        patientAllergies = new ArrayList<>();
+        Map params = new HashMap<>();
         String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
         params.put("pt", pt);
-        patientAllergies=clinicalFindingValueFacade.findByJpql(s,params); 
+        patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
     public void copyPatientAddressToGurdian() {
@@ -374,6 +377,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
+        if (current == null) {
+            current = new Admission();
+        }
         bhtEditController.setCurrent(current);
         bhtEditController.getCurrent().getPatient().setEditingMode(true);
         return bhtEditController.navigateToEditAdmissionDetails();
@@ -416,6 +422,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToPharmacyBhtRequest() {
+         pharmacyRequestForBhtController.resetAll();
+         pharmacyRequestForBhtController.setPatientEncounter(current);
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBhtRequestFromMenu() {
+        pharmacyRequestForBhtController.resetAll();
         return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
 
@@ -450,15 +463,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
-//        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
-//            JsfUtil.addErrorMessage("Please select from date below or equal to the current date");
-//            return;
-//        }
-//        
-//        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
-//            JsfUtil.addErrorMessage("Please select to date below or equal to the current date");
-//            return;
-//        }
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
@@ -924,7 +928,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Select Room ");
             return true;
         }
-        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
                 JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
                 return true;
@@ -954,7 +958,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Select Patient");
             return true;
         }
-        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
+        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Add Reference No");
                 return true;

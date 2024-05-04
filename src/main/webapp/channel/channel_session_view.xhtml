@@ -8,21 +8,21 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel>
+            <p:panel class="my-3">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h:outputText value="Session View" />
-                        <div class="d-flex gap-1">
+                        <div class="d-flex">
                             <p:commandButton 
                                 ajax="false" 
-                                value="Refresh"
+                                value="Process"
                                 icon="fas fa-refresh" 
                                 class="ui-button-warning"
                                 action="#{channelReportController.fillNurseView()}">
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
-                                class="ui-button-secondary"
+                                class="ui-button-secondary mx-2"
                                 icon="fa-solid fa-arrow-left"
                                 action="#{bookingController.navigateBackToBookings()}" 
                                 value="Back to Channel Booking" >
@@ -79,7 +79,7 @@
                     </f:facet>
 
                     <p:column headerText="No">#{bs.serialNo}</p:column>
-                    <p:column headerText="Booking ID">#{bs.bill.bookingId}</p:column>
+                    <p:column headerText="Booking ID">#{bs.bill.insId}</p:column>
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Time">
                         <h:outputLabel value="#{bs.sessionTime}">
@@ -88,8 +88,10 @@
 
                     </p:column>
                     <p:column headerText="P/A">
-                        <p:outputLabel value="Present"  rendered="#{!bs.absent}"/>    
-                        <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                        <p:tag severity="success" style="font-size: 1.05em" value="Present" rendered="#{!bs.absent and !bs.bill.cancelled and !bs.bill.refunded}"/>
+                        <p:tag severity="info" style="font-size: 1.05em" value="Absent" rendered="#{bs.absent and !bs.bill.cancelled and !bs.bill.refunded}" />
+                        <p:tag severity="danger" style="font-size: 1.05em" value="Cancelled"  rendered="#{bs.bill.cancelled and !bs.bill.refunded}"/>
+                        <p:tag severity="warning" style="font-size: 1.05em" value="Refunded"  rendered="#{!bs.bill.cancelled and bs.bill.refunded}"/>
                     </p:column> 
 
                 </p:dataTable>

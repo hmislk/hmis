@@ -16,12 +16,12 @@
                 </f:facet>
                 <h:panelGrid columns="2" class="my-2" >                    
                     <h:outputLabel value="From Date"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.currentDateTime}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
                     <h:outputLabel value="To Data"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.currentDateTime}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
                     <h:outputLabel value="Payment Method"/>

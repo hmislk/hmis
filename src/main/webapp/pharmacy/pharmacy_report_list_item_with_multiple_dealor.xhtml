@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/pharmacy/pharmacy_reports_index.xhtml"
+<ui:composition template="/pharmacy/pharmacy_analytics.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
@@ -15,17 +15,17 @@
                     <div class="col-md-12">
                         <p:commandButton 
                             ajax="false" 
-                            value="Refresh"
+                            value="Process"
                             style="float: right;"
                             class="ui-button-warning"
                             icon="fa fa-refresh"
-                            action="#{pharmacySaleReport.createItemWithMultipleDistributor()}">
+                            action="#{pharmacySaleReportController.createItemWithMultipleDistributor()}">
                         </p:commandButton>
                     </div>
                 </div>  
 
                 <p:dataTable 
-                    value="#{pharmacySaleReport.itemsWithDistributers}" 
+                    value="#{pharmacySaleReportController.itemsWithDistributers}" 
                     var="it" >
 
                     <f:facet name="header">

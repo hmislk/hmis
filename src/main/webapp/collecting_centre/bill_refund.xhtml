@@ -95,8 +95,6 @@
                                     </f:facet>
                                     <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="b" 
                                                  rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
-
-
                                         <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
                                                 update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
                                         <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 

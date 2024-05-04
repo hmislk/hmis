@@ -323,8 +323,7 @@ public class PharmaceuticalBillItem implements Serializable {
     }
 
     public double getQty() {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
             return qty / getBillItem().getItem().getDblValue();
         } else {
             return qty;
@@ -333,8 +332,7 @@ public class PharmaceuticalBillItem implements Serializable {
     }
 
     public void setQty(double qty) {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
             this.qty = qty * getBillItem().getItem().getDblValue();
         } else {
             this.qty = qty;

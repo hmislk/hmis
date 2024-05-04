@@ -9,6 +9,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -100,7 +101,8 @@ public class GoodsReturnController implements Serializable {
         if (returnBill == null) {
             returnBill = new BilledBill();
             returnBill.setBillType(BillType.PharmacyGrnReturn);
-
+            returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            returnBill.setReferenceBill(getBill());
         }
 
         return returnBill;
@@ -123,12 +125,14 @@ public class GoodsReturnController implements Serializable {
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-
         if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
-
+        if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > getPharmacyRecieveBean().calFreeQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+            tmp.setTmpFreeQty(0.0);
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+        }
         calTotal();
         getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
@@ -227,7 +231,7 @@ public class GoodsReturnController implements Serializable {
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
 
-            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
             if (!returnFlag) {
                 i.setTmpQty(0);
@@ -246,7 +250,7 @@ public class GoodsReturnController implements Serializable {
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
         double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
 
-        if (pharmaceuticalBillItem.getQtyInUnit() > stockQty) {
+        if (pharmaceuticalBillItem.getQtyInUnit() + pharmaceuticalBillItem.getFreeQtyInUnit() > stockQty) {
             return true;
         } else {
             return false;
@@ -256,6 +260,10 @@ public class GoodsReturnController implements Serializable {
     private boolean checkGrnItems() {
         for (BillItem bi : getBillItems()) {
             if (bi.getTmpQty() == 0.0) {
+                continue;
+            }
+
+            if (bi.getTmpFreeQty() == 0.0) {
                 continue;
             }
 
@@ -273,6 +281,10 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("Select Dealor");
             return;
         }
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
         if (checkGrnItems()) {
             JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
             return;
@@ -285,7 +297,7 @@ public class GoodsReturnController implements Serializable {
 
         calTotal();
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
-        
+
         getBillFacade().edit(getReturnBill());
 
         printPreview = true;
@@ -317,7 +329,6 @@ public class GoodsReturnController implements Serializable {
             bi.setSearialNo(getBillItems().size());
             PharmaceuticalBillItem retPh = new PharmaceuticalBillItem();
             retPh.copy(grnPh);
-            retPh.setFreeQty(0.0);
             retPh.setBillItem(bi);
 
             double rBilled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
@@ -325,10 +336,17 @@ public class GoodsReturnController implements Serializable {
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
 
+            double rFreeBilled = getPharmacyRecieveBean().getTotalFreeQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+            double rFreeCacnelled = getPharmacyRecieveBean().getTotalFreeQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+            double netFreeQty = Math.abs(rFreeBilled) - Math.abs(rFreeCacnelled);
             //System.err.println("Billed " + rBilled);
             //System.err.println("Cancelled " + rCacnelled);
             //System.err.println("Net " + netQty);
+            retPh.setQty((double) (grnPh.getQtyInUnit() - netQty));
             retPh.setQtyInUnit((double) (grnPh.getQtyInUnit() - netQty));
+
+            retPh.setFreeQty((double) (grnPh.getQtyInUnit() - netFreeQty));
+            retPh.setFreeQtyInUnit((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
 
             List<Item> suggessions = new ArrayList<>();
             Item item = bi.getItem();
@@ -343,10 +361,14 @@ public class GoodsReturnController implements Serializable {
 //
 //            
 //            bi.setTmpSuggession(suggessions);
+            bi.setTmpQty((double) (grnPh.getQtyInUnit() - netQty));
+            bi.setTmpFreeQty((double) (grnPh.getFreeQtyInUnit() - netFreeQty));
             bi.setPharmaceuticalBillItem(retPh);
 
-
             getBillItems().add(bi);
+
+            calTotal();
+            getPharmacyController().setPharmacyItem(bi.getPharmaceuticalBillItem().getBillItem().getItem());
 
         }
 
@@ -358,10 +380,10 @@ public class GoodsReturnController implements Serializable {
         setPaymentMethodData(p, pm);
         return p;
     }
-    
-    public String navigateToGrnReturnBill(Bill b){
+
+    public String navigateToGrnReturnBill(Bill b) {
         setReturnBill(b);
-        if(returnBill==null){
+        if (returnBill == null) {
             JsfUtil.addErrorMessage("No Bill get selected");
             return "";
         }

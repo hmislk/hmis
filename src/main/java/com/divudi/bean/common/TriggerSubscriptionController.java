@@ -49,6 +49,29 @@ public class TriggerSubscriptionController implements Serializable {
     private List<Department> departments;
     private WebUser user;
 
+    public List<WebUser> fillSubscribedUsersByDepartment(TriggerType tt,Department dept) {
+        System.out.println("dept = " + dept.getName());
+        System.out.println("tt = " + tt);
+        List<WebUser> us = new ArrayList<>();
+        if (tt == null) {
+            return us;
+        }
+        Map m = new HashMap();
+        String jpql = "SELECT i.webUser "
+                + " FROM TriggerSubscription i "
+                + " where i.triggerType=:tt "
+                + " and i.retired=:ret "
+                + " and i.department=:dep";
+
+        m.put("tt", tt);
+        m.put("ret", false);
+        m.put("dep", dept);
+        us = webUserFacade.findByJpql(jpql, m);
+        System.out.println("jpql = " + jpql);
+        System.out.println("us = " + us);
+        return us;
+    }
+
     public void addUserSubscription() {
         if (triggerType == null) {
             JsfUtil.addErrorMessage("Select Subscription");
@@ -116,7 +139,7 @@ public class TriggerSubscriptionController implements Serializable {
 
         m.put("tt", tt);
         m.put("ret", false);
-        us= webUserFacade.findByJpql(jpql, m);
+        us = webUserFacade.findByJpql(jpql, m);
         return us;
     }
 
@@ -317,13 +340,9 @@ public class TriggerSubscriptionController implements Serializable {
 
     public List<TriggerType> getTriggerTypes() {
         if (triggerTypes == null) {
-            triggerTypes = Arrays.asList(TriggerType.values());
+            triggerTypes = TriggerType.getAlphabeticallySortedValues();
         }
         return triggerTypes;
-    }
-
-    public void setTriggerTypes(List<TriggerType> Subscription) {
-        this.triggerTypes = triggerTypes;
     }
 
     @FacesConverter(forClass = TriggerSubscription.class)

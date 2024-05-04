@@ -5,10 +5,12 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/opd/doctor"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -17,19 +19,12 @@
                 </h:panelGroup>
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
 
-
-
-
-
                     <h:form class="container-fluid" >
                         <p:panel >
                             <f:facet name="header" >
                                 <h:outputText value="Pay Staff" >
                                 </h:outputText>
                             </f:facet>
-
-
-
 
                             <p:panelGrid columns="3" class="w-75" rendered="#{workingTimeController.staff eq null}">
                                 <f:facet name="header" >
@@ -67,20 +62,16 @@
                                         <p:panelGrid columns="2" class="table table-primary">
                                             <p:outputLabel value="Doctor" />
                                             <h:outputText value="#{workingTimeController.staff.person.name}" />
-
                                             <p:outputLabel value="Speciality" />
                                             <h:outputText value="#{workingTimeController.staff.speciality.name}" />
-
                                             <p:outputLabel value="Shift Start" />
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.startRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </h:outputText>
-
                                             <p:outputLabel value="Shift End" />
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.endRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </h:outputText>
-
                                         </p:panelGrid>
                                         <p:panelGrid columns="2" >
                                             <p:outputLabel value="Total Value Paying" />
@@ -104,7 +95,26 @@
                                         <p:outputLabel value="Value" styleClass="font-weight-bold text-primary bg-light p-2"/>
 
                                         <p:outputLabel value="Bill Fee Value" />
-                                        <p:spacer /><!-- comment -->
+                                        <!--                                        <p:spacer /> comment -->
+
+                                        <p:dataTable value="#{workingTimeController.staffBillFeesForPayment}" var="bf" >
+                                            <p:column headerText="Bill No" >
+                                                <h:outputLabel value="#{bf.bill.deptId}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Bill Time" >
+                                                <h:outputLabel value="#{bf.bill.billTime}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Item" >
+                                                <h:outputLabel value="#{bf.billItem.item.name}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Value" >
+                                                <h:outputLabel value="#{bf.feeValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
                                         <p:outputLabel value="#{workingTimeController.staffBillFeesForPaymentCount}" />
                                         <p:outputLabel value="#{workingTimeController.billFeeValue}" />
 
@@ -127,6 +137,8 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{workingTimeController.printPreview}" >
                                     <h:outputText value="OPD Doctor Payment" ></h:outputText>
+                                    
+<!--                                    <bill:DoctorPayment5x5Bill bill="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill}" duplicate="true"/>-->
                                     <h:outputLabel value="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill.total}" >
                                     </h:outputLabel>
                                 </h:panelGroup>

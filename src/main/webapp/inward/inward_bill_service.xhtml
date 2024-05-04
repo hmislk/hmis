@@ -56,29 +56,46 @@
             <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">  
                 <p:panel>
                     <f:facet name="header">
-                        <div class="row">
-                            <div class="col-md-4">
+                        <div class="d-flex justify-content-between">
+                            <div >
                                 <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> <!-- FontAwesome Icon -->
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
+                            </div>
+                            <div>
+                                <p:commandButton 
+                                    value="New Bill"
+                                    icon="fa fa-plus"
+                                    class="ui-button-success m-1"  
+                                    ajax="false"
+                                    action="#{billBhtController.resetBillData()}" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    style="float: right;"
+                                    ajax="false"
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    class="ui-button-warning m-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{billBhtController.patientEncounter}" 
+                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
                             </div>
 
                         </div>
 
                     </f:facet>
 
-
-
                     <div class="col-12">
                         <h:panelGroup rendered="true" styleClass="opdPanel" >
 
-                            <p:panel rendered="#{!billBhtController.printPreview}" >
+                            <h:panelGroup rendered="#{!billBhtController.printPreview}" >
                                 <div class="row">
                                     <div class="col-md-4">
-
                                     </div>
                                     <div class="col-md-8">
                                         <div class="d-flex justify-content-end align-items-center mb-2" >
-
 
                                             <h:panelGrid columns="7">
                                                 <p:commandButton class="w-100 ui-button-success" id="btnSettle" 
@@ -156,6 +173,38 @@
                                                     <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                                                 </f:facet>
                                                 <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
+                                            </p:panel>
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="refdoc" class="d-flex align-items-center justify-content-center p-1 w-100" >
+                                            <p:panel class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                                    <h:outputLabel value="Select Referring Doctor" class="mx-4"></h:outputLabel>
+                                                </f:facet>
+                                                <div class="d-flex gap-3">
+                                                    <h:outputLabel value="Referring Doctor" style="width: 200px;" class="mt-2"/>
+                                                    <p:autoComplete 
+                                                        forceSelection="true" 
+                                                        id="cmbDoc" 
+                                                        value="#{billBhtController.referredBy}" 
+                                                        completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                        itemLabel="#{ix.person.name}" 
+                                                        itemValue="#{ix}" 
+                                                        inputStyleClass="form-control"
+                                                        class="w-100" 
+                                                        size="10">
+
+                                                        <p:column headerText="Name" style="padding: 5px;" filterBy="#{ix.person.nameWithTitle}" filterMatchMode="contains">
+                                                            <h:outputText value="#{ix.person.nameWithTitle}"  ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Speciality" style="padding: 5px;">
+                                                            <h:outputText value="#{ix.speciality.name}" ></h:outputText>
+                                                        </p:column>
+
+                                                    </p:autoComplete>
+                                                </div>
                                             </p:panel>
 
                                         </h:panelGroup>
@@ -253,6 +302,7 @@
                                                         </div>
                                                     </div>
 
+
                                                     <div class="row m-1">
                                                         <div class="col-4">
                                                             <h:outputLabel value="Details"/>
@@ -268,12 +318,13 @@
                                                         </div>
                                                         <div class="col-8">
 
-                                                            <p:datePicker value="#{billBhtController.currentBillItem.billTime}" 
-                                                                          id="billedTimeStamp"
-                                                                          pattern="dd MMM yyyy HH:mm:ss"
-                                                                          showTime="true"
-                                                                          showButtonBar="true"
-                                                                          timeInput="true">                               
+                                                            <p:datePicker 
+                                                                value="#{billBhtController.currentBillItem.billTime}" 
+                                                                id="billedTimeStamp"
+                                                                pattern="dd MMM yyyy HH:mm:ss"
+                                                                showTime="true"
+                                                                showButtonBar="true"
+                                                                timeInput="true">                               
                                                             </p:datePicker>
                                                         </div>
                                                     </div>
@@ -290,14 +341,6 @@
 
                                                 </div>
                                             </p:panel>
-                                            <!--                                            <h:panelGroup id="panelIx" >
-                                                                                            <p:panel id='pIxAdd' header="Item Requests">
-                                                                                                <p:panelGrid columns="2" >
-                                                                                                      
-                                                                                                    
-                                                                                                </p:panelGrid>
-                                                                                            </p:panel>
-                                                                                        </h:panelGroup>-->
                                         </div>
                                     </div>
                                 </div>
@@ -308,7 +351,7 @@
                                                 <p:tabView id="tblBillItem" >
                                                     <p:tab id="tabBillItems" title="Bill Items" >
                                                         <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billBhtController.lstBillEntries}" var="bi" >
-                                                            <p:column>
+                                                            <p:column width="5em">
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                                             </p:column>
@@ -321,17 +364,22 @@
                                                                 <h:outputLabel value="#{bi.billItem.item.department.name}"/>
                                                             </p:column>
 
-                                                            <p:column>
+                                                            <p:column >
                                                                 <f:facet name="header">Category</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.item.category.name}"/>
 
                                                             </p:column>
 
-                                                            <p:column>
-                                                                <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem}" >
+                                                            <p:column width="5em">
+                                                                <p:commandButton 
+                                                                    id="btnRemove" 
+                                                                    icon="fa fa-times"
+                                                                    title="Remove"
+                                                                    class="ui-button-danger"
+                                                                    action="#{billBhtController.removeBillItem}" >
                                                                     <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
                                                                     <p:ajax  process="btnRemove" update="@form" />
-                                                                </h:commandButton>
+                                                                </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </p:tab>
@@ -349,10 +397,13 @@
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillFee" title="Fees" >
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif" 
-                                                                     rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
-                                                                                      or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                                      ? '':'noDisplayRow'}">
+                                                        <p:dataTable 
+                                                            rowIndexVar="rowIndex" 
+                                                            value="#{billBhtController.lstBillFees}" 
+                                                            var="bif" 
+                                                            rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
+                                                                             or (webUserController.hasPrivilege('ShowInwardFee'))
+                                                                             ? '':'noDisplayRow'}">
                                                             <p:column>
                                                                 <f:facet name="header">No</f:facet>
                                                                 <h:outputLabel value="#{rowIndex+1}"/>
@@ -369,10 +420,11 @@
                                                                              disabled="#{!bif.billItem.item.userChangable
                                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                                     <f:convertNumber pattern="#,##0.00" />
-                                                                    <f:ajax event="keyup" execute="@this" 
-                                                                            render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  
-                                                                            :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
-                                                                            listener="#{billBhtController.feeChanged(bif)}" />
+                                                                    <f:ajax 
+                                                                        event="keyup" 
+                                                                        execute="@this" 
+                                                                        render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
+                                                                        listener="#{billBhtController.feeChanged(bif)}" />
                                                                 </h:inputText>
                                                             </p:column>
 
@@ -399,12 +451,13 @@
                                                                 <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.staff eq null}" ></h:outputLabel>
                                                                 <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
                                                                     <f:selectItem itemLabel="Select Staff" />
-                                                                    <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
-                                                                                    var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                                    <f:selectItems  
+                                                                        value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
+                                                                        var="bifs" 
+                                                                        itemLabel="#{bifs.person.name}" 
+                                                                        itemValue="#{bifs}" />
                                                                 </p:selectOneMenu>
-
                                                             </p:column>
-
                                                         </p:dataTable>
                                                     </p:tab>
                                                 </p:tabView>
@@ -423,68 +476,69 @@
                                         </p:panelGrid>
                                     </p:panel>
                                 </h:panelGroup>
-                            </p:panel>
+                            </h:panelGroup>
 
                             <h:panelGroup rendered="#{billBhtController.printPreview}" >
-                                <h:panelGroup >
-                                    <div class="nonPrintBlock d-flex justify-content-between align-items-center gap-3">
-                                        <h:panelGrid columns="2"  >
-                                            <p:commandButton value="Print" class="w-100" ajax="false" action="#" icon="fa-solid fa-print" >
-                                                <p:printer target="gpBillPreview" ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                value="To Print Labels" 
-                                                class="w-100" ajax="false" 
-                                                action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print" >
-                                            </p:commandButton>
-                                            <p:commandButton value="New Bill" 
-                                                             icon="fa fa-plus"
-                                                             class="ui-button-success m-1"  ajax="false"
-                                                             action="#{billBhtController.resetBillData()}" >
-                                            </p:commandButton>
-                                        </h:panelGrid>
-                                        <h:panelGrid columns="3">
-                                            <p:outputLabel value="Paper Type" class="fa-1x m-2"></p:outputLabel>
-                                            <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" class="m-1 " style="width: 13em;">
-                                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                                <f:selectItems value="#{enumController.paperTypes}" />
-                                            </p:selectOneMenu>
-                                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                                        </h:panelGrid>
-                                    </div>                                    
-                                    <h:panelGroup id="gpBillPreview" >
+                                <div class="d-flex justify-content-end gap-2">
+                                    <h:panelGrid columns="3">
+                                        <p:outputLabel value="Paper Type" class="fa-1x m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" class="mx-2" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button " title="Redraw Bill"></p:commandButton>
+                                    </h:panelGrid>
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info" 
+                                        ajax="false" 
+                                        action="#" 
+                                        icon="fa-solid fa-print" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="To Print Labels" 
+                                        class="ui-button-info" 
+                                        ajax="false" 
+                                        action="#{billBhtController.navigateToPrintLabelsForInvestigations}" icon="fa-solid fa-print" >
+                                    </p:commandButton>
+                                </div>
 
-<!--                                        <ui:repeat value="#{billBhtController.bills}" var="b" >
-                                            <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
-                                        </ui:repeat>-->
+                                <h:panelGroup >                      
+                                    <h:panelGroup id="gpBillPreview" >
 
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffb">
-                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>                        
+                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>      
+                                                <br/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffpp">
                                                 <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
+                                                <br/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
+                                                <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>
+                                                <br/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>                        
+                                                <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
+                                                <br/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>                        
+                                                <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
+                                                <br/>
                                             </ui:repeat>
                                         </h:panelGroup>
 

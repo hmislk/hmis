@@ -21,15 +21,16 @@
                         <i class="fa fa-icons" />
                         <h:outputLabel class="mx-2" value="Manage User Subscriptions"/>
                     </f:facet>
-
                     <p:outputLabel value="Department" ></p:outputLabel>
                     <p:selectOneMenu 
                         id="cmbDepartment"
                         placeholder="Department"
                         value="#{triggerSubscriptionController.department}" 
                         class="w-100"
+                        required="true"
+                        requiredMessage="Select a Department"
                         filter="true">
-                        <f:selectItem itemLabel="All" ></f:selectItem>
+                        <f:selectItem itemLabel="Select" ></f:selectItem>
                         <f:selectItems 
                             value="#{triggerSubscriptionController.departments}"
                             var="d"

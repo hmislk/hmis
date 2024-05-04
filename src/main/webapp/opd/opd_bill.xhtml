@@ -34,7 +34,7 @@
                                 </p:commandButton>
                             </div>
                         </f:facet>
-                        <p:focus id="focusIx" for="acIx" />
+
 
                         <!--                        <div class="row" >
                                                     <div class="col-md-12 text-center p-1" >
@@ -43,7 +43,9 @@
                                                 </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
-                                <common:patient_details  
+                                <p:focus  context="ccPatientDetails" ></p:focus>
+                                <common:patient_details
+                                    id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
                                 <p:panel 
@@ -54,7 +56,7 @@
                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row" >
-                                        <p:focus context="acIx"/>
+
                                         <div class="col-md-10" >
                                             <p:watermark for="acIx" value="Enter first few letters of the service or item to add" ></p:watermark>
                                             <p:selectOneListbox 
@@ -65,7 +67,10 @@
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
                                                 value="#{opdBillController.itemLight}" 
-                                                var="ix">
+                                                var="ix"
+                                                caseSensitive="false"
+                                                hideNoSelectionOption="true"
+                                                >
                                                 <f:selectItems 
                                                     value="#{opdBillController.opdItems}"
                                                     var="item" 
@@ -81,9 +86,6 @@
                                                         Name
                                                     </f:facet>
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
-                                                    <h:panelGroup rendered="#{ix.name ne ix.fullName or false}" >
-                                                        <h:outputText value=" (#{ix.fullName})" ></h:outputText>
-                                                    </h:panelGroup>
                                                 </p:column>
                                                 <p:column style="text-align: right;" headerText="Value">
                                                     <h:outputText value="#{ix.total}"></h:outputText>
@@ -96,9 +98,6 @@
                                                 </p:column>
 
                                             </p:selectOneListbox>
-
-
-
                                         </div>
                                         <div class="col-md-2" >
                                             <h:panelGrid id="txtQty">
@@ -108,14 +107,16 @@
                                                     value="#{opdBillController.currentBillItem.qty}" >
                                                 </p:inputText>
                                             </h:panelGrid>
-                                            <p:commandButton id="btnAddIx" 
-                                                             value="Add" 
-                                                             icon="fa fa-plus"
-                                                             class="w-100 mx-1 ui-button-success"
-                                                             action="#{opdBillController.addToBill()}"  
-                                                             process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty">
+                                            <p:commandButton 
+                                                id="btnAddIx" 
+                                                value="Add" 
+                                                icon="fa fa-plus"
+                                                class="w-100 mx-1 ui-button-success"
+                                                action="#{opdBillController.addToBill()}"  
+                                                process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
+                                            <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
                                         </div>
                                     </div>
                                     <div class="row" >
@@ -310,7 +311,7 @@
                                                 value="#{opdBillController.paymentMethod}"
                                                 >     
                                                 <f:selectItems 
-                                                    value="#{enumController.paymentMethods}"  
+                                                    value="#{enumController.allPaymentMethods}"  
                                                     var="pm"
                                                     itemLabel="#{pm.label}"
                                                     itemValue="#{pm}"/>
@@ -538,6 +539,42 @@
 
                                 </p:panel>
 
+                                <p:panel id="pBillDetails" >
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <h:panelGrid 
+                                        columns="2" 
+                                        class="w-100 h5" >
+                                        <h:outputText value="Total" ></h:outputText >
+                                        <h:outputText id="tot" value="#{opdBillController.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Discount" ></h:outputText>
+                                        <h:outputText id="dis" value="#{opdBillController.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Net Total" ></h:outputText>
+                                        <h:outputText id="netTotal" value="#{opdBillController.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="VAT" ></h:outputText>
+                                        <h:outputText id="netTotalVat" value="#{opdBillController.vat}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="Tendered" ></h:outputText>
+                                        <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" >
+                                            <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
+                                            <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
+                                        </p:inputText>
+                                        <h:outputText  value="Balance " ></h:outputText>
+                                        <h:outputText id="balance" value="#{opdBillController.cashBalance}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGrid>
+                                </p:panel>
+
                                 <p:panel class="m-1">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
@@ -547,6 +584,7 @@
                                         <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
                                         <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" 
                                                        itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
+                                        <p:ajax process="@this" ></p:ajax>
                                     </p:selectOneListbox>
                                 </p:panel>
 
@@ -568,12 +606,12 @@
                                                         var="ri" 
                                                         itemLabel="#{ri.name}" 
                                                         itemValue="#{ri}"
-                                                        size="10"
+                                                        scrollHeight="500"
                                                         inputStyleClass="form-control"
                                                         class="w-100">
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
-                                            <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
-                                            <p:column headerText="Code">#{ri.institutionCode}</p:column>
+                                            <p:column headerText="Referring Institution Name" style="padding: 2px;">#{ri.name}</p:column>
+                                            <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
                                         </p:autoComplete>
 
 
@@ -628,11 +666,11 @@
                                                         itemValue="#{ix}" 
                                                         inputStyleClass="form-control"
                                                         class="w-100" 
-                                                        size="10">
-                                            <p:column headerText="Name" >
+                                                        scrollHeight="500">
+                                            <p:column headerText="Name" style="padding: 2px;">
                                                 <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Code" >
+                                            <p:column headerText="Code" style="padding: 2px;">
                                                 <h:outputText value="#{ix.code}" ></h:outputText>
                                             </p:column>
                                         </p:autoComplete>
@@ -657,12 +695,12 @@
                                                         minQueryLength="4"
                                                         itemLabel="#{ix.name}" 
                                                         itemValue="#{ix}" 
-                                                        size="10" >
+                                                        scrollHeight="500" >
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
-                                            <p:column headerText="Collecting Centre Name">
+                                            <p:column headerText="Collecting Centre Name" style="padding: 2px;">
                                                 <h:outputText value="#{ix.name}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Code">
+                                            <p:column headerText="Code" style="padding: 2px;">
                                                 <h:outputText value="#{ix.institutionCode}" ></h:outputText>
                                             </p:column>
 
@@ -672,41 +710,7 @@
                                 </p:panel>
 
 
-                                <p:panel id="pBillDetails" >
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
-                                    </f:facet>
-                                    <h:panelGrid 
-                                        columns="2" 
-                                        class="w-100 h5" >
-                                        <h:outputText value="Total" ></h:outputText >
-                                        <h:outputText id="tot" value="#{opdBillController.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Discount" ></h:outputText>
-                                        <h:outputText id="dis" value="#{opdBillController.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Net Total" ></h:outputText>
-                                        <h:outputText id="netTotal" value="#{opdBillController.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="VAT" ></h:outputText>
-                                        <h:outputText id="netTotalVat" value="#{opdBillController.vat}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Tendered" ></h:outputText>
-                                        <p:inputText autocomplete="off"  id="paid" value="#{opdBillController.strTenderedValue}" >
-                                            <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
-                                            <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
-                                        </p:inputText>
-                                        <h:outputText  value="Balance " ></h:outputText>
-                                        <h:outputText id="balance" value="#{opdBillController.cashBalance}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGrid>
-                                </p:panel>
+
 
                             </div>
                         </div>

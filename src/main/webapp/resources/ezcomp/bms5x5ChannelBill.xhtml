@@ -18,31 +18,37 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        <div style="page-break-after: always; width: 100%; height: 100%; margin : 10px; margin-left: 30px;" >
+        <div style="page-break-after: always; width: 100%; height: 100%; margin : 10px;  margin-top: 12px; text-transform: capitalize!important;" >
 
-            <div class="institutionName" style="margin-top: 30px;">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-            </div>
-            <div class="institutionContact" style="margin-top: -1mm;">
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+            <h:panelGroup rendered="#{!bookingController.chackNull(sessionController.departmentPreference.channelingBillHeaderTemplate)}" >
+                <h:outputText value="#{bookingController.fillDataForChannelingBillHeader(sessionController.departmentPreference.channelingBillHeaderTemplate,cc.attrs.bill)}" escape="false" ></h:outputText>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{bookingController.chackNull(sessionController.departmentPreference.channelingBillHeaderTemplate)}" >
+                <div class="institutionName" style="margin-top: 25px;">
+                    <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
                 </div>
-                <div style="margin-top: -1mm;">
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                <div class="institutionContact" style="margin-top: -1mm;">
+                    <div>
+                        <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                    </div>
+                    <div style="margin-top: -1mm;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
+                        <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    </div>
+                    <div style="margin-top: -1mm;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    </div>
                 </div>
-                <div style="margin-top: -1mm;">
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
-                </div>
-            </div>
+            </h:panelGroup>
 
             <div style="font-size: 14px; text-align: center;font-weight: bold;">
                 <h:outputLabel value="Channel Payment Receipt"   /><br/>    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}"/> 
             </div>
-            
+
             <div class="d-flex justify-content-center" style="margin-top: -1mm;">
                 <b>
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
@@ -101,7 +107,7 @@
 
                 </tr>
 
-                <tr style="font-size:1.3em">
+                <tr style="font-size:1.1em">
                     <td>
                         <b>
                             <h:outputLabel value="Room No." ></h:outputLabel>
@@ -133,7 +139,7 @@
                         <h:outputLabel value=":" style="width: 5mm; text-align: centerl"></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize!important;" ></h:outputLabel>
                     </td>
 
                 </tr>
@@ -318,18 +324,16 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}"
-                                       ></h:outputLabel>
-                        &emsp;
-                        <p:spacer height="1" width="100" ></p:spacer>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"
-                                       ></h:outputLabel>
-
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"></h:outputLabel>
+                        <p:spacer height="1" width="10" ></p:spacer>
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                        </h:outputLabel>     
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <h:outputLabel value="Billed At" ></h:outputLabel>
+                        <h:outputLabel value="Billed By" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -338,35 +342,53 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}"
-                                       >
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}"></h:outputLabel>
+                        <p:spacer height="1" width="10" ></p:spacer>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                         </h:outputLabel>
-                        <p:spacer height="1" width="20" ></p:spacer>
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}"
-                                       >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>
-
                     </td>
                 </tr>
 
             </table>
 
-            <div class="d-flex justify-content-center">
-                <p:graphicImage 
-                    cache="false" 
-                    value="#{barcodeController.createBarcodeCode128}" 
-                    style="max-width: 7.5cm; padding: 10px; margin: 10px;" >
-                    <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
-                </p:graphicImage>
+            <div style="margin-left: 6%; margin-right: 8%;">
+                <div style="font-size: 8pt" class="d-flex justify-content-between">
+                    <div class="d-flex gap-2">
+                        <h:outputLabel value="Bill ID :" />
+                        <h:outputLabel value="#{cc.attrs.bill.id}" />
+                    </div>
+                    <h:panelGroup rendered="#{cc.attrs.bill.paidBill.id ne null}" >
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="Paid Bill Id :" />
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.id}" />
+                            <p:spacer height="1" width="15" ></p:spacer>
+                        </div>
+                    </h:panelGroup>
+                </div>
             </div>
 
-            <div style="margin-left: 6%">
-                <div style="font-size: 8pt">
-                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputLabel>
+            <h:panelGroup rendered="#{sessionController.departmentPreference.showBarCodeInChannelBookingBill}" >
+                <div class="d-flex justify-content-center">
+                    <p:graphicImage 
+                        cache="false" 
+                        value="#{barcodeController.createBarcodeCode128}" 
+                        style="max-width: 12cm; padding: 10px; margin: 10px;" >
+                        <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
+                    </p:graphicImage>
+                </div>
+            </h:panelGroup>
+
+            <div style="margin-left: 6%" class="mt-1">
+                <div style="font-size: 8pt" class="d-flex gap-2">
+                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" ></h:outputLabel>
+                    <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paymentMethod ne cc.attrs.bill.paidBill.paymentMethod}" >
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value="-" />
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod}" />
+                        </div>
+                        
+                    </h:panelGroup>
                 </div>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >
@@ -377,7 +399,7 @@
                         class="mx-1"
                         style="font-size: 8pt"  
                         value="#{cc.attrs.bill.paidAmount}">
-                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <h:outputText 
                         style="font-size: 8pt"  

@@ -429,7 +429,7 @@ public class PracticeBookingController implements Serializable {
 
     private Bill addToBill() {
         Bill bi = new BilledBill();
-        bi.setBookingId(getBillNumberBean().gpBookingIdGenerator());
+//        bi.setBookingId(getBillNumberBean().gpBookingIdGenerator());
         bi.setStaff(getDoctor());
         bi.setBillType(BillType.ClinicalOpdBooking);
         if (foreigner) {
@@ -577,7 +577,7 @@ public class PracticeBookingController implements Serializable {
         listCompletedBillSessions();
         listToCompleteBillSessions();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/EHR/Queue/(/faces/clinical/clinical_queue.xhtml)");
+        
     }
 
     List<PatientEncounter> encounters;
@@ -598,7 +598,7 @@ public class PracticeBookingController implements Serializable {
 //        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findByJpql(sql, hh, TemporalType.DATE);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/Daily visits/(/faces/clinical/report_queue.xhtml)");
+        
     }
 
     public List<PatientEncounter> getEncounters() {

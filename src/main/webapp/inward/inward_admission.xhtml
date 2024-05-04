@@ -130,8 +130,8 @@
                                         <p:autoComplete forceSelection="true" 
                                                         value="#{admissionController.current.referringConsultant}" 
                                                         id="refCon"
-                                                        required="true" requiredMessage="Please select referring doctor"
-                                                        completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
+                                                        required="true" requiredMessage="Please select referring consultant"
+                                                        completeMethod="#{consultantController.completeConsultant}" 
                                                         var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                         styleClass="form-control w-100"
                                                         class="w-100" 
@@ -142,7 +142,7 @@
                                                         requiredMessage="Please select referring doctor"
                                                         forceSelection="true" id="scStaff" placeholder="OPD Doctor"
                                                         value="#{admissionController.current.opdDoctor}" 
-                                                        completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
+                                                        completeMethod="#{doctorController.completeDoctor}"
                                                         var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                         styleClass="form-control w-100"
                                                         class="w-100" 
@@ -286,8 +286,8 @@
                                      <p:panel header="Payment Detail" style="margin-top: 10px;">
 
                                 <div class="row">
-                                    <div class="col-6">
-                                        <h:panelGrid columns="2" class="my-2" >
+                                    <div class="col-12">
+                                        <h:panelGrid columns="2" class="my-2 w-100" >
                                             <p:outputLabel value="Nationality"/>
                                             <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
                                                                      styleClass="form-control w-100"
@@ -300,7 +300,7 @@
                                                                      class="w-100"
                                                                      itemLabel="Claimable" />
 
-                                            <p:outputLabel value="BHT Type"/>
+                                            <p:outputLabel value="Payment Method"/>
                                             <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
                                                 <f:selectItem itemLabel="Select" />                           
                                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
@@ -368,7 +368,7 @@
                 <p:panel rendered="#{admissionController.printPreview}">
 
                     <h:panelGroup id="gpBillPreview">
-                        <bill:bht_sethma admission="#{admissionController.current}"/>
+                        <bill:bht_sethma admission="#{admissionController.current}" controller="#{admissionController}" />
                     </h:panelGroup>
                 </p:panel>
 

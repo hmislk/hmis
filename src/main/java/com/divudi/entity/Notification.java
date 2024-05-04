@@ -4,9 +4,11 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.TriggerType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -31,6 +33,8 @@ public class Notification implements Serializable {
     private boolean completed;
     @Lob
     private String message;
+    @Enumerated
+    private TriggerType triggerType;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -43,6 +47,7 @@ public class Notification implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    
 
     public Long getId() {
         return id;
@@ -152,4 +157,14 @@ public class Notification implements Serializable {
         this.message = message;
     }
 
+    public TriggerType getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(TriggerType triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    
+    
 }

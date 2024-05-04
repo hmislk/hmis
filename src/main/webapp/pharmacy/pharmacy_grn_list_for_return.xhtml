@@ -45,6 +45,7 @@
                     <div class="col-10">
                         <p:dataTable 
                             value="#{searchController.bills}" 
+                            class="w-100"
                             var="p" 
                             paginator="true"
                             paginatorPosition="bottom"
@@ -58,12 +59,12 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column> 
-                            <p:column headerText="Invoice No"  >                   
-                                <h:commandLink action="pharmacy_reprint_grn"  >    
-                                    <h:outputLabel  value="#{p.invoiceNumber}"/>
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
-                                </h:commandLink>
-                            </p:column> 
+                            <!--                            <p:column headerText="Invoice No"  >                   
+                                                            <h:commandLink action="pharmacy_reprint_grn"  >    
+                                                                <h:outputLabel  value="#{p.invoiceNumber}"/>
+                                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
+                                                            </h:commandLink>
+                                                        </p:column> -->
                             <p:column headerText="PO No">                   
                                 <h:commandLink action="pharmacy_reprint_grn"  >    
                                     <h:outputLabel  value="#{p.referenceBill.deptId}"/>
@@ -145,7 +146,7 @@
                                 </p:commandButton>
                             </p:column>
 
-                            <p:column headerText="Return Bill">                   
+                            <p:column headerText="Return Bill" width="25%">                   
                                 <p:dataTable var="b" value="#{p.listOfBill}">
                                     <p:column  >
                                         <h:commandLink action="pharmacy_reprint_grn_return"  >                                

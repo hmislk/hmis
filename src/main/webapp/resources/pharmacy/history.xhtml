@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel id="tab"  >
+        <p:panel id="tab">
             <f:facet name="header">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -34,7 +34,11 @@
 
                         </p:calendar>
                         <p:commandButton 
-                            update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId} :#{p:resolveFirstComponentWithId('depIssue',view).clientId}" 
+                            update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId}
+                            :#{p:resolveFirstComponentWithId('depIssue',view).clientId} :#{p:resolveFirstComponentWithId('phSale',view).clientId}
+                            :#{p:resolveFirstComponentWithId('stock',view).clientId} :#{p:resolveFirstComponentWithId('bht',view).clientId}
+                            :#{p:resolveFirstComponentWithId('phWhSale',view).clientId}" 
+                            process="@this frmDate toDate" 
                             action="#{pharmacyController.createTable()}"
                             class="ui-button-info" icon="far fa-eye" value="View Detail"/>
                     </div>
@@ -42,11 +46,11 @@
             </f:facet>
             <div class="row">
                 <div class="col-3">
-                    <p:panel class="w-100" style="font-size: 15px;">
+                    <p:panel class="w-100" style="font-size: 15px;" >
                         <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                             Stock
                         </div>
-                        <p:dataTable  value="#{pharmacyController.institutionStocks}" var="ins" class="w-100" style="padding: 0; background-color: lightgray">
+                        <p:dataTable  value="#{pharmacyController.institutionStocks}" var="ins" class="w-100" style="padding: 0; background-color: lightgray" id="stock">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column class="w-75">
@@ -111,7 +115,7 @@
                         <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                             Pharmacy Sale
                         </div>
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" id="phSale">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column class="w-50">
@@ -200,7 +204,7 @@
                         <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                             BHT Issue
                         </div>
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" id="bht">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column class="w-50">
@@ -290,7 +294,7 @@
                         <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                             Pharmacy Whole Sale
                         </div>
-                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
+                        <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins" id="phWhSale">
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column >

@@ -59,7 +59,7 @@
                                             class="form-control"                                              
                                             value="#{sessionController.currentPreference.partialPaymentOfPharmacyBillsAllowed}" />
 
-                                        <h:outputLabel value="GRN Detaied" ></h:outputLabel>
+                                        <h:outputLabel value="GRN Detailed" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.grnBillDetailed}" ></p:selectBooleanButton>
 
                                         <h:outputLabel value="Bill Number Generate From To Department" ></h:outputLabel>
@@ -213,6 +213,16 @@
                                         class="form-label w-100"
                                         value="Number of Collection Centre Bill Copies"></h:outputLabel>
                                     <p:inputText value="#{sessionController.currentPreference.numberOfCCBillCopies}"/>
+                                    
+                                    <h:outputLabel
+                                        class="form-label"
+                                        value="Genarate OPD TOken Numbers To Counter Wise"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        class="form-control" 
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
+                                        value="#{sessionController.currentPreference.genarateOpdTokenNumbersToCounterWise}"/>
+
                                 </h:panelGrid>
 
 
@@ -261,9 +271,15 @@
 
                                     {time_of_admission}<br/>
                                     {time_of_discharge}<br/>
-                                    
+
                                     {patient_count}<br/>
-                                    
+                                    {session_name}<br/>
+
+                                    {from_department_address}<br/>
+                                    {telephone1}<br/>
+                                    {telephone2} <br/>
+                                    {email}<br/>
+                                    {fax}<br/>
 
                                 </h:panelGroup>
                             </p:tab>
@@ -346,8 +362,8 @@
 
                                     <h:outputLabel value="Change Admission Fee in Interim Bill"></h:outputLabel>
                                     <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
-                                    
-                                   
+
+
 
                                 </h:panelGrid>
 
@@ -357,20 +373,57 @@
                                     <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBooking}"/>
 
                                         <h:outputLabel value="Send SMS on Cancellation"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnCancelling}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingCancellation}"/>
 
-                                        <h:outputLabel value="Send SMS on Arrival"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnArrival}"/>
+                                        <h:outputLabel value="Send SMS on Doctor Arrival"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelDoctorArrival}"/>
 
+                                        <h:outputLabel value="Send SMS on Channel Booking Completion" ></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingCompletion}" />
+
+                                        <h:outputLabel value="Send SMS on Missing Doctor Appointment" ></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingNoShow}" />
+
+                                        <h:outputLabel value="Send SMS on Doctor Payment"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.sendSmsOnChannelBookingDocterPayment}"/>
+
+
+
+                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
+
+                                        <h:outputLabel value="SMS Template For Channel Booking Cancellation"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingCancellation}" class="w-100">  </p:inputTextarea>
+                                        
+                                        <h:outputLabel value="SMS Template For Channel Doctor Arrival"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelDoctorArrival}" class="w-100">  </p:inputTextarea>
+
+                                        <h:outputLabel value="SMS Template For Channel Booking Completion"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingCompletion}" class="w-100">  </p:inputTextarea>
+
+                                        <h:outputLabel value="SMS Template For Missing Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingNoShow}" class="w-100">  </p:inputTextarea>
+                                        
+                                        <h:outputLabel value="SMS Template For Channel Doctor Payment"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBookingDoctorPayment}" class="w-100">  </p:inputTextarea>
+
+                                        
+                                        <p:separator></p:separator>
+                                        <p:separator></p:separator>
+                                        
+                                        <h:outputLabel value="Show Bar Code in Channel Booking Bill"></h:outputLabel>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showBarCodeInChannelBookingBill}"/>
 
                                         <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
                                             <f:selectItem itemLabel="Paper Type" />
                                             <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
+                                        <h:outputLabel value="Channel Booking Bill Header"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.channelingBillHeaderTemplate}" class="w-100">  </p:inputTextarea>
 
                                         <h:outputLabel value="Channel Bill Double"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channelBillDouble}"/>
@@ -381,25 +434,21 @@
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
                                         <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
-                                        <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
+
+
+
                                         <h:outputLabel value="Default Payment Method"></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
-                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  </p:inputTextarea>
+
+
 
                                         <h:outputLabel
                                             class="form-label w-100"
                                             value="Number of Channelling Bill Copies"></h:outputLabel>
                                         <p:inputText value="#{sessionController.currentPreference.numberOfChannellingBillCopies}"/>
-                                        
-                                        <h:outputLabel value="Docter Payment SMS"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.docterPaymentSMS}"/>
 
-                                        <h:outputLabel value="SMS Template For Channel Docter Payment"></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.docterPaymentSMSTemplate}" class="w-100">  </p:inputTextarea>
 
                                     </h:panelGrid>
 

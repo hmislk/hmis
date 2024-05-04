@@ -23,32 +23,26 @@
                         style="width: fit-content;" >
 
                         <p:panel 
-                            header="Requesting Department" 
-                            rendered="#{pharmacyRequestForBhtController.department eq null and pharmacyRequestForBhtController.patientEncounter ne null}">                                        
-                            <h:outputLabel value="Requesting Department"/>
-                            <p:autoComplete  
-                                value="#{pharmacyRequestForBhtController.department}" 
-                                required="true"
-                                class=" col-md-3 mx-2"
-                                inputStyleClass="form-control"
-                                forceSelection="true" 
-                                disabled="#{pharmacyRequestForBhtController.department ne null}"
-                                completeMethod="#{departmentController.completeDeptPharmacy}" 
-                                var="vt" 
-                                itemLabel="#{vt.name}" 
-                                itemValue="#{vt}" >
-                                <p:ajax 
-                                    event="itemSelect" 
-                                    process="@this" 
-                                    update="@this" />
-                            </p:autoComplete>
-                            <p:commandButton ajax="false" value="Select Requesting Department" ></p:commandButton>
-                        </p:panel>                                    
-
-                        <p:panel 
-                            header="Requesting Patient Detail" 
-                            rendered="#{pharmacyRequestForBhtController.patientEncounter eq null}">                                        
+                            header="Start Pharmacy Request for Inpatients" 
+                            rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">                                        
                             <div class="d-flex gap-3">
+                                <h:outputLabel value="Requesting Department"/>
+                                <p:autoComplete  
+                                    value="#{pharmacyRequestForBhtController.department}" 
+                                    required="true"
+                                    class=" col-md-3 mx-2"
+                                    inputStyleClass="form-control"
+                                    forceSelection="true" 
+                                    disabled="#{pharmacyRequestForBhtController.department ne null}"
+                                    completeMethod="#{departmentController.completeDeptPharmacy}" 
+                                    var="vt" 
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" >
+                                    <p:ajax 
+                                        event="itemSelect" 
+                                        process="@this" 
+                                        update="@this acPt2" />
+                                </p:autoComplete>
 
                                 <h:outputLabel value="Patient Name or BHT" class="mt-2"/> 
                                 <p:autoComplete 
@@ -57,7 +51,8 @@
                                     forceSelection="true" 
                                     value="#{pharmacyRequestForBhtController.patientEncounter}" 
                                     completeMethod="#{admissionController.completePatient}"
-                                    var="apt2" 
+                                    var="apt2"
+                                    disabled="#{pharmacyRequestForBhtController.department eq null}"
                                     itemLabel="#{apt2.bhtNo}"
                                     itemValue="#{apt2}" 
                                     size="30" 
@@ -73,13 +68,13 @@
                                     <p:column>
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
-                                    <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
+                                    <p:ajax event="itemSelect" process="acPt2" />
                                 </p:autoComplete> 
 
                                 <p:commandButton 
                                     ajax="false"  
                                     class=""
-                                    value="Select Patient" >
+                                    value="Proceed" >
                                 </p:commandButton>
                             </div>
                         </p:panel>

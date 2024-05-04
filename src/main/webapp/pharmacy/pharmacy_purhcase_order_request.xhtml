@@ -105,7 +105,8 @@
                                 <p:column headerText="Stock" style="width:4em; text-align: right; padding: 0;">
                                     <p:commandLink value="#{stockController.findStock(bi.item)}"
                                                    oncomplete="PF('stockDetailsDialog').show();"
-                                                   update=":stockDetailsForm:stockList"
+                                                   process="itemList"
+                                                   update="stockDetailsForm"
                                                    actionListener="#{stockController.listStocksOfSelectedItem(bi.item)}">
                                     </p:commandLink>
                                 </p:column>
@@ -113,10 +114,13 @@
                                 <p:column headerText="Expiry" style="width:4em; text-align: right; padding: 0;">
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
-                                                   update=":expStockDetailsForm:expStockList"
-                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}">
+                                                  process="itemList"
+                                                   update="expStockDetailsForm"
+                                                   actionListener="#{stockController.listExpiaringStocks(bi.item)}"
+                                                   style="#{stockController.findExpiaringStock(bi.item) > 0 ? 'color: red;' : 'color: #02e05f;'}">
                                     </p:commandLink>
                                 </p:column>
+
 
 
 
@@ -128,7 +132,8 @@
                                     <p:commandButton 
                                         class="ui-button-danger" 
                                         icon="fas fa-trash"
-                                        ajax="false" 
+                                        process="itemList"
+                                        update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                         tabindex="-1"
                                         style="padding: 0;"
                                         action="#{purchaseOrderRequestController.removeItem(bi)}"/>
@@ -170,7 +175,7 @@
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                     <f:selectItem itemLabel="Select Payment method"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForPo}">
+                                    <f:selectItems value="#{enumController.paymentMethodsForPurchases}">
                                     </f:selectItems>
                                     <p:ajax process="@this" update="po" event="change"/>
                                     <p:ajax process="@this" update="duration" event="itemSelect" />
@@ -236,7 +241,7 @@
                                     class="m-1 ui-button-success "  
                                     ajax="false" 
                                     value="Add Items Below ROL" 
-                                    action="#{purchaseOrderRequestController.addAllSupplierItems}"/>
+                                    action="#{purchaseOrderRequestController.addAllSupplierItemsBelowRol()}"/>
 
                                 <hr/>
                                 <p:outputLabel 
@@ -285,10 +290,6 @@
                                     </p:column>
                                     <p:column headerText="Code" >
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                     </p:column>
                                 </p:autoComplete>
                                 <p:commandButton 
@@ -471,7 +472,7 @@
         <p:dialog widgetVar="stockDetailsDialog" modal="true" header="Stock Details" width="50%" height="auto">
             <h:form id="stockDetailsForm">
 
-                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s">
+                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s" scrollable="true" scrollHeight="250px;">
 
                     <f:facet name="header">
                         <h:outputText id="stockItemName" value="Item: #{stockController.selectedItem.name}" />

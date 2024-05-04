@@ -55,7 +55,6 @@
 
                             </p:panel>
                         </h:panelGroup>
-
                     </div>
 
                 </h:panelGroup>
@@ -400,7 +399,7 @@
 
                                         </f:facet>
                                         <h:panelGroup id="gpBillPreview" >
-                                             <bill:bht_sethma admission="#{bhtEditController.current}"/>
+                                            <bill:bht_sethma admission="#{bhtEditController.current}" controller="#{bhtEditController}"  />
                                         </h:panelGroup>
                                     </p:panel>
                                 </h:panelGroup>

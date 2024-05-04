@@ -101,7 +101,10 @@ public class StockController implements Serializable {
 
     public void listStocksOfSelectedItem(Item item) {
         selectedItemStocks = null;
-        item = item;
+        if(selectedItemStocks == null){
+            selectedItemStocks = new ArrayList<>();
+        }
+        selectedItem = item;
         if (item == null) {
             return;
         }
@@ -177,6 +180,49 @@ public class StockController implements Serializable {
         }
 
         return new ArrayList<>(stockSet);
+    }
+
+    public List<Stock> findNextAvailableStocks(Stock stock) {
+        List<Stock> stockList;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select i "
+                + " from Stock i "
+                + " where i.stock > :s "
+                + " and i.department = :d "
+                + " and i.itemBatch.item = :item"
+                + " and i != :stock"
+                + " and i.itemBatch.dateOfExpire > CURRENT_DATE" // Exclude expired stocks
+                + " order by i.itemBatch.dateOfExpire";
+        params.put("d", getSessionController().getLoggedUser().getDepartment());
+        params.put("s", 0.0);
+        params.put("stock", stock);
+        params.put("item", stock.getItemBatch().getItem());
+        stockList = getStockFacade().findByJpql(jpql, params, 20);
+        return stockList;
+    }
+
+    public List<Stock> findNextAvailableStocks(List<Stock> excludedStocks) {
+        List<Stock> stockList;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select i "
+                + " from Stock i "
+                + " where i.stock > :s "
+                + " and i.department = :d "
+                + " and i.itemBatch.dateOfExpire > CURRENT_DATE"
+                + " and i.itemBatch.item = :item"
+                + (excludedStocks.isEmpty() ? "" : " and i NOT IN :excludedStocks") // Exclude stocks in the provided list if not empty
+                + " order by i.itemBatch.dateOfExpire";
+        params.put("d", getSessionController().getLoggedUser().getDepartment());
+        params.put("s", 0.0);
+        // Assuming all stocks in the list belong to the same item, which might need checking or adjustment in real scenarios.
+        params.put("item", excludedStocks.get(0).getItemBatch().getItem());
+        if (!excludedStocks.isEmpty()) {
+            params.put("excludedStocks", excludedStocks);
+        }
+        stockList = getStockFacade().findByJpql(jpql, params, 20);
+        return stockList;
     }
 
     public List<Stock> completeAvailableStocksStartsWith(String qry) {
@@ -283,6 +329,29 @@ public class StockController implements Serializable {
         return 0.0;
     }
 
+    public double findStock(Department department, List<Amp> amps) {
+        Double stock = null;
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (department == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("dep", department);
+            jpql += " where i.department=:dep "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
+
     public double findExpiaringStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
@@ -313,10 +382,10 @@ public class StockController implements Serializable {
         String jpql;
         Map m = new HashMap();
         Vmp tvmp = amps.get(0).getVmp();
-        int daysToMarkAsExpiaring ;
-        if(tvmp!=null){
+        int daysToMarkAsExpiaring;
+        if (tvmp != null) {
             daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
-        }else{
+        } else {
             daysToMarkAsExpiaring = 30;
         }
         Calendar c = Calendar.getInstance();

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/reportCashier/report_cashier.xhtml"
+                template="/analytics/opd/index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -15,65 +15,51 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <h:outputStylesheet ></h:outputStylesheet>
                 <p:panel header="Shift End Summary">
-                    <table>
-                        <tr >
-                            <td> <h:outputLabel value="From Date"/></td>
-                            <td><p:calendar 
-                                    id="frmDate"
-                                    class="mx-4"
-                                    value="#{commonReport.fromDate}" navigator="true" 
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar 
+                            id="frmDate"
+                            class="mx-4"
+                            value="#{commonReport.fromDate}" navigator="true" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" 
+                                    class="mx-4" 
+                                    value="#{commonReport.toDate}" 
+                                    navigator="true"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar></td>
-                        </tr>
-                        <tr>
-                            <td> <h:outputLabel value="To Date"/></td>
-                            <td class="py-2">
-                                <p:calendar id="toDate" 
-                                            class="mx-4" 
-                                            value="#{commonReport.toDate}" 
-                                            navigator="true"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><h:outputLabel styleClass="noPrintButton" value="User Name"/></td>
-                            <td><p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                        </p:calendar>
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                                 forceSelection="true"
                                                 var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                                 value="#{commonReport.webUser}"
                                                 class="mx-4 "></p:autoComplete>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-right mp-2"><p:commandButton value="Process" class="ui-button-success"/></td>
-                        </tr>
-                    </table>
-                   
+                    </h:panelGrid>
 
-                    <div >
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
-                                         styleClass="noPrintButton" style="float: right;"
+
+                    <div class="d-flex w-100 my-1">
+                        <p:commandButton id="btnRefresh" ajax="false" value="Process" 
+                                         icon="fas fa-arrows-rotate"
+                                         class="ui-button-warning mx-1"
                                          action="#{commonReport.createCashierTableByUser()}" />  
                         <p:defaultCommand target="btnRefresh"/>
                         <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                         class="noPrintButton ui-button-warning mx-1" style="float: right;"
+                                         class="ui-button-warning mx-1"
+                                         icon="fas fa-stethoscope"
                                          action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
                         <p:defaultCommand target="btnRefresh"/>
-                        <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                         class="noPrintButton mx-1 ui-button-warning" style="float: right;"
-                                         action="#{commonReport.createCashierTableByUser()}" />  
-                        <p:defaultCommand target="btnRefresh"/>
-
-
-                        <p:commandButton ajax="false" value="Print" class="ui-button-info mx-1" icon="fas fa-print" style="float: right;" >
+                        <p:commandButton id="btnRefresh2" 
+                                         icon="fas fa-money-bill"
+                                         ajax="false" class="ui-button-warning mx-1" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                                         action="#{commonReport.createCashierTableByUserOnlyCashier()}" />  
+                        <p:commandButton ajax="false" value="Print" class="ui-button-info mx-1" icon="fas fa-print">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                     </div>
-                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder my-5">
-                        <p:panel>
+                    <p:panel id="reportPrint" styleClass="my-3">
                             <f:facet name="header" >
                                 <h:outputLabel value="#{sessionController.loggedUser.institution.name}" class="my-4"/>
                                 <br/>
@@ -699,7 +685,6 @@
                                 <br></br>
                                 <h:outputLabel value="................/....../......" />
                             </div>
-                        </p:panel>
 
                         <div style="page-break-after: always;">
                             <br/>

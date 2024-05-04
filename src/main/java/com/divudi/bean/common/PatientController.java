@@ -366,7 +366,7 @@ public class PatientController implements Serializable {
             }
             if (pt.getPerson().getMobile() != null) {
                 Long personPhone = removeSpecialCharsInPhonenumber(pt.getPerson().getMobile());
-                pt.setPatientPhoneNumber(personPhone);
+                pt.setPatientMobileNumber(personPhone);
                 getFacade().edit(pt);
             }
 
@@ -648,7 +648,7 @@ public class PatientController implements Serializable {
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
         getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
-        return "/emr/opd_visit";
+        return "/emr/opd_visit?faces-redirect=true";
     }
 
     public String navigateToNewDataEntryForm() {
@@ -895,6 +895,11 @@ public class PatientController implements Serializable {
         }
         return "/opd/opd_bill?faces-redirect=true;";
     }
+    
+    public String navigateToConvertOldPatientPhoneNumbers(){
+        return "/dataAdmin/phone_number_converter" ;
+    }
+    
 
     public String navigateToSearchPatients() {
         setSearchedPatients(null);
@@ -1397,7 +1402,7 @@ public class PatientController implements Serializable {
         }
         String j;
         Map m = new HashMap();
-        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
     }
@@ -1406,7 +1411,7 @@ public class PatientController implements Serializable {
         Patient patientSearched = null;
         String j;
         Map m = new HashMap();
-        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
         Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
         m.put("pp", searchedPhoneNumber);
         quickSearchPatientList = getFacade().findByJpql(j, m);
@@ -1415,12 +1420,14 @@ public class PatientController implements Serializable {
             controller.setPatientDetailsEditable(true);
             controller.setPatient(null);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.isEmpty()) {
             JsfUtil.addErrorMessage("No Patient found !");
             controller.setPatient(null);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.size() == 1) {
@@ -1442,6 +1449,7 @@ public class PatientController implements Serializable {
         controller.setPatientDetailsEditable(true);
         if (quickSearchPhoneNumber != null) {
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
         }
     }
 
@@ -1949,7 +1957,7 @@ public class PatientController implements Serializable {
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findByJpql(sql, hm, 20);
-        commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
+        
         return patientList;
     }
 
@@ -1987,16 +1995,6 @@ public class PatientController implements Serializable {
         }
         saveSelected(current);
         return "/opd/patient";
-    }
-
-    public String NotSaveAndNavigateToOpdPatientProfile() {
-        if ("".equals(current.getPerson().getName())) {
-            JsfUtil.addErrorMessage("Nothing selected");
-
-            return "/opd/patient_search?faces-redirect=true;";
-        }
-        return "/opd/patient?faces-redirect=true;";
-
     }
 
     public void saveSelected(Patient p) {
@@ -2039,7 +2037,7 @@ public class PatientController implements Serializable {
         }
         String j;
         Map m = new HashMap();
-        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp ) ";
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
         if (searchedPatients == null || searchedPatients.isEmpty()) {

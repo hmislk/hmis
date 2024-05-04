@@ -9,6 +9,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -199,6 +200,7 @@ public class SaleReturnController implements Serializable {
         refundBill.setInstitution(getSessionController().getInstitution());
         refundBill.setDepartment(getSessionController().getDepartment());
         refundBill.setComments(comment);
+        refundBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
 //        refundBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(
 //                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacySale, BillNumberSuffix.SALRET));
@@ -435,6 +437,17 @@ public class SaleReturnController implements Serializable {
             }
         }
 
+    }
+    
+    public void fillReturningQty(){
+        if(billItems == null || billItems.isEmpty()){
+            JsfUtil.addErrorMessage("Please add bill items");
+            return;
+        }
+        for(BillItem bi:billItems){
+            bi.setQty(bi.getPharmaceuticalBillItem().getQty());
+            onEdit(bi);
+        }
     }
 
     private void calTotal() {

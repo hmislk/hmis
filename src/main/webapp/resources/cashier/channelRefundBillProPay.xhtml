@@ -74,7 +74,7 @@
 
             <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
@@ -92,9 +92,6 @@
                 <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
             </p:column>
 
-            <p:column exportable="false">
-                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
-            </p:column>
             <p:columnGroup type="footer"> 
                 <p:row>                                 
                     <p:column colspan="4"/>

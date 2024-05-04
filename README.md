@@ -18,7 +18,7 @@ Developed using Java Enterprise Edition, the system offers both a web applicatio
 
 ## Current Version
 
-Current Version: 3.0.0.YYYYMMDD (This line will be automatically updated to reflect the latest version)
+Current Version: 3.0.0.20240504.1 (This line will be automatically updated to reflect the latest version)
 
 
 ## History
@@ -27,9 +27,9 @@ In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an
 
 Recognising the diverse needs of its users, which included clinical laboratories, medical channelling centres, and hospitals, the system expanded with additional modules to cater to these requirements.
 
-By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This project was fortunate to receive the dedicated support of students from the Sri Lanka Institute of Advanced Technical Education in Labuduwa, Galle. These students, as part of their Higher National Diploma in Information Technology (HNDIT) programme, contributed under the guidance of Mr. K.M.G.T.R. Waidyarathne, a lecturer from the Department Of Information Technology. Post-graduation, several students remained involved, continuing their support with financial backing from Dr. M H B Ariyaratne.
+By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This project was fortunate to receive the dedicated support of students from the Sri Lanka Institute of Advanced Technical Education in Labuduwa, Galle. As part of their Higher National Diploma in Information Technology (HNDIT) programme, these students contributed under Mr. K.M.G.T.R. Waidyarathne, a Department Of Information Technology lecturer. Post-graduation, several students remained involved, continuing their support with financial backing from Dr. M H B Ariyaratne.
 
-To further enhance the system's reach and reliability, commercial support was introduced, offering services such as installations, user training, maintenance, cloud hosting, and troubleshooting. 
+Commercial support was introduced to enhance the system's reach and reliability, offering services such as installations, user training, maintenance, cloud hosting, and troubleshooting. 
 
 ## Functionality
 * Electronic Medical Record System / EMR
@@ -70,9 +70,17 @@ The features available to different roles of the users are stated in detail in t
 * Dr K M P Keerthi
 * Dr Anura Krishantha
 
-## Contributing 
+## System Architect 
 * Dr M H B Ariyaratne - Initiated the Project, Product owner, System Architect, Lead Developer since 2004 to date
+
+## Project Management 
 * Mr.K.M.G.T.R. Waidyarathne - Project Management from 2013 to date
+
+## Business Analyst
+* Miss Binuthi Nilakna Ariyaratne - From 2024 to date
+  
+## Developers
+* Dr M H B Ariyaratne
 * Mr Dushan Madhuranga
 * Mr Lahiru Madhushanka
 * Mr A C M Safrin
@@ -110,6 +118,11 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 
 * Ruhunu MediHospital, Hambanthota  - 2012 Up to date
 * Arogya Hospital, Tangalle - 2014 Up to date
+* University Medical Centre, Faculty of Medicine, University of Colombo - Starting
+* Kirillawela Family Healthcare Centre - 2024 onwards
+* Kirinda Medical Centre - 2023 Onwards
+* Sethma Hospital, Gampaha - Implementing
+* Southern Lanka Hospital, Tangalle - Implementing
 * Arogya Channelling Centre, Tangalle -  2010 Up to date
 * Arogya Pharmacy, Tangalle -  2015 Up to date
 * St. George Hospital, Biyagama -  2016 Up to 2019
@@ -141,7 +154,7 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * City Lab, Matara - 2013
 * Roseth Hospital, Ambalangoda - 2014 tp to date
 * Richmond Laboratory Services, Galle - 2010 up to date
-* Clinical Laboratory , Boossa - 2010 up to date
+* Clinical Laboratory , Boossa - 2010 up 2020
 * Baddegama Medical Services, Baddegama - 2014 up to date
 * Sahana Medicare, Thissamaharamaya - 2014 up to date
 * Medray Medical Laboratory, Matara - 2014 up to date

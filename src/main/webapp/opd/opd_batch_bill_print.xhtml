@@ -51,6 +51,15 @@
                                         target="#{patientController.current}" />
                                 </p:commandButton>
 
+                                <p:commandButton value="New Opd Token" 
+                                                 class="ui-button-secondary mx-1"
+                                                 action="#{opdTokenController.navigateToCreateNewOpdToken()}"
+                                                 ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{opdBillController.bills[0]}" 
+                                        target="#{opdTokenController.bill}" />
+                                </p:commandButton>
+
                             </div>
 
 
@@ -164,6 +173,12 @@
                                     <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <h:outputText value="#{b.deptId}" ></h:outputText>
                                     </p:column>
+                                    <p:column headerText="Bill Type" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.billType.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type Atomic" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.billTypeAtomic.label}" ></h:outputText>
+                                    </p:column>
                                     <p:column headerText="Net Total" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <h:outputText value="#{b.netTotal}" ></h:outputText>
                                     </p:column>
@@ -198,6 +213,18 @@
                                             icon="fa fa-money-bill-wave">
                                             <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
+
+
+                                        <p:commandButton 
+                                            id="viewBill"
+                                            icon="fa fa-fw fa-file-invoice-dollar"
+                                            action="/bill_summery" 
+                                            value="Edit for Admin"
+                                            rendered="true"
+                                            ajax="false">
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" />
+                                        </p:commandButton>
+
                                         <p:tooltip 
                                             for="btnRefund"
                                             value="To go to the Refunds, Click here" ></p:tooltip>
@@ -209,14 +236,14 @@
                                         <tr  class="ui-widget-header">
                                             <th colspan="2" class="d-flex justify-content-between align-items-center">
                                                 <span>Batch Bill Details</span>
+
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     icon="fa fa-ban" 
-                                                    value="Cancel All Bills of this Batch Bill"
-                                                    action="#{billController.cancellAllBillsOfBatchBill()}" 
-                                                    styleClass="m-1 ui-button-danger"
-                                                    onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                return false;">
+                                                    value="Cancel Batch Bill"
+                                                    disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
+                                                    action="#{billController.navigateToCancelOpdBatchBill()}" 
+                                                    styleClass="m-1 ui-button-danger">
                                                     <f:setPropertyActionListener 
                                                         value="#{opdBillController.batchBill}" 
                                                         target="#{billController.batchBill}" ></f:setPropertyActionListener>
@@ -225,24 +252,48 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr class="ui-widget-content">
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill ID</td>
                                             <td>#{opdBillController.batchBill.id}</td>
                                         </tr>
-                                        <tr class="ui-widget-content">
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Bill Type</td>
+                                            <td>#{opdBillController.batchBill.billType.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Bill Type Atomic</td>
+                                            <td>#{opdBillController.batchBill.billTypeAtomic.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Ins ID</td>
                                             <td>#{opdBillController.batchBill.insId}</td>
                                         </tr>
-                                        <tr class="ui-widget-content">
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Dept ID</td>
                                             <td>#{opdBillController.batchBill.deptId}</td>
                                         </tr>
-                                        <tr class="ui-widget-content">
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Payment Method</td>
+                                            <td>#{opdBillController.batchBill.paymentMethod.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Net Total</td>
                                             <td>#{opdBillController.batchBill.netTotal}</td>
                                         </tr>
                                     </tbody>
                                 </table>
+
+                                <p:dataTable value="#{opdBillController.payments}" var="p" >
+                                    <p:column >
+                                        <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{p.bill.id}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
 
 
                             </div>

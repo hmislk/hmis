@@ -346,15 +346,13 @@ public class ItemMappingController implements Serializable {
     }
 
     public List<ItemLight> fillItemLightByDepartment(Department dept) {
-        System.out.println("fillItemLightByDepartment");
-        System.out.println("dept = " + dept);
         List<ItemLight> results;
         String jpql = "SELECT new com.divudi.data.ItemLight("
                 + "im.item.id, "
                 + "im.item.name, "
                 + "im.item.code, "
                 + "im.item.fullName, "
-                + "im.department.name, "
+                + "im.item.department.name, "
                 + "im.item.total) "
                 + "FROM ItemMapping im "
                 + "WHERE im.retired = false "

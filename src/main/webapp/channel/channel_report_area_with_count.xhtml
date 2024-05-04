@@ -24,7 +24,7 @@
                         <h:outputLabel value="Created Date"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
 
-                        <h:outputLabel value="Summery"/>
+                        <h:outputLabel value="Summary"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.summery}" >
                             <f:ajax event="change" execute="@this" render="p1" />
                         </p:selectBooleanCheckbox>
@@ -38,7 +38,7 @@
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{!channelReportController.summery}" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="hr_bill_list"   />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel(Summery)" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{channelReportController.summery}" >
+                        <p:commandButton ajax="false" value="Excel(Summary)" styleClass="noPrintButton" style="float: right; margin-right: 10px" rendered="#{channelReportController.summery}" >
                             <p:dataExporter type="xlsx" target="tbl2" fileName="hr_bill_list" />
                         </p:commandButton>
                     </h:panelGrid>

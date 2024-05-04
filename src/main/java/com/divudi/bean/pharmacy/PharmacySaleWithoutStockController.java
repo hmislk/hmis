@@ -1201,7 +1201,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         Date fromDate = null;
         Date toDate = null;
         editingQty = null;
-        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
+        if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 JsfUtil.addErrorMessage("Please select Payment Scheme");
                 return;
@@ -1253,7 +1253,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         }
         resetAll();
         billPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
+        
     }
 
     public String newPharmacyRetailSale() {

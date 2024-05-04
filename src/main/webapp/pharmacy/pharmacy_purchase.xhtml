@@ -10,6 +10,7 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="maincss.css" ></h:outputStylesheet>
         <h:form id="bill">
+            <p:growl id="msg"/>
             <p:panel rendered="#{!pharmacyPurchaseController.printPreview}" style="height: 100vh">
                 <f:facet name="header" > 
                     <h:outputText styleClass="fas fa-shopping-bag"/>
@@ -105,6 +106,7 @@
                                     <h:outputLabel value="Qty"/><br/>
                                     <p:inputText  
                                         autocomplete="off"
+                                        onfocus="this.select()"
                                         id="txtQty" 
                                         styleClass="numericTxt"
                                         value="#{pharmacyPurchaseController.currentBillItem.tmpQty}"
@@ -114,6 +116,7 @@
                                     <h:outputLabel value="Free"/><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="txtFreeQty" 
+                                                 onfocus="this.select()"
                                                  styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
                                                  style="width:100%" /> 
@@ -122,6 +125,7 @@
                                     <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
                                     <p:inputText autocomplete="off" 
                                                  id="txtPrate"  
+                                                 onfocus="this.select()"
                                                  styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
                                         <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
@@ -131,6 +135,7 @@
                                     <h:outputLabel value="Sale Price"></h:outputLabel>
                                     <p:inputText autocomplete="off" 
                                                  id="tmpRetail" 
+                                                 onfocus="this.select()"
                                                  styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -144,7 +149,7 @@
                                                 id="calDoe"
                                                 pattern="dd MM yy" 
                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
-                                        <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{pharmacyPurchaseController.setBatch()}"/>
+                                        <f:ajax event="dateSelect" execute="@this tmp" render="tmp" listener="#{pharmacyPurchaseController.setBatch()}"/>
                                     </p:calendar> 
                                 </div>
                                 <div class="col-1">
@@ -161,7 +166,7 @@
                                                      icon="fas fa-plus"
                                                      action="#{pharmacyPurchaseController.addItem}" 
 
-                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
+                                                     process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
 
                                 </div>
                             </div>
@@ -205,20 +210,20 @@
                         <h:outputText  class="mx-4" value="Ordered Items" />  
                     </f:facet>
 
-                    <p:column headerText="Item Name"  >  
+                    <p:column headerText="Item Name"  styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
 
                     </p:column>  
 
-                    <p:column headerText="Qty" style="width:8em; padding: 0px;">                     
+                    <p:column headerText="Qty" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
                         <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" style="width: 80px; text-align: right;"  >
                             <f:ajax event="blur" render="item qty freeQty purchase retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                     execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
                         </p:inputText>
                     </p:column>  
 
-                    <p:column headerText="Free" style="width:8em; padding: 0px;">       
+                    <p:column headerText="Free" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">       
                         <p:inputText autocomplete="off" id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width: 70px; text-align: right;" >
                             <f:ajax event="blur" render="item qty freeQty purchase retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                     execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
@@ -227,41 +232,41 @@
                     
                     
                     
-                    <p:column headerText="P. Rate" style="width:8em; padding: 0px;">                     
+                    <p:column headerText="P. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
                         <p:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="width: 70px; text-align: right;">
-                            <f:ajax event="blur" render="profMargin @this retail total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
                         </p:inputText>
                         <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
                     </p:column>              
 
-                    <p:column headerText="S. Rate" style="width:8em; padding: 0px;">                   
+                    <p:column headerText="S. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                   
                         <p:inputText autocomplete="off" id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price" style="width: 70px; text-align: right;">
-                            <f:ajax event="blur" render="profMargin @this total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
+                            <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
                         </p:inputText>
                         <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
                     </p:column>  
 
-                    <p:column headerText="P. Value" style="width:8em; padding: 0px;">  
+                    <p:column headerText="P. Value" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <h:outputText id="total" value="#{ph.pharmaceuticalBillItem.purchaseRate*ph.pharmaceuticalBillItem.qty}" 
                                       style="width: 80px; text-align: right;">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputText> 
                     </p:column>  
 
-                    <p:column headerText="S. Value" style="width:8em; padding: 0px;">  
+                    <p:column headerText="S. Value" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <h:outputText id="totalSaleValue" value="#{ph.pharmaceuticalBillItem.retailRate *(ph.pharmaceuticalBillItem.qtyInUnit +ph.pharmaceuticalBillItem.freeQtyInUnit )}" 
                                       style="width: 110px; text-align: right;">
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </h:outputText>
                     </p:column> 
 
-                    <p:column headerText="Batch" style="width:8em; padding: 0px;">                   
+                    <p:column headerText="Batch" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                   
                         <p:inputText autocomplete="off" id="txtBatch" value="#{ph.pharmaceuticalBillItem.stringValue}" style="width: 70px; text-align: right;" >
                             <f:ajax event="blur" render="total totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
                         </p:inputText>
                     </p:column>  
 
-                    <p:column headerText="DOE" style="width:10em; padding: 0px;" >                    
+                    <p:column headerText="DOE" style="width:10em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                    
                         <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 5em;" inputStyleClass="w-75"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                             <f:ajax event="dateSelect" execute="@this" render="txtBatch" listener="#{pharmacyPurchaseController.setBatch(ph)}"
                                     />
@@ -269,13 +274,13 @@
                     </p:column>
 
 
-                    <p:column headerText="Profit %" style="width:8em; padding: 0px;">                    
+                    <p:column headerText="Profit %" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                    
                         <h:outputText id="profMargin" value="#{((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate ) / ph.pharmaceuticalBillItem.purchaseRate)*100}" >
                             <f:convertNumber pattern="0.0" ></f:convertNumber>
                         </h:outputText>
                     </p:column>
 
-                    <p:column style="width:4em; padding: 0px;">
+                    <p:column style="width:4em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
                         <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyPurchaseController.removeItem(ph)}"/>
                     </p:column>
 
