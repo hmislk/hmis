@@ -5798,7 +5798,7 @@ public class SearchController implements Serializable {
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_SETTLE_AT_CASHIER);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -5826,7 +5826,7 @@ public class SearchController implements Serializable {
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_SETTLE_AT_CASHIER);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -5852,7 +5852,7 @@ public class SearchController implements Serializable {
         sql += createPharmacyPayKeyword(temMap);
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_SETTLE_AT_CASHIER);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
