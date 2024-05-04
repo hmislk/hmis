@@ -194,9 +194,9 @@
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
-<!--                    <div style="text-align: center;font-size: 10px;" class="mt-3">
-                        <p:barcode style="width: 20%;" value="#{cc.attrs.bill.idStr}" type="code39" cache="false" />
-                    </div>-->
+                    <!--                    <div style="text-align: center;font-size: 10px;" class="mt-3">
+                                            <p:barcode style="width: 20%;" value="#{cc.attrs.bill.idStr}" type="code39" cache="false" />
+                                        </div>-->
                 </div>
             </h:panelGroup>
 
@@ -350,6 +350,17 @@
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
+
+            <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
+                <div class="d-flex gap-2 justify-content-center" style="font-size: 11px;">
+                    <h:outputLabel value="Dublicate Printing By"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                    <h:outputLabel value="at"/>
+                    <h:outputLabel value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                    </h:outputLabel>
+                </div>
+            </h:panelGroup>
 
             <div class="footer" style="text-align: center;">
                 <br/>
