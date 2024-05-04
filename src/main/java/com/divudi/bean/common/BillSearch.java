@@ -238,8 +238,10 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Pleace Select Reffering Doctor !");
             return;
         }
-        
         editedBill.setReferredBy(referredBy);
+        if (bill.getId()==null) {
+            billFacade.create(editedBill);
+        }
         billFacade.edit(editedBill);
         JsfUtil.addSuccessMessage("Saved");
     }
