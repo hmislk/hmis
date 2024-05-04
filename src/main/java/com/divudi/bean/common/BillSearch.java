@@ -244,6 +244,7 @@ public class BillSearch implements Serializable {
         }
         billFacade.edit(editedBill);
         JsfUtil.addSuccessMessage("Saved");
+        referredBy=null;
     }
 
     public void preparePatientReportByIdForRequests() {
