@@ -137,6 +137,7 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{workingTimeController.printPreview}" >
                                     <h:outputText value="OPD Doctor Payment" ></h:outputText>
+                                    <p:commandButton ajax="false" value=" Refresh" style="float: right;"/>
                                     
                                     <bill:DoctorPayment5x5Bill bill="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill}" duplicate="true"/>
                                     <h:outputLabel value="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill.total}" >
