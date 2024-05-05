@@ -40,7 +40,7 @@
 
         </style>
 
-        <h:form id="form">
+        <h:form>
             <div class="row w-100">
                 <div class="col-12" >
 
@@ -112,6 +112,9 @@
                                     <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
                                     <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
                                 </div>
+                                <div>
+                                    <p:badge class="mx-2" value="Arrived" rendered="#{s.arrived}"/>
+                                </div>
                             </div>
 
                         </div>
@@ -168,6 +171,30 @@
                         <div class="col-2 ">
                             <div class="d-flex justify-content-end align-items-center mt-2">
                                 <div>
+                                    <p:commandButton 
+                                        rendered="#{s.arrived eq false}"
+                                        id="btnArrival"
+                                        ajax="false"
+                                        styleClass="rounded-button ui-button-success "
+                                        value="Arrival " 
+                                        class="ui-button-info mx-4"
+                                        action="#{bookingController.markAsArrived()}"
+                                        icon="fa-solid fa-check">
+                                        <f:setPropertyActionListener target="#{bookingController.selectedSessionInstance}" value="#{s}"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        rendered="#{s.arrived}"
+                                        id="btnNonArrival"
+                                        ajax="false"
+                                        styleClass="rounded-button ui-button-success "
+                                        value="Not Arrival " 
+                                        class="ui-button-info mx-4"
+                                        action="#{bookingController.markAsNotArrived()}"
+                                        icon="fa-solid fa-check">
+                                        <f:setPropertyActionListener target="#{bookingController.selectedSessionInstance}" value="#{s}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div>
                                     <p:commandButton icon="fas fa-play" iconPos="right"
                                                      styleClass=" rounded-button ui-button-success " ajax="false"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
@@ -184,10 +211,10 @@
                                     </p:commandButton>
 
 
-                                    <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                      styleClass="rounded-button ui-button-info " ajax="false"
-                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                      rendered="#{s.started and not s.completed}">
+                                    <p:commandButton class="mx-2" icon="fas fa-play" iconPos="right"
+                                                     styleClass="rounded-button ui-button-info " ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{s.started and not s.completed}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>

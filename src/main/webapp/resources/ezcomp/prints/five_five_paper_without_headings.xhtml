@@ -19,14 +19,8 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
-
-
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill " style="page-break-after: always" >
-
-
-
 
             <div style="font-weight: bold;text-align: left;font-size: 10pt" class="row mt-2 d-flex align-items-center">
                 <div class="col-5">
@@ -50,8 +44,6 @@
             <div class="billline">
                 <hr></hr>   
             </div>
-
-
 
             <div class="billDetailsFiveFive" >
 
@@ -341,20 +333,13 @@
                         </ui:repeat>
                     </h:panelGroup>
 
-
-
-
                 </table>
-
 
             </div>
 
             <div class="billline">
                 <hr/>
             </div>
-
-
-
 
             <div  >
 
@@ -374,8 +359,6 @@
 
                     </h:panelGroup>
 
-
-
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <tr>
                             <td  class="totalsBlock" style="text-align: left;">
@@ -391,7 +374,7 @@
 
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Net Total " style="font-weight: bolder!important;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
@@ -400,23 +383,24 @@
                         </td>
                     </tr>
 
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.vat}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    <h:panelGroup rendered="#{cc.attrs.bill.vat ne 0.0}">
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel value="VAT " style="font-weight: bolder!important;"/>
+                            </td>
+
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputLabel value="#{cc.attrs.bill.vat}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
 
                 </table>
 
             </div>
-
-
 
             <div style="font-size: 8pt">
                 <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" >
@@ -431,6 +415,16 @@
                 </h:panelGroup>
             </ui:repeat>
 
+            <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
+                <div class="d-flex gap-2" style="font-size: 12px;">
+                    <h:outputLabel value="Dublicate Printing By :"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                    <h:outputLabel value="at"/>
+                    <h:outputLabel value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                    </h:outputLabel>
+                </div>
+            </h:panelGroup>
 
             <div class="footer" style="text-align: center;">
                 <br/>
