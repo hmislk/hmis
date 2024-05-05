@@ -100,6 +100,7 @@ public class StaffController implements Serializable {
     StaffSalaryFacade staffSalaryFacade;
     List<Staff> selectedItems;
     List<Staff> selectedList;
+    private List<Staff> staff;
     private List<Staff> filteredStaff;
     private Staff selectedStaff;
     private Staff current;
@@ -1462,6 +1463,20 @@ public class StaffController implements Serializable {
 
     public void setRemoveResign(boolean removeResign) {
         this.removeResign = removeResign;
+    }
+
+    public List<Staff> getStaff() {
+        if(staff == null){
+            String sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " order by p.person.name";
+        staff = getEjbFacade().findByJpql(sql);
+        }
+        return staff;
+    }
+
+    public void setStaff(List<Staff> staff) {
+        this.staff = staff;
     }
 
     /**

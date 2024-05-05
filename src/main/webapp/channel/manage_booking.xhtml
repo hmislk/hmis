@@ -480,10 +480,25 @@
                                 value="Settle Credit Booking"
                                 process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                 update="gpSettlePrint"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}"
                                 disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
                                             or channelBillController.billSession.bill.cancelled==true
                                             or  channelBillController.billSession.bill.paidAmount ne 0}" 
                                 oncomplete="PF('dlgPreSettle').show();"/>
+                            <p:commandButton
+                                id="setBtna"
+                                class="ui-button-success mt-2"
+                                icon="fa-solid fa-check"
+                                ajax="false"
+                                value="Settle Credit Booking"
+                                process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
+                                update="gpSettlePrint"
+                                action="#{channelBillController.navigateToSettleBooking}"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}"
+                                disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow'
+                                            or channelBillController.billSession.bill.cancelled==true
+                                            or  channelBillController.billSession.bill.paidAmount ne 0}"
+                                />
                             <p:dialog 
                                 id="dialogChannelPreSettle"
                                 closable="true"
