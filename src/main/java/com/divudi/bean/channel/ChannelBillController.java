@@ -9,7 +9,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
@@ -105,6 +105,7 @@ public class ChannelBillController implements Serializable {
     PaymentMethodData paymentMethodData;
     Institution institution;
     Institution settleInstitution;
+    private Institution creditCompany;
     Bill printingBill;
     Staff toStaff;
     String errorText;
@@ -157,6 +158,8 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     MembershipSchemeController membershipSchemeController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -171,6 +174,11 @@ public class ChannelBillController implements Serializable {
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
+    }
+    
+    public String navigateToSettleBooking(){
+        printPreview = false;
+        return "/channel/settle_channel_booking?faces-redirect=true";
     }
 
     public Patient getNewPatient() {
@@ -225,6 +233,26 @@ public class ChannelBillController implements Serializable {
         if (errorCheckForSettle()) {
             return;
         }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
+            
+            if(settlePaymentMethod == PaymentMethod.Card){
+                if(paymentMethodData.getCreditCard().getInstitution() == null){
+                    JsfUtil.addErrorMessage("Please Enter Bank Details");
+                    return;
+                }
+                if(paymentMethodData.getCreditCard().getNo()== null || paymentMethodData.getCreditCard().getNo().isEmpty()){
+                    JsfUtil.addErrorMessage("Please Enter Reference No.");
+                    return;
+                }
+            }
+            if(settlePaymentMethod == PaymentMethod.Credit){
+                if(toStaff == null && creditCompany == null){
+                    JsfUtil.addErrorMessage("Please Select the Staff or Credit Company");
+                    return;
+                }
+            }
+        }
 
         Bill b = savePaidBill();
         BillItem bi = savePaidBillItem(b);
@@ -245,6 +273,8 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(b);
         
         createPayment(b, paymentMethod);
+        
+        printPreview = true;
         
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
@@ -279,6 +309,7 @@ public class ChannelBillController implements Serializable {
 
                     case Agent:
                     case Credit:
+                        p.setInstitution(creditCompany);
                     case PatientDeposit:
                     case Slip:
                     case OnCall:
@@ -2824,6 +2855,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public Staff getToStaff() {
+        if (toStaff == null){
+            toStaff = new Staff();
+        }
         return toStaff;
     }
 
@@ -2932,6 +2966,17 @@ public class ChannelBillController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public Institution getCreditCompany() {
+        if (creditCompany == null){
+            creditCompany = new Institution();
+        }
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
 }
