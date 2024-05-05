@@ -44,8 +44,8 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Settle With Cash"></h:outputLabel>
                                 </f:facet>
-                                <div class="align-center justify-content-center" style="margin-left: 45%">
-                                    <p:commandButton ajax="false" class="ui-button-success" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCash()}" />
+                                <div class="align-center justify-content-center">
+                                    <p:commandButton ajax="false" class="ui-button-success w-100" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCash()}" />
                                 </div>
                             </p:panel>
                         </div>
@@ -65,8 +65,8 @@
                                     <p:outputLabel value=":" />
                                     <p:inputText id="creditCardTxt" autocomplete="off" value="#{channelBillController.paymentMethodData.creditCard.no}"/>
                                 </h:panelGrid>
-                                <div class="align-center justify-content-center" style="margin-left: 45%">
-                                    <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCard()}" />
+                                <div class="align-center justify-content-center">
+                                    <p:commandButton ajax="false" class="ui-button-warning w-100 my-2" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCard()}" />
                                 </div>
                             </p:panel>
                         </div>
@@ -90,8 +90,8 @@
                                                        itemValue="#{ix}" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
-                                <div class="align-center justify-content-center" style="margin-left: 45%">
-                                    <p:commandButton ajax="false" class="ui-button-danger" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCredit()}" />
+                                <div class="align-center justify-content-center" >
+                                    <p:commandButton ajax="false" class="ui-button-danger w-100" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCredit()}" />
                                 </div>
                             </p:panel>
                         </div>
