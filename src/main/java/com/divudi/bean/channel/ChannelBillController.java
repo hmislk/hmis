@@ -170,6 +170,9 @@ public class ChannelBillController implements Serializable {
     BillBeanController billBeanController;
     List<BillItem> billItems;
     int patientSearchTab;
+    private boolean errorInSettle;
+    private Institution ccBank;
+    private String ccNo;
 
     private UserPreference pf;
 
@@ -226,12 +229,21 @@ public class ChannelBillController implements Serializable {
     }
     
     public void settleCreditWithAddCard(){
-        
         settlePaymentMethod = PaymentMethod.Card;
+        paymentMethodData = new PaymentMethodData();
     }
     
     public void settleCreditWithAddCredit(){
         settlePaymentMethod = PaymentMethod.Credit;
+    }
+    
+    private void setAddtionalData(){
+        if(settlePaymentMethod == PaymentMethod.Card){
+            System.out.println("ccBank = " + ccBank);
+            paymentMethodData.getCreditCard().setInstitution(ccBank);
+            System.out.println("ccBank = " + ccNo);
+            paymentMethodData.getCreditCard().setNo(ccNo);
+        }
     }
 
     public void settleCredit() {
@@ -240,19 +252,24 @@ public class ChannelBillController implements Serializable {
         }
         
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
+            
+            setAddtionalData();
             if(settlePaymentMethod == PaymentMethod.Card){
                 if(paymentMethodData.getCreditCard().getInstitution() == null){
                     JsfUtil.addErrorMessage("Please Enter Bank Details");
+                    errorInSettle = true;
                     return;
                 }
                 if(paymentMethodData.getCreditCard().getNo()== null){
                     JsfUtil.addErrorMessage("Please Enter Reference No.");
+                    errorInSettle = true;
                     return;
                 }
             }
             if(settlePaymentMethod == PaymentMethod.Credit){
-                if(toStaff == null || creditCompany == null){
+                if(toStaff == null && creditCompany == null){
                     JsfUtil.addErrorMessage("Please Select the Staff or Credit Company");
+                    errorInSettle = true;
                     return;
                 }
             }
@@ -433,15 +450,17 @@ public class ChannelBillController implements Serializable {
                     && getBillSession().getBill().getFromInstitution().getBallance()
                     - getBillSession().getBill().getTotal() < -getBillSession().getBill().getFromInstitution().getAllowedCredit()) {
                 JsfUtil.addErrorMessage("Agency Balance is Not Enough");
+                errorInSettle = true;
                 return true;
             }
         }
 
         if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
             JsfUtil.addErrorMessage("Please select Agency");
+            errorInSettle = true;
             return true;
         }
-
+        errorInSettle = false;
         return false;
     }
 
@@ -2973,6 +2992,33 @@ public class ChannelBillController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public boolean isErrorInSettle() {
+        return errorInSettle;
+    }
+
+    public void setErrorInSettle(boolean errorInSettle) {
+        this.errorInSettle = errorInSettle;
+    }
+
+    public Institution getCcBank() {
+        if (ccBank == null){
+            ccBank = new Institution();
+        }
+        return ccBank;
+    }
+
+    public void setCcBank(Institution ccBank) {
+        this.ccBank = ccBank;
+    }
+
+    public String getCcNo() {
+        return ccNo;
+    }
+
+    public void setCcNo(String ccNo) {
+        this.ccNo = ccNo;
     }
 
 }

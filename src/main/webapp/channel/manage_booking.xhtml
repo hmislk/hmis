@@ -15,6 +15,7 @@
     <ui:define name="content">
 
         <h:form id="form">
+            <p:growl id="msg" />
             <!--            
             #{bookingController.selectedBillSession.bill.billItems}
             #{bookingController.selectedBillSession.bill.billFees}
@@ -680,7 +681,7 @@
                                         value="Settle"
                                         style="height: 90px; width: 250px"
                                         process="cmbSettlePs settleAgent2 settleAgRefTxt setBtna4"
-                                        update="gpSettlePrint"
+                                        update="gpSettlePrint :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                         action="#{channelBillController.settleCredit()}"
                                         disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                     or channelBillController.billSession.bill.cancelled==true
@@ -719,7 +720,7 @@
                                         value="Settle"
                                         style="height: 90px; width: 250px"
                                         process="cmbSettlePs settleAgent2 settleAgRefTxt setBtna5"
-                                        update="gpSettlePrint"
+                                        update="gpSettlePrint :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                         action="#{channelBillController.settleCredit()}"
                                         disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                     or channelBillController.billSession.bill.cancelled==true
@@ -742,6 +743,7 @@
                                     onShow="PF('dlgPreSettle').hide();PF('dlgAdditionalCredit').hide();PF('dlgAdditionalCard').hide();">
 
                                     <div class="d-flex justify-content-between">
+                                        <h1>#{channelBillController.errorInSettle}</h1>
                                         <p:commandButton
                                             class="ui-button-secondary mx-2"
                                             icon="fa-solid fa-arrow-left"
