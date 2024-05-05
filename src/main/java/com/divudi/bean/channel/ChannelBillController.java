@@ -2855,9 +2855,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public Staff getToStaff() {
-        if (toStaff == null){
-            toStaff = new Staff();
-        }
         return toStaff;
     }
 
@@ -2969,9 +2966,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public Institution getCreditCompany() {
-        if (creditCompany == null){
-            creditCompany = new Institution();
-        }
         return creditCompany;
     }
 

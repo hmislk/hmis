@@ -78,18 +78,17 @@
                                 <h:panelGrid columns="3" class="my-2">
                                     <p:outputLabel id="staff" value="Staff" />
                                     <p:outputLabel value=":" />
-                                    <p:autoComplete id="acStaff" forceSelection="true" style="text-align: right;"
-                                                    value="#{channelBillController.toStaff}"
-                                                    completeMethod="#{staffController.completeStaffCodeChannelWithOutResignOrRetierd}"
-                                                    var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" size="30" >
-                                    </p:autoComplete>
+                                    <p:selectOneMenu id="acStaff" value="#{channelBillController.toStaff}" filter="true" filterMatchMode="contains" >
+                                        <f:selectItem itemLabel="Select Staff" noSelectionOption="true"/>
+                                        <f:selectItems value="#{staffController.staff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                                    </p:selectOneMenu>
                                     <p:outputLabel  value="Credit Company"/>
                                     <p:outputLabel value=":" />
-                                    <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
-                                                    value="#{channelBillController.creditCompany}"
-                                                    completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}"
-                                                    itemValue="#{ix}" size="30" >
-                                    </p:autoComplete>
+                                    <p:selectOneMenu id="acCreditCompany" value="#{channelBillController.creditCompany}" filter="true" filterMatchMode="contains" >
+                                        <f:selectItem itemLabel="Select Credit Company" noSelectionOption="true"/>
+                                        <f:selectItems value="#{creditCompanyController.creditCompany}" var="ix" itemLabel="#{ix.name}"
+                                                       itemValue="#{ix}" />
+                                    </p:selectOneMenu>
                                 </h:panelGrid>
                                 <div class="align-center justify-content-center" style="margin-left: 45%">
                                     <p:commandButton ajax="false" class="ui-button-danger" icon="fas fa-plus" value="Settle" action="#{channelBillController.settleCreditWithCredit()}" />
