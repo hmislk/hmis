@@ -240,17 +240,17 @@ public class WorkingTimeController implements Serializable {
     public void createBillFeesAndSave(Bill b, Payment p, List<BillFee> payingBillFees) {
         int serviceFeeQty = 0;
         int admissionQty = 0;
-//        if (payingBillFees != null) {
-//            for (BillFee bf : payingBillFees) {
-//                saveBillItemForPaymentBill(b, bf, p);
-//                bf.setPaidValue(bf.getFeeValue());
-//                bf.setSettleValue(bf.getFeeValue());
-//                billFeeFacade.edit(bf);
-//            }
-//            serviceFeeQty = payingBillFees.size();
-//        }
+        if (payingBillFees != null) {
+            for (BillFee bf : payingBillFees) {
+                saveBillItemForPaymentBill(b, bf, p);
+                bf.setPaidValue(bf.getFeeValue());
+                bf.setSettleValue(bf.getFeeValue());
+                billFeeFacade.edit(bf);
+            }
+            serviceFeeQty = payingBillFees.size();
+        }
 
-        System.out.println("admissionRate = " + admissionRate);
+        //System.out.println("admissionRate = " + admissionRate);
 
         BillItem admiddionFeeItem = new BillItem();
         admiddionFeeItem.setBill(b);
@@ -258,22 +258,13 @@ public class WorkingTimeController implements Serializable {
         admiddionFeeItem.setCreatedAt(new Date());
         admiddionFeeItem.setCreater(sessionController.getLoggedUser());
         admiddionFeeItem.setItem(itemController.findAndCreateItemByName("Doctor Payment for Admissions", sessionController.getDepartment()));
-        //admiddionFeeItem.getItem().getItemFee().setFee(admissionRate);
+        admiddionFeeItem.setRate(admissionRate);
         billItemFacade.create(admiddionFeeItem);
         BillFee admissionFee = new BillFee();
         admissionFee.setBillItem(admiddionFeeItem);
         admissionFee.setFeeValue(admissionFeeValue);
         admissionFee.setFee(feeController.findFee("Doctor Payment for Admission Fee"));
         billFeeFacade.create(admissionFee);
-
-        System.out.println("admissionCount = " + admissionCount);
-        System.out.println("serviceFeeQty = " + staffBillFeesForPaymentCount);
-
-        System.out.println("admiddionFeeItem = " + admiddionFeeItem);
-        System.out.println("admiddionFeeItem.getItem = " + admiddionFeeItem.getItem());
-        System.out.println("admissionFee = " + admissionFee);
-        System.out.println("admissionFee.getFee = " + admissionFee.getFee());
-        System.out.println("admissionFee.getFeeValue = " + admissionFee.getFeeValue());
 
         BillItem serviceBillItem = new BillItem();
         serviceBillItem.setBill(b);
@@ -288,12 +279,6 @@ public class WorkingTimeController implements Serializable {
         serviceFee.setFee(feeController.findFee("Doctor Payment for Services"));
         billFeeFacade.create(serviceFee);
 
-        System.out.println("serviceBillItem = " + serviceBillItem);
-        System.out.println("serviceBillItem.getItem = " + serviceBillItem.getItem());
-        System.out.println("serviceFee = " + serviceFee);
-        System.out.println("serviceFee.getFee = " + serviceFee.getFee());
-        System.out.println("serviceFee.getFeeValue = " + serviceFee.getFeeValue());
-
         BillItem shiftFeeItem = new BillItem();
         shiftFeeItem.setBill(b);
         shiftFeeItem.setCreatedAt(new Date());
@@ -305,12 +290,6 @@ public class WorkingTimeController implements Serializable {
         shiftFee.setFeeValue(shiftPaymentValue);
         shiftFee.setFee(feeController.findFee("Doctor Payment for Shift"));
         billFeeFacade.create(shiftFee);
-
-        System.out.println("shiftFeeItem = " + shiftFeeItem);
-        System.out.println("shiftFeeItem.getItem = " + shiftFeeItem.getItem());
-        System.out.println("shiftFee = " + shiftFee);
-        System.out.println("shiftFee.getFee = " + shiftFee.getFee());
-        System.out.println("shiftFee.getFeeValue = " + shiftFee.getFeeValue());
 
         BillItem otherFeeItem = new BillItem();
         otherFeeItem.setBill(b);
@@ -324,12 +303,6 @@ public class WorkingTimeController implements Serializable {
         otherFee.setFee(feeController.findFee("Doctor Payment for Other"));
         billFeeFacade.create(otherFee);
 
-        System.out.println("otherFeeItem = " + otherFeeItem);
-        System.out.println("otherFeeItem.getItem = " + otherFeeItem.getItem());
-        System.out.println("otherFee = " + otherFee);
-        System.out.println("otherFee.getFee = " + otherFee.getFee());
-        System.out.println("otherFee.getFeeValue = " + otherFee.getFeeValue());
-
         b.getBillItems().add(admiddionFeeItem);
         b.getBillItems().add(serviceBillItem);
         b.getBillItems().add(shiftFeeItem);
@@ -340,7 +313,7 @@ public class WorkingTimeController implements Serializable {
         b.getBillFees().add(shiftFee);
         b.getBillFees().add(otherFee);
 
-        System.out.println("b.getBillItems() = " + b.getBillItems());
+        //System.out.println("b.getBillItems() = " + b.getBillItems());
 
         billController.save(b);
 
