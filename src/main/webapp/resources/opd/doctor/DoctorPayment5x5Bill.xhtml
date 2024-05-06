@@ -72,7 +72,15 @@
                 </div>
             </div>
 
-
+            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bi" >
+                <h1>Item</h1>
+                #{bi.item}
+                ||
+                #{bi.item.name}
+                ||
+                 #{bi.qty}
+                <h2>Fee</h2>
+            </ui:repeat>
 
 
 

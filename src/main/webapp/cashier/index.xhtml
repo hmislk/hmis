@@ -24,6 +24,13 @@
                                         value="Shift End Funds"
                                         icon=""
                                         ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        value="Shift End Funds By Bills (Temporarily)"
+                                        icon=""
+                                        ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillByBills()}" >
                                     </p:commandButton>
 
@@ -48,7 +55,7 @@
                                         value="Fund Withdrawal"
                                         icon=""
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateNewWithdrawalProcessingBill()}" >
+                                        action="#{financialTransactionController.navigateToCreateNewFundWithdrawalBill()}" >
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Fund Deposit"
