@@ -127,10 +127,7 @@ public class ConsultantController implements Serializable {
             headerRow.createCell(8).setCellValue("Speciality");
             headerRow.createCell(9).setCellValue("Registration");
             headerRow.createCell(10).setCellValue("Qualification");
-            headerRow.createCell(11).setCellValue("Refering Charge");
-            // Add more columns as needed
 
-            // Populate the data rows
             int rowNum = 1;
             for (Consultant consultant : items) {
                 Row row = sheet.createRow(rowNum++);
@@ -141,11 +138,9 @@ public class ConsultantController implements Serializable {
                 row.createCell(5).setCellValue(consultant.getPerson().getFax());
                 row.createCell(6).setCellValue(consultant.getPerson().getMobile());
                 row.createCell(7).setCellValue(consultant.getPerson().getAddress());
-
-                row.createCell(8).setCellValue(consultant.getSpeciality().getDescription());
+                row.createCell(8).setCellValue(consultant.getSpeciality().getName());
                 row.createCell(9).setCellValue(consultant.getRegistration());
                 row.createCell(10).setCellValue(consultant.getQualification());
-                row.createCell(11).setCellValue(consultant.getCharge());
             }
 
             // Set the response headers to initiate the download
