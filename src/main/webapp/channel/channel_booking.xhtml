@@ -111,12 +111,20 @@
                                 icon="fa-solid fa-bars-progress" />
 
                             <p:commandButton 
+                                rendered="#{!bookingController.selectedSessionInstance.arrived}"
                                 id="btnArrival"
-                                process="btnArrival"
-                                update="acSessions"
+                                ajax="false"
                                 value="Mark Arrival " 
                                 class="ui-button-info"
                                 action="#{bookingController.markAsArrived()}"
+                                icon="fa-solid fa-check" />
+                            <p:commandButton 
+                                rendered="#{bookingController.selectedSessionInstance.arrived}"
+                                id="btnNotArrival"
+                                ajax="false"
+                                value="Mark Not Arrival " 
+                                class="ui-button-info"
+                                action="#{bookingController.markAsNotArrived()}"
                                 icon="fa-solid fa-check" />
 
                         </div>
