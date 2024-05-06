@@ -805,17 +805,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
         if (billSessionErrorPresent()) {
-            JsfUtil.addErrorMessage("Session Selection Error. Please retry from beginning");
+            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
             settleSucessFully = false;
             return;
         }
         if (patientErrorPresent(patient)) {
-            JsfUtil.addErrorMessage("Please enter patient details.");
+            JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
             return;
         }
         if (paymentMethodErrorPresent()) {
-            JsfUtil.addErrorMessage("Please enter Psyment Details");
+            JsfUtil.addErrorMessage("Please Enter Payment Details");
             settleSucessFully = false;
             return;
         }
