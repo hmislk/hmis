@@ -24,16 +24,32 @@
                 <h:outputText value="OPD Doctor Payment" ></h:outputText>
             </div>
 
-            <div>
-                <ui:repeat var="fee" value="#{cc.attrs.bill.billFees}">
-                    <h:outputText value="Fee" ></h:outputText>
-                    <h:outputText value="#{fee.fee}" ></h:outputText>
-                    <h:outputText value="#{fee.billItem}" ></h:outputText>
-                </ui:repeat>
+            <div class="d-flex gap-2">
+                <h:outputText value="Doctor Name " ></h:outputText>
+                <h:outputText value=":" style="width: 15px; text-align: center;"></h:outputText>
+                <h:outputText value="#{cc.attrs.bill.toStaff.name}" ></h:outputText>
             </div>
+            <hr/>
+
+            <ui:repeat value="#{cc.attrs.bill.billFees}" var="bi" >
+                <div class="row">
+                    <div class="col-10">
+                        <div class="d-flex gap-3">
+                            <h:outputText value="#{bi.billItem.item.name}" ></h:outputText>
+                            <h:panelGroup rendered="#{bi.billItem.qty ne 0.0 or bi.billItem.item.name eq 'Doctor Payment For Admissions'}">
+                                (<h:outputText value="#{bi.billItem.qty}" >
+                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                </h:outputText>)
+                            </h:panelGroup>
+
+                        </div>
+                    </div>
+                    <div class="col-2">#{bi.feeValue}</div>
+                </div>
+            </ui:repeat>
 
             <hr/>
-            
+
             <div class="d-flex justify-content-between W-100" style="font-size: 20px;">
                 <div>Total Payment</div>
                 <div>
@@ -42,7 +58,7 @@
                     </h:outputText>
                 </div>    
             </div>
-            
+
             <hr/>
 
             <div id="details" class="row">
@@ -71,10 +87,6 @@
                     </div>
                 </div>
             </div>
-
-
-
-
 
         </div>
     </cc:implementation>

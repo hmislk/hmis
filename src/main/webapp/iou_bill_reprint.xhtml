@@ -53,35 +53,35 @@
                             <p:outputLabel value="Payment Method" />
                             <h:panelGroup>
                                 <div class="d-flex">
-                                    <p:selectOneMenu id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
+                                    <p:selectOneMenu id="cmbPs" value="#{iouBillController.current.paymentMethod}">                                                                     
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                         <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
 
                                     <div class="mx-1">
-                                        <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                            <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                        <h:panelGroup id="creditCard" style="display: #{iouBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                            <pa:creditCard paymentMethodData="#{iouBillController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                            <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                        <h:panelGroup id="cheque" style="display: #{iouBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <pa:cheque paymentMethodData="#{iouBillController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                            <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                        <h:panelGroup id="slip" style="display: #{iouBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <pa:slip paymentMethodData="#{iouBillController.paymentMethodData}"/>
                                         </h:panelGroup>
                                     </div>
                                 </div>
                             </h:panelGroup>
                             <p:outputLabel value="Comment" />
-                            <p:inputText class="w-100 my-1 " value="#{pettyCashBillController.comment}" placeholder="Comment" /> 
+                            <p:inputText class="w-100 my-1 " value="#{iouBillController.comment}" placeholder="Comment" /> 
                             <p:outputLabel value="Amount" />
-                            <p:inputText class="w-100 " value="#{pettyCashBillController.returnAmount}" placeholder="Return Amount" /> 
+                            <p:inputText class="w-100 " value="#{iouBillController.returnAmount}" placeholder="Return Amount" /> 
                         </h:panelGrid>
 
                         <f:facet name="footer">
                             <h:panelGroup class="mb-2">
-                                <p:commandButton onclick="PF('returnBill').show()" id="btnSettle"  value="Settle"  action="#{pettyCashBillController.settleReturnBill()}"/>
+                                <p:commandButton onclick="PF('returnBill').show()" id="btnSettle"  value="Settle" update="pnlReturnBills" process="btnSettle"  action="#{iouBillController.settleReturnBill()}"/>
                                 <p:commandButton class="mx-1" value="cancel" onclick="PF('confirmationDialog').hide()" type="button" />
                             </h:panelGroup>
                         </f:facet>
@@ -92,7 +92,7 @@
                                 <p:printer target="printablePanel" />
                             </p:commandButton>
                             <h:panelGroup id="printablePanel">
-                                <bi:petty bill="#{pettyCashBillController.currentReturnBill}" />
+                                <bi:iou_issue_bill bill="#{iouBillController.currentReturnBill}" />
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:dialog>
@@ -108,13 +108,13 @@
                                         <p:printer target="gpBillPreview" />
                                     </p:commandButton> 
                                     <h:panelGroup id="gpBillPreview">
-                                        <bi:petty bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
+                                        <bi:iou_issue_bill bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
                                     </h:panelGroup>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="mx-5">
-                                    <h:panelGroup>
+                                    <h:panelGroup id="pnlReturnBills"> 
                                         <ui:repeat value="#{pettyCashBillController.billList}" var="b">
                                             <div>
                                                 <p:commandButton value="Print" 
@@ -124,7 +124,7 @@
                                                     <p:printer target="gpBillPreviewReturn" />
                                                 </p:commandButton> 
                                                 <h:panelGroup id="gpBillPreviewReturn">
-                                                    <bi:petty bill="#{b}" />
+                                                    <bi:iou_issue_bill bill="#{b}" dup="true" />
                                                 </h:panelGroup>
                                             </div>
                                         </ui:repeat>
