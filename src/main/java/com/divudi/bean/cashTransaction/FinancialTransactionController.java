@@ -573,9 +573,12 @@ public class FinancialTransactionController implements Serializable {
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
+                System.err.println("NO ATOMIC BILL TYPE in p.getBill().getBillType() = " + p.getBill().getBillType());
+            } else {
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+                System.out.println("p.getBill().getBillTypeAtomic() = " + p.getBill().getBillTypeAtomic());
             }
-            atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
-//            calculateBillValuesFromBillTypes(p);
+            //            calculateBillValuesFromBillTypes(p);
         }
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
@@ -658,7 +661,6 @@ public class FinancialTransactionController implements Serializable {
 //
 //        }
 //    }
-
     public void calculateBillValuesFromBillTypes(Bill p) {
         if (p == null) {
             return;
@@ -1345,7 +1347,5 @@ public class FinancialTransactionController implements Serializable {
     public void setFinancialReportByPayments(FinancialReport financialReportByPayments) {
         this.financialReportByPayments = financialReportByPayments;
     }
-    
-    
 
 }
