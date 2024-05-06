@@ -440,7 +440,8 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         if(configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Refunded")){
         }
         
-         
+         if(configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Canceled")){
+        }
         
         return "/channel/manage_booking_past?faces-redirect=true";
     }
