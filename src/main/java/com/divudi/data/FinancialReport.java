@@ -40,10 +40,10 @@ public class FinancialReport {
     private double cashTotal;
 
     // Floats and handovers
-    private double floatCollected;
+    private double floatReceived;
     private double floatHandover;
-    private double floatMySafe;
-    private double collectionHandover;
+    private double shiftStartFunds;
+    private double shiftEndFunds;
 
     // Other transactions
     private double cashCollectedTransferIn;
@@ -116,8 +116,8 @@ public class FinancialReport {
     private List<PaymentMethod> paymentMethodsForFloatMySafe;
     private List<BillTypeAtomic> billTypesForFloatMySafe;
 
-    private List<PaymentMethod> paymentMethodsForCollectionHandover;
-    private List<BillTypeAtomic> billTypesForCollectionHandover;
+    private List<PaymentMethod> paymentMethodsForShiftEndHandovers;
+    private List<BillTypeAtomic> billTypesOfShiftEndHandovers;
 
 // Lists for the rest of the transactions...
     private List<PaymentMethod> paymentMethodsForCashCollectedTransferIn;
@@ -154,78 +154,59 @@ public class FinancialReport {
     public FinancialReport() {
     }
 
-    public double calculateTotal() {
-        // Calculate the total for cash transactions
-        double totalCollectedCash = getCollectedCash();
-        double totalRefundedCash = getRefundedCash();
-        double totalNetCash = getNetCashTotal();
+    public void calculateTotal() {
+        System.out.println("Starting calculation of totals.");
 
-        // Calculate the total for credit transactions
-        double totalCollectedCreditCard = getCollectedCreditCard();
-        double totalRefundedCreditCard = getRefundedCreditCard();
-        double totalNetCreditCard = getNetCreditCardTotal();
+        // Update and sum up all the transaction types
+        netCashTotal = getNetCashTotal();
+        netCreditTotal = getNetCreditTotal();
+        netCreditCardTotal = getNetCreditCardTotal();
+        netOtherNonCreditTotal = getNetOtherNonCreditTotal();
+        netVoucherTotal = getNetVoucherTotal();
 
-        // Calculate the total for voucher transactions
-        double totalCollectedVoucher = getCollectedVoucher();
-        double totalRefundedVoucher = getRefundedVoucher();
-        double totalNetVoucher = getNetVoucherTotal();
+        shiftStartFunds = getShiftStartFunds();
+        floatHandover = getFloatHandover();
+        floatReceived = getFloatReceived();
+        shiftEndFunds = getShiftEndFunds();
 
-        // Calculate the total for other non-credit transactions
-        double totalCollectedOtherNonCredit = getCollectedOtherNonCredit();
-        double totalRefundedOtherNonCredit = getRefundedOtherNonCredit();
-        double totalNetOtherNonCredit = getNetOtherNonCreditTotal();
+        bankWithdrawals = getBankWithdrawals();
+        bankDeposits = getBankDeposits();
 
-        // Calculate the total for float transactions
-        double totalFloatCollected = getFloatCollected();
-        System.out.println("totalFloatCollected = " + totalFloatCollected);
-        double totalFloatHandover = getFloatHandover();
-        System.out.println("totalFloatHandover = " + totalFloatHandover);
-        double totalFloatMySafe = getFloatMySafe();
-        System.out.println("totalFloatMySafe = " + totalFloatMySafe);
-        double totalCollectionHandover = getCollectionHandover();
-        System.out.println("totalCollectionHandover = " + totalCollectionHandover);
+        // Calculate the overall total starting from the float my safe value and adjusting with all other totals
+        total = shiftStartFunds;  // Start with the float my safe value
+        System.out.println("Initial Total (Float My Safe): " + total);
 
-        // Calculate the total for bank transactions
-        double totalBankWithdrawals = getBankWithdrawals();
-        double totalBankDeposits = getBankDeposits();
+        // Add net totals of all transaction types
+        total += netCashTotal;
+        System.out.println("Total after adding Net Cash: " + total);
 
-        // Calculate the total for cash in/out transactions
-        double totalCashCollectedTransferIn = getCashCollectedTransferIn();
-        double totalCashGivenOutTransferOut = getCashGivenOutTransferOut();
+        total += netCreditTotal;
+        System.out.println("Total after adding Net Credit: " + total);
 
-        System.out.println("totalFloatMySafe = " + totalFloatMySafe);
-        total = totalFloatMySafe;
+        total += netCreditCardTotal;
+        System.out.println("Total after adding Net Credit Card: " + total);
 
-        // Calculate the overall total
-        total += totalCollectedCash - totalRefundedCash;
-        System.out.println("Total Collected Cash - Total Refunded Cash: " + total);
+        total += netOtherNonCreditTotal;
+        System.out.println("Total after adding Net Other Non-Credit: " + total);
 
-        total += totalCollectedCreditCard - totalRefundedCreditCard;
-        System.out.println("Adding Total Collected Credit Card - Total Refunded Credit Card: " + total);
+        total += netVoucherTotal;
+        System.out.println("Total after adding Net Voucher: " + total);
 
-        total += totalCollectedVoucher - totalRefundedVoucher;
-        System.out.println("Adding Total Collected Voucher - Total Refunded Voucher: " + total);
+        // Adjust float and handover transactions
+        total += floatReceived;
+        System.out.println("Total after adding Float Collected: " + total);
 
-        total += totalCollectedOtherNonCredit - totalRefundedOtherNonCredit;
-        System.out.println("Adding Total Collected Other Non-Credit - Total Refunded Other Non-Credit: " + total);
+        total += floatHandover;
+        System.out.println("Total after adding Float Handover: " + total);
 
-        total += totalFloatCollected ;
-        System.out.println("Adding Total Float Collected : " + total);
+        total -= shiftEndFunds;
+        System.out.println("Total after deducting Collection Handover: " + total);
 
-        total +=  totalFloatHandover ;
-        System.out.println("Adding Total Float Handover : " + total);
+        // Adjust bank transactions
+        total += bankWithdrawals - bankDeposits;
+        System.out.println("Total after adjusting Bank Withdrawals and Deposits: " + total);
 
-        total -= totalCollectionHandover;
-        System.out.println("Deductinh Total Collection Handover: " + total);
-
-        
-        total += totalBankWithdrawals - totalBankDeposits;
-        System.out.println("Adding Total Bank Withdrawals - Total Bank Deposits: " + total);
-
-        total += totalCashCollectedTransferIn - totalCashGivenOutTransferOut;
-        System.out.println("Adding Total Cash Collected Transfer In - Total Cash Given Out Transfer Out: " + total);
-
-        return total;
+        System.out.println("Final Total: " + total);
     }
 
     public double getCollectedCash() {
@@ -308,9 +289,9 @@ public class FinancialReport {
         return cashTotal;
     }
 
-    public double getFloatCollected() {
-        floatCollected = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected());
-        return floatCollected;
+    public double getFloatReceived() {
+        floatReceived = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected());
+        return floatReceived;
     }
 
     public double getFloatHandover() {
@@ -318,14 +299,14 @@ public class FinancialReport {
         return floatHandover;
     }
 
-    public double getFloatMySafe() {
-        floatMySafe = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe());
-        return floatMySafe;
+    public double getShiftStartFunds() {
+        shiftStartFunds = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe());
+        return shiftStartFunds;
     }
 
-    public double getCollectionHandover() {
-        collectionHandover = atomicBillTypeTotals.getTotal(getBillTypesForCollectionHandover());
-        return collectionHandover;
+    public double getShiftEndFunds() {
+        shiftEndFunds = atomicBillTypeTotals.getTotal(getBillTypesOfShiftEndHandovers());
+        return shiftEndFunds;
     }
 
     public double getCashCollectedTransferIn() {
@@ -344,7 +325,7 @@ public class FinancialReport {
     }
 
     public double getTotalShiftCashIn() {
-        totalShiftCashIn = getFloatCollected() + getCashCollectedTransferIn() + getBankWithdrawals() + getReceivedFromCollectionCenter();
+        totalShiftCashIn = getFloatReceived() + getCashCollectedTransferIn() + getBankWithdrawals() + getReceivedFromCollectionCenter();
         return totalShiftCashIn;
     }
 
@@ -722,22 +703,22 @@ public class FinancialReport {
         return billTypesForFloatMySafe;
     }
 
-    public List<PaymentMethod> getPaymentMethodsForCollectionHandover() {
-        if (paymentMethodsForCollectionHandover == null) {
-            paymentMethodsForCollectionHandover = new ArrayList<>();
+    public List<PaymentMethod> getPaymentMethodsForShiftEndHandovers() {
+        if (paymentMethodsForShiftEndHandovers == null) {
+            paymentMethodsForShiftEndHandovers = new ArrayList<>();
             // Collection handover might primarily involve cash, but other methods can be included as needed
-            paymentMethodsForCollectionHandover.add(PaymentMethod.Cash);
+            paymentMethodsForShiftEndHandovers.add(PaymentMethod.Cash);
             // Add any other relevant methods if applicable
         }
-        return paymentMethodsForCollectionHandover;
+        return paymentMethodsForShiftEndHandovers;
     }
 
-    public List<BillTypeAtomic> getBillTypesForCollectionHandover() {
-        if (billTypesForCollectionHandover == null) {
-            billTypesForCollectionHandover = new ArrayList<>();
-            billTypesForCollectionHandover.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
+    public List<BillTypeAtomic> getBillTypesOfShiftEndHandovers() {
+        if (billTypesOfShiftEndHandovers == null) {
+            billTypesOfShiftEndHandovers = new ArrayList<>();
+            billTypesOfShiftEndHandovers.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
         }
-        return billTypesForCollectionHandover;
+        return billTypesOfShiftEndHandovers;
     }
 
     public List<PaymentMethod> getPaymentMethodsForCashCollectedTransferIn() {

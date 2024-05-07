@@ -1,9 +1,9 @@
 package com.divudi.data;
 
 /**
- * Enumerates the types of financial transactions related to billing.
- * Each constant represents a specific kind of billing finance movement or status.
- * 
+ * Enumerates the types of financial transactions related to billing. Each
+ * constant represents a specific kind of billing finance movement or status.
+ *
  * @author Dr M H B Ariyaratne
  */
 public enum BillFinanceType {
@@ -14,11 +14,13 @@ public enum BillFinanceType {
     CREDIT_OUT("Credit Out"),
     CREDIT_SETTLEMENT("Credit Settlement"),
     CREDIT_SETTLEMENT_REVERSE("Credit Settlement Reverse"),
+    BANK_IN("Bank In"),
+    BANK_OUT("Bank Out"),
     FLOAT_STARTING_BALANCE("Float Starting Balance"),
     FLOAT_CLOSING_BALANCE("Float Closing Balance"),
     FLOAT_INCREASE("Float Increase"),
-    FLOAT_DECREASE("Float Decrease");
-    
+    FLOAT_DECREASE("Float Decrease"),;
+
     private final String label;
 
     BillFinanceType(String label) {

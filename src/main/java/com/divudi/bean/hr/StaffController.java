@@ -379,7 +379,6 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
 
-        
     }
 
     public void createResignedStaffTable() {
@@ -503,8 +502,6 @@ public class StaffController implements Serializable {
         ////System.out.println(sql);
         ////System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
-
-        
 
     }
 
@@ -701,7 +698,7 @@ public class StaffController implements Serializable {
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm, 20);
         }
-        
+
         return suggestions;
     }
     Roster roster;
@@ -887,39 +884,48 @@ public class StaffController implements Serializable {
     }
 
     public List<Staff> getSelectedItems() {
-
-        /**
-         *
-         *
-         *
-         *
-         * sql = "select ss from Staff ss " + " where ss.retired=false " + " and
-         * type(ss)!=:class " + " and ss.codeInterger!=0 ";
-         *
-         *
-         *
-         */
-        String sql = "";
-        HashMap hm = new HashMap();
-        if (selectText.trim().equals("")) {
-            sql = "select c from Staff c "
-                    + " where c.retired=false "
-                    //                    + " and type(c)!=:class"
-                    + " order by c.person.name";
-        } else {
-            sql = "select c from Staff c"
-                    + " where c.retired=false "
-                    //                    + " and type(c)!=:class"
-                    + " and ((c.person.name) like :q or (c.code) like :p) "
-                    + " order by c.person.name";
-            hm.put("q", "%" + getSelectText().toUpperCase() + "%");
-            hm.put("p", "%" + getSelectText().toUpperCase() + "%");
+        if (selectedItems == null) {
+            selectedItems = new ArrayList<>();
         }
-
-//        hm.put("class", Consultant.class);
-        selectedItems = getFacade().findByJpql(sql, hm);
-
         return selectedItems;
+    }
+
+    public String navigateToManageStaff() {
+        fillSelectedItemsWithAllStaff();
+        return "/admin/staff/hr_staff_admin?faces-redirect=true";
+    }
+
+    public String navigateToManageStaffWithoutDoctors() {
+        fillSelectedItemsWithNonDoctorStaff();
+        return "/admin/staff/hr_staff_without_doctors_admin?faces-redirect=true";
+    }
+
+    private void fillSelectedItemsWithAllStaff() {
+        String jpql = "";
+        HashMap params = new HashMap();
+        jpql = "select c "
+                + " from Staff c "
+                + " where c.retired=:ret "
+                //                    + " and type(c)!=:class"
+                + " order by c.person.name";
+
+        params.put("ret", false);
+//        hm.put("class", Consultant.class);
+//        hm.put("class", Doctor.class);
+        selectedItems = getFacade().findByJpql(jpql, params);
+    }
+
+    private void fillSelectedItemsWithNonDoctorStaff() {
+        String jpql = "";
+        HashMap params = new HashMap<>();
+        jpql = "SELECT c "
+                + "FROM Staff c "
+                + "WHERE c.retired = :ret "
+                + "AND TYPE(c) NOT IN (Doctor, Consultant) "
+                + "ORDER BY c.person.name";
+
+        params.put("ret", false);
+        selectedItems = getFacade().findByJpql(jpql, params);
     }
 
     public void resetWorkingHour() {
@@ -1325,7 +1331,7 @@ public class StaffController implements Serializable {
 
     public String admin_edit_staff_balance() {
         fillStaffes();
-        return "/admin_edit_staff_balance";
+        return "/admin_edit_staff_balance?faces-redirect=true";
     }
 
     public void resetStaffBalance() {
@@ -1466,11 +1472,11 @@ public class StaffController implements Serializable {
     }
 
     public List<Staff> getStaff() {
-        if(staff == null){
+        if (staff == null) {
             String sql = "select p from Staff p "
                     + " where p.retired=false "
                     + " order by p.person.name";
-        staff = getEjbFacade().findByJpql(sql);
+            staff = getEjbFacade().findByJpql(sql);
         }
         return staff;
     }
@@ -1532,8 +1538,8 @@ public class StaffController implements Serializable {
         }
     }
 
-    public String navigateToManageStaff() {
-        return "/admin/staff/admin_manage_staff_index.xhtml";
+    public String navigateToManageStaffIndex() {
+        return "/admin/staff/admin_manage_staff_index.xhtml?faces-redirect=true";
     }
 
     public CommonController getCommonController() {

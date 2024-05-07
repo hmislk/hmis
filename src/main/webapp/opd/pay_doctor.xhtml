@@ -10,7 +10,7 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
-    
+
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -135,28 +135,50 @@
 
                                     </p:panelGrid>
                                 </h:panelGroup>
+
                                 <h:panelGroup rendered="#{workingTimeController.printPreview}" >
-                                    
-                                    <p:commandButton ajax="false" value=" Refresh" style="float: right;"/>
-                                    
-                                    <bill:DoctorPayment5x5Bill bill="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill}" duplicate="true"/>
-                                    <h:outputText value="OPD Doctor Payment" ></h:outputText>
-                                    <h:outputLabel value="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill.total}" >
-                                    </h:outputLabel>
+
+
+                                    <div class="d-flex m-1 justify-content-end">
+                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-sync-alt" 
+                                            class="ui-button m-1" 
+                                            title="Redraw Bill">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            value="Print" 
+                                            ajax="false" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            >
+                                            <p:printer 
+                                                target="groupPrint" >
+                                            </p:printer>
+                                        </p:commandButton>
+                                    </div>
+
+                                    <h:panelGroup id="groupPrint">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                            <bill:DoctorPayment5x5Bill bill="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill}" duplicate="false"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
                                 </h:panelGroup>
                             </h:panelGroup>
-
-
-
 
                         </p:panel>
 
                     </h:form>
 
-
                 </h:panelGroup>
-
-
             </ui:define>
 
         </ui:composition>
