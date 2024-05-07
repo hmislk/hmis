@@ -458,6 +458,24 @@ public class ChannelBillController implements Serializable {
 //        }
         return false;
     }
+    
+    public void channelBookingRefund(){
+        if(billSession.getBillItem().getBill().getPaymentMethod() == PaymentMethod.Agent){
+            refundAgentBill();
+            return;
+        }
+        if(billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow && billSession.getBillItem().getBill().getPaymentMethod() != PaymentMethod.Agent){
+            refundCashFlowBill();
+            return;
+        }
+       if(billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow){
+            if(billSession.getBill().getPaidAmount() == 0){
+                JsfUtil.addErrorMessage("Can't Refund. No Payments");
+            }else{
+                refundCreditPaidBill();
+            }
+       }
+    }
 
     public void refundCashFlowBill() {
         if (getBillSession() == null) {
@@ -820,7 +838,6 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         if (getComment() == null || getComment().trim().equals("")) {
-            System.out.println("comment = " + comment);
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
