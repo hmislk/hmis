@@ -20,37 +20,51 @@
             <div style="height: 1.2cm;">
             </div>
 
-            <div class="d-flex justify-content-center text-2" style="font-size: 25px; font-weight: 700">
-                <h:outputText value="OPD Doctor Payment" ></h:outputText>
+            <div class="w-100 d-grid justify-content-center text-2" >
+                <h:outputText value="OPD Doctor Payment" style="font-size: 25px; font-weight: 700"></h:outputText>
+                <h:outputText value="*** Duplicate ***" rendered="#{cc.attrs.duplicate}" style="text-align: center;"></h:outputText>
             </div>
 
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 mx-3 w-100" style="font-size: 15px;">
                 <h:outputText value="Doctor Name " ></h:outputText>
-                <h:outputText value=":" style="width: 15px; text-align: center;"></h:outputText>
+                <h:outputText value=":" style="width: 10px; text-align: center;"></h:outputText>
                 <h:outputText value="#{cc.attrs.bill.toStaff.name}" ></h:outputText>
             </div>
             <hr/>
 
             <ui:repeat value="#{cc.attrs.bill.billFees}" var="bi" >
-                <div class="row">
+                <div class="row mx-2" style="font-size: 14px;">
                     <div class="col-10">
                         <div class="d-flex gap-3">
                             <h:outputText value="#{bi.billItem.item.name}" ></h:outputText>
-                            <h:panelGroup rendered="#{bi.billItem.qty ne 0.0 or bi.billItem.item.name eq 'Doctor Payment For Admissions'}">
+                            <h:panelGroup rendered="#{bi.billItem.item eq 'Doctor Payment for Admissions'}">
                                 (<h:outputText value="#{bi.billItem.qty}" >
                                     <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                </h:outputText>
+                                x
+                                <h:outputText value="#{bi.billItem.rate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>)
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{bi.billItem.item eq 'Doctor Payment for Services'}">
+                                (<h:outputText value="#{bi.billItem.qty}" >
+                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                </h:outputText> Bills)
                             </h:panelGroup>
 
                         </div>
                     </div>
-                    <div class="col-2">#{bi.feeValue}</div>
+                    <div class="col-2 d-flex justify-content-end">
+                        <h:outputText value="#{bi.feeValue}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputText>
+                    </div>
                 </div>
             </ui:repeat>
 
             <hr/>
 
-            <div class="d-flex justify-content-between W-100" style="font-size: 20px;">
+            <div class="d-flex justify-content-between W-100 mx-3" style="font-size: 20px; font-weight: bold;">
                 <div>Total Payment</div>
                 <div>
                     <h:outputText value="#{-cc.attrs.bill.total}" >
@@ -61,7 +75,7 @@
 
             <hr/>
 
-            <div id="details" class="row">
+            <div id="details" class="row mx-2" style="font-size: 13px;">
                 <div class="col-6">
                     <div class="d-flex gap-2">
                         <h:outputText value="Paid by : " ></h:outputText>
@@ -69,19 +83,19 @@
                     </div>
                     <div class="d-flex gap-2">
                         <h:outputText value="Print by : " ></h:outputText>
-                        <h:outputText value="#{cc.attrs.bill.creater.webUserPerson.name}" ></h:outputText>
+                        <h:outputText value="#{sessionController.loggedUser.name}" ></h:outputText>
                     </div>
                 </div>
                 <div class="col-6">
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 justify-content-end">
                         <h:outputText value="Paid At : " ></h:outputText>
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                         </h:outputLabel>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 justify-content-end">
                         <h:outputText value="Print At : " ></h:outputText>
-                        <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
+                        <h:outputLabel value="#{sessionController.currentDate}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                         </h:outputLabel>
                     </div>
