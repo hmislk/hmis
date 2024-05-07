@@ -353,128 +353,28 @@
                             <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                         </h:panelGroup>
 
-                        <p:commandButton value="Cancel Agent Bill"  class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                         rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
+                        <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
                                                      or channelBillController.billSession.bill.cancelled==true}"
-                                         onclick="PF('confirmationDialog').show();"/>
-                        <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
-                            <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" />
+                                             onclick="PF('confirmationDialog').show();"/>
+                            <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
+                                <p>Are you sure you want to cancel the channel booking?</p>
+                                <p:inputText class="w-100"
+                                             value="#{channelBillController.comment}"
+                                             placeholder="Please provide a comment for the cancel Channel Booking" />
 
-                            <f:facet name="footer">
-                                <p:commandButton
-                                    class="mx-2 ui-button-warning"
-                                    ajax="false"
-                                    value="Yes"
-                                    action="#{channelBillController.cancelAgentPaidBill()}"
-                                    onclick="PF('confirmationDialog').hide();" />
-                                <p:commandButton
-                                    value="No"
-                                    onclick="PF('confirmationDialog').hide();" />
-                            </f:facet>
-                        </p:dialog>
-
-                        <h1>#{channelBillController.billSession.bill.refunded==true
-                              or channelBillController.billSession.bill.cancelled==true}</h1>
-
-
-                        <p:inputText id="txtCancelComments" 
-                                     value="#{channelBillController.comment}"
-                                     placeholder="Please provide a comment for the cancel Channel Booking" >
-                            <p:ajax event="keyup" process="@this" ></p:ajax>
-                        </p:inputText>
-
-                        <p:commandButton 
-                            value="Cancel" 
-                            class="my-2 ui-button-danger"
-                            icon="fas fa-cancel"
-                            process="@this txtCancelComments"
-                            update="@all msgs"
-                            action="#{channelBillController.cancelCashFlowBill()}"
-                            disabled="#{channelBillController.billSession.bill.refunded==true
-                                        or channelBillController.billSession.bill.cancelled==true}"
-                            />
-                        <p:messages id="msgs" ></p:messages>
-
-                        <p:dialog minHeight="100" width="800" header="Confirmation"
-                                  widgetVar="confirmationDialogCash" modal="true" resizable="false">
-                            <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" >
-                                <p:ajax event="keyup" process="@this" ></p:ajax>
-                            </p:inputText>
-
-                            <f:facet name="footer">
-                                <p:commandButton
-                                    class="mx-2 ui-button-warning"
-                                    ajax="false"
-                                    value="Yes"
-                                    action="#{channelBillController.cancelCashFlowBill()}"
-                                    onclick="PF('confirmationDialogCash').hide();" />
-                                <p:commandButton
-                                    value="No"
-                                    onclick="PF('confirmationDialogCash').hide();" />
-                            </f:facet>
-                        </p:dialog>
-
-                        <p:commandButton value="Cancel Booking" class="my-2 ui-button-danger mx-2" icon="fas fa-cancel"
-                                         rendered="#{(channelBillController.billSession.bill.billType eq 'ChannelOnCall' or channelBillController.billSession.bill.billType eq 'ChannelStaff')and channelBillController.billSession.bill.paidBill eq null}"
-                                         disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
-                                         onclick="PF('confirmationDialogOnCall').show();"/>
-
-                        <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialogOnCall" modal="true" resizable="false">
-                            <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" >
-                                <p:ajax process="@this" ></p:ajax>
-                            </p:inputText>
-
-                            <f:facet name="footer">
-                                <p:commandButton
-                                    class="mx-2 ui-button-warning"
-                                    ajax="false"
-                                    value="Yes"
-                                    action="#{channelBillController.cancelBookingBill()}"
-                                    onclick="PF('confirmationDialogOnCall').hide();" />
-                                <p:commandButton
-                                    value="No"
-                                    onclick="PF('confirmationDialogOnCall').hide();" />
-                            </f:facet>
-                        </p:dialog>
-
-                        <p:commandButton value="Cancel Paid" class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                         rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
-                                         disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true
-                                                     or channelBillController.billSession.bill.paidAmount eq 0}"
-                                         onclick="PF('confirmationDialogCredit').show();"/>
-
-                        <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialogCredit" modal="true" resizable="false">
-                            <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{channelBillController.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" >
-                                <p:ajax process="@this" ></p:ajax>
-                            </p:inputText>
-
-                            <f:facet name="footer">
-                                <p:commandButton
-                                    class="mx-2 ui-button-warning"
-                                    ajax="false"
-                                    value="Yes"
-                                    action="#{channelBillController.cancelCreditPaidBill()}"
-                                    onclick="PF('confirmationDialogCredit').hide();" />
-                                <p:commandButton
-                                    value="No"
-                                    onclick="PF('confirmationDialogCredit').hide();" />
-                            </f:facet>
-                        </p:dialog>
+                                <f:facet name="footer">
+                                    <p:commandButton
+                                        class="mx-2 ui-button-warning"
+                                        ajax="false"
+                                        value="Yes"
+                                        action="#{channelBillController.channelBookingCancel()}"
+                                        onclick="PF('confirmationDialog').hide();" />
+                                    <p:commandButton
+                                        value="No"
+                                        onclick="PF('confirmationDialog').hide();" />
+                                </f:facet>
+                            </p:dialog>
 
                     </p:tab>
 
@@ -525,9 +425,7 @@
                             <p>Are you sure you want to refund the channel booking?</p>
                             <p:inputText class="w-100"
                                          value="#{channelBillController.commentR}"
-                                         placeholder="Please provide a comment for the Refund of Channel Booking" >
-                                <p:ajax process="@this" ></p:ajax>
-                            </p:inputText>
+                                         placeholder="Please provide a comment for the Refund of Channel Booking" />
 
                             <f:facet name="footer">
                                 <p:commandButton
@@ -552,11 +450,7 @@
                             <p>Are you sure you want to refund the channel booking?</p>
                             <p:inputText class="w-100"
                                          value="#{channelBillController.commentR}"
-                                         placeholder="Please provide a comment for the Refund of Channel Booking" >
-                                <p:ajax process="@this" ></p:ajax>
-                            </p:inputText>
-
-
+                                         placeholder="Please provide a comment for the Refund of Channel Booking" />
 
                             <f:facet name="footer">
                                 <p:commandButton
@@ -582,9 +476,7 @@
                             <p>Are you sure you want to refund the channel booking?</p>
                             <p:inputText class="w-100"
                                          value="#{channelBillController.commentR}"
-                                         placeholder="Please provide a comment for the Refund of Channel Booking" >
-                                <p:ajax process="@this" ></p:ajax>
-                            </p:inputText>
+                                         placeholder="Please provide a comment for the Refund of Channel Booking" />
 
                             <f:facet name="footer">
                                 <p:commandButton
@@ -861,7 +753,7 @@
                     <p:tab title="Status" >
                         <p:outputLabel value="Mark As Present / Absent"/>
                         <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{channelBillController.billSession.bill.refunded==true
-                                                                                              or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
+                                                     or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
                             <p:ajax process="@this" listener="#{bookingController.updateSelectedBillSessionPatient()}" ></p:ajax>
                         </p:selectBooleanButton>
 
