@@ -194,7 +194,7 @@ public class DoctorController implements Serializable {
                 row.createCell(3).setCellValue(doctor.getPerson().getMobile());
                 row.createCell(4).setCellValue(doctor.getPerson().getAddress());
                 row.createCell(5).setCellValue(doctor.getCode());
-                row.createCell(6).setCellValue(doctor.getSpeciality().getDescription());
+                row.createCell(6).setCellValue(doctor.getSpeciality().getName());
                 row.createCell(7).setCellValue(doctor.getRegistration());
                 row.createCell(8).setCellValue(doctor.getQualification());
                 row.createCell(9).setCellValue(doctor.getCharge());
