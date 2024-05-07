@@ -882,7 +882,7 @@
                     </p:submenu>
                     <p:menuitem  
                         ajax="false"  
-                        value="Channel Sheduling"  
+                        value="Channel Scheduling"
                         action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
 <!--                    <p:menuitem ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>-->
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
@@ -954,6 +954,7 @@
                         <p:submenu label="Petty Cash">
                             <p:menuitem  ajax="false"  action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"  ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"  ></p:menuitem>
                         </p:submenu>
                     </p:submenu>
 

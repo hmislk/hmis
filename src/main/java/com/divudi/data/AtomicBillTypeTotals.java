@@ -117,6 +117,21 @@ public class AtomicBillTypeTotals {
     }
 
     /**
+     * Calculates the total paid value for a given list of bill types.
+     *
+     * @param billTypes List of BillTypeAtomic for which the total is to be
+     * calculated.
+     * @return The total paid value for the given bill types.
+     */
+    public double getTotal(List<BillTypeAtomic> billTypes) {
+        return atomicBillRecords.stream()
+                .filter(record -> billTypes.contains(record.getBillType()))
+                .mapToDouble(AtomicBillRecord::getPaidValue)
+                .sum();
+    }
+
+
+    /**
      * Calculates the total paid value for a specific bill type and payment
      * method.
      *

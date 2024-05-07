@@ -154,6 +154,80 @@ public class FinancialReport {
     public FinancialReport() {
     }
 
+    public double calculateTotal() {
+        // Calculate the total for cash transactions
+        double totalCollectedCash = getCollectedCash();
+        double totalRefundedCash = getRefundedCash();
+        double totalNetCash = getNetCashTotal();
+
+        // Calculate the total for credit transactions
+        double totalCollectedCreditCard = getCollectedCreditCard();
+        double totalRefundedCreditCard = getRefundedCreditCard();
+        double totalNetCreditCard = getNetCreditCardTotal();
+
+        // Calculate the total for voucher transactions
+        double totalCollectedVoucher = getCollectedVoucher();
+        double totalRefundedVoucher = getRefundedVoucher();
+        double totalNetVoucher = getNetVoucherTotal();
+
+        // Calculate the total for other non-credit transactions
+        double totalCollectedOtherNonCredit = getCollectedOtherNonCredit();
+        double totalRefundedOtherNonCredit = getRefundedOtherNonCredit();
+        double totalNetOtherNonCredit = getNetOtherNonCreditTotal();
+
+        // Calculate the total for float transactions
+        double totalFloatCollected = getFloatCollected();
+        System.out.println("totalFloatCollected = " + totalFloatCollected);
+        double totalFloatHandover = getFloatHandover();
+        System.out.println("totalFloatHandover = " + totalFloatHandover);
+        double totalFloatMySafe = getFloatMySafe();
+        System.out.println("totalFloatMySafe = " + totalFloatMySafe);
+        double totalCollectionHandover = getCollectionHandover();
+        System.out.println("totalCollectionHandover = " + totalCollectionHandover);
+
+        // Calculate the total for bank transactions
+        double totalBankWithdrawals = getBankWithdrawals();
+        double totalBankDeposits = getBankDeposits();
+
+        // Calculate the total for cash in/out transactions
+        double totalCashCollectedTransferIn = getCashCollectedTransferIn();
+        double totalCashGivenOutTransferOut = getCashGivenOutTransferOut();
+
+        System.out.println("totalFloatMySafe = " + totalFloatMySafe);
+        total = totalFloatMySafe;
+
+        // Calculate the overall total
+        total += totalCollectedCash - totalRefundedCash;
+        System.out.println("Total Collected Cash - Total Refunded Cash: " + total);
+
+        total += totalCollectedCreditCard - totalRefundedCreditCard;
+        System.out.println("Adding Total Collected Credit Card - Total Refunded Credit Card: " + total);
+
+        total += totalCollectedVoucher - totalRefundedVoucher;
+        System.out.println("Adding Total Collected Voucher - Total Refunded Voucher: " + total);
+
+        total += totalCollectedOtherNonCredit - totalRefundedOtherNonCredit;
+        System.out.println("Adding Total Collected Other Non-Credit - Total Refunded Other Non-Credit: " + total);
+
+        total += totalFloatCollected ;
+        System.out.println("Adding Total Float Collected : " + total);
+
+        total +=  totalFloatHandover ;
+        System.out.println("Adding Total Float Handover : " + total);
+
+        total -= totalCollectionHandover;
+        System.out.println("Deductinh Total Collection Handover: " + total);
+
+        
+        total += totalBankWithdrawals - totalBankDeposits;
+        System.out.println("Adding Total Bank Withdrawals - Total Bank Deposits: " + total);
+
+        total += totalCashCollectedTransferIn - totalCashGivenOutTransferOut;
+        System.out.println("Adding Total Cash Collected Transfer In - Total Cash Given Out Transfer Out: " + total);
+
+        return total;
+    }
+
     public double getCollectedCash() {
         collectedCash = atomicBillTypeTotals.getTotal(getBillTypesForCollectedCash(), getPaymentMethodsForCollectedCash());
         return collectedCash;
@@ -235,32 +309,32 @@ public class FinancialReport {
     }
 
     public double getFloatCollected() {
-        floatCollected = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected(), getPaymentMethodsForFloatCollected());
+        floatCollected = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected());
         return floatCollected;
     }
 
     public double getFloatHandover() {
-        floatHandover = atomicBillTypeTotals.getTotal(getBillTypesForFloatHandover(), getPaymentMethodsForFloatHandover());
+        floatHandover = atomicBillTypeTotals.getTotal(getBillTypesForFloatHandover());
         return floatHandover;
     }
 
     public double getFloatMySafe() {
-        floatMySafe = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe(), getPaymentMethodsForFloatMySafe());
+        floatMySafe = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe());
         return floatMySafe;
     }
 
     public double getCollectionHandover() {
-        collectionHandover = atomicBillTypeTotals.getTotal(getBillTypesForCollectionHandover(), getPaymentMethodsForCollectionHandover());
+        collectionHandover = atomicBillTypeTotals.getTotal(getBillTypesForCollectionHandover());
         return collectionHandover;
     }
 
     public double getCashCollectedTransferIn() {
-        cashCollectedTransferIn = atomicBillTypeTotals.getTotal(getBillTypesForCashCollectedTransferIn(), getPaymentMethodsForCashCollectedTransferIn());
+        cashCollectedTransferIn = atomicBillTypeTotals.getTotal(getBillTypesForCashCollectedTransferIn());
         return cashCollectedTransferIn;
     }
 
     public double getBankWithdrawals() {
-        bankWithdrawals = atomicBillTypeTotals.getTotal(getBillTypesForBankWithdrawals(), getPaymentMethodsForBankWithdrawals());
+        bankWithdrawals = atomicBillTypeTotals.getTotal(getBillTypesForBankWithdrawals());
         return bankWithdrawals;
     }
 
@@ -285,22 +359,23 @@ public class FinancialReport {
     }
 
     public double getCashGivenOutTransferOut() {
-        cashGivenOutTransferOut = atomicBillTypeTotals.getTotal(getBillTypesForCashGivenOutTransferOut(), getPaymentMethodsForCashGivenOutTransferOut());
+        cashGivenOutTransferOut = atomicBillTypeTotals.getTotal(getBillTypesForCashGivenOutTransferOut());
         return cashGivenOutTransferOut;
     }
 
     public double getBankDeposits() {
-        bankDeposits = atomicBillTypeTotals.getTotal(getBillTypesForBankDeposits(), getPaymentMethodsForBankDeposits());
+        bankDeposits = atomicBillTypeTotals.getTotal(getBillTypesForBankDeposits());
         return bankDeposits;
     }
 
     public double getShortExcess() {
-        shortExcess = atomicBillTypeTotals.getTotal(getBillTypesForShortExcess(), getPaymentMethodsForShortExcess());
+        shortExcess = atomicBillTypeTotals.getTotal(getBillTypesForShortExcess());
         return shortExcess;
     }
 
     public double getTotal() {
-        total = getTotalShiftCashIn() - getFloatHandover() - getFloatMySafe() - getCollectionHandover() - getDrPayments() - getOtherPayments() + getCashGivenOutTransferOut() + getBankDeposits() + getShortExcess();
+        calculateTotal();
+//        total = getTotalShiftCashIn() - getFloatHandover() - getFloatMySafe() - getCollectionHandover() - getDrPayments() - getOtherPayments() + getCashGivenOutTransferOut() + getBankDeposits() + getShortExcess();
         return total;
     }
 
@@ -626,7 +701,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForFloatHandover() {
         if (billTypesForFloatHandover == null) {
             billTypesForFloatHandover = new ArrayList<>();
-            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_DECREASE));
         }
         return billTypesForFloatHandover;
     }
@@ -660,8 +735,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForCollectionHandover() {
         if (billTypesForCollectionHandover == null) {
             billTypesForCollectionHandover = new ArrayList<>();
-            // Include any bill types specifically associated with the handover of collections
-            // Example: billTypesForCollectionHandover.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
+            billTypesForCollectionHandover.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
         }
         return billTypesForCollectionHandover;
     }
@@ -680,7 +754,7 @@ public class FinancialReport {
         if (billTypesForCashCollectedTransferIn == null) {
             billTypesForCashCollectedTransferIn = new ArrayList<>();
             // Assuming specific transactions associated with cash collected through transfers
-            // Example: billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         }
         return billTypesForCashCollectedTransferIn;
     }
@@ -698,9 +772,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForBankWithdrawals() {
         if (billTypesForBankWithdrawals == null) {
             billTypesForBankWithdrawals = new ArrayList<>();
-            // Bank withdrawals may not typically be associated with specific bill types, but for completeness:
-            // Example: billTypesForBankWithdrawals.add(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
-            // Adjust based on how your system tracks these operations
+            billTypesForBankWithdrawals.add(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         }
         return billTypesForBankWithdrawals;
     }
@@ -805,7 +877,7 @@ public class FinancialReport {
         if (billTypesForCashGivenOutTransferOut == null) {
             billTypesForCashGivenOutTransferOut = new ArrayList<>();
             // Include specific transactions related to cash given out for transfers
-            // Example: billTypesForCashGivenOutTransferOut.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            billTypesForCashGivenOutTransferOut.add(BillTypeAtomic.FUND_TRANSFER_BILL);
             // Adjust as needed for your operations
         }
         return billTypesForCashGivenOutTransferOut;

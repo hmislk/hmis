@@ -23,8 +23,8 @@
                     <h:outputText value="Manage Package Names" ></h:outputText>
                 </f:facet>
 
-                <div class="row" >
-                    <div class="col-6" >
+                <div class="d-flex gap-2 mb-2">
+                    <div class="col-6">
                         <p:commandButton 
                             id="btnAdd" 
                             value="Add" 
@@ -35,16 +35,22 @@
                             process="btnAdd">
                         </p:commandButton>
 
-                        <p:commandButton id="btnDelete" 
-                                         icon="fa fa-trash"
-                                         onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                     return false;" 
-                                        action="#{packageNameController.delete()}"   
-                                         value="Delete"
-                                         update="lstSelect gpDetail msg" process="btnDelete"
-                                         class=" m-1 ui-button-danger w-25"
-                                         >
-                        </p:commandButton>
+                        <p:commandButton 
+                            id="btnDelete" 
+                            icon="fa fa-trash"
+                            onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                    return false;" 
+                            action="#{packageNameController.delete()}"   
+                            value="Delete"
+                            update="lstSelect gpDetail msg" process="btnDelete"
+                            class=" m-1 ui-button-danger w-25">
+                        </p:commandButton>  
+                    </div>      
+                </div>
+
+                <div class="row" >
+                    <div class="col-6" >
+
                         <p:selectOneListbox  
                             id="lstSelect"   
                             class="w-100" 
@@ -55,54 +61,59 @@
                             <p:ajax process="lstSelect" update="gpDetail" ></p:ajax>
                         </p:selectOneListbox>
 
-                        
                     </div>
 
                     <div class="col-6 float-left" >
 
-                        <p:panelGrid id="gpDetail" columns="2" class="w-100 no-border" >
+                        <p:panel id="gpDetail" class="w-100 no-border" header="Package Details">
 
-                            <h:outputText id="lblName" value="Name" ></h:outputText>
-                            <p:inputText 
-                                autocomplete="off" 
-                                id="txtName" 
-                                value="#{packageNameController.current.name}" 
-                                class="w-100"></p:inputText>
-                            <h:outputText value="Active Status" ></h:outputText>
-                            <p:selectBooleanButton
-                                value="#{packageNameController.current.inactive}" 
-                                offLabel="Inactive"
-                                onLabel="Active"
+                            <div class="row">
+                                <div class="col-3">
+                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                </div>
+                                <div class="col-7">
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        id="txtName" 
+                                        value="#{packageNameController.current.name}" 
+                                        class="w-100">
+                                    </p:inputText>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-3">
+                                    <h:outputText value="Active Status" ></h:outputText>
+                                </div>
+                                <div class="col-5">
+                                    
+                                    <p:selectBooleanButton
+                                        value="#{packageNameController.current.inactive}" 
+                                        offLabel="Active"
+                                        onLabel="Inactive"
+                                        styleClass="#{not packageNameController.current.inactive ? 'ui-button-info': packageNameController.current.inactive ? 'ui-button-danger' : ''}"
+                                        > 
+                                        <p:ajax process="@this" update="gpDetail"/>
+                                    </p:selectBooleanButton>
+                                </div>
+                            </div>
+
+                            <p:defaultCommand target="btnSave"/>
+                            <p:commandButton 
+                                id="btnSave" 
+                                value="Save" 
+                                process="gpDetail btnSave"
+                                update="lstSelect selectFocus msg"
+                                action="#{packageNameController.saveSelected()}" 
+                                class="ui-button-info m-1"
                                 >
-                            </p:selectBooleanButton>
-                        </p:panelGrid>
-                        <p:defaultCommand target="btnSave"/>
-                        <p:commandButton id="btnSave" 
-                                         value="Save" 
-                                         process="gpDetail btnSave"
-                                         update="lstSelect selectFocus"
-                                         action="#{packageNameController.saveSelected()}" 
-                                         class="ui-button-info m-1"
-                                         >
-                        </p:commandButton>
-
+                            </p:commandButton>
+                        </p:panel>
 
                     </div>
-
-
-
                 </div>
-
-
-
-
-
             </p:panel>
 
         </h:form>
-
-
-
     </ui:define>
-
 </ui:composition>

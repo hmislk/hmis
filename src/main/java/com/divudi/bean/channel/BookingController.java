@@ -749,9 +749,46 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (paymentMethod == null) {
             return true;
         }
-        if(paymentMethod == PaymentMethod.Agent){
-            if(institution == null){
+      
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution == null) {
                 return true;
+            }
+        }
+      
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                return true;
+            }
+        }
+      
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
+            if (paymentMethod == PaymentMethod.Card) {
+                if (paymentMethodData.getCreditCard().getInstitution() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getCreditCard().getNo() == null) {
+                    return true;
+                }
+            }
+            if (paymentMethod == PaymentMethod.Cheque) {
+                if (paymentMethodData.getCheque().getNo() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getCheque().getInstitution() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getCheque().getDate()== null) {
+                    return true;
+                }
+            }
+            if (paymentMethod == PaymentMethod.Slip) {
+                if (paymentMethodData.getSlip().getInstitution() == null) {
+                    return true;
+                }
+                if (paymentMethodData.getSlip().getDate() == null) {
+                    return true;
+                }
             }
         }
         return false;
@@ -768,17 +805,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
         if (billSessionErrorPresent()) {
-            JsfUtil.addErrorMessage("Session Selection Error. Please retry from beginning");
+            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
             settleSucessFully = false;
             return;
         }
         if (patientErrorPresent(patient)) {
-            JsfUtil.addErrorMessage("Please enter patient details.");
+            JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
             return;
         }
         if (paymentMethodErrorPresent()) {
-            JsfUtil.addErrorMessage("Please enter Psyment Details");
+            JsfUtil.addErrorMessage("Please Enter Payment Details");
             settleSucessFully = false;
             return;
         }
@@ -1504,6 +1541,31 @@ public class BookingController implements Serializable, ControllerWithPatient {
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
+    }
+    
+    public void markAsNotArrived() {
+        if (selectedSessionInstance == null) {
+            return;
+        }
+        if (selectedSessionInstance.getSessionDate() == null) {
+            return;
+        }
+        if (arrivalRecord == null) {
+            arrivalRecord = new ArrivalRecord();
+            arrivalRecord.setSessionDate(selectedSessionInstance.getSessionDate());
+            arrivalRecord.setSessionInstance(selectedSessionInstance);
+            arrivalRecord.setCreatedAt(new Date());
+            arrivalRecord.setCreater(sessionController.getLoggedUser());
+            fpFacade.create(arrivalRecord);
+        }
+        selectedSessionInstance.setArrived(false);
+        selectedSessionInstance.setArrivalRecord(arrivalRecord);
+        sessionInstanceFacade.edit(selectedSessionInstance);
+        arrivalRecord.setRecordTimeStamp(new Date());
+        arrivalRecord.setApproved(false);
+        fpFacade.edit(arrivalRecord);
+        sendSmsOnChannelDoctorArrival();
+        System.out.println("this not arrived");
     }
 
     public void markAsLeft() {
