@@ -67,19 +67,29 @@ public enum PaymentMethod {
 
     public String getInHandLabel() {
         switch (this) {
-            case Cash:
             case Agent:
+                return "Agent Payment Received";
             case Card:
+                return "Credit Card Received";
+            case Cash:
+                return "Cash in hand";
             case Cheque:
+                return "Cheque Received";
             case Credit:
+                return "Credit Received";
             case OnCall:
+                return "On Call (Credit) Received";
             case OnlineSettlement:
+                return "Online Settlement Received";
             case Slip:
+                return "Slip Payment Received";
             case Staff:
+                return "Staff Payment Received";
             case ewallet:
-                return label + " Received";
+                return "e-Wallet Payment Received";
             default:
-                return label;
+                return this.toString();
+
         }
     }
     
