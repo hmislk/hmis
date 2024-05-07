@@ -118,16 +118,16 @@
                                             </tr>
                                             <tr>
                                                 <td>Float My-Safe (Start Funds)</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.floatMySafe}</td>
+                                                <td>#{financialTransactionController.financialReportByPayments.shiftStartFunds}</td>
                                                 <td></td> <!-- Assuming no refunded column for My-Safe -->
-                                                <td>#{financialTransactionController.financialReportByPayments.floatMySafe}</td> <!-- Assuming My-Safe equals net for floats -->
+                                                <td>#{financialTransactionController.financialReportByPayments.shiftStartFunds}</td> <!-- Assuming My-Safe equals net for floats -->
                                             </tr>
 
                                             <tr>
                                                 <td>Float Collected Handovers</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.floatCollected}</td>
-                                                <td>#{financialTransactionController.financialReportByPayments.collectionHandover}</td> <!-- Assuming no refunded column for floats -->
-                                                <td>#{financialTransactionController.financialReportByPayments.floatCollected - financialTransactionController.financialReportByPayments.floatCollected}</td> <!-- Assuming collected equals net for floats -->
+                                                <td>#{financialTransactionController.financialReportByPayments.floatReceived}</td>
+                                                <td>#{financialTransactionController.financialReportByPayments.shiftEndHandovers}</td> <!-- Assuming no refunded column for floats -->
+                                                <td>#{financialTransactionController.financialReportByPayments.floatReceived - financialTransactionController.financialReportByPayments.floatReceived}</td> <!-- Assuming collected equals net for floats -->
                                             </tr>
                                             <tr>
                                                 <td>Bank Transaction</td>
@@ -153,7 +153,7 @@
                                                           financialTransactionController.financialReportByBills.collectedCreditCard +
                                                           financialTransactionController.financialReportByBills.collectedVoucher +
                                                           financialTransactionController.financialReportByBills.collectedOtherNonCredit +
-                                                          financialTransactionController.financialReportByPayments.floatMySafe +
+                                                          financialTransactionController.financialReportByPayments.shiftStartFunds +
                                                           financialTransactionController.financialReportByPayments.floatCollected +
                                                           financialTransactionController.financialReportByPayments.bankWithdrawals +
                                                           financialTransactionController.financialReportByPayments.cashCollectedTransferIn) -
@@ -168,7 +168,7 @@
                                                                            financialTransactionController.financialReportByBills.collectedCreditCard +
                                                                            financialTransactionController.financialReportByBills.collectedVoucher +
                                                                            financialTransactionController.financialReportByBills.collectedOtherNonCredit +
-                                                                           financialTransactionController.financialReportByPayments.floatMySafe +
+                                                                           financialTransactionController.financialReportByPayments.shiftStartFunds +
                                                                            financialTransactionController.financialReportByPayments.floatCollected +
                                                                            financialTransactionController.financialReportByPayments.bankWithdrawals +
                                                                            financialTransactionController.financialReportByPayments.cashCollectedTransferIn) -
@@ -190,7 +190,7 @@
                                                       financialTransactionController.financialReportByBills.collectedCreditCard +
                                                       financialTransactionController.financialReportByBills.collectedVoucher +
                                                       financialTransactionController.financialReportByBills.collectedOtherNonCredit +
-                                                      financialTransactionController.financialReportByPayments.floatMySafe +
+                                                      financialTransactionController.financialReportByPayments.shiftStartFunds +
                                                       financialTransactionController.financialReportByPayments.floatCollected +
                                                       financialTransactionController.financialReportByPayments.bankWithdrawals +
                                                       financialTransactionController.financialReportByPayments.cashCollectedTransferIn) -
