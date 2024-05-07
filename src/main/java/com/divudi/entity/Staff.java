@@ -41,9 +41,18 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Inheritance
-@XmlRootElement
 public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
+    
+    static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+    String registration;
+    @Lob
+    String qualification;
+    String code = "";
+    
     @ManyToOne
     Roster roster;
 
@@ -60,16 +69,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     int orderNo;
     @OneToOne(mappedBy = "staff")
     ShiftPreference shiftPreference;
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
-    Long id;
-    String registration;
-    @Lob
-    String qualification;
-    String code = "";
-    
+
     @Lob
     private String description;
     @ManyToOne
@@ -130,8 +130,7 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     private Institution epfBankBranch;
     private String epfAccountNo;
     private String accountNo;
-    String epfNo;    
-  
+    String epfNo;
 
     String acNo;
 
@@ -147,10 +146,18 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
-    
+
     @Transient
     private String name;
-    
+
+    @Transient
+    public String getCurrentClassName() {
+        if (this != null) {
+            return this.getClass().getSimpleName();
+        }
+        return "";
+    }
+
     public double getTransDblValue() {
         return transDblValue;
     }
@@ -158,8 +165,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setTransDblValue(double transDblValue) {
         this.transDblValue = transDblValue;
     }
-    
-    
 
     public Date getDateRetired() {
         return dateRetired;
@@ -168,8 +173,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setDateRetired(Date dateRetired) {
         this.dateRetired = dateRetired;
     }
-    
-    
 
     public boolean isAllowedLateInLeave() {
         return allowedLateInLeave;
@@ -364,11 +367,11 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getCode() {
-        if(code==null||code.trim().equals("")){
-            if(person!=null){
-                if(person.getName()!=null){
+        if (code == null || code.trim().equals("")) {
+            if (person != null) {
+                if (person.getName() != null) {
                     String temName = person.getName() + "      ";
-                    code = temName.substring(0,5);
+                    code = temName.substring(0, 5);
                 }
             }
         }
@@ -405,10 +408,10 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public Institution getInstitution() {
-        if(institution != null){
+        if (institution != null) {
             institution.split();
         }
-        
+
         return institution;
     }
 
@@ -585,8 +588,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setOrderNo(int orderNo) {
         this.orderNo = orderNo;
     }
-    
-    
 
     public StaffEmployment getStaffEmployment() {
         return staffEmployment;
@@ -715,8 +716,9 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
         this.dateWithOutNotice = dateWithOutNotice;
     }
 
+    @Transient
     public String getName() {
-        if(getPerson()!=null){
+        if (getPerson() != null) {
             name = getPerson().getNameWithTitle();
         }
         return name;
@@ -730,6 +732,4 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
         this.description = description;
     }
 
-
-    
 }
