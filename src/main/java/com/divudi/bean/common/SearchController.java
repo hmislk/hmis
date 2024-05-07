@@ -6766,15 +6766,19 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.billTypeAtomic in :abts ";
 
-        if (institution != null) {
+        if (institution == null || department == null) {
             jpql += " and b.institution=:ins";
-            params.put("ins", getInstitution());
+            params.put("ins", sessionController.getWebUser().getInstitution());
 
-            if (department != null) {
-                jpql += " and b.department=:dept";
-                params.put("dept", getDepartment());
-            }
+            jpql += " and b.department=:dept";
+            params.put("dept", sessionController.getWebUser().getDepartment());
         }
+
+        jpql += " and b.institution=:ins";
+        params.put("dept", sessionController.getWebUser().getInstitution());
+
+        jpql += " and b.department=:dept";
+        params.put("dept", sessionController.getWebUser().getDepartment());
 
         jpql += " group by b.paymentMethod, b.billTypeAtomic "
                 + " order by b.billTypeAtomic";
@@ -8937,7 +8941,7 @@ public class SearchController implements Serializable {
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.PettyCash);
         billTypes.add(BillType.IouIssue);
-        
+
         Date startTime = new Date();
 
         bills = null;
