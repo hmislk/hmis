@@ -283,6 +283,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private Double totalHospitalFee;
     private Double totalSaffFee;
+    private boolean canChangeSpecialityAndDoctorInAddedBillItem;
 
     /**
      *
@@ -3731,6 +3732,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public void setTotalSaffFee(Double totalSaffFee) {
         this.totalSaffFee = totalSaffFee;
+    }
+
+    public boolean isCanChangeSpecialityAndDoctorInAddedBillItem() {
+        return canChangeSpecialityAndDoctorInAddedBillItem;
+    }
+
+    public void setCanChangeSpecialityAndDoctorInAddedBillItem(boolean canChangeSpecialityAndDoctorInAddedBillItem) {
+        boolean config=configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
+        this.canChangeSpecialityAndDoctorInAddedBillItem = config;
     }
 
 }
