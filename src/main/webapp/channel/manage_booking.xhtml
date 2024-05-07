@@ -353,9 +353,8 @@
                             <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                         </h:panelGroup>
 
-                        <p:commandButton value="Cancel Agent Bill"  class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                         rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                        <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
+                                         disabled="#{channelBillController.billSession.bill.refunded==true
                                                      or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="PF('confirmationDialog').show();"/>
                             <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
@@ -369,87 +368,11 @@
                                         class="mx-2 ui-button-warning"
                                         ajax="false"
                                         value="Yes"
-                                        action="#{channelBillController.cancelAgentPaidBill()}"
+                                        action="#{channelBillController.channelBookingCancel()}"
                                         onclick="PF('confirmationDialog').hide();" />
                                     <p:commandButton
                                         value="No"
                                         onclick="PF('confirmationDialog').hide();" />
-                                </f:facet>
-                            </p:dialog>
-
-                        <p:commandButton value="Cancel"  class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                         rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="PF('confirmationDialogCash').show();"/>
-
-                            <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialogCash" modal="true" resizable="false">
-                                <p>Are you sure you want to cancel the channel booking?</p>
-                                <p:inputText class="w-100"
-                                             value="#{channelBillController.comment}"
-                                             placeholder="Please provide a comment for the cancel Channel Booking" />
-
-                                <f:facet name="footer">
-                                    <p:commandButton
-                                        class="mx-2 ui-button-warning"
-                                        ajax="false"
-                                        value="Yes"
-                                        action="#{channelBillController.cancelCashFlowBill()}"
-                                        onclick="PF('confirmationDialogCash').hide();" />
-                                    <p:commandButton
-                                        value="No"
-                                        onclick="PF('confirmationDialogCash').hide();" />
-                                </f:facet>
-                            </p:dialog>
-
-                        <p:commandButton value="Cancel Booking" class="my-2 ui-button-danger mx-2" icon="fas fa-cancel"
-                                         rendered="#{(channelBillController.billSession.bill.billType eq 'ChannelOnCall' or channelBillController.billSession.bill.billType eq 'ChannelStaff')and channelBillController.billSession.bill.paidBill eq null}"
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="PF('confirmationDialogOnCall').show();"/>
-
-                            <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialogOnCall" modal="true" resizable="false">
-                                <p>Are you sure you want to cancel the channel booking?</p>
-                                <p:inputText class="w-100"
-                                             value="#{channelBillController.comment}"
-                                             placeholder="Please provide a comment for the cancel Channel Booking" />
-
-                                <f:facet name="footer">
-                                    <p:commandButton
-                                        class="mx-2 ui-button-warning"
-                                        ajax="false"
-                                        value="Yes"
-                                        action="#{channelBillController.cancelBookingBill()}"
-                                        onclick="PF('confirmationDialogOnCall').hide();" />
-                                    <p:commandButton
-                                        value="No"
-                                        onclick="PF('confirmationDialogOnCall').hide();" />
-                                </f:facet>
-                            </p:dialog>
-
-                            <p:commandButton value="Cancel Paid" class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true
-                                                     or channelBillController.billSession.bill.paidAmount eq 0}"
-                                             onclick="PF('confirmationDialogCredit').show();"/>
-
-                            <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialogCredit" modal="true" resizable="false">
-                                <p>Are you sure you want to cancel the channel booking?</p>
-                                <p:inputText class="w-100"
-                                             value="#{channelBillController.comment}"
-                                             placeholder="Please provide a comment for the cancel Channel Booking" />
-
-                                <f:facet name="footer">
-                                    <p:commandButton
-                                        class="mx-2 ui-button-warning"
-                                        ajax="false"
-                                        value="Yes"
-                                        action="#{channelBillController.cancelCreditPaidBill()}"
-                                        onclick="PF('confirmationDialogCredit').hide();" />
-                                    <p:commandButton
-                                        value="No"
-                                        onclick="PF('confirmationDialogCredit').hide();" />
                                 </f:facet>
                             </p:dialog>
 

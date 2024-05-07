@@ -776,6 +776,33 @@ public class ChannelBillController implements Serializable {
         }
         return false;
     }
+    
+    public void channelBookingCancel(){
+        if(billSession.getBill().getBillType() == BillType.ChannelAgent){
+            System.out.println("Agent");
+            cancelAgentPaidBill();
+            return;
+        }
+        if(billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow && billSession.getBill().getBillType() != BillType.ChannelAgent){
+            System.out.println("Cash");
+            cancelCashFlowBill();
+            return;
+        }
+        if((billSession.getBill().getBillType() == BillType.ChannelOnCall || billSession.getBill().getBillType() == BillType.ChannelStaff) && billSession.getBill().getPaidBill() == null){
+            System.out.println("OnCall");
+            cancelBookingBill();
+            return;
+        }
+        if(billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow && billSession.getBill().getBillType() != BillType.ChannelAgent){
+            if(billSession.getBill().getPaidAmount() == 0){
+                JsfUtil.addErrorMessage("Can't Cancel. No Payments");
+            }else{
+                System.out.println("Paid");
+                cancelCreditPaidBill();
+                return;
+            }
+        } 
+    }
 
     private boolean errorCheckCancelling() {
         if (getBillSession() == null) {
@@ -797,6 +824,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         if (getComment() == null || getComment().trim().equals("")) {
+            System.out.println("comment = " + comment);
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
@@ -2931,6 +2959,7 @@ public class ChannelBillController implements Serializable {
     }
 
     public void setComment(String comment) {
+        System.out.println("set comment = " + comment);
         this.comment = comment;
     }
 
