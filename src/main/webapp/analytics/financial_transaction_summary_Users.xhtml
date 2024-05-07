@@ -105,10 +105,10 @@
                             <p:column headerText="Count" width="4em">
                                 <p:commandLink 
                                     value="#{bill.billCount}" 
-                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department)}" 
+                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,null,null)}" 
                                     ajax="false"></p:commandLink>
                                 <f:facet name="footer">
-
+                                    <h:outputLabel value="#{searchController.totalBillCount}"/>
                                 </f:facet>
                             </p:column>
 
