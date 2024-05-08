@@ -229,6 +229,11 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Issue Bill had been Returned You can't cancell bill ");
             return;
         }
+        
+        if (getBill().getComments()==null || getBill().getComments().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Enter Comments ");
+            return;
+        }
 
         if (checkDepartment(getBill())) {
             return;
