@@ -28,9 +28,19 @@
 
         </h:form>-->
 
+
+<div class="row" >
+    <div class="col-12" >
+        <h:form >
+            <h:commandButton value="Pay Now" action="#{paymentGatewayController.createCheckoutSession}" />
+        </h:form>
+    </div>
+</div>
+
 <div class="row" >
     <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
+        
                 <!-- Patient Lookup -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup'}" layout="block" class="col-1 m-4">
                     <h:form>
