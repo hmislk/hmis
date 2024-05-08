@@ -43,7 +43,9 @@
                             <div class="d-flex mt-2" style="float: right;">
                                 <p:outputLabel  value="Recievable Amount" /> 
                                 <p:outputLabel  value=":" style="width: 30px; text-align: center;" /> 
-                                <p:outputLabel id="total"  value="#{saleReturnController.returnBill.total}" style="min-width: 30px; text-align: right;"/> 
+                                <p:outputLabel id="total"  value="#{saleReturnController.returnBill.total}" style="min-width: 30px; text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel> 
                             </div>
 
                         </div>
@@ -95,7 +97,9 @@
                         </p:column>  
 
                         <p:column headerText="Purchase Rate" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.rate}"  />                        
+                            <h:outputText value="#{ph.rate}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>                        
                         </p:column>                 
 
 
