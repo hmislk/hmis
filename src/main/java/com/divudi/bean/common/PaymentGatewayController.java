@@ -35,9 +35,9 @@ public class PaymentGatewayController {
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
         try {
             String requestBody = String.format(
-                    "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s" +
-                    "&order.id=%s&order.amount=%s&order.currency=%s&interaction.operation=%s" +
-                    "&interaction.returnUrl=%s&interaction.merchant.name=%s",
+                    "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s"
+                    + "&order.id=%s&order.amount=%s&order.currency=%s&interaction.operation=%s"
+                    + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
                     "12345", "100.00", "LKR", "PURCHASE",
                     "http://localhost:8080/returnPage", "Sethma Hospital");
@@ -53,7 +53,7 @@ public class PaymentGatewayController {
                 if (sessionId != null) {
                     paymentUrl = constructPaymentUrl(sessionId); // Correct URL for redirection
                     System.out.println("paymentUrl = " + paymentUrl);
-                    return paymentUrl; 
+                    return paymentUrl;
                 }
             }
         } catch (Exception e) {
@@ -84,7 +84,8 @@ public class PaymentGatewayController {
     }
 
     private String constructPaymentUrl(String sessionId) {
-        return "https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js"; // URL to load checkout.js with the session ID
+        // This should be the URL to initiate the checkout or payment process, which might look something like this:
+        return "https://cbcmpgs.gateway.mastercard.com/payment/start?session.id=" + sessionId;
     }
 
     // Getters and Setters
