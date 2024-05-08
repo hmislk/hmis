@@ -82,19 +82,20 @@
                         <div style="width: 100%; overflow-x: auto;">
                             <p:dataTable rowIndexVar="i" id="tblBills" 
                                          value="#{searchController.bills}" 
-                                         reflow="true"
                                          scrollable="true"
-                                         var="bill"  
-                                         style="width:600em;"  
+                                         var="bill"
+                                         rows="10"
                                          paginator="true"
-                                         paginatorPosition="bottom"
-                                         rows ="10"
+                                         paginatorPosition="top"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15"
                                          >
                                 <p:column headerText="No" styleClass="alignTop" width="15">
-                                    <h:outputLabel value="#{bill.id}"/>
-                                    <h:outputLabel value="#{bill.retired}"/>
+                                    <p:commandLink 
+                                        value="#{bill.id}"
+                                        action="#{searchController.navigateTobill(bill)}"
+                                        ajax="false">
+                                    </p:commandLink>
                                 </p:column>
                                 <p:column headerText="Ins No" >                                
                                     <h:outputLabel value="#{bill.insId}"/>

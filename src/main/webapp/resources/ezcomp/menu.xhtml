@@ -581,7 +581,7 @@
                             value="Purchase Orders Approval"
                             icon="fas fa-clipboard-check"
                             actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"  

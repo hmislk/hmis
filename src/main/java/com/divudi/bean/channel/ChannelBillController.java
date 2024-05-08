@@ -169,7 +169,8 @@ public class ChannelBillController implements Serializable {
     BillBeanController billBeanController;
     List<BillItem> billItems;
     int patientSearchTab;
-
+    private boolean disableRefund;
+    
     private UserPreference pf;
 
     public PriceMatrixController getPriceMatrixController() {
@@ -457,6 +458,24 @@ public class ChannelBillController implements Serializable {
 //            return true;
 //        }
         return false;
+    }
+    
+    public void channelBookingRefund(){
+        if(billSession.getBillItem().getBill().getPaymentMethod() == PaymentMethod.Agent){
+            refundAgentBill();
+            return;
+        }
+        if(billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow && billSession.getBillItem().getBill().getPaymentMethod() != PaymentMethod.Agent){
+            refundCashFlowBill();
+            return;
+        }
+       if(billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow){
+            if(billSession.getBill().getPaidAmount() == 0){
+                JsfUtil.addErrorMessage("Can't Refund. No Payments");
+            }else{
+                refundCreditPaidBill();
+            }
+       }
     }
 
     public void refundCashFlowBill() {
@@ -820,7 +839,6 @@ public class ChannelBillController implements Serializable {
             return true;
         }
         if (getComment() == null || getComment().trim().equals("")) {
-            System.out.println("comment = " + comment);
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
@@ -2995,6 +3013,21 @@ public class ChannelBillController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public boolean isDisableRefund() {
+        if(billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow){
+            if(billSession.getBill().getPaidAmount() == 0){
+               disableRefund = true;
+            }else{
+                disableRefund = false;
+            }
+        }
+        return disableRefund;
+    }
+
+    public void setDisableRefund(boolean disableRefund) {
+        this.disableRefund = disableRefund;
     }
 
 }

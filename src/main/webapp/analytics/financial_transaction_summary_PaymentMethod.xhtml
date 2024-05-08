@@ -101,16 +101,17 @@
                                     Total
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column headerText="Payment Method" styleClass="alignTop" width="4em">
                                 <h:outputLabel value="#{bill.paymentMethod}"/>
                             </p:column>
 
                             <p:column headerText="Count" width="4em">
-                                <h:outputLabel value="#{bill.billCount}"/>
-                                <f:facet name="footer">
-
-                                </f:facet>
+                                <p:commandLink 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,bill.paymentMethod,bill.billTypeAtomic)}" 
+                                    ajax="false">
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Gross Total" width="8em">

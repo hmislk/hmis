@@ -50,15 +50,14 @@
 
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
                                                  class="w-100 ui-button-success my-1 mx-2" >
-                                    <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due_OPD"  />
+                                    <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
                                 </p:commandButton>
                             </h:panelGrid>
-                        </h:form>
-                        <h:form>
-                            <p:dataTable   id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
+
+                            <p:dataTable   
+                                id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
                                            selection="#{staffPaymentBillController.payingBillFees}"
                                            class="w-100"
-
                                            rows="10"
                                            paginator="true" paginatorPosition="bottom"
                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -111,7 +110,6 @@
                                     </h:outputLabel>
                                 </p:column>
 
-
                                 <p:column headerText="Patient">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient"/>
@@ -135,8 +133,6 @@
                                 </p:column>
 
                             </p:dataTable>
-
-
 
                             <p:panel id="pTotals"  >
                                 <f:facet name="header" >
@@ -168,20 +164,45 @@
                             </div>
                         </h:form>
 
-
                     </p:panel>
                 </h:panelGroup>
 
+                <h:form>
+                    <p:panel id="pnlprintBill" rendered="#{staffPaymentBillController.printPreview}">
 
-                <h:panelGroup id="pnlprintBill" rendered="#{staffPaymentBillController.printPreview}">
-                    <p:commandButton class="ui-button-success ml-2" icon="fas fa-plus" id="btnNewPayment" process="btnNewPayment" update="#{p:resolveFirstComponentWithId('panbilledit', view).clientId} :#{p:resolveFirstComponentWithId('pnlprintBill', view).clientId}" value="New Payment" action="#{staffPaymentBillController.newPayment}" oncomplete="location.reload(true);"
-                                     />
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Doctor/Staff Payment Voucher" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        class="ui-button-success" 
+                                        icon="fas fa-plus" 
+                                        id="btnNewPayment" 
+                                        ajax="false"
+                                        value="New Payment" 
+                                        action="#{staffPaymentBillController.newPayment}" 
+                                        oncomplete="location.reload(true);"
+                                        />
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        ajax="false" 
+                                        action="#" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
 
-                    <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
-                </h:panelGroup>
+                        </f:facet>
 
+                        <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
+                            <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
             </ui:define>
-
 
         </ui:composition>
 
