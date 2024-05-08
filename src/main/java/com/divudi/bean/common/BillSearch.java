@@ -480,7 +480,7 @@ public class BillSearch implements Serializable {
 
         Map m = new HashMap();
         String j;
-        j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType, b.creater) "
+        j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billTypeAtomic, b.billType, b.creater) "
                 + " from Bill b "
                 + " where b.retired=false "
                 + " and b.billTime between :fd and :td ";
@@ -502,7 +502,6 @@ public class BillSearch implements Serializable {
         billTypes.add(BillType.PharmacySale);
         billTypes.add(BillType.PharmacySaleWithoutStock);
         billTypes.add(BillType.PharmacyWholeSale);
-
         j += " and b.billType in :bts ";
         m.put("bts", billTypes);
 
