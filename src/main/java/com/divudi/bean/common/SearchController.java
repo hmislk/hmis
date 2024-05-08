@@ -237,7 +237,7 @@ public class SearchController implements Serializable {
     private Long currentTokenId;
 
     public String navigateTobill(Bill bill) {
-        String navigationTo="";
+        String navigateTo="";
         if (bill == null) {
             return "";
         }
@@ -245,30 +245,30 @@ public class SearchController implements Serializable {
             //Opd Bill Navigation
             case OPD_BILL_WITH_PAYMENT:
                 billSearch.setBill(bill);
-                navigationTo="/opd/bill_reprint.xhtml";
+                navigateTo="/opd/bill_reprint.xhtml";
                 break;
             case OPD_BILL_REFUND:
                 billSearch.setBill(bill);
-                navigationTo= "/opd/bill_reprint.xhtml";
+                navigateTo= "/opd/bill_reprint.xhtml";
                 break;
             case OPD_BILL_CANCELLATION:
                 billSearch.setBill(bill);
-                navigationTo= "/opd/bill_reprint.xhtml";
+                navigateTo= "/opd/bill_reprint.xhtml";
                 break;
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 System.out.println("bill = " + bill);
-                opdBillController.setBill(bill);
-                navigationTo= "/opd/opd_batch_bill_print.xhtml";
+                opdBillController.setBatchBill(bill);
+                navigateTo= "/opd/opd_batch_bill_print.xhtml";
                 break;
             //Pharmacy Bill Navigation    
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
-                navigationTo= "/pharmacy/pharmacy_reprint_bill_sale.xhtml";
+                navigateTo= "/pharmacy/pharmacy_reprint_bill_sale.xhtml";
                 break;
             default:
-                return navigationTo;
+                return navigateTo;
         }
-        return navigationTo;
+        return navigateTo;
     }
 
     public String navigateToAllFinancialTransactionSummary() {
