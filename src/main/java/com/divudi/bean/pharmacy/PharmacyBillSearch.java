@@ -171,7 +171,7 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
-        return "/pharmacy/pharmacy_search?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
     public void markAsChecked() {
@@ -227,6 +227,11 @@ public class PharmacyBillSearch implements Serializable {
 
         if (checkIssueReturn(getBill())) {
             JsfUtil.addErrorMessage("Issue Bill had been Returned You can't cancell bill ");
+            return;
+        }
+        
+        if (getBill().getComments()==null || getBill().getComments().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Enter Comments ");
             return;
         }
 

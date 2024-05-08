@@ -79,7 +79,8 @@
 
                             <p:dataTable id="tbl" value="#{billSearch.billSummeries}" var="bs" >
                                 <p:column headerText="Bill Type" width="18%">
-                                    <h:outputText value="#{bs.billType.label}" ></h:outputText>
+                                    <h:outputText value="#{bs.billTypeAtomic.label}" rendered="#{bs.billTypeAtomic ne null}"/>
+                                    <h:outputText value="#{bs.billType.label}" rendered="#{bs.billTypeAtomic eq null}"/>
                                     <f:facet name="footer">
                                         <h:panelGroup>
                                             <h:outputText value="Cash Total" />

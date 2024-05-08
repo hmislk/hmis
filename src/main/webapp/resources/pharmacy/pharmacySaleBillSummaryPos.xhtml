@@ -65,7 +65,8 @@
                     <ui:repeat value="#{cc.attrs.billSearch.billSummeries}" var="bs">
                         <tr>
                             <td>
-                                <h:outputText value="#{bs.billType.label}" />
+                                <h:outputText value="#{bs.billTypeAtomic.label}" rendered="#{bs.billTypeAtomic ne null}"/>
+                                <h:outputText value="#{bs.billType.label}" rendered="#{bs.billTypeAtomic eq null}"/>
                             </td>
                             <td>
                                 <h:outputText value="#{bs.paymentMethod}" />

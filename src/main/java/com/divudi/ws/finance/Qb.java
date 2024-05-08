@@ -2057,11 +2057,13 @@ public class Qb {
         JSONArray bija = new JSONArray();
 
         List<BillFee> billFees = b.getBillFees();
-//        if (billFees == null || billFees.isEmpty()) {
-//            billFees = findBillFeesFromBill(b);
-//        }
+        //System.out.println("billFeesCancel1 = " + billFees);
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = findBillFeesFromBill(b);
+            //System.out.println("billFeesCancel2 = " + billFees);
+        }
 
-        for (BillFee bf : b.getBillFees()) {
+        for (BillFee bf : billFees) {
 
             if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
@@ -2165,11 +2167,13 @@ public class Qb {
         JSONArray bija = new JSONArray();
 
         List<BillFee> billFees = b.getBillFees();
-//        if (billFees == null || billFees.isEmpty()) {
-//            billFees = findBillFeesFromBill(b);
-//        }
+        //System.out.println("billFeesCancel1 = " + billFees);
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = findBillFeesFromBill(b);
+            //System.out.println("billFeesCancel2 = " + billFees);
+        }
 
-        for (BillFee bf : b.getBillFees()) {
+        for (BillFee bf : billFees) {
 
             if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
