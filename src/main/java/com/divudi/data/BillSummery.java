@@ -21,6 +21,7 @@ public class BillSummery {
     Double tax;
     Long count;
     BillType billType;
+    private BillTypeAtomic billTypeAtomic;
     WebUser webUser;
     private Long key;
     private BillClassType billClassType;
@@ -57,6 +58,19 @@ public class BillSummery {
         this.netTotal = netTotal;
         this.tax = tax;
         this.count = count;
+        this.billType = billType;
+        this.billClassType = billClassType;
+        this.webUser = webUser;
+    }
+    
+    public BillSummery(PaymentMethod paymentMethod, BillClassType billClassType, Double total, Double discount, Double netTotal, Double tax, Long count, BillTypeAtomic billTypeAtomic,BillType billType, WebUser webUser) {
+        this.paymentMethod = paymentMethod;
+        this.total = total;
+        this.discount = discount;
+        this.netTotal = netTotal;
+        this.tax = tax;
+        this.count = count;
+        this.billTypeAtomic = billTypeAtomic;
         this.billType = billType;
         this.billClassType = billClassType;
         this.webUser = webUser;
@@ -155,6 +169,14 @@ public class BillSummery {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
 }
