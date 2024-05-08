@@ -15,13 +15,14 @@
                     <p:panel rendered="#{!pharmacyBillSearch.printPreview}">                          
                         <f:facet name="header">
                             <h:outputLabel value="Cancellation" class="mt-2"></h:outputLabel>
-                            
+
                             <p:commandButton 
                                 class="ui-button-danger"
                                 icon="fa fa-cancel"
                                 value="Cancel" 
                                 action="#{pharmacyBillSearch.unitCancell()}"
                                 style="float: right;"
+                                ajax="false"
                                 >
                             </p:commandButton>
                             <p:inputText
@@ -35,27 +36,33 @@
                         <div class="row">
                             <div class="col-4">
                                 <p:panel header="Bill Detail">
-                                    
+
                                     <div class="row">
                                         <div class="col-3"><h:outputLabel value="Bill No " ></h:outputLabel></div>
                                         <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel></div>
                                     </div>
-                                    
+
                                     <div class="row mt-1">
                                         <div class="col-3"><h:outputLabel value="Total " ></h:outputLabel></div>
-                                        <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel></div>
+                                        <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.total}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel></div>
                                     </div>
-                                    
+
                                     <div class="row mt-1">
                                         <div class="col-3"><h:outputLabel value="Discount " ></h:outputLabel></div>
-                                        <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel></div>
+                                        <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel></div>
                                     </div>
-                                    
+
                                     <div class="row mt-1">
                                         <div class="col-3"><h:outputLabel value="Net Total " ></h:outputLabel></div>
-                                        <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel></div>
+                                        <div class="col-9"><h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel></div>
                                     </div>
-                                    
+
                                 </p:panel>
                             </div>
                             <div class="col-8">
@@ -75,7 +82,9 @@
                                         </p:column>
                                         <p:column width="10%">
                                             <f:facet name="header">Value</f:facet>
-                                                #{bip.netValue}
+                                            <h:outputLabel value="#{bip.netValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </p:column>
                                     </p:dataTable>
                                 </p:panel>
@@ -86,12 +95,9 @@
                     <p:panel rendered="#{pharmacyBillSearch.printPreview}">
                         <f:facet name="header" >
                             <h:outputLabel value="BHT Issue Cancel" ></h:outputLabel>
-
-                            <hr/>
-                            <p:commandButton value="Print" ajax="false" >
+                            <p:commandButton value="Print" ajax="false" style="float:right;" class="ui-button-info" icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" >

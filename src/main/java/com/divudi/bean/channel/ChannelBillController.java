@@ -169,7 +169,8 @@ public class ChannelBillController implements Serializable {
     BillBeanController billBeanController;
     List<BillItem> billItems;
     int patientSearchTab;
-
+    private boolean disableCancel;
+    private boolean disableRefund;
     private UserPreference pf;
 
     public PriceMatrixController getPriceMatrixController() {
@@ -468,7 +469,7 @@ public class ChannelBillController implements Serializable {
             refundCashFlowBill();
             return;
         }
-       if(billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow){
+       if(billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow){
             if(billSession.getBill().getPaidAmount() == 0){
                 JsfUtil.addErrorMessage("Can't Refund. No Payments");
             }else{
@@ -3012,6 +3013,36 @@ public class ChannelBillController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public boolean isDisableCancel() {
+         if(billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow && billSession.getBill().getBillType() != BillType.ChannelAgent){
+            if(billSession.getBill().getPaidAmount() == 0){
+                disableCancel = true;
+            }else{
+                disableCancel = false;
+            }
+         }
+        return disableCancel;
+    }
+
+    public void setDisableCancel(boolean disableCancel) {
+        this.disableCancel = disableCancel;
+    }
+
+    public boolean isDisableRefund() {
+        if(billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow){
+            if(billSession.getBill().getPaidAmount() == 0){
+               disableRefund = true;
+            }else{
+                disableRefund = false;
+            }
+        }
+        return disableRefund;
+    }
+
+    public void setDisableRefund(boolean disableRefund) {
+        this.disableRefund = disableRefund;
     }
 
 }

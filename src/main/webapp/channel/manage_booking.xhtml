@@ -355,8 +355,8 @@
 
                         <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="PF('confirmationDialog').show();"/>
+                                                     or channelBillController.billSession.bill.cancelled==true or channelBillController.disableCancel==true}"
+                                         onclick="PF('confirmationDialog').show();"/>
                             <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
                                 <p>Are you sure you want to cancel the channel booking?</p>
                                 <p:inputText class="w-100"
@@ -417,7 +417,7 @@
 
                         <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
+                                                     or channelBillController.billSession.bill.cancelled==true or channelBillController.disableRefund==true}"
                                          onclick="PF('confirmationRefundDialog').show();"/>
 
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationRefundDialog" modal="true" resizable="false">
