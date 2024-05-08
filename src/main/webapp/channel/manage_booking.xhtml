@@ -417,7 +417,7 @@
 
                         <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true or channelBillController.disableRefund==true}"
+                                                     or channelBillController.billSession.bill.cancelled==true}"
                                          onclick="PF('confirmationRefundDialog').show();"/>
 
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationRefundDialog" modal="true" resizable="false">
