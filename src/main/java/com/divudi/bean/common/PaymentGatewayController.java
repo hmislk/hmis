@@ -1,9 +1,11 @@
 package com.divudi.bean.common;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
@@ -15,8 +17,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 
 @Named
-@RequestScoped
-public class PaymentGatewayController {
+@SessionScoped
+public class PaymentGatewayController implements Serializable {
 
     private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
     private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
@@ -28,7 +30,6 @@ public class PaymentGatewayController {
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
 
     public String createCheckoutSession() {
-        System.out.println("createCheckoutSession");
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(gatewayUrl);
 
@@ -36,32 +37,30 @@ public class PaymentGatewayController {
         try {
             String requestBody = String.format(
                     "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s"
-                    + "&order.id=%s&order.amount=%s&order.currency=%s&interaction.operation=%s"
+                    + "&order.id=%s&order.amount=%s&order.currency=%s&order.description=%s&interaction.operation=%s"
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
-                    "12345", "100.00", "LKR", "PURCHASE",
+                    "12345", "100.00", "LKR", "Medical services at Sethma Hospital", "PURCHASE",
                     "http://localhost:8080/returnPage", "Sethma Hospital");
 
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
-            System.out.println("responseString = " + responseString);
-            System.out.println("response.getStatusLine().getStatusCode() = " + response.getStatusLine().getStatusCode());
+
             if (response.getStatusLine().getStatusCode() == 200) {
                 sessionId = extractSessionId(responseString);
-                System.out.println("sessionId = " + sessionId);
                 if (sessionId != null) {
-                    paymentUrl = constructPaymentUrl(sessionId); // Correct URL for redirection
-                    System.out.println("paymentUrl = " + paymentUrl);
-                    return paymentUrl;
+                    return "/pay?faces-redirect=true"; // Use JSF navigation to redirect to the /pay page
                 }
             }
         } catch (Exception e) {
-            System.out.println("e = " + e);
             e.printStackTrace();
         }
-        System.out.println("error");
-        return "error"; // Return to an error page or similar
+        return null; // Stay on the same page if the session creation fails
+    }
+
+    private String constructPaymentUrl(String sessionId) {
+        return "https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js?session.id=" + sessionId;
     }
 
     private String extractSessionId(String response) {
@@ -81,11 +80,6 @@ public class PaymentGatewayController {
             }
         }
         return responseMap;
-    }
-
-    private String constructPaymentUrl(String sessionId) {
-        // This should be the URL to initiate the checkout or payment process, which might look something like this:
-        return "https://cbcmpgs.gateway.mastercard.com/payment/start?session.id=" + sessionId;
     }
 
     // Getters and Setters
