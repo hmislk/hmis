@@ -171,7 +171,7 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
-        return "/pharmacy/pharmacy_search?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
     public void markAsChecked() {
