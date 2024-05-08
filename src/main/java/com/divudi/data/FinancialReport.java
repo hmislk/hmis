@@ -40,10 +40,10 @@ public class FinancialReport {
     private double cashTotal;
 
     // Floats and handovers
-    private double floatCollected;
+    private double floatReceived;
     private double floatHandover;
-    private double floatMySafe;
-    private double collectionHandover;
+    private double shiftStartFunds;
+    private double shiftEndFunds;
 
     // Other transactions
     private double cashCollectedTransferIn;
@@ -116,8 +116,8 @@ public class FinancialReport {
     private List<PaymentMethod> paymentMethodsForFloatMySafe;
     private List<BillTypeAtomic> billTypesForFloatMySafe;
 
-    private List<PaymentMethod> paymentMethodsForCollectionHandover;
-    private List<BillTypeAtomic> billTypesForCollectionHandover;
+    private List<PaymentMethod> paymentMethodsForShiftEndHandovers;
+    private List<BillTypeAtomic> billTypesOfShiftEndHandovers;
 
 // Lists for the rest of the transactions...
     private List<PaymentMethod> paymentMethodsForCashCollectedTransferIn;
@@ -152,6 +152,61 @@ public class FinancialReport {
     }
 
     public FinancialReport() {
+    }
+
+    public void calculateTotal() {
+        System.out.println("Starting calculation of totals.");
+
+        // Update and sum up all the transaction types
+        netCashTotal = getNetCashTotal();
+        netCreditTotal = getNetCreditTotal();
+        netCreditCardTotal = getNetCreditCardTotal();
+        netOtherNonCreditTotal = getNetOtherNonCreditTotal();
+        netVoucherTotal = getNetVoucherTotal();
+
+        shiftStartFunds = getShiftStartFunds();
+        floatHandover = getFloatHandover();
+        floatReceived = getFloatReceived();
+        shiftEndFunds = getShiftEndFunds();
+
+        bankWithdrawals = getBankWithdrawals();
+        bankDeposits = getBankDeposits();
+
+        // Calculate the overall total starting from the float my safe value and adjusting with all other totals
+        total = shiftStartFunds;  // Start with the float my safe value
+        System.out.println("Initial Total (Float My Safe): " + total);
+
+        // Add net totals of all transaction types
+        total += netCashTotal;
+        System.out.println("Total after adding Net Cash: " + total);
+
+        total += netCreditTotal;
+        System.out.println("Total after adding Net Credit: " + total);
+
+        total += netCreditCardTotal;
+        System.out.println("Total after adding Net Credit Card: " + total);
+
+        total += netOtherNonCreditTotal;
+        System.out.println("Total after adding Net Other Non-Credit: " + total);
+
+        total += netVoucherTotal;
+        System.out.println("Total after adding Net Voucher: " + total);
+
+        // Adjust float and handover transactions
+        total += floatReceived;
+        System.out.println("Total after adding Float Collected: " + total);
+
+        total += floatHandover;
+        System.out.println("Total after adding Float Handover: " + total);
+
+        total -= shiftEndFunds;
+        System.out.println("Total after deducting Collection Handover: " + total);
+
+        // Adjust bank transactions
+        total += bankWithdrawals - bankDeposits;
+        System.out.println("Total after adjusting Bank Withdrawals and Deposits: " + total);
+
+        System.out.println("Final Total: " + total);
     }
 
     public double getCollectedCash() {
@@ -234,24 +289,24 @@ public class FinancialReport {
         return cashTotal;
     }
 
-    public double getFloatCollected() {
-        floatCollected = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected(), getPaymentMethodsForFloatCollected());
-        return floatCollected;
+    public double getFloatReceived() {
+        floatReceived = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected());
+        return floatReceived;
     }
 
     public double getFloatHandover() {
-        floatHandover = atomicBillTypeTotals.getTotal(getBillTypesForFloatHandover(), getPaymentMethodsForFloatHandover());
+        floatHandover = atomicBillTypeTotals.getTotal(getBillTypesForFloatHandover());
         return floatHandover;
     }
 
-    public double getFloatMySafe() {
-        floatMySafe = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe(), getPaymentMethodsForFloatMySafe());
-        return floatMySafe;
+    public double getShiftStartFunds() {
+        shiftStartFunds = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe());
+        return shiftStartFunds;
     }
 
-    public double getCollectionHandover() {
-        collectionHandover = atomicBillTypeTotals.getTotal(getBillTypesForCollectionHandover(), getPaymentMethodsForCollectionHandover());
-        return collectionHandover;
+    public double getShiftEndFunds() {
+        shiftEndFunds = atomicBillTypeTotals.getTotal(getBillTypesOfShiftEndHandovers());
+        return shiftEndFunds;
     }
 
     public double getCashCollectedTransferIn() {
@@ -270,7 +325,7 @@ public class FinancialReport {
     }
 
     public double getTotalShiftCashIn() {
-        totalShiftCashIn = getFloatCollected() + getCashCollectedTransferIn() + getBankWithdrawals() + getReceivedFromCollectionCenter();
+        totalShiftCashIn = getFloatReceived() + getCashCollectedTransferIn() + getBankWithdrawals() + getReceivedFromCollectionCenter();
         return totalShiftCashIn;
     }
 
@@ -300,7 +355,8 @@ public class FinancialReport {
     }
 
     public double getTotal() {
-        total = getTotalShiftCashIn() - getFloatHandover() - getFloatMySafe() - getCollectionHandover() - getDrPayments() - getOtherPayments() + getCashGivenOutTransferOut() + getBankDeposits() + getShortExcess();
+        calculateTotal();
+//        total = getTotalShiftCashIn() - getFloatHandover() - getFloatMySafe() - getCollectionHandover() - getDrPayments() - getOtherPayments() + getCashGivenOutTransferOut() + getBankDeposits() + getShortExcess();
         return total;
     }
 
@@ -626,7 +682,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForFloatHandover() {
         if (billTypesForFloatHandover == null) {
             billTypesForFloatHandover = new ArrayList<>();
-            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_DECREASE));
         }
         return billTypesForFloatHandover;
     }
@@ -647,23 +703,22 @@ public class FinancialReport {
         return billTypesForFloatMySafe;
     }
 
-    public List<PaymentMethod> getPaymentMethodsForCollectionHandover() {
-        if (paymentMethodsForCollectionHandover == null) {
-            paymentMethodsForCollectionHandover = new ArrayList<>();
+    public List<PaymentMethod> getPaymentMethodsForShiftEndHandovers() {
+        if (paymentMethodsForShiftEndHandovers == null) {
+            paymentMethodsForShiftEndHandovers = new ArrayList<>();
             // Collection handover might primarily involve cash, but other methods can be included as needed
-            paymentMethodsForCollectionHandover.add(PaymentMethod.Cash);
+            paymentMethodsForShiftEndHandovers.add(PaymentMethod.Cash);
             // Add any other relevant methods if applicable
         }
-        return paymentMethodsForCollectionHandover;
+        return paymentMethodsForShiftEndHandovers;
     }
 
-    public List<BillTypeAtomic> getBillTypesForCollectionHandover() {
-        if (billTypesForCollectionHandover == null) {
-            billTypesForCollectionHandover = new ArrayList<>();
-            // Include any bill types specifically associated with the handover of collections
-            // Example: billTypesForCollectionHandover.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
+    public List<BillTypeAtomic> getBillTypesOfShiftEndHandovers() {
+        if (billTypesOfShiftEndHandovers == null) {
+            billTypesOfShiftEndHandovers = new ArrayList<>();
+            billTypesOfShiftEndHandovers.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
         }
-        return billTypesForCollectionHandover;
+        return billTypesOfShiftEndHandovers;
     }
 
     public List<PaymentMethod> getPaymentMethodsForCashCollectedTransferIn() {
@@ -680,7 +735,7 @@ public class FinancialReport {
         if (billTypesForCashCollectedTransferIn == null) {
             billTypesForCashCollectedTransferIn = new ArrayList<>();
             // Assuming specific transactions associated with cash collected through transfers
-             billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         }
         return billTypesForCashCollectedTransferIn;
     }

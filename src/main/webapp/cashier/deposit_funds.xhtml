@@ -41,7 +41,7 @@
                                         <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
                                 </div>
-                                <div class="col-md-6" >
+                                <div class="col-md-4" >
                                     <h:panelGroup id="paymentDetails" >
                                         <h:panelGrid columns="6" 
                                             id="cheque" 
@@ -73,6 +73,7 @@
                                             <p:inputText 
                                                 class="mx-2"
                                                 id="txtCashValue" 
+                                                onfocus="this.select()"
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGrid>
@@ -102,15 +103,8 @@
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
                                         </h:panelGrid>
-
                                     </h:panelGroup>
-
-
-
-
-
                                 </div>
-
                                 <div class="col-md-2">
                                     <p:commandButton
                                         id="btnAdd"
@@ -123,7 +117,6 @@
                                         action="#{financialTransactionController.addPaymentToFundDepositBill()}" >
                                     </p:commandButton>
                                 </div>
-                                <div class="col-md-1"/>
                             </div>
 
                         </p:panel>

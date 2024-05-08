@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -180,6 +181,8 @@ public class PastBookingController implements Serializable, ControllerWithPatien
     SessionInstanceController sessionInstanceController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -433,7 +436,13 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("No Bill Fees");
             return "";
         }
-
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Refunded")){
+        }
+        
+         if(configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Canceled")){
+        }
+        
         return "/channel/manage_booking_past?faces-redirect=true";
     }
 
