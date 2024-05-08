@@ -9,27 +9,39 @@
 
     <ui:define name="content">
 
-<!--        <h:form >
-            <p:panelGrid columns="2" class="w-100" >
-                <p:outputLabel value="Password" ></p:outputLabel>
-                <p:inputText value="#{securityController.password}" class="w-100"></p:inputText>
+        <!--        <h:form >
+                    <p:panelGrid columns="2" class="w-100" >
+                        <p:outputLabel value="Password" ></p:outputLabel>
+                        <p:inputText value="#{securityController.password}" class="w-100"></p:inputText>
+        
+                        <p:outputLabel value="Encrypted Password" ></p:outputLabel>
+                        <p:inputText value="#{securityController.hashedPassword}" class="w-100" ></p:inputText>
+        
+                        <p:spacer></p:spacer>
+                        <p:commandButton ajax="false" value="Check" action="#{securityController.testPassword}" >
+                        </p:commandButton>
+                        
+                        
+                        <p:outputLabel value="Matching" ></p:outputLabel>
+                        <p:inputText value="#{securityController.matching}" class="w-100" ></p:inputText>
+                    </p:panelGrid>
+        
+                </h:form>-->
 
-                <p:outputLabel value="Encrypted Password" ></p:outputLabel>
-                <p:inputText value="#{securityController.hashedPassword}" class="w-100" ></p:inputText>
 
-                <p:spacer></p:spacer>
-                <p:commandButton ajax="false" value="Check" action="#{securityController.testPassword}" >
-                </p:commandButton>
-                
-                
-                <p:outputLabel value="Matching" ></p:outputLabel>
-                <p:inputText value="#{securityController.matching}" class="w-100" ></p:inputText>
-            </p:panelGrid>
+        <div class="row" >
+            <div class="col-12" >
+                <h:form>
+                    <h:commandButton value="To Check Payment Gateway" 
+                                     action="#{paymentGatewayController.createCheckoutSession()}" />
+                </h:form>
 
-        </h:form>-->
+            </div>
+        </div>
 
-<div class="row" >
-    <ui:repeat value="#{sessionController.userIcons}" var="ui">
+        <div class="row" >
+            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
 
                 <!-- Patient Lookup -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup'}" layout="block" class="col-1 m-4">
@@ -1035,7 +1047,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- Multiple Purchase Order Cancellation -->
                 <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Multiple_Purchase_Order_Cancellation'}">
                     <h:form>
