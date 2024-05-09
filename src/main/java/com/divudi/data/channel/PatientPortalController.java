@@ -4,6 +4,7 @@ import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.PatientController;
+import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -122,7 +123,27 @@ public class PatientPortalController {
     BookingController bookingController;
     @Inject
     CommonController commonController;
+    @Inject
+    PaymentGatewayController paymentGatewayController;
     private ChannelBean channelBean;
+
+    
+    public String booking(){
+        if(selectedSessionInstance!=null){
+            double amount=selectedSessionInstance.getOriginatingSession().getTotal();
+            System.out.println("amount = " + amount);
+            paymentGatewayController.setOrderAmount(String.valueOf(amount));
+            paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
+            paymentGatewayController.setPatient(patient);
+            paymentGatewayController.generateTemplateForOrderDescription();
+            System.out.println("selectedSessionInstance = " + selectedSessionInstance);
+            paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
+            String url=paymentGatewayController.createCheckoutSession();
+            System.out.println("url = " + url);
+            return url;
+        }
+        return null;
+    }
 
     public List<BillSession> fillPastBookings() {
         pastBookings = null;
@@ -218,12 +239,7 @@ public class PatientPortalController {
     }
 
     public void otpCodeConverter() {
-        int codeSize = 0;
-        if (sessionController.getCurrentPreference().getLengthOfOTPIndexes()== null || sessionController.getCurrentPreference().getLengthOfOTPIndexes()== "0") {
-            codeSize = 4;
-        }
-        codeSize = Integer.parseInt(sessionController.getCurrentPreference().getLengthOfOTPIndexes());
-
+        int codeSize = 4;
         String numbers = "0123456789";
         Random random = new Random();
         StringBuilder otpBuilder = new StringBuilder();
@@ -233,6 +249,7 @@ public class PatientPortalController {
             otpBuilder.append(numbers.charAt(index));
         }
         otp = otpBuilder.toString();
+        System.out.println("otpBuilder = " + otp);
     }
 
     public void sendOtp() {
