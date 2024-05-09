@@ -1081,6 +1081,7 @@
                     rendered="#{webUserController.hasPrivilege('Clinical')}">
                     <p:menuitem ajax="false" action="#{patientController.toSearchPatient()}" icon="pi pi-search" value="Patient Search"/>
                     <p:menuitem ajax="false" action="#{patientController.toAddNewPatient()}" icon="fa fa-plus" value="Add New Patient"/>
+                    <p:menuitem ajax="false" action="/clinical/clinical_queue?faces-redirect=true" value="Clinical Queue"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToMembershipRegistration()}" value="Membership"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" value="Queue"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="EMR Analytics"/>
