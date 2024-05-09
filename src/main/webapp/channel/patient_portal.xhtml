@@ -48,6 +48,12 @@
                 margin-left: 20px;
             }
 
+            .ptSelect{
+                font-size: 18pt;
+                text-transform: capitalize;
+                margin-left: 20px;
+            }
+
             @keyframes slideIn {
                 0% {
                     left: -30px;
@@ -59,24 +65,7 @@
                 }
             }
 
-
-            /*            .bgImg{
-                            height: 50vh;
-                            width: auto;
-                            background-image: url('https://img.freepik.com/premium-vector/medical-pattern-with-beakers-pipettes-as-well-as-crosses-with-hearts-pills_638892-315.jpg');
-                            background-size: cover;
-                            background-position: center;
-            
-                        }*/
-
-            /* Media query for screens smaller than 768px */
             @media (max-width: 767.98px) {
-                /*
-                                .bgImg{
-                                    height: 25vh;
-                                   
-                
-                                }*/
 
                 .card {
                     min-width: auto;
@@ -84,30 +73,25 @@
                 .text-center > div {
                     min-width: auto;
                 }
-                /* Add more responsive styles as needed */
             }
+
+            .bgImage{
+                background-size: 100%;
+                height: 100%;
+                background-repeat: no-repeat;
+            }
+
+
         </style>
     </h:head>
-    <h:body class="container-fluid">
+    <h:body class="container-fluid bgImage">
         <h:form id="form">
             <div class="row">
                 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
-                    <!-- Navbar toggler button -->
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-
-                    <!-- Navbar brand and collapsible content -->
-                    <div class="collapse navbar-collapse m-4" id="navbarTogglerDemo01">
-                        <a class="navbar-brand ml-4">Channel Your Doctor</a>
-                        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                            <!-- Add your navbar items here -->
-                        </ul>
-                    </div>
-
-                    <!-- Button on opposite corner -->
-                    <div>
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <a class="navbar-brand ml-4 mx-2 p-4"><h3>#{sessionController.institution.name}</h3></a>
                         <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
+
                     </div>
                 </nav>
             </div>
@@ -116,7 +100,7 @@
                     <div class="mt-5">
                         <div class="card shadow-lg p-4">
                             <div class="text-center">
-                                <h3>Channel Your Doctor</h3>
+                                <h3>Book Your Doctor</h3>
                             </div>
                             <ul class="">
                                 <li class="list-group-item ">
@@ -172,7 +156,7 @@
 
                     </div>
                 </div>
-                <h:panelGroup rendered="#{patientPortalController.bookingCompleted}">
+                <h:panelGroup rendered="false">
                     <div  id="successPanel" class="d-flex justify-content-center align-items-center" style="z-index: 9999;" >
                         <div class="success-message d-flex align-items-center justify-content-center" style="width: 300px;height: 150px">
                             <div class="success-icon d-flex justify-content-center align-items-center"><h:outputText styleClass="fas fa-check text-white"/></div>
@@ -209,9 +193,24 @@
                                     <h3 class="mx-4">#{s.displayCount}</h3>
                                 </div>
                                 <div class="d-flex justify-content-end  p-2">
-                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
+<!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
                                         <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
+                                    </p:commandButton>-->
+                                    <p:commandButton 
+                                        value="Book" 
+                                        icon="fas fa-plus" 
+                                        class="ui-button-success" 
+                                        action="#{patientPortalController.booking()}">
+                                        <f:setPropertyActionListener target="#{patientPortalController.selectedSessionInstance}" value="#{s}"/>
                                     </p:commandButton>
+
+                                    <p:dialog  minHeight="100" width="400"  header="Confirmation" widgetVar="confirmationDialog" modal="true" >
+                                        <p class="my-2">Are you sure you want to cancel the request?</p>
+                                        <div class="d-flex mt-2 justify-content-end">
+                                            <button type="button" onclick="startPayment();" class="btn btn-primary">Pay Now</button>
+                                            <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                                        </div>
+                                    </p:dialog>
                                 </div>
                             </div>
                         </div>
@@ -220,9 +219,9 @@
             </h:panelGroup>
 
 
-            <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}">
-                <div class="d-flex justify-content-center align-items-center">
-                    <div class="card shadow-sm mt-4" style="min-width: 25rem">
+            <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}" >
+                <div class="d-flex justify-content-center align-items-center h-100 w-100">
+                    <div class=" mt-4" style="min-width: 25rem">
                         <div class="card-body">
                             <div class="d-flex justify-content-center align-items-center">
                                 <img src="https://cdn.dribbble.com/users/3821672/screenshots/7172846/media/bdcf195a8ceaf94cd2e55ee274095c91.gif" style="min-width: 20rem"/>
@@ -255,44 +254,43 @@
                 </div>
             </h:panelGroup>
 
-
             <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}" >
-                <h:panelGroup rendered="#{!patientPortalController.addNewPatient}" class="w-100" >
+                <h:panelGroup rendered="#{!patientPortalController.addNewPatient}"  >
+                    <div class="card-body">
+                        <ui:repeat id="sPt" class="w-100" value="#{patientPortalController.searchedPatients}" var="sp">
+                            <div class="card my-2" style="height: 100px">
+                                <div class="w-100 row text-left mt-4 mx-2">
+                                    <div class="col-4 text-left d-flex align-items-center">
+                                        <h:outputLabel styleClass="fa-solid fa-user"/>
+                                        <h:outputText class="ptSelect" value="#{sp.person.nameWithTitle}"></h:outputText>
 
-                    <div class="d-flex justify-content-center align-items-center hide" style="min-width: 25rem;">
-                        <div class="card shadow-sm mt-4" style="min-width: 25rem;max-width: 50rem">
-                            <div class="card-header text-center d-flex align-items-center justify-content-between">
-                                <h4>Select Your Profile</h4>
-                            </div>
-
-                            <div class="card-body">
-                                <ui:repeat id="sPt" class="w-100" value="#{patientPortalController.searchedPatients}" var="sp">
-                                    <div class="card mt-1" style="min-width: 25rem">
-                                        <h5 class="card-header">
-                                            <h:outputText value="#{sp.person.nameWithTitle}">
-                                            </h:outputText>
-                                        </h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-body">
-                                                <h5 class="card-title">
-                                                    <h:outputText value="#{sp.person.address}">
-                                                    </h:outputText></h5>
-                                                <p class="card-text">
-                                                    <h:outputText value="#{sp.age}"> </h:outputText>
-                                                </p>
-                                            </div>
-                                            <div class="d-flex justify-content-end  p-2">
-                                                <p:commandButton value="Select" class="ui-button-success" ajax="false">
-                                                    <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
-                                                </p:commandButton>
-                                            </div>
-                                        </div>
                                     </div>
-                                </ui:repeat>
-                                <p:commandButton class="ui-button-success w-100 mt-2" icon="fas fa-plus" value="Add New Patient" action="#{patientPortalController.addNewPatientAction}" ajax="false" />
+                                    <div class="col-4">
+                                        <h3 class="card-title">
+                                            <h:outputLabel styleClass="fa-solid fa-location-dot"/>
+                                            <h:outputText style="text-transform: capitalize;margin-left: 20px" value="#{sp.person.address}">
+                                            </h:outputText></h3>
+                                    </div>
+                                    <div class="col-2">
+                                        <h3><h:outputText rendered="#{sp.age ne 'Date of birth NOT recorded.'}" value="#{sp.age}"> </h:outputText></h3>
+                                    </div>
+                                    <div class="col-2 d-flex justify-content-center">
+                                        <p:commandButton icon="fa-solid fa-check" class="ui-button-success" ajax="false">
+                                            <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
                             </div>
+
+                        </ui:repeat>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <h4>Not You ?</h4>
+                        </div>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <p:commandButton class="ui-button-success mt-2" icon="fas fa-plus" value="Add New Patient" action="#{patientPortalController.addNewPatientAction}" ajax="false" />
                         </div>
                     </div>
+
                 </h:panelGroup>
 
                 <h:panelGroup class="d-flex justify-content-center align-items-center w-100" rendered="#{patientPortalController.addNewPatient}" >
@@ -301,7 +299,6 @@
                         <div class="text-center my-2">
                             <h5>Add new Patient</h5>
                         </div>
-                        <h5>Register</h5>
                         <div class="ui-fluid formgrid grid w-100">
                             <div>
                                 <div>
@@ -392,12 +389,20 @@
                 </h:panelGroup>
             </h:panelGroup>
         </h:form>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                setTimeout(function () {
-                    document.getElementById("successPanel").style.display = "none";
-                }, 5000); // 5000 milliseconds = 5 seconds
-            });
+        <script src="https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js"></script>
+        <script type="text/javascript">
+                                                function startPayment() {
+                                                    Checkout.configure({
+                                                        session: {id: '#{paymentGatewayController.sessionId}'},
+                                                        interaction: {
+                                                            merchant: {
+                                                                name: "Sethma Hospital",
+                                                                address: {line1: 'Test address'}
+                                                            }
+                                                        }
+                                                    });
+                                                    Checkout.showPaymentPage();  // Or Checkout.showLightbox();
+                                                }
         </script>
     </h:body>
 </html>
