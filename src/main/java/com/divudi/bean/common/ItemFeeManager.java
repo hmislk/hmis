@@ -275,20 +275,20 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         
-//        if (itemFee.getFeeType() == null){
-//            JsfUtil.addErrorMessage("Please Fill Fee Type");
-//            return;
-//        }
-//        
-//        if (itemFee.getFeeType().getLabel().equals("OtherInstitution") || itemFee.getFeeType().getLabel().equals("OwnInstitution") || itemFee.getFeeType().getLabel().equals("Referral")) {
-//            if(itemFee.getDepartment()==null){
-//                JsfUtil.addErrorMessage("Please Select Department");
-//                return;
-//            }
-//        }
+        if (itemFee.getFeeType() == null){
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+        
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if(itemFee.getDepartment()==null){
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
         
         if (itemFee.getFeeType() == FeeType.Staff ){
-            if(itemFee.getStaff().getPerson().getName().trim().equals("")){
+            if(itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")){
                 JsfUtil.addErrorMessage("Please Select Staff");
                 return;
             }
