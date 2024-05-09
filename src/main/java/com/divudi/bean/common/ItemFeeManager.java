@@ -266,6 +266,42 @@ public class ItemFeeManager implements Serializable {
             JsfUtil.addErrorMessage("Select Item ?");
             return;
         }
+        if (itemFee == null){
+            JsfUtil.addErrorMessage("Select Item Fee");
+            return;
+        }
+        if (itemFee.getName() == null|| itemFee.getName().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Fill Fee Name");
+            return;
+        }
+        
+        if (itemFee.getFeeType() == null){
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+        
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if(itemFee.getDepartment()==null){
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
+        
+        if (itemFee.getFeeType() == FeeType.Staff ){
+            if(itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")){
+                JsfUtil.addErrorMessage("Please Select Staff");
+                return;
+            }
+        }
+        if (itemFee.getFee() == 0.00){
+            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
+            return;
+        }
+        
+        if (itemFee.getFfee() == 0.00){
+            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
+            return;
+        }
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         itemFeeFacade.create(itemFee);
