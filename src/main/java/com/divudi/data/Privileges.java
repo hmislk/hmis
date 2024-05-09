@@ -293,6 +293,7 @@ public enum Privileges {
     ChannellingPrintInPastBooking,
     ChannellingEditCreditLimitUserLevel,
     ChannellingEditCreditLimitAdminLevel,
+    ChannellingReprintOriginalBill,
     ChannelReports,
     ChannelSummery,
     ChannelManagement,
