@@ -15,6 +15,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -1030,7 +1031,7 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
         getSaleBill().copyValue(getPreBill());
 
         getSaleBill().setBillType(BillType.PharmacyWholeSale);
-
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE);
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
         getSaleBill().setBillDate(new Date());

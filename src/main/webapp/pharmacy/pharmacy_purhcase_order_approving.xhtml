@@ -20,6 +20,7 @@
                                              value="Approve" 
                                              class="ui-button-success mx-2" 
                                              icon="fas fa-check" 
+                                             disabled="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
                                              action="#{purchaseOrderController.approve}">
                             </p:commandButton>
                             <p:commandButton ajax="false"  

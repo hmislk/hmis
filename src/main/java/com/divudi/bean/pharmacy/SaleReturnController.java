@@ -206,6 +206,7 @@ public class SaleReturnController implements Serializable {
 //                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacySale, BillNumberSuffix.SALRET));
         refundBill.setInsId(getReturnBill().getInsId());
         refundBill.setDeptId(getReturnBill().getDeptId());
+        refundBill.setBillTime(new Date());
 
         if (refundBill.getId() == null) {
             getBillFacade().create(refundBill);

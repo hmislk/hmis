@@ -209,6 +209,7 @@ public class PreReturnController implements Serializable {
 
         saveReturnBill();
         saveComponent();
+        getBill().getReturnPreBills().add(getReturnBill());
 
         getBillFacade().edit(getReturnBill());
 
