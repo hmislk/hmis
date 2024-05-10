@@ -475,7 +475,7 @@ public class ChannelBillController implements Serializable {
                     refundCreditPaidBill();
                 }
             }
-        }else{
+        } else {
             JsfUtil.addErrorMessage("Nothing to Refund");
         }
     }
@@ -2014,7 +2014,7 @@ public class ChannelBillController implements Serializable {
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setSmsType(MessageType.ChannelBooking);
             getSmsFacade().create(e);
-            boolean suc = smsManagerEjb.sendSms(comment, comment, agentRefNo, comment, patientTabId);
+            boolean suc = smsManagerEjb.sendSms(e);
         } catch (Exception e) {
         }
     }
