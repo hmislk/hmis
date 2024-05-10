@@ -389,6 +389,7 @@ public class FinancialReport {
             billTypesForRefundedCash = new ArrayList<>();
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
+            
         }
         return billTypesForRefundedCash;
     }
@@ -487,6 +488,7 @@ public class FinancialReport {
             // Assuming CHANNEL_BOOKING_WITH_PAYMENT and OPD_BILL_WITH_PAYMENT are collected via credit card
             billTypesForCollectedCreditCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             billTypesForCollectedCreditCard.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypesForCollectedCreditCard.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
             // Add other BillTypeAtomic entries if they are collected via credit card
         }
         return billTypesForCollectedCreditCard;
@@ -506,7 +508,8 @@ public class FinancialReport {
             billTypesForRefundedCreditCard = new ArrayList<>();
             // Add BillTypeAtomic entries that represent credit card refunds
             // Assuming CHANNEL_REFUND is refunded via credit card
-            billTypesForRefundedCreditCard.add(BillTypeAtomic.CHANNEL_REFUND);
+            billTypesForRefundedCreditCard.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+            billTypesForRefundedCreditCard.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
             // Add other BillTypeAtomic entries if they are refunded via credit card
         }
         return billTypesForRefundedCreditCard;
@@ -535,7 +538,7 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForCollectedDebitCard() {
         if (paymentMethodsForCollectedDebitCard == null) {
             paymentMethodsForCollectedDebitCard = new ArrayList<>();
-            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Card); // Assuming 'Card' also covers debit card collections
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Credit); // Assuming 'Card' also covers debit card collections
             // If your application differentiates between credit and debit cards, you may need a specific entry for debit cards
         }
         return paymentMethodsForCollectedDebitCard;
@@ -546,7 +549,7 @@ public class FinancialReport {
             billTypesForCollectedDebitCard = new ArrayList<>();
             // Add BillTypeAtomic entries that represent debit card collections
             // Assuming specific services like CHANNEL_BOOKING_WITH_PAYMENT are paid for with debit cards
-            billTypesForCollectedDebitCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            //billTypesForCollectedDebitCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             // Add other BillTypeAtomic entries if they are typically paid with a debit card
         }
         return billTypesForCollectedDebitCard;
