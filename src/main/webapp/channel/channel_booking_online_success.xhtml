@@ -4,11 +4,24 @@
                 template="/resources/template/template.xhtml"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui">
-
+    <f:metadata>
+        <f:event type="preRenderView"
+                 listener="#{paymentGatewayController.checkPaymentStatus()}"/>
+    </f:metadata>
     <ui:define name="content">
         <h:form id="paymentForm">
+            <h:panelGroup rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
+                <div class="align-items-center justify-content-center" style="text-align: center">
+                    <div>
+                        <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
+                    </div>
+                    <h1>Success</h1>
+                    <p>We received your purchase request;<br/> we'll be in touch shortly!</p>
+                </div>
+            </h:panelGroup>
             <button type="button" onclick="startPayment();" class="btn btn-primary">Pay Now</button>
             <p:commandButton value="Check Status" action="#{paymentGatewayController.checkPaymentStatus()}"></p:commandButton>
         </h:form>
+
     </ui:define>
 </ui:composition>
