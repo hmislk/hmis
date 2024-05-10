@@ -507,7 +507,7 @@ public class FinancialReport {
         if (billTypesForRefundedCreditCard == null) {
             billTypesForRefundedCreditCard = new ArrayList<>();
             // Add BillTypeAtomic entries that represent credit card refunds
-            // Assuming CHANNEL_REFUND is refunded via credit card
+            // Assuming CHANNEL_REFUND is refunded via credit card 
             billTypesForRefundedCreditCard.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
             billTypesForRefundedCreditCard.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
             // Add other BillTypeAtomic entries if they are refunded via credit card
