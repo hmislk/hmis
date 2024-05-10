@@ -18,7 +18,7 @@
                     <p:panel  id="panelQueue" header="Queue" >
 
                         <h:form>
-
+                            <p:growl id="msg"/>
                             <h:panelGrid columns="3" >
                                 <h:outputLabel value="Date" id="calSessionDate" ></h:outputLabel>
                                 <p:calendar value="#{practiceBookingController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
@@ -49,7 +49,10 @@
                                 </p:autoComplete>
                                 <h:outputLabel value="" ></h:outputLabel>
 
-                                <p:commandButton   value="Process" ajax="false" style="float: right;" action="#{practiceBookingController.listCompleteAndToCompleteBillSessions}"  >                        
+                                <p:commandButton   value="Process" ajax="false" style="float: right;"
+                                                   class="ui-button-warning"
+                                                   icon="fas fa-arrows-rotate"
+                                                   action="#{practiceBookingController.listCompleteAndToCompleteBillSessions}"  >                        
                                 </p:commandButton>
 
                             </h:panelGrid>
@@ -69,13 +72,13 @@
                                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                                         <p:column headerText="Visit">
                                             <p:commandButton disabled="#{bs.absent}" value="Visit" 
-                                                            action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false"  >
+                                                             action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false"  >
                                                 <f:setPropertyActionListener value="#{bs}" 
                                                                              target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
                                             </p:commandButton>
                                         </p:column>
-                                        
-                                        
+
+
                                         <p:column headerText="Absent">
                                             <p:outputLabel value="Patient is Absent."  rendered="#{bs.absent}" ></p:outputLabel>
                                             <p:commandButton rendered="#{bs.absent}" value="Mark As Present" action="#{practiceBookingController.markAsPresent()}" ajax="false"  >
@@ -94,7 +97,7 @@
                                                  value="#{practiceBookingController.completedSessions}" var='bsc'
                                                  selectionMode="single" rowKey="#{bsc.id}"
                                                  selection="#{practiceBookingController.selectedBillSession}">
-                                        <p:column headerText="No">#{bsc.serialNo}</p:column>
+                                        <p:column headerText="No" style="width: 6%">#{bsc.serialNo}</p:column>
                                         <p:column headerText="Patient Name">#{bsc.bill.patient.person.nameWithTitle}</p:column>
                                         <p:column headerText="View/Edit">
                                             <p:commandButton disabled="#{bsc.absent}" value="Visit" action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false"  >
@@ -105,15 +108,21 @@
                                             <h:outputText value="#{bsc.patientEncounter.comments}" ></h:outputText>
                                         </p:column>
                                         <p:column headerText="Billing" >
-                                            <p:commandButton ajax="false" value="OPD Bill" action="#{practiceBookingController.issueServices()}"  >
+                                            <p:commandButton disabled="#{bsc.absent}" value="View Visit" action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" ajax="false"  >
+                                                <f:setPropertyActionListener value="#{bsc.patientEncounter}" target="#{pastPatientEncounterController.current}" />
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton ajax="false" value="OPD Bill" class="m-1" action="#{practiceBookingController.issueServices()}"  >
                                                 <f:setPropertyActionListener value="#{bsc}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
                                             </p:commandButton>
-                                            <p:commandButton ajax="false" value="Pharmacy Bill" action="#{practiceBookingController.issuePharmacyBill()}"  >
+                                            <p:commandButton ajax="false" value="Pharmacy Bill" action="#{practiceBookingController.issuePharmacyBill()}" 
+                                                             actionListener="#{pharmacySaleController.resetAll()}">
                                                 <f:setPropertyActionListener value="#{bsc}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                                <f:setPropertyActionListener value="#{practiceBookingController.opdVisit.patient}" target="#{pharmacySaleController.patient}" ></f:setPropertyActionListener>
                                             </p:commandButton>
-                                        
+
                                         </p:column>
-                                        
+
                                     </p:dataTable>  
 
                                 </p:tab>

@@ -43,6 +43,9 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
+import com.divudi.entity.DoctorSpeciality;
+import com.divudi.entity.clinical.ClinicalFindingValue;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -91,6 +94,8 @@ public class PracticeBookingController implements Serializable {
     private PatientController patientController;
     @Inject
     CommonController commonController; 
+    @Inject
+    private OpdBillController opdBillController;
     ///////////////////
     @EJB
     DoctorFacade doctorFacade;
@@ -199,18 +204,21 @@ public class PracticeBookingController implements Serializable {
         JsfUtil.addSuccessMessage("Marked as Absent");
     }
 
-    public List<Doctor> completeDoctorsOfSelectedSpeciality(String qry) {
+    public List<Doctor> completeDoctorsOfSelectedSpeciality(String query) {
         String sql;
         Map m = new HashMap();
         List<Doctor> docs;
-        if (speciality == null) {
-            sql = "select d from Doctor d where d.retired=false order by d.person.name";
-            docs = getDoctorFacade().findByJpql(sql);
-        } else {
-            sql = "select d from Doctor d where d.retired=false and d.speciality=:sp order by d.person.name";
+        m.put("name", "%" + query.toUpperCase() + "%");
+        m.put("code", "%" + query.toUpperCase() + "%");
+        if (getSpeciality() != null) {
+            System.out.println("getSpecialitygetSpeciality = " + getSpeciality());
+            sql = "select p from Doctor p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) and p.speciality =:sp order by p.person.name";
             m.put("sp", speciality);
-            docs = getDoctorFacade().findByJpql(sql, m);
+        } else {
+            System.out.println("getSpecialitygetSpeciality = " + getSpeciality());
+            sql = "select p from Doctor p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) order by p.person.name";
         }
+        docs = getDoctorFacade().findByJpql(sql, m);
         return docs;
     }
 
@@ -248,7 +256,11 @@ public class PracticeBookingController implements Serializable {
         opdVisitFromServiceSession();
         getPatientEncounterController().setCurrent(opdVisit);
         getPatientEncounterController().setStartedEncounter(opdVisit);
-        return "clinical_new_opd_visit";
+        getPatientEncounterController().fillCurrentPatientLists(patientController.getCurrent());
+        getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
+        getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
+        getPatientEncounterController().saveSelected();
+        return "/emr/opd_visit?faces-redirect=true";
     }
 
     @Inject
@@ -273,23 +285,18 @@ public class PracticeBookingController implements Serializable {
         String sql;
         sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
         opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
-        //   ////// // System.out.println("opdVisit = " + opdVisit);
         if (opdVisit == null) {
-            //   ////// // System.out.println("going for a new opd visit = ");
             newOpdVisit();
         }
         if (opdVisit == null) {
             JsfUtil.addErrorMessage("Can not create an opd encounter");
             return "";
         }
-        getBillController().prepareNewBill();
-        getBillController().setSearchedPatient(opdVisit.getPatient());
-        getBillController().setFromOpdEncounter(true);
-        getBillController().setOpdEncounterComments(opdVisit.getComments());
-        getBillController().setPatientSearchTab(1);
-        getBillController().setPatientTabId("tabSearchPt");
-        getBillController().setReferredBy(doctor);
-        return "/opd/opd_bill";
+        patientController.setCurrent(opdVisit.getPatient());
+        patientController.navigateToOpdBillFromOpdPatient();
+        opdBillController.setReferredBy(doctor);
+        opdBillController.setOpdEncounterComments(opdVisit.getComments());
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public String issuePharmacyBill() {
@@ -313,11 +320,13 @@ public class PracticeBookingController implements Serializable {
             return "";
         }
         getPharmacySaleController().setPatient(opdVisit.getPatient());
-        getPharmacySaleController().setPatientSearchTab(1);
         getPharmacySaleController().setOpdEncounterComments(opdVisit.getComments());
         getPharmacySaleController().setFromOpdEncounter(true);
-        getPharmacySaleController().setPatientTabId("tabSearchPt");
-        return "/clinical/clinical_pharmacy_sale";
+        getPatientEncounterController().fillEncounterMedicines(opdVisit);
+        for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
+            System.out.println("cli = " + cli.getPrescription().getItem().getName());
+        }
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public void opdVisitFromServiceSession() {
@@ -356,10 +365,6 @@ public class PracticeBookingController implements Serializable {
         opdVisit.setCreatedAt(Calendar.getInstance().getTime());
         opdVisit.setCreater(getSessionController().getLoggedUser());
         opdVisit.setPatient(billSession.getBill().getPatient());
-        //   ////// // System.out.println("billSession = " + billSession);
-        //   ////// // System.out.println("billSession.getBill() = " + billSession.getBill());
-        //   ////// // System.out.println("billSession.getBill().getPatient() = " + billSession.getBill().getPatient());
-        //   ////// // System.out.println("getBillSession().getBill().getPatient().getPerson().getName() = " + getBillSession().getBill().getPatient().getPerson().getName());
         opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
         opdVisit.setBillSession(billSession);
         opdVisit.setOpdDoctor(doctor);
@@ -438,8 +443,6 @@ public class PracticeBookingController implements Serializable {
             bi.setTotal(getSelectedServiceSession().getTotalFee());
         }
         bi.setPatient(getPatientController().getCurrent());
-        //   ////// // System.out.println("pt = " + getPatientController().getCurrent().getPerson().getName());
-
         bi.setBillDate(new Date());
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
@@ -569,6 +572,20 @@ public class PracticeBookingController implements Serializable {
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
     }
 
+    public List<DoctorSpeciality> completeDoctorSpeciality(String qry) {
+        List<DoctorSpeciality> lst;
+        String jpql = "Select d "
+                + " from DoctorSpeciality d "
+                + " where d.retired=:ret "
+                + " and d.name like :na "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("na", "%" + qry + "%");
+        m.put("ret", false);
+        lst = getServiceSessionFacade().findByJpql(jpql, m);
+        return lst;
+    }
+    
     public void listCompleteAndToCompleteBillSessions() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -684,7 +701,56 @@ public class PracticeBookingController implements Serializable {
         }
         return selectedServiceSession;
     }
+    
+    public void addToQueue() {
+        if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        }
+        if (doctor == null) {
+            JsfUtil.addErrorMessage("Please select a doctor");
+            return;
+        }
+        if (getSelectedServiceSession() == null) {
+            JsfUtil.addErrorMessage("Please select session");
+            return;
+        }
 
+        addToSession(addToBilledItem(addToBill()));
+        listBillSessions();
+        JsfUtil.addSuccessMessage("Added to the queue");
+    }
+    
+    private BillItem addToBilledItem(Bill b) {
+        BillItem bi = new BillItem();
+        bi.setCreatedAt(new Date());
+        bi.setCreater(getSessionController().getLoggedUser());
+        bi.setBill(b);
+        bi.setNetValue(b.getTotal());
+        bi.setSessionDate(getSelectedServiceSession().getSessionDate());
+        getBillItemFacade().create(bi);
+        return bi;
+    }
+
+    private void addToSession(BillItem bi) {
+        ////// // System.out.println("adding to session");
+        Bill b = bi.getBill();
+        BillSession bs = new BillSession();
+
+        bs.setBill(b);
+        bs.setBillItem(bi);
+        bs.setCreatedAt(Calendar.getInstance().getTime());
+        bs.setCreater(getSessionController().getLoggedUser());
+        bs.setServiceSession(getSelectedServiceSession());
+        ////// // System.out.println("getSelectedServiceSession() = " + getSelectedServiceSession());
+        bs.setSessionDate(getSelectedServiceSession().getSessionDate());
+        ////// // System.out.println("getSelectedServiceSession().getSessionDate() = " + getSelectedServiceSession().getSessionDate());
+        int count = getServiceSessionBean().getSessionNumber(getSelectedServiceSession(), Calendar.getInstance().getTime());
+        bs.setSerialNo(count);
+        bs.setStaff(getSelectedServiceSession().getStaff());
+        getBillSessionFacade().create(bs);
+
+    }
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
     }
@@ -907,6 +973,14 @@ public class PracticeBookingController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public OpdBillController getOpdBillController() {
+        return opdBillController;
+    }
+
+    public void setOpdBillController(OpdBillController opdBillController) {
+        this.opdBillController = opdBillController;
     }
 
 }

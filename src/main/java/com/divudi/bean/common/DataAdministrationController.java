@@ -52,6 +52,7 @@ import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Doctor;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -68,11 +69,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Entity;
 import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.reflections.Reflections;
 
 /**
@@ -325,7 +332,7 @@ public class DataAdministrationController {
                         entityFieldErrors.add(entityFieldError);
                     }
                 }
-            } 
+            }
         }
 
         // Convert the list of EntityFieldError objects to a string
@@ -1011,37 +1018,31 @@ public class DataAdministrationController {
     }
 
     public void createCodeSelectedCategory() {
-        if (itemCategory == null) {
-            JsfUtil.addErrorMessage("Please Select Category");
-            return;
-        }
-        if (itemCategory.getDescription().equals("") || itemCategory.getDescription() == null) {
-            JsfUtil.addErrorMessage("Please Check Category Code");
-            return;
-        }
         Map m = new HashMap();
         String sql = "select c from Amp c "
                 + " where c.retired=false"
-                + " and c.category=:cat "
                 + " and (c.departmentType is null "
-                + " or c.departmentType=:dep) "
-                + " order by c.name";
+                + " or c.departmentType=:dep) ";
 
         m.put("dep", DepartmentType.Pharmacy);
-        m.put("cat", itemCategory);
+        if (itemCategory != null) {
+            sql += " and c.category=:cat ";
+            m.put("cat", itemCategory);
+        }
+        sql += " order by c.name";
 
         items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
 
-        for (Item i : items) {
-            DecimalFormat df = new DecimalFormat("0000");
-//            df=new DecimalFormat("####");
-//            //System.out.println("df = " + df.format(j));
-            i.setCode(itemCategory.getDescription() + df.format(j));
-            itemFacade.edit(i);
-            j++;
-        }
+//        for (Item i : items) {
+//            DecimalFormat df = new DecimalFormat("0000");
+////            df=new DecimalFormat("####");
+////            //System.out.println("df = " + df.format(j));
+//            i.setCode(itemCategory.getDescription() + df.format(j));
+//            itemFacade.edit(i);
+//            j++;
+//        }
 
     }
 
@@ -1222,6 +1223,60 @@ public class DataAdministrationController {
             getPharmaceuticalItemCategoryFacade().edit(c);
         }
         fillPharmacyCategory();
+    }
+    
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Doctor Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Category");
+            headerRow.createCell(1).setCellValue("Name");
+            headerRow.createCell(2).setCellValue("Code");
+            headerRow.createCell(3).setCellValue("Barcode");
+            headerRow.createCell(4).setCellValue("VMP");
+
+            // Add more columns as needed
+            // Populate the data rows
+            int rowNum = 1;
+            for (Item i : items) {
+                Row row = sheet.createRow(rowNum++);
+                if(i.getCategory().getName() != null ||!i.getCategory().getName().trim().equals("")){
+                    row.createCell(0).setCellValue(i.getCategory().getName());
+                }
+                if(i.getName() != null ||!i.getName().trim().equals("")){
+                    row.createCell(1).setCellValue(i.getName());
+                }
+                if(!i.getCode().trim().equals("")){
+                    row.createCell(2).setCellValue(i.getCode());
+                }
+                if(!i.getBarcode().trim().equals("")){
+                    row.createCell(3).setCellValue(i.getBarcode());
+                }
+                if(i.getVmp() != null){
+                    row.createCell(4).setCellValue(i.getVmp().getName());
+                }
+                
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"amp_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 
     private List<PharmaceuticalItemCategory> fetchPharmacyCategories(boolean active) {
