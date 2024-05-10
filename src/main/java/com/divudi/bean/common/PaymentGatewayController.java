@@ -46,6 +46,10 @@ public class PaymentGatewayController implements Serializable {
     
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
     
+    public void resetOrderStatus(){
+        orderStatus=null;
+    }
+    
     public void generateTemplateForOrderDescription() {
         StringBuilder template = new StringBuilder();
         if (selectedSessioninstance == null) {
@@ -69,7 +73,7 @@ public class PaymentGatewayController implements Serializable {
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
                     orderId, orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
-                    "http://localhost:8080/sethma1/faces/channel/channel_booking_online_success.xhtml", "Sethma");
+                    commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());

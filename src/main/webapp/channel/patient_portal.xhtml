@@ -6,6 +6,11 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+    <f:metadata>
+        <f:event type="preRenderView"
+                 listener="#{paymentGatewayController.checkPaymentStatus()}"/>
+    </f:metadata>
     <h:head>
         <title>Channeling</title>
         <link rel="stylesheet" 
@@ -26,8 +31,10 @@
                 border: 1px solid transparent;
                 border-radius: .25rem;
                 position: absolute;
-                top: 10;
-                left: 50;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
                 z-index: 9999;
             }
 
@@ -86,6 +93,33 @@
     </h:head>
     <h:body class="container-fluid bgImage">
         <h:form id="form">
+
+
+            <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
+                <div class="align-items-center justify-content-center" style="text-align: center">
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton id="btnOrderStatus" ajax="false" action="#{paymentGatewayController.resetOrderStatus()}" type="button" icon="pi pi-times" styleClass="rounded-button ui-button-danger"  />
+                    </div>
+                    <div>
+                        <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
+                    </div>
+                    <h1>Success</h1>
+                    <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
+                <div class="align-items-center justify-content-center" style="text-align: center">
+                    <div>
+                        <img src="https://cdn.dribbble.com/users/251873/screenshots/9388228/media/0d882a65a39bbdd294edc7fee5da59c6.gif" style="min-width: 20rem"/>
+                    </div>
+                    <h1>Oops! Payment Failed</h1>
+                    <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
+                </div>
+            </h:panelGroup>
+
+
+
             <div class="row">
                 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
                     <div class="d-flex justify-content-between align-items-center w-100">

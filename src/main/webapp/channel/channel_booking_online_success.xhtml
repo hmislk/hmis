@@ -4,32 +4,9 @@
                 template="/resources/template/template.xhtml"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui">
-    <f:metadata>
-        <f:event type="preRenderView"
-                 listener="#{paymentGatewayController.checkPaymentStatus()}"/>
-    </f:metadata>
+   
     <ui:define name="content">
         <h:form id="paymentForm">
-            <h:panelGroup rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
-                <div class="align-items-center justify-content-center" style="text-align: center">
-                    <div>
-                        <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
-                    </div>
-                    <h1>Success</h1>
-                    <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
-                </div>
-            </h:panelGroup>
-
-            <h:panelGroup rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
-                <div class="align-items-center justify-content-center" style="text-align: center">
-                    <div>
-                        <img src="https://cdn.dribbble.com/users/251873/screenshots/9388228/media/0d882a65a39bbdd294edc7fee5da59c6.gif" style="min-width: 20rem"/>
-                    </div>
-                    <h1>Oops! Payment Failed</h1>
-                    <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
-                </div>
-            </h:panelGroup>
-
             <button type="button" onclick="startPayment();" class="btn btn-primary">Pay Now</button>
             <p:commandButton value="Check Status" action="#{paymentGatewayController.checkPaymentStatus()}"></p:commandButton>
         </h:form>
