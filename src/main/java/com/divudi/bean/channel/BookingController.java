@@ -67,6 +67,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
@@ -830,7 +831,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
         patientController.save(patient);
         printingBill = saveBilledBill(reservedBooking);
 
-        createPayment(printingBill, paymentMethod);
+        if(printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN){
+            createPayment(printingBill, paymentMethod);
+        }
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
@@ -2633,15 +2636,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
             case Agent:
                 bill.setBillType(BillType.ChannelAgent);
                 bill.setCreditCompany(institution);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
         }
 //        String insId = generateBillNumberInsId(bill);
