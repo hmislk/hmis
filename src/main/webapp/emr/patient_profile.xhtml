@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <p:growl ></p:growl>
+                <p:growl id="msg"></p:growl>
                 <p:panel class="w-100" style="height: 100vh;">
                     <f:facet name="header" >
                         <div class="d-flex align-items-center justify-content-between">
@@ -90,30 +90,115 @@
                         </div>
                     </f:facet>
                     <div class="row" >
-                        <div class="col-md-4 " >
-                            <p:outputPanel class="text-center">
-                                <h:panelGroup rendered="#{patientController.current.baImage eq null}"  >
-                                    <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
-                                                    class="w-50 img-thumbnail"
-                                                    library="image" name="male.jpg">
+                        <div class="col-3 " >
+                            <p:panel>
+                                <f:facet name="header">
+                                    <i class="fas fa-user"/>
+                                    <h:outputLabel value="Patient Details" class="mx-2 mt-2" />
+                                </f:facet>
+                                <p:outputPanel class="text-center">
+                                    <h:panelGroup rendered="#{patientController.current.baImage eq null}"  >
+                                        <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
+                                                        class="w-50 img-thumbnail"
+                                                        library="image" name="male.jpg">
+                                        </p:graphicImage>
+                                        <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
+                                                        class="w-50 img-thumbnail"
+                                                        library="image" name="female.png">
+                                        </p:graphicImage>
+                                    </h:panelGroup>
+
+
+                                    <p:graphicImage  class="w-75 img-thumbnail" 
+                                                     id="photos" cache="false"
+                                                     rendered="#{patientController.current.baImage ne null}"    
+                                                     value="#{patientController.image}"  >
                                     </p:graphicImage>
-                                    <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
-                                                    class="w-50 img-thumbnail"
-                                                    library="image" name="female.png">
-                                    </p:graphicImage>
-                                </h:panelGroup>
 
-
-                                <p:graphicImage  class="w-75 img-thumbnail" 
-                                                 id="photos" cache="false"
-                                                 rendered="#{patientController.current.baImage ne null}"    
-                                                 value="#{patientController.image}"  >
-                                </p:graphicImage>
-
-                            </p:outputPanel>
-                            <emr:patient patient="#{patientController.current}" ></emr:patient>
+                                </p:outputPanel>
+                                <emr:patient patient="#{patientController.current}" ></emr:patient>
+                            </p:panel>
                         </div>
-                        <div class="col-md-8" >
+                        <div class="col-3">
+
+                            <h:form>
+                                <p:panel  id="panelQueue">
+                                    <f:facet name="header">
+                                        <i class="fas fa-hospital-user"/>
+                                        <h:outputLabel value="Queue" class="mx-2 mt-2" />
+                                    </f:facet>
+                                    <div class="row">
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <h:outputLabel value="Date" ></h:outputLabel>
+                                            <p:calendar value="#{practiceBookingController.sessionDate}" 
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        pattern="dd MMMM yyyy" >
+                                                <f:ajax  event="dateSelect" execute="@this" render="bSession"  
+                                                         listener="#{practiceBookingController.listBillSessions}" />                                                
+                                            </p:calendar>
+
+                                            <h:outputLabel value="Speciality" ></h:outputLabel>
+                                            <p:autoComplete value="#{practiceBookingController.speciality}"
+                                                            id="acSpeciality" 
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            completeMethod="#{practiceBookingController.completeDoctorSpeciality}"
+                                                            var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
+                                                            >
+                                                <p:ajax process="@this" update="acStaff"></p:ajax>
+                                            </p:autoComplete>
+
+                                            <h:outputLabel value="Doctor" ></h:outputLabel>
+                                            <p:autoComplete value="#{practiceBookingController.doctor}"
+                                                            id="acStaff"
+                                                            completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
+                                                            var="doc"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            forceSelection="true"
+                                                            itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
+                                                            >
+                                                <f:ajax  event="itemSelect" execute="@this" render="bSession"  listener="#{practiceBookingController.listBillSessions}" />                                                
+                                            </p:autoComplete>
+
+                                            <p:commandButton id="btnAddToQueue"   value="Add" ajax="false"
+                                                         icon="fas fa-plus"
+                                                         class="ui-button-success w-100 m-1" 
+                                                         onclick="if (!confirm('Are you sure you want to Add this record?'))
+                                                                     return false;" 
+                                                         action="#{practiceBookingController.addToQueue()}">                        
+                                        </p:commandButton>
+
+                                        </h:panelGrid>
+                                        
+                                    </div>
+
+                                    <p:dataTable id="bSession" value="#{practiceBookingController.billSessions}" var='bs'
+                                                 selectionMode="single" rowKey="#{bs.id}"
+                                                 selection="#{practiceBookingController.selectedBillSession}">
+                                        <!--<p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />-->  
+
+                                        <p:column headerText="No">#{bs.serialNo}</p:column>
+                                        <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                        <p:column headerText="Actions">
+<!--                                            <p:commandButton value="View Patient" process="bSession" update=":#{p:component('panelSearch')} :#{p:component('panelDetails')} " onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs.bill.patient}" target="#{patientController.current}" >
+                                                </f:setPropertyActionListener>
+                                            </p:commandButton>-->
+                                            <p:commandButton disabled="#{bs.absent}" value="Visit" 
+                                                             action="#{practiceBookingController.opdVisitFromQueue()}" 
+                                                             ajax="false" onclick="onSubmitButton();" >
+                                                <f:setPropertyActionListener value="#{bs}" 
+                                                                             target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>  
+
+                                </p:panel>
+                            </h:form>
+                        </div>
+                        <div class="col-6" >
                             <div class="row" >
                                 <div class="col-12" >
                                     <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
