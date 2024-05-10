@@ -1237,9 +1237,6 @@ public class UserPreference implements Serializable {
     }
 
     public void setLengthOfOTPIndexes(String lengthOfOTPIndexes) {
-        if (lengthOfOTPIndexes == null || lengthOfOTPIndexes.isEmpty()) {
-            lengthOfOTPIndexes = "4";
-        }
         this.lengthOfOTPIndexes = lengthOfOTPIndexes;
 
     }
