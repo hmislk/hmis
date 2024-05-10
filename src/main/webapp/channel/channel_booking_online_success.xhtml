@@ -19,6 +19,7 @@
                     <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
                 </div>
             </h:panelGroup>
+
             <h:panelGroup rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
                 <div class="align-items-center justify-content-center" style="text-align: center">
                     <div>
@@ -28,6 +29,7 @@
                     <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
                 </div>
             </h:panelGroup>
+
             <button type="button" onclick="startPayment();" class="btn btn-primary">Pay Now</button>
             <p:commandButton value="Check Status" action="#{paymentGatewayController.checkPaymentStatus()}"></p:commandButton>
         </h:form>
