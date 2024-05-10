@@ -291,50 +291,162 @@
 
                     <p:tab title="Reprint" id="rePrint" >
                         <div class="row">
-                            <div class="d-flex justify-content-between">
-                                <p:commandButton 
-                                    value="Print" 
-                                    ajax="false" 
-                                    class="ui-button-info  m-1"
-                                    icon="fa fa-print"
-                                    action="#" 
-                                    disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">                    
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <div class="row">
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputLabel value="Reprint" />
+                                                <div>
+                                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                                        <p:selectOneMenu
+                                                            value="#{sessionController.departmentPreference.channelBillPaperType}"
+                                                            class="m-1"
+                                                            style="width: 13em;">
+                                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                                        </p:selectOneMenu>
+                                                        <p:commandButton
+                                                            ajax="false"
+                                                            icon="fa fa-sync-alt"
+                                                            class="ui-button-primary m-1"
+                                                            title="Redraw Bill">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            value="Print"
+                                                            ajax="false"
+                                                            class="ui-button-info  m-1"
+                                                            icon="fa fa-print"
+                                                            action="#"
+                                                            disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                                            <p:printer target="gpBillPreviewad1" ></p:printer>
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                        </f:facet>
 
-                                <div>
-                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                    <p:selectOneMenu 
-                                        value="#{sessionController.departmentPreference.channelBillPaperType}" 
-                                        class="m-1" 
-                                        style="width: 13em;">
-                                        <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" />
-                                    </p:selectOneMenu>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        icon="fa fa-sync-alt" 
-                                        class="ui-button-primary m-1" 
-                                        title="Redraw Bill">
-                                    </p:commandButton>
-                                </div>
-                            </div>
-                            <div class="col-md-12 mt-2">
-                                <div class="d-flex justify-content-center">
+                                        <div class="col-md-12 mt-2">
+                                                <div class="d-flex justify-content-center">
 
-                                    <h:panelGroup id="gpBillPreview">
-                                        <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
-                                                <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
-                                                <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/> 
-            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
-                                            </h:panelGroup>
-                                        </ui:repeat>
-                                    </h:panelGroup>
+                                                    <h:panelGroup id="gpBillPreviewad1">
+                                                        <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                                                <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                                <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:panel>
                                 </div>
-                            </div>
+                                <div class="col-6">
+                                    <p:panel>
+                                        <div class="row">
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputLabel value="Reprint(Original)" />
+
+                                                    <div>
+                                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                                        <p:selectOneMenu
+                                                            value="#{sessionController.departmentPreference.channelBillPaperType}"
+                                                            class="m-1"
+                                                            style="width: 13em;">
+                                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                                        </p:selectOneMenu>
+                                                        <p:commandButton
+                                                            ajax="false"
+                                                            icon="fa fa-sync-alt"
+                                                            class="ui-button-primary m-1"
+                                                            title="Redraw Bill">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            value="Print"
+                                                            ajax="false"
+                                                            class="ui-button-info  m-1"
+                                                            icon="fa fa-print"
+                                                            action="#"
+                                                            disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                                            <p:printer target="gpBillPreviewad2" ></p:printer>
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+                                            <div class="col-md-12 mt-2">
+                                                <div class="d-flex justify-content-center">
+
+                                                    <h:panelGroup id="gpBillPreviewad2">
+                                                        <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                                                <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" />
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                                <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" />
+                            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
+                                <div class="row">
+                                    <div class="d-flex justify-content-between">
+                                        <p:commandButton
+                                            value="Print"
+                                            ajax="false"
+                                            class="ui-button-info  m-1"
+                                            icon="fa fa-print"
+                                            action="#"
+                                            disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
+
+                                        <div>
+                                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                            <p:selectOneMenu
+                                                value="#{sessionController.departmentPreference.channelBillPaperType}"
+                                                class="m-1"
+                                                style="width: 13em;">
+                                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                                <f:selectItems value="#{enumController.paperTypes}" />
+                                            </p:selectOneMenu>
+                                            <p:commandButton
+                                                ajax="false"
+                                                icon="fa fa-sync-alt"
+                                                class="ui-button-primary m-1"
+                                                title="Redraw Bill">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-2">
+                                        <div class="d-flex justify-content-center">
+
+                                            <h:panelGroup id="gpBillPreview">
+                                                <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                                        <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                        <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                    <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
                         </div>
 
                     </p:tab>
@@ -355,7 +467,7 @@
 
                         <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true or channelBillController.disableCancel==true}"
+                                                     or channelBillController.billSession.bill.cancelled==true}"
                                          onclick="PF('confirmationDialog').show();"/>
                             <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
                                 <p>Are you sure you want to cancel the channel booking?</p>
