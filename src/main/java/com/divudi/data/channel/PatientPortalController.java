@@ -138,9 +138,7 @@ public class PatientPortalController {
             paymentGatewayController.generateTemplateForOrderDescription();
             System.out.println("selectedSessionInstance = " + selectedSessionInstance);
             paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
-            String url=paymentGatewayController.createCheckoutSession();
-            System.out.println("url = " + url);
-            return url;
+            return paymentGatewayController.createCheckoutSession();
         }
         return null;
     }

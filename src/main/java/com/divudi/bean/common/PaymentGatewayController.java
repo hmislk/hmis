@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.entity.Patient;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.bean.common.CommonController;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +24,10 @@ import org.apache.http.util.EntityUtils;
 @Named
 @SessionScoped
 public class PaymentGatewayController implements Serializable {
+
     @Inject
     CommonController commonController;
-    
+
     private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
     private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
     private String apiPassword = "49de22fcd8ade9ecb3d81790f3ad152c"; // Actual API Password
@@ -38,6 +40,7 @@ public class PaymentGatewayController implements Serializable {
     private String templateForOrderDescription;
     private SessionInstance selectedSessioninstance;
     private Patient patient;
+    private String returnUrl;
 
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
 
@@ -63,20 +66,20 @@ public class PaymentGatewayController implements Serializable {
         try {
             String requestBody = String.format(
                     "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s"
-                    + "&order.id=%s&order.amount=%s&order.currency=%s&order.description=%s&interaction.operation=%s"
+                    + "&order.id=%s&order.amount=%s&order.currency=%s&interaction.operation=%s"
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
-                    orderId, orderAmount, "LKR", templateForOrderDescription, "PURCHASE",
-                    commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml", "Sethma Hospital");
-            System.out.println("templateForOrderDescription = " + templateForOrderDescription);
+                    orderId, orderAmount,"LKR","","PURCHASE",
+                    "http://localhost:8080/sethma1", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
+                System.out.println("responseString = " + responseString);
                 sessionId = extractSessionId(responseString);
                 System.out.println("sessionId = " + sessionId);
                 if (sessionId != null) {
-                    return "/pay?faces-redirect=true"; // Use JSF navigation to redirect to the /pay page
+                    return "/patient_portal_pay?faces-redirect=true";
                 }
             }
         } catch (Exception e) {
@@ -85,8 +88,64 @@ public class PaymentGatewayController implements Serializable {
         return null; // Stay on the same page if the session creation fails
     }
 
+    public void navigateFromGatewayCode(String response) {
+        String gatewayCode = extractGatewayCode(response);
+        // Handle the gateway code accordingly
+        switch (gatewayCode) {
+            case "APPROVED":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+            case "UNSPECIFIED_FAILURE":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "DECLINED":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "TIMED_OUT":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "EXPIRED_CARD":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "INSUFFICIENT_FUNDS":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "SYSTEM_ERROR":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "NOT_SUPPORTED":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "DECLINED_DO_NOT_CONTACT":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "BLOCKED":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+                
+            case "CANCELLED":
+                System.out.println("gatewayCode = " + gatewayCode);
+                break;
+            default:
+                break;
+        }
+    }
+
     private String constructPaymentUrl(String sessionId) {
         return "https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js?session.id=" + sessionId;
+    }
+
+    private String extractGatewayCode(String response) {
+        Map<String, String> responseMap = parseUrlEncodedResponse(response);
+        return responseMap.get("response.gatewayCode");
     }
 
     private String extractSessionId(String response) {
@@ -181,6 +240,12 @@ public class PaymentGatewayController implements Serializable {
         this.patient = patient;
     }
 
+    public String getReturnUrl() {
+        return returnUrl;
+    }
 
+    public void setReturnUrl(String returnUrl) {
+        this.returnUrl = returnUrl;
+    }
 
 }
