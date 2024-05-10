@@ -6,7 +6,7 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                
+
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 >
 
@@ -24,7 +24,9 @@
                 </f:facet>
                 <p:commandButton ajax="false" value="Generate Sample Reports" action="#{investigationController.prepareSelectedReportSamples}"
                                  styleClass="noPrintButton"   />
-                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
+                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" >
+                    <p:printer target="printSample"  />
+                </p:commandButton>
 
                 <p:dataTable id="tbl" rowIndexVar="rowIndex" 
                              value="#{investigationController.allIxs}" 
@@ -57,12 +59,13 @@
 
 
 
-                <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >                    
-                    <div style="page-break-after: always!important;">
-                        <ez:patient_report patientReport="#{pr}"/>
-                    </div>
-                </ui:repeat>
-
+                <h:panelGroup id="printSample">
+                    <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr"  >                    
+                        <div style="page-break-after: always!important;">
+                            <ez:patient_report patientReport="#{pr}"/>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
                 <p:dataTable value="#{investigationController.ixWithoutSamples}" var="ixw" style="width: 600px;"
                              styleClass="nonPrintBlock"  >
                     <f:facet name="header" >
