@@ -66,11 +66,11 @@ public class PaymentGatewayController implements Serializable {
         try {
             String requestBody = String.format(
                     "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s"
-                    + "&order.id=%s&order.amount=%s&order.currency=%s&interaction.operation=%s"
+                    + "&order.id=%s&order.amount=%s&order.currency=%s&order.description=%s&interaction.operation=%s"
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
-                    orderId, orderAmount,"LKR","","PURCHASE",
-                    "http://localhost:8080/sethma1", "Sethma");
+                    orderId, orderAmount, "LKR", "sample", "PURCHASE",
+                    "http://localhost:8080/sethma1/channel/channel_booking_online_success", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
@@ -79,18 +79,17 @@ public class PaymentGatewayController implements Serializable {
                 sessionId = extractSessionId(responseString);
                 System.out.println("sessionId = " + sessionId);
                 if (sessionId != null) {
-                    return "/patient_portal_pay?faces-redirect=true";
+                    return "/pay?faces-redirect=true";
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null; // Stay on the same page if the session creation fails
+        return null;
     }
 
     public void navigateFromGatewayCode(String response) {
         String gatewayCode = extractGatewayCode(response);
-        // Handle the gateway code accordingly
         switch (gatewayCode) {
             case "APPROVED":
                 System.out.println("gatewayCode = " + gatewayCode);
@@ -98,39 +97,39 @@ public class PaymentGatewayController implements Serializable {
             case "UNSPECIFIED_FAILURE":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "DECLINED":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "TIMED_OUT":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "EXPIRED_CARD":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "INSUFFICIENT_FUNDS":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "SYSTEM_ERROR":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "NOT_SUPPORTED":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "DECLINED_DO_NOT_CONTACT":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "BLOCKED":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
-                
+
             case "CANCELLED":
                 System.out.println("gatewayCode = " + gatewayCode);
                 break;
