@@ -3,16 +3,15 @@ package com.divudi.bean.common;
 import com.divudi.entity.Patient;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.bean.common.CommonController;
-import java.io.IOException;
+import com.divudi.entity.PaymentGatewayTransaction;
+import com.divudi.facade.PaymentGatewayTransactionFacade;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -20,14 +19,18 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 
 @Named
 @SessionScoped
 public class PaymentGatewayController implements Serializable {
+    @EJB
+    PaymentGatewayTransactionFacade paymentGatewayTransactionFacade;
+    
     
     @Inject
     CommonController commonController;
+    @Inject 
+    SessionController sessionController;
     
     private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
     private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
@@ -43,6 +46,7 @@ public class PaymentGatewayController implements Serializable {
     private Patient patient;
     private String returnUrl;
     private String orderStatus;
+    private PaymentGatewayTransaction newPaymentGatewayTransaction;
     
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
     
@@ -66,13 +70,22 @@ public class PaymentGatewayController implements Serializable {
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(gatewayUrl);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+        
+        
+        newPaymentGatewayTransaction = new PaymentGatewayTransaction();
+        newPaymentGatewayTransaction.setSessionInstance(selectedSessioninstance);
+        newPaymentGatewayTransaction.setCreater(sessionController.getLoggedUser());
+        newPaymentGatewayTransaction.setCreatedAt(new Date());
+        paymentGatewayTransactionFacade.create(newPaymentGatewayTransaction);
+       
+        
         try {
             String requestBody = String.format(
                     "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s"
                     + "&order.id=%s&order.amount=%s&order.currency=%s&order.description=%s&interaction.operation=%s"
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
-                    orderId, orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
+                    newPaymentGatewayTransaction.getIdStr(), orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
                     commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
@@ -233,5 +246,15 @@ public class PaymentGatewayController implements Serializable {
     public void setOrderStatus(String orderStatus) {
         this.orderStatus = orderStatus;
     }
+
+    public PaymentGatewayTransaction getNewPaymentGatewayTransaction() {
+        return newPaymentGatewayTransaction;
+    }
+
+    public void setNewPaymentGatewayTransaction(PaymentGatewayTransaction newPaymentGatewayTransaction) {
+        this.newPaymentGatewayTransaction = newPaymentGatewayTransaction;
+    }
+    
+    
     
 }
