@@ -32,7 +32,7 @@
                             <div class="col-12 d-flex justify-content-between ">
                                 <!-- Command Buttons -->
                                 <div class="d-flex m-1 col-6">
-                                    
+
                                     <h:panelGroup rendered="#{billSearch.opdBillCancellationSameDay}">
                                         <p:commandButton 
                                             ajax="false" 
@@ -42,7 +42,7 @@
                                             class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
                                         </p:commandButton>
                                     </h:panelGroup>
-                                   
+
                                     <h:panelGroup rendered="#{!billSearch.opdBillCancellationSameDay}">
                                         <p:commandButton 
                                             ajax="false" 
@@ -52,7 +52,7 @@
                                             icon="fa fa-times" > 
                                         </p:commandButton>
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGroup rendered="#{billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 
@@ -73,7 +73,7 @@
                                             icon="fa fa-money-bill-wave">                          
                                         </p:commandButton>
                                     </h:panelGroup>
-                                    
+
                                     <p:commandButton 
                                         ajax="false" 
                                         value="Cancel All Bills of this Patient" 
@@ -89,6 +89,15 @@
                                 </div>
 
                                 <div class="d-flex col-6 justify-content-end m-1">
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Users To Modify Reffering Doctor For Opd Bills')}">
+                                        <p:commandButton 
+                                            class="ui-button-info m-1 w-25"
+                                            icon="fas fa-pen"
+                                            onclick="PF('editBill').show()"
+                                            >
+                                        </p:commandButton>
+                                    </h:panelGroup>
+
                                     <p:commandButton 
                                         value="Print" 
                                         class="ui-button-info m-1 w-25"
@@ -317,7 +326,74 @@
 
 
                     </p:panel>
+                    <p:dialog header="Edit Bill" widgetVar="editBill" resizable="false" showEffect="fade" hideEffect="fade" width="800">
+                        <h:panelGroup id="printPnl" class="m-2" >
+                            <h:panelGrid columns="2" class="w-100">
+                                <h:panelGroup>
+                                    <h:outputLabel style="font-size: 18pt" value="Reffering Doctor"/>
+                                    <p:commandLink id="btnAddNewDoc" 
+                                                   type="button"  
+                                                   value="&nbsp;(+)" 
+                                                   oncomplete="PF('dlg').show();" 
+                                                   actionListener="#{doctorController.prepareAdd}" 
+                                                   process="btnAddNewDoc" 
+                                                   update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                </h:panelGroup>
+                                <p:autoComplete forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{billSearch.referredBy}" 
+                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                itemLabel="#{ix.person.name}" 
+                                                itemValue="#{ix}" 
+                                                inputStyleClass="form-control w-100"
+                                                class="w-100" 
+                                                scrollHeight="500">
+                                    <p:column headerText="Name" style="padding: 2px;">
+                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code" style="padding: 2px;">
+                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                            </h:panelGrid>
+                        </h:panelGroup>
+                        <f:facet name="footer">
+                            <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
+                        </f:facet>
+                    </p:dialog>
+                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
+                        <h:panelGrid columns="2" >  
+                            <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
+                            <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></p:inputText>
+                            <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></p:inputText>
+                            <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></p:inputText>
+                            <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></p:inputText>
+                            <p:outputLabel value="Code"></p:outputLabel>   
+                            <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></p:inputText>
+                            <p:outputLabel value="Speciality" ></p:outputLabel>
+                            <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" >
+                                <f:selectItem itemLabel="Please select a speciality"/>
+                                <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            </p:selectOneMenu>
+                            <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></p:inputText>                 
+                            <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
+                            <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></p:inputText>   
 
+                            <p:commandButton 
+                                id="btnDocSave" 
+                                value="Add New" 
+                                ajax="false"
+                                process="btnDocSave panDoc" 
+                                update="msg panDoc cmbDoc " actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                            </p:commandButton>
+                        </h:panelGrid>  
+                    </p:dialog> 
 
 
 

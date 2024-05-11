@@ -42,13 +42,12 @@
                             </div>
                             <div class="col-md-5">
                                 <p:commandButton 
-                                    class="ui-button-success"
-                                    icon="fa-solid fa-file-excel"
-                                    style="float: right;"
-                                    ajax="false" 
-                                    value="Excel">
-                                    <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
-                                </p:commandButton>
+                                        value="Excel" 
+                                        icon="fa-solid fa-file-excel"
+                                        class="ui-button-success w-25"
+                                        ajax="false"
+                                        action="#{dataAdministrationController.downloadAsExcel()}"
+                                        />
                             </div>
                             
                         </div>
@@ -62,7 +61,7 @@
                             paginator="true"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="20,50,100,1000"
+                            rowsPerPageTemplate="10,20,50,100,1000"
                             >
                             <p:column 
                                 width="10%"
@@ -116,16 +115,7 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
                             </p:column>
-                            <p:column 
-                                headerText="VTM" 
-                                sortBy="#{i.vmp.vtm.name}"
-                                filterBy="#{i.vmp.vtm.name}" 
-                                filterMatchMode="contains">
-                                <f:facet name="header" >
-                                    <h:outputText value="VTM" />
-                                </f:facet>
-                                <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                            </p:column>
+                            
                         </p:dataTable>
 
                     </p:panel>

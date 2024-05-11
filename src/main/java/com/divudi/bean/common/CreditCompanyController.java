@@ -48,6 +48,7 @@ public class CreditCompanyController implements Serializable {
 
     private List<Institution> items = null;
     List<Institution> institutions;
+    private List<Institution> creditCompany;
     String selectText = "";
 
     public Institution findCreditCompanyByName(String name) {
@@ -272,6 +273,24 @@ public class CreditCompanyController implements Serializable {
 
     public void setInstitutionType(InstitutionType institutionType) {
         this.institutionType = institutionType;
+    }
+
+    public List<Institution> getCreditCompany() {
+        if (creditCompany == null) {
+            String sql = "select p from Institution p where p.retired=false and "
+                   + "p.institutionType = :institutionType "
+                   + "order by p.name";
+
+            Map<String, Object> m = new HashMap<>();
+            m.put("institutionType", InstitutionType.CreditCompany);
+
+            creditCompany = getFacade().findByJpql(sql, m);
+        }
+    return creditCompany;
+    }
+
+    public void setCreditCompany(List<Institution> creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
     /**

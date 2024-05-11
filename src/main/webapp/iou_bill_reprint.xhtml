@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Reprint" ></h:outputLabel>
+                            <hr/>
+
+                            <p:commandButton ajax="false" value="Cancel" action="petty_cash_bill_cancel" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
+                            </p:commandButton>
+
+                            <p:commandButton  class="mx-1" value="Return" onclick="PF('confirmationDialog').show()">                           
+                            </p:commandButton>
+                        </f:facet>
+
+
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Person Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Person Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+
+                    </p:panel>
+
+                    <p:dialog header="Return PettyCash" widgetVar="confirmationDialog" resizable="false" showEffect="fade" hideEffect="fade" width="1000">
+
+                        <h:panelGrid id="pnlPaymentDetails" columns="2" class="w-100">
+                            <p:outputLabel value="Payment Method" />
+                            <h:panelGroup>
+                                <div class="d-flex">
+                                    <p:selectOneMenu id="cmbPs" value="#{iouBillController.current.paymentMethod}">                                                                     
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                        <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                    </p:selectOneMenu>
+
+                                    <div class="mx-1">
+                                        <h:panelGroup id="creditCard" style="display: #{iouBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                            <pa:creditCard paymentMethodData="#{iouBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="cheque" style="display: #{iouBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <pa:cheque paymentMethodData="#{iouBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" style="display: #{iouBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <pa:slip paymentMethodData="#{iouBillController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            <p:outputLabel value="Comment" />
+                            <p:inputText class="w-100 my-1 " value="#{iouBillController.comment}" placeholder="Comment" /> 
+                            <p:outputLabel value="Amount" />
+                            <p:inputText class="w-100 " value="#{iouBillController.returnAmount}" placeholder="Return Amount" /> 
+                        </h:panelGrid>
+
+                        <f:facet name="footer">
+                            <h:panelGroup class="mb-2">
+                                <p:commandButton onclick="PF('returnBill').show()" id="btnSettle"  value="Settle" update="pnlReturnBills" process="btnSettle"  action="#{iouBillController.settleReturnBill()}"/>
+                                <p:commandButton class="mx-1" value="cancel" onclick="PF('confirmationDialog').hide()" type="button" />
+                            </h:panelGroup>
+                        </f:facet>
+                    </p:dialog>
+                    <p:dialog header="Return PettyCash" widgetVar="returnBill" resizable="false" showEffect="fade" hideEffect="fade" width="1000">
+                        <h:panelGroup id="printPnl" class="m-2" >
+                            <p:commandButton class="my-2" value="Print">
+                                <p:printer target="printablePanel" />
+                            </p:commandButton>
+                            <h:panelGroup id="printablePanel">
+                                <bi:iou_issue_bill bill="#{iouBillController.currentReturnBill}" />
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:dialog>
+
+                    <h:panelGroup>
+                        <div class="w-100 row">
+                            <div class="col-6">
+                                <div>
+                                    <p:commandButton value="Print" 
+                                                     class="ui-button-info m-1"
+                                                     icon="fa fa-print"
+                                                     ajax="false">
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton> 
+                                    <h:panelGroup id="gpBillPreview">
+                                        <bi:iou_issue_bill bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mx-5">
+                                    <h:panelGroup id="pnlReturnBills"> 
+                                        <ui:repeat value="#{pettyCashBillController.billList}" var="b">
+                                            <div>
+                                                <p:commandButton value="Print" 
+                                                                 class="ui-button-info m-1"
+                                                                 icon="fa fa-print"
+                                                                 ajax="false">
+                                                    <p:printer target="gpBillPreviewReturn" />
+                                                </p:commandButton> 
+                                                <h:panelGroup id="gpBillPreviewReturn">
+                                                    <bi:iou_issue_bill bill="#{b}" dup="true" />
+                                                </h:panelGroup>
+                                            </div>
+                                        </ui:repeat>
+
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+
+                    </h:panelGroup>
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -9,6 +9,7 @@
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:pat="http://java.sun.com/jsf/composite/patient"
+                xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
@@ -337,26 +338,30 @@
                                          rendered="#{channelBillController.billSession.bill.billType eq 'ChannelAgent'}"
                                          action="#{channelBillController.cancelAgentPaidBill()}"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}" 
+                                                     or channelBillController.billSession.bill.cancelled==true
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Canceled')}"
                                          onclick="onSubmitButton();"/>
                         <p:commandButton ajax="false" value="Cancel" 
                                          rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                          action="#{channelBillController.cancelCashFlowBill}"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}" 
+                                                     or channelBillController.billSession.bill.cancelled==true
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Canceled')}"
                                          onclick="onSubmitButton();"/>
                         <p:commandButton ajax="false" value="Cancel Booking" 
                                          rendered="#{(channelBillController.billSession.bill.billType eq 'ChannelOnCall' or channelBillController.billSession.bill.billType eq 'ChannelStaff')and channelBillController.billSession.bill.paidBill eq null}"
                                          action="#{channelBillController.cancelBookingBill}"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}" 
+                                                     or channelBillController.billSession.bill.cancelled==true
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Canceled')}"
                                          onclick="onSubmitButton();"/>
                         <p:commandButton ajax="false" value="Cancel Paid" 
                                          rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                          action="#{channelBillController.cancelCreditPaidBill}"
                                          disabled="#{channelBillController.billSession.bill.refunded==true
                                                      or channelBillController.billSession.bill.cancelled==true
-                                                     or channelBillController.billSession.bill.paidAmount eq 0}" 
+                                                     or channelBillController.billSession.bill.paidAmount eq 0
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Canceled')}"
                                          onclick="onSubmitButton();"/>
                     </p:tab>
 
@@ -402,14 +407,16 @@
                                          rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"
                                          action="#{channelBillController.refundAgentBill}" 
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
+                                                     or channelBillController.billSession.bill.cancelled==true
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Refunded')}"
                                          onclick="onSubmitButton();"/>
 
                         <p:commandButton ajax="false" value="Refund" 
                                          rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                          action="#{channelBillController.refundCashFlowBill}" 
                                          disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
+                                                     or channelBillController.billSession.bill.cancelled==true
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Refunded')}"
                                          onclick="onSubmitButton();"/>
 
                         <p:commandButton ajax="false" value="Refund Paid" 
@@ -417,7 +424,8 @@
                                          action="#{channelBillController.refundCreditPaidBill}" 
                                          disabled="#{channelBillController.billSession.bill.refunded==true
                                                      or channelBillController.billSession.bill.cancelled==true
-                                                     or channelBillController.billSession.bill.paidAmount eq 0}"
+                                                     or channelBillController.billSession.bill.paidAmount eq 0
+                                                     or configOptionApplicationController.getBooleanValueByKey('Channel Past Booking Can Not Be Refunded')}"
                                          onclick="onSubmitButton();"/>
 
 
@@ -453,17 +461,32 @@
                             <h:outputLabel id="settleBallance" value="Balance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
-                            <p:commandButton 
-                                id="setBtn"  
+                            <p:commandButton
+                                id="setBtn"
                                 class="ui-button-success mt-2"
                                 icon="fa-solid fa-check"
                                 value="Settle Credit Booking"
                                 process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
                                 update="gpSettlePrint"
-                                disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow' 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}"
+                                disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow'
                                             or channelBillController.billSession.bill.cancelled==true
-                                            or  channelBillController.billSession.bill.paidAmount ne 0}" 
+                                            or  channelBillController.billSession.bill.paidAmount ne 0}"
                                 oncomplete="PF('dlgPreSettle').show();"/>
+                            <p:commandButton
+                                id="setBtna"
+                                class="ui-button-success mt-2"
+                                icon="fa-solid fa-check"
+                                ajax="false"
+                                value="Settle Credit Booking"
+                                process="cmbSettlePs settleAgent2 settleAgRefTxt setBtn"
+                                update="gpSettlePrint"
+                                action="#{channelBillController.navigateToSettleBooking}"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}"
+                                disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow'
+                                            or channelBillController.billSession.bill.cancelled==true
+                                            or  channelBillController.billSession.bill.paidAmount ne 0}"
+                                />
                             <p:dialog 
                                 id="dialogChannelPreSettle"
                                 closable="true"
@@ -610,40 +633,63 @@
                     </p:tab>
 
 
-                    <p:tab title="Change" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Title"/>
-                            <p:selectOneMenu  value="#{pastBookingController.selectedBillSession.bill.patient.person.title}"  >
-                                <f:selectItems value="#{billController.title}"/>
-                            </p:selectOneMenu>
-                            <p:outputLabel value="Name"/>
-                            <p:inputText autocomplete="off" 
+                    <p:tab
+                        title="Change Patient"
+                        id="change"
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                        <p:panelGrid columns="2" class="w-100">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
+                                <p:commandButton ajax="false" value="Change Patient" action="#{bookingController.changePatient()}" ></p:commandButton>
+                            </f:facet>
+                            <p:panel header="Current Patient for Booking" >
+                                <ezcommon:patient patient="#{bookingController.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                            </p:panel>
+                            <ezcommon:patient_details controller="#{bookingController}" ></ezcommon:patient_details>
+                        </p:panelGrid>
+                    </p:tab>
+
+                    <p:tab
+                        title="Change Appointment Details"
+                        id="changeNumber"
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:outputLabel value="Patient Name"/>
+                            <p:inputText autocomplete="off"
                                          readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}"
-                                         value="#{pastBookingController.selectedBillSession.bill.patient.person.name}" />
-                            <p:outputLabel value="Patient"/>
-                            <p:inputText autocomplete="off" value="#{pastBookingController.selectedBillSession.bill.patient.person.phone}"  disabled="#{!webUserController.hasPrivilege('ClinicalPatientPhoneNumberEdit')}"/>
-                            <p:outputLabel value="Current Serial No"/>
-                            <ui:repeat value="#{pastBookingController.selectedBillSession.bill.billItems}" var="bis" >
-                                <p:outputLabel value="#{bis.billSession.serialNo}">                                        
+                                         value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
+                            <p:outputLabel value="Patient Phoone Number"/>
+                            <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"  disabled="#{!webUserController.hasPrivilege('ClinicalPatientPhoneNumberEdit')}"/>
+                            <p:outputLabel value="Current Appointment No"/>
+                            <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                <p:outputLabel value="#{bis.billSession.serialNo}">
                                 </p:outputLabel>
                             </ui:repeat>
-                            <p:outputLabel value="Serial No"/>
-                            <p:inputText autocomplete="off" value="#{pastBookingController.serealNo}">
+                            <p:outputLabel value="Appointment No"/>
+                            <p:inputText autocomplete="off" value="#{bookingController.serealNo}">
                             </p:inputText>
-                            <p:outputLabel value="Mark As Absent"/>
-                            <p:selectBooleanCheckbox value="#{pastBookingController.selectedBillSession.absent}" >
-                            </p:selectBooleanCheckbox>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
+                                             disabled="#{bookingController.selectedBillSession.bill.cancelled==true
+                                                         or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
 
-                            <p:commandButton ajax="false" value="Update Serial" action="#{pastBookingController.updateSerial()}"
-                                             disabled="#{pastBookingController.selectedBillSession.bill.cancelled==true
-                                                         or pastBookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Update Patient" action="#{pastBookingController.updatePatient}"
-                                             disabled="#{pastBookingController.selectedBillSession.bill.cancelled==true
-                                                         or pastBookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
-
+                            <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
+                                             disabled="#{bookingController.selectedBillSession.bill.cancelled==true
+                                                         or bookingController.selectedBillSession.bill.refunded==true}" />
                         </h:panelGrid>
 
 
+
+                    </p:tab>
+
+                    <p:tab title="Status" >
+                        <p:outputLabel value="Mark As Present / Absent"/>
+                        <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{channelBillController.billSession.bill.refunded==true
+                                                     or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
+                            <p:ajax process="@this" listener="#{bookingController.updateSelectedBillSessionPatient()}" ></p:ajax>
+                        </p:selectBooleanButton>
 
                     </p:tab>
 

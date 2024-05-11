@@ -67,6 +67,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
@@ -805,17 +806,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
         if (billSessionErrorPresent()) {
-            JsfUtil.addErrorMessage("Session Selection Error. Please retry from beginning");
+            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
             settleSucessFully = false;
             return;
         }
         if (patientErrorPresent(patient)) {
-            JsfUtil.addErrorMessage("Please enter patient details.");
+            JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
             return;
         }
         if (paymentMethodErrorPresent()) {
-            JsfUtil.addErrorMessage("Please enter Psyment Details");
+            JsfUtil.addErrorMessage("Please Enter Payment Details");
             settleSucessFully = false;
             return;
         }
@@ -830,7 +831,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
         patientController.save(patient);
         printingBill = saveBilledBill(reservedBooking);
 
-        createPayment(printingBill, paymentMethod);
+        if(printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN){
+            createPayment(printingBill, paymentMethod);
+        }
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
@@ -1541,6 +1544,31 @@ public class BookingController implements Serializable, ControllerWithPatient {
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
+    }
+    
+    public void markAsNotArrived() {
+        if (selectedSessionInstance == null) {
+            return;
+        }
+        if (selectedSessionInstance.getSessionDate() == null) {
+            return;
+        }
+        if (arrivalRecord == null) {
+            arrivalRecord = new ArrivalRecord();
+            arrivalRecord.setSessionDate(selectedSessionInstance.getSessionDate());
+            arrivalRecord.setSessionInstance(selectedSessionInstance);
+            arrivalRecord.setCreatedAt(new Date());
+            arrivalRecord.setCreater(sessionController.getLoggedUser());
+            fpFacade.create(arrivalRecord);
+        }
+        selectedSessionInstance.setArrived(false);
+        selectedSessionInstance.setArrivalRecord(arrivalRecord);
+        sessionInstanceFacade.edit(selectedSessionInstance);
+        arrivalRecord.setRecordTimeStamp(new Date());
+        arrivalRecord.setApproved(false);
+        fpFacade.edit(arrivalRecord);
+        sendSmsOnChannelDoctorArrival();
+        System.out.println("this not arrived");
     }
 
     public void markAsLeft() {
@@ -2586,6 +2614,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillType(BillType.ChannelOnCall);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
+                
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
@@ -2612,11 +2641,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
         }
 //        String insId = generateBillNumberInsId(bill);

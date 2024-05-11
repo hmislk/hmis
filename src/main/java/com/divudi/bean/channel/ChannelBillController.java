@@ -9,7 +9,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
@@ -86,7 +86,7 @@ public class ChannelBillController implements Serializable {
 
     @EJB
     PaymentFacade paymentFacade;
-    
+
     private BillSession billSession;
     private String patientTabId = "tabNewPt";
     private Patient newPatient;
@@ -105,6 +105,7 @@ public class ChannelBillController implements Serializable {
     PaymentMethodData paymentMethodData;
     Institution institution;
     Institution settleInstitution;
+    private Institution creditCompany;
     Bill printingBill;
     Staff toStaff;
     String errorText;
@@ -157,6 +158,8 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     MembershipSchemeController membershipSchemeController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -166,11 +169,17 @@ public class ChannelBillController implements Serializable {
     BillBeanController billBeanController;
     List<BillItem> billItems;
     int patientSearchTab;
+    private boolean disableRefund;
 
     private UserPreference pf;
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
+    }
+
+    public String navigateToSettleBooking() {
+        printPreview = false;
+        return "/channel/settle_channel_booking?faces-redirect=true";
     }
 
     public Patient getNewPatient() {
@@ -205,18 +214,18 @@ public class ChannelBillController implements Serializable {
         return bs;
 
     }
-    
-    public void settleCreditWithCash(){
+
+    public void settleCreditWithCash() {
         settlePaymentMethod = PaymentMethod.Cash;
         settleCredit();
     }
-    
-    public void settleCreditWithCard(){
+
+    public void settleCreditWithCard() {
         settlePaymentMethod = PaymentMethod.Card;
         settleCredit();
     }
-    
-    public void settleCreditWithCredit(){
+
+    public void settleCreditWithCredit() {
         settlePaymentMethod = PaymentMethod.Credit;
         settleCredit();
     }
@@ -226,11 +235,31 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
+
+            if (settlePaymentMethod == PaymentMethod.Card) {
+                if (paymentMethodData.getCreditCard().getInstitution() == null) {
+                    JsfUtil.addErrorMessage("Please Enter Bank Details");
+                    return;
+                }
+                if (paymentMethodData.getCreditCard().getNo() == null || paymentMethodData.getCreditCard().getNo().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please Enter Reference No.");
+                    return;
+                }
+            }
+            if (settlePaymentMethod == PaymentMethod.Credit) {
+                if (toStaff == null && creditCompany == null) {
+                    JsfUtil.addErrorMessage("Please Select the Staff or Credit Company");
+                    return;
+                }
+            }
+        }
+
         Bill b = savePaidBill();
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
-        
+
         getBillSession().setPaidBillSession(bs);
         getBillSessionFacade().edit(bs);
         getBillSessionFacade().edit(getBillSession());
@@ -243,12 +272,14 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-        
-        createPayment(b, paymentMethod);
-        
+
+        createPayment(b, settlePaymentMethod);
+
+        printPreview = true;
+
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -279,6 +310,7 @@ public class ChannelBillController implements Serializable {
 
                     case Agent:
                     case Credit:
+                        p.setInstitution(creditCompany);
                     case PatientDeposit:
                     case Slip:
                     case OnCall:
@@ -316,6 +348,8 @@ public class ChannelBillController implements Serializable {
 
                 case Agent:
                 case Credit:
+                    p.setInstitution(creditCompany);
+                    break;
                 case PatientDeposit:
                 case Slip:
                 case OnCall:
@@ -332,8 +366,6 @@ public class ChannelBillController implements Serializable {
         }
         return ps;
     }
-
-
 
     private Bill savePaidBill() {
         Bill temp = new BilledBill();
@@ -426,6 +458,28 @@ public class ChannelBillController implements Serializable {
 //            return true;
 //        }
         return false;
+    }
+
+    public void channelBookingRefund() {
+        if (refundableTotal > 0.0) {
+            if (billSession.getBillItem().getBill().getPaymentMethod() == PaymentMethod.Agent) {
+                refundAgentBill();
+                return;
+            }
+            if (billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow && billSession.getBillItem().getBill().getPaymentMethod() != PaymentMethod.Agent) {
+                refundCashFlowBill();
+                return;
+            }
+            if (billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
+                if (billSession.getBill().getPaidAmount() == 0) {
+                    JsfUtil.addErrorMessage("Can't Refund. No Payments");
+                } else {
+                    refundCreditPaidBill();
+                }
+            }
+        }else{
+            JsfUtil.addErrorMessage("Nothing to Refund");
+        }
     }
 
     public void refundCashFlowBill() {
@@ -617,11 +671,11 @@ public class ChannelBillController implements Serializable {
             bill.getPaidBill().setRefunded(true);
             bill.getPaidBill().setRefundedBill(rpb);
             getBillFacade().edit(bill.getPaidBill());
-
+            JsfUtil.addSuccessMessage("Successfully Refunded");
         }
 
     }
-    
+
     public void refund1(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
         calRefundTotal();
 
@@ -684,11 +738,11 @@ public class ChannelBillController implements Serializable {
             bill.getPaidBill().setRefunded(true);
             bill.getPaidBill().setRefundedBill(rpb);
             getBillFacade().edit(bill.getPaidBill());
-
+            JsfUtil.addSuccessMessage("Successfully Refunded");
         }
 
     }
-    
+
     List<BillFee> listBillFees;
 
     public void createBillfees(SelectEvent event) {
@@ -744,6 +798,29 @@ public class ChannelBillController implements Serializable {
 
         }
         return false;
+    }
+
+    public void channelBookingCancel() {
+        if (billSession.getBill().getBillType() == BillType.ChannelAgent) {
+            cancelAgentPaidBill();
+            return;
+        }
+        if (billSession.getBill().getBillType().getParent() == BillType.ChannelCashFlow && billSession.getBill().getBillType() != BillType.ChannelAgent) {
+            cancelCashFlowBill();
+            return;
+        }
+        if ((billSession.getBill().getBillType() == BillType.ChannelOnCall || billSession.getBill().getBillType() == BillType.ChannelStaff) && billSession.getBill().getPaidBill() == null) {
+            cancelBookingBill();
+            return;
+        }
+        if (billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow && billSession.getBill().getBillType() != BillType.ChannelAgent) {
+            if (billSession.getBill().getPaidAmount() == 0) {
+                JsfUtil.addErrorMessage("Can't Cancel. No Payments");
+            } else {
+                cancelCreditPaidBill();
+                return;
+            }
+        }
     }
 
     private boolean errorCheckCancelling() {
@@ -947,7 +1024,7 @@ public class ChannelBillController implements Serializable {
         JsfUtil.addSuccessMessage("Cancelled");
 
     }
-    
+
     public void cancel1(Bill bill, BillItem billItem, BillSession billSession) {
         if (errorCheckCancelling()) {
             return;
@@ -1117,7 +1194,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(cb);
         return cb;
     }
-    
+
     private CancelledBill createCancelCashBill(Bill bill) {
         CancelledBill cb = new CancelledBill();
 
@@ -1161,7 +1238,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(cb);
         return cb;
     }
-    
+
     private CancelledBill createCancelBill1(Bill bill) {
         CancelledBill cb = new CancelledBill();
 
@@ -1204,7 +1281,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(cb);
         return cb;
     }
-    
+
     private CancelledBill createCancelCashBill1(Bill bill) {
         CancelledBill cb = new CancelledBill();
 
@@ -1423,7 +1500,7 @@ public class ChannelBillController implements Serializable {
         return rb;
 
     }
-    
+
     private Bill createCashRefundBill(Bill bill) {
         RefundBill rb = new RefundBill();
         rb.copy(bill);
@@ -1474,7 +1551,7 @@ public class ChannelBillController implements Serializable {
         return rb;
 
     }
-    
+
     private Bill createRefundBill1(Bill bill) {
         RefundBill rb = new RefundBill();
         rb.copy(bill);
@@ -1524,7 +1601,7 @@ public class ChannelBillController implements Serializable {
         return rb;
 
     }
-    
+
     private Bill createCashRefundBill1(Bill bill) {
         RefundBill rb = new RefundBill();
         rb.copy(bill);
@@ -2932,6 +3009,29 @@ public class ChannelBillController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
+    public boolean isDisableRefund() {
+        if (billSession.getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
+            if (billSession.getBill().getPaidAmount() == 0) {
+                disableRefund = true;
+            } else {
+                disableRefund = false;
+            }
+        }
+        return disableRefund;
+    }
+
+    public void setDisableRefund(boolean disableRefund) {
+        this.disableRefund = disableRefund;
     }
 
 }

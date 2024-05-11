@@ -49,7 +49,10 @@
                                             rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
 
                                             <div class="d-flex">
-                                                <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
+                                                <p:inputText 
+                                                    autocomplete="off"
+                                                    onfocus="this.select()"
+                                                    value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
                                                     <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
                                                 <p:watermark value="Value" for="txtVal" />
@@ -147,7 +150,7 @@
                                 <p:column headerText="Payment Method" width="20%">
                                     <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                                 </p:column>
-                                
+
                                 <p:column headerText="Details" class="row d-grid" >
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
                                         <div class="row ">
@@ -163,11 +166,11 @@
                                         </div>
                                     </h:panelGroup>
                                 </p:column>
-                                
+
                                 <p:column headerText="Value" width="20%">
                                     <h:outputText value="#{bp.paidValue}" ></h:outputText>
                                 </p:column>
-                                
+
                                 <p:column headerText="Action" width="20%">
                                     <p:commandButton 
                                         class="ui-button-danger"
