@@ -114,7 +114,7 @@ public class PaymentGatewayController implements Serializable {
                     "apiOperation=RETRIEVE_ORDER&apiPassword=%s"
                     + "&apiUsername=%s&merchant=%s&order.id=%s",
                     apiPassword, apiUsername, merchantId,
-                    orderId);
+                    newPaymentGatewayTransaction.getIdStr());
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
