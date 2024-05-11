@@ -43,7 +43,7 @@
                     <div style="font-weight: bold; text-align: center;">
                         <h:outputLabel value="PAYMENT VOUCHER"   style="text-align: center;"/>
                         <br/>
-                        <h:outputLabel  value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelledBill.insId eq null}" style="text-align: center;"/>
+                        <h:outputLabel  value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelledBill.insId eq null}" style="text-align: center;"/>
                         <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" style="text-align: center;"/> 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" style="text-align: center;"/> 
                         <br></br>
@@ -240,7 +240,7 @@
                     <div style="font-weight: bold; text-align: center;">
                         <h:outputLabel value="PAYMENT VOUCHER"   style="text-align: center;"/>
                         <br/>
-                        <h:outputLabel  value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelledBill.insId eq null}" style="text-align: center;"/>
+                        <h:outputLabel  value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelledBill.insId eq null}" style="text-align: center;"/>
                         <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" style="text-align: center;"/> 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" style="text-align: center;"/> 
                         <br></br>
