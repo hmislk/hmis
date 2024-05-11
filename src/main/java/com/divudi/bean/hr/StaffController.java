@@ -277,6 +277,48 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
+    
+    public Staff getstaffByName(String name) {
+        String jpql = "select s "
+                + " from Staff s "
+                + " where s.retired=:ret "
+                + " and s.person.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    public void save(Staff stf) {
+        if (stf == null) {
+            System.out.println("staff error");
+            return;
+        }
+        if (stf.getPerson() == null) {
+            System.out.println("person error");
+            return;
+        }
+        if (stf.getPerson().getName().trim().equals("")) {
+            System.out.println("name error");
+            return;
+        }
+        if (stf.getEpfNo() == null) {
+            System.out.println("epf error");
+            return;
+        }
+        if (stf.getPerson().getId() == null || stf.getPerson().getId() == 0) {
+            getPersonFacade().create(stf.getPerson());
+        } else {
+            getPersonFacade().edit(stf.getPerson());
+        }
+        if (stf.getId() != null && stf.getId() > 0) {
+            getFacade().edit(stf);
+        } else {
+            stf.setCreatedAt(new Date());
+            stf.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(stf);
+        }
+    }
 
     ReportKeyWord reportKeyWord;
 

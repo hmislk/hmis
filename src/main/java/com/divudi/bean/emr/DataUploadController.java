@@ -219,6 +219,7 @@ public class DataUploadController implements Serializable {
     private List<Institution> creditCompanies;
     
     private List<Doctor> doctorsTosave;
+    private List<Staff> staffToSave;
 
     private boolean pollActive;
     private boolean uploadComplete;
@@ -479,6 +480,19 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
+    
+    public void uploadStaff() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                staffToSave = readStaffFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pollActive = false;
+    }
 
     private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
         List<Consultant> cons = new ArrayList<>();
@@ -716,6 +730,85 @@ public class DataUploadController implements Serializable {
         }
         return docs;
     }
+    
+    private List<Staff> readStaffFromExcel(InputStream inputStream) throws IOException {
+        List<Staff> stf = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemsToSave = new ArrayList<>();
+        masterItemsToSave = new ArrayList<>();
+        itemFeesToSave = new ArrayList<>();
+        categoriesSaved = new ArrayList<>();
+        institutionsSaved = new ArrayList<>();
+        departmentsSaved = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+//            DoctorSpeciality speciality;
+//            Doctor doctor;
+            Staff staff;
+            Title title;
+
+            String epfNo = null;
+            String titleString = null;
+            String name = null;
+            String nameWithInitials = null;
+            
+            
+            Cell epfNoCell = row.getCell(0);
+            if (epfNoCell != null && epfNoCell.getCellType() == CellType.STRING) {
+                epfNo = epfNoCell.getStringCellValue();
+            }
+            
+            Cell titleCell = row.getCell(1);
+            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
+                titleString = titleCell.getStringCellValue();
+            }
+
+            Cell nameCell = row.getCell(2);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+
+            }
+
+            Cell nameWithInitialsCell = row.getCell(3);
+            if (nameWithInitialsCell != null && nameWithInitialsCell.getCellType() == CellType.STRING) {
+                nameWithInitials = nameWithInitialsCell.getStringCellValue();
+            }
+
+            if (name == null || name.trim().equals("")) {
+                continue;
+            }
+
+            if (nameWithInitials == null || nameWithInitials.trim().equals("")) {
+                continue;
+            }
+
+            title = Title.getTitleEnum(titleString);
+
+            staff = staffController.getstaffByName(name);
+            if (staff == null) {
+                staff = new Staff();
+            }
+            staff.setEpfNo(epfNo);
+            System.out.println(epfNo);
+            staff.getPerson().setName(name);
+            staff.getPerson().setTitle(title);
+            staff.getPerson().setNameWithInitials(nameWithInitials);
+            stf.add(staff);
+
+        }
+        return stf;
+    }
 
     public void saveConsultants() {
         for (Consultant con : consultantsToSave) {
@@ -725,12 +818,20 @@ public class DataUploadController implements Serializable {
         consultantsToSave = new ArrayList<>();
     }
     
-     public void saveDoctors() {
+    public void saveDoctors() {
         for (Doctor doc : doctorsTosave) {
             doctorController.save(doc);
         }
         JsfUtil.addErrorMessage("Saved");
         doctorsTosave = new ArrayList<>();
+    }
+     
+    public void saveStaff() {
+        for (Staff stf : staffToSave) {
+            staffController.save(stf);
+        }
+        JsfUtil.addErrorMessage("Saved");
+        staffToSave = new ArrayList<>();
     }
 
     private List<Item> readOpdItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
@@ -3554,6 +3655,14 @@ public class DataUploadController implements Serializable {
 
     public void setConsultantsToSave(List<Consultant> consultantsToSave) {
         this.consultantsToSave = consultantsToSave;
+    }
+    
+    public List<Staff> getStaffToSave() {
+        return staffToSave;
+    }
+
+    public void setStaffToSave(List<Staff> staffToSave) {
+        this.staffToSave = staffToSave;
     }
 
     public List<Institution> getCreditCompanies() {
