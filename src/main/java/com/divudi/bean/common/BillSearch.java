@@ -618,6 +618,12 @@ public class BillSearch implements Serializable {
 
         bts.add(BillType.CollectingCentreBill);
         bts.add(BillType.PaymentBill);
+        
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelProPayment);
+        bts.add(BillType.ChannelAgencyCommission);
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
