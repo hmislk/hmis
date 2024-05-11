@@ -291,19 +291,15 @@ public class StaffController implements Serializable {
     
     public void save(Staff stf) {
         if (stf == null) {
-            System.out.println("staff error");
             return;
         }
         if (stf.getPerson() == null) {
-            System.out.println("person error");
             return;
         }
         if (stf.getPerson().getName().trim().equals("")) {
-            System.out.println("name error");
             return;
         }
         if (stf.getEpfNo() == null) {
-            System.out.println("epf error");
             return;
         }
         if (stf.getPerson().getId() == null || stf.getPerson().getId() == 0) {

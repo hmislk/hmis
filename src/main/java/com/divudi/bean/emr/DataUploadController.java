@@ -802,7 +802,6 @@ public class DataUploadController implements Serializable {
                 staff = new Staff();
             }
             staff.setEpfNo(epfNo);
-            System.out.println(epfNo);
             staff.getPerson().setName(name);
             staff.getPerson().setTitle(title);
             staff.getPerson().setNameWithInitials(nameWithInitials);
