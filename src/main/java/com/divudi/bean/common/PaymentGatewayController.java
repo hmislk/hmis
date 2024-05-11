@@ -42,8 +42,13 @@ public class PaymentGatewayController implements Serializable {
     private SessionInstance selectedSessioninstance;
     private Patient patient;
     private String returnUrl;
+    private String orderStatus;
     
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
+    
+    public void resetOrderStatus(){
+        orderStatus=null;
+    }
     
     public void generateTemplateForOrderDescription() {
         StringBuilder template = new StringBuilder();
@@ -51,16 +56,13 @@ public class PaymentGatewayController implements Serializable {
             templateForOrderDescription = "";
             return;
         }
-        template.append("Appointment Details:\n");
-        template.append("- Doctor: ").append(selectedSessioninstance.getOriginatingSession().getStaff().getPerson().getNameWithTitle()).append("\n");
-        template.append("- Patient: ").append("").append("\n");
-        template.append("- Specialty: ").append(selectedSessioninstance.getOriginatingSession().getStaff().getSpeciality().getName()).append("\n");
-        template.append("- Date & Time: ").append(selectedSessioninstance.getSessionAt()).append("\n");
-        template.append("- Price: ").append(selectedSessioninstance.getOriginatingSession().getTotal()).append("\n\n");
+        template.append("Doctor: ").append(selectedSessioninstance.getOriginatingSession().getStaff().getPerson().getNameWithTitle()).append("\n");
+        template.append(" - Session: ").append(selectedSessioninstance.getName()).append("\n\n");
         templateForOrderDescription = template.toString();
     }
     
     public String createCheckoutSession() {
+        generateTemplateForOrderDescription();
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(gatewayUrl);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -70,8 +72,8 @@ public class PaymentGatewayController implements Serializable {
                     + "&order.id=%s&order.amount=%s&order.currency=%s&order.description=%s&interaction.operation=%s"
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
-                    orderId, orderAmount, "LKR", "sample", "PURCHASE",
-                    "http://localhost:8080/sethma1/faces/channel/channel_booking_online_success.xhtml", "Sethma");
+                    orderId, orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
+                    commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
@@ -105,7 +107,8 @@ public class PaymentGatewayController implements Serializable {
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
                 System.out.println("status = " + extractStatusCode(responseString));
-                
+                orderStatus =  extractStatusCode(responseString);
+                System.out.println("orderStatus = " + orderStatus);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,6 +224,14 @@ public class PaymentGatewayController implements Serializable {
     
     public void setReturnUrl(String returnUrl) {
         this.returnUrl = returnUrl;
+    }
+
+    public String getOrderStatus() {
+        return orderStatus;
+    }
+
+    public void setOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
     }
     
 }
