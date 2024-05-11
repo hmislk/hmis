@@ -1065,6 +1065,7 @@ public class StaffController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        fillSelectedItemsWithNonDoctorStaff();
     }
 
     public void setSelectedItems(List<Staff> selectedItems) {
