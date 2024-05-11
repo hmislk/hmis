@@ -86,7 +86,8 @@
 
                     <!-- Bill Type -->
                     <p:column headerText="Bill Type">
-                        <h:outputText value="#{sh.pbItem.billItem.bill.billType.label}" />
+                        <h:outputText value="#{sh.pbItem.billItem.bill.billType.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic eq null}"/>
+                        <h:outputText value="#{sh.pbItem.billItem.bill.billTypeAtomic.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic ne null}"/>
                     </p:column>
 
                     <!-- Quantity In -->
