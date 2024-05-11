@@ -815,7 +815,7 @@ public class DataUploadController implements Serializable {
         for (Consultant con : consultantsToSave) {
             consultantController.save(con);
         }
-        JsfUtil.addErrorMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
         consultantsToSave = new ArrayList<>();
     }
 
@@ -823,7 +823,7 @@ public class DataUploadController implements Serializable {
         for (Doctor doc : doctorsTosave) {
             doctorController.save(doc);
         }
-        JsfUtil.addErrorMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
         doctorsTosave = new ArrayList<>();
     }
 
@@ -831,7 +831,7 @@ public class DataUploadController implements Serializable {
         for (Staff stf : staffToSave) {
             staffController.save(stf);
         }
-        JsfUtil.addErrorMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
         staffToSave = new ArrayList<>();
     }
 
