@@ -1000,6 +1000,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         getPreBill().setToInstitution(toInstitution);
 
         getPreBill().setComments(comment);
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -1045,6 +1047,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
         getSaleBill().setDeptId(getPreBill().getDeptId());
         getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
+        getSaleBill().setCashPaid(cashPaid);
+        getSaleBill().setBalance(balance);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
 
