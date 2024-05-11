@@ -273,7 +273,7 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
 
-        createPayment(b, paymentMethod);
+        createPayment(b, settlePaymentMethod);
 
         printPreview = true;
 
@@ -348,6 +348,8 @@ public class ChannelBillController implements Serializable {
 
                 case Agent:
                 case Credit:
+                    p.setInstitution(creditCompany);
+                    break;
                 case PatientDeposit:
                 case Slip:
                 case OnCall:

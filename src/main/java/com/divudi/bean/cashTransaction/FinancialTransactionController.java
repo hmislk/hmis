@@ -582,6 +582,7 @@ public class FinancialTransactionController implements Serializable {
         }
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+        
     }
 
     public void fillBillsFromShiftStartToNow() {
