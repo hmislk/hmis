@@ -388,17 +388,28 @@ public class SmsManagerEjb {
             jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Name", "campaignName"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Value", "Test"));
             jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Name", "mask"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Value", "Test"));
             jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Numbers", "numbers"), sms.getReceipientNumber());
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Text", "content"), sms.getSendingMessage());
 
+            
+            
             String loginUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Login URL", "https://bsms.hutch.lk/api/login");
             String refreshTokenUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Refresh Token URL", "https://bsms.hutch.lk/api/login/api/token/accessToken");
-            String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/sendsms");
+            String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/login/api/sendsms");
+            String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
+            String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
             URL url = new URL(smsGatewayUrl);
             System.out.println("loginUrl = " + loginUrl);
             System.out.println("refreshTokenUrl = " + refreshTokenUrl);
             System.out.println("smsGatewayUrl = " + smsGatewayUrl);
 
             String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
+            if (accessToken == null || accessToken.trim().equals("")) {
+                accessToken = getNewAccessToken(userName, password, loginUrl);
+            }
             System.out.println("accessToken = " + accessToken);
+
+            // Print the JSON payload
+            System.out.println("JSON Payload: " + jsonPayload.toString(4)); // Using 4 for pretty print
 
             long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
             System.out.println("Token expires in: " + expiresIn + " seconds");
@@ -415,22 +426,35 @@ public class SmsManagerEjb {
             conn.setRequestProperty("Accept", "*/*");
             conn.setRequestProperty("X-API-VERSION", "v1");
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setDoOutput(true); // This line enables output to the connection
 
-            // Send the JSON payload
             try ( OutputStream os = conn.getOutputStream()) {
                 byte[] input = jsonPayload.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
 
-            // Read the response
             try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                 StringBuilder response = new StringBuilder();
                 String responseLine;
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-                System.out.println(response.toString());
+                System.out.println("Response: " + response.toString());
                 sms.setReceivedMessage(response.toString());
+            } catch (IOException e) {
+                InputStream errorStream = conn.getErrorStream();
+                if (errorStream != null) {
+                    try ( BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"))) {
+                        StringBuilder response = new StringBuilder();
+                        String responseLine;
+                        while ((responseLine = br.readLine()) != null) {
+                            response.append(responseLine.trim());
+                        }
+                        System.out.println("Error response: " + response.toString());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
 
             return true;
