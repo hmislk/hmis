@@ -782,10 +782,9 @@
                         <h:panelGrid columns="2" class="my-2">
                             <p:outputLabel value="Patient Name"/>
                             <p:inputText autocomplete="off" 
-                                         readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}"
                                          value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
                             <p:outputLabel value="Patient Phoone Number"/>
-                            <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"  disabled="#{!webUserController.hasPrivilege('ClinicalPatientPhoneNumberEdit')}"/>
+                            <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}" />
                             <p:outputLabel value="Current Appointment No"/>
                             <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                 <p:outputLabel value="#{bis.billSession.serialNo}">                                        

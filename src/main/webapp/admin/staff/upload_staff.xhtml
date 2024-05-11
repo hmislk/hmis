@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/staff/admin_manage_staff_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    Upload Staff
+                </div>
+                <div class="card-body" >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadController.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         class="ui-button-warning m-1"
+                                         action="#{dataUploadController.uploadDoctors}"
+                                         ajax="false"/>
+
+                        <h:panelGroup id="tbls" >
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>A</td>
+                                        <td>EPF No.</td>
+                                        <td>Staff member's EPF No. Required</td>
+                                    </tr>
+                                    <tr>
+                                        <td>B</td>
+                                        <td>Title</td>
+                                        <td>Title of the staff member (e.g. Mr., Ms.). Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>C</td>
+                                        <td>Name</td>
+                                        <td>Staff member's name. Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>D</td>
+                                        <td>Name with initials</td>
+                                        <td>Staff member's name with initials. Required.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+
+
+                        </h:panelGroup>
+
+                    </h:form>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <h:form>
+
+
+            <p:commandButton value="Save" action="#{dataUploadController.saveDoctors()}" ajax="false" >
+            </p:commandButton>
+
+            <p:dataTable
+                paginator="true"
+                rows="10"
+                rowKey="#{item.id}"
+                id="tbl"
+                value="#{dataUploadController.consultantsToSave}"
+                var="item" >
+                <f:facet name="header">
+                    <p:outputLabel value="Staff Saved"></p:outputLabel>
+                </f:facet>
+
+                <!-- EPF No. Column -->
+                <p:column headerText="EPF No.">
+                    #{item.epfNo}
+                </p:column>
+
+                <!-- Title Column -->
+                <p:column headerText="Title">
+                    #{item.person.title.label}
+                </p:column>
+
+                <!-- Name Column -->
+                <p:column headerText="Name">
+                    #{item.person.name}
+                </p:column>
+
+                <!-- Name with initials Column -->
+<!--                <p:column headerText="Name with initials">
+                    #{item.}
+                </p:column>-->
+            </p:dataTable>
+
+        </h:form>
+
+
+
+
+
+
+
+
+    </ui:define>
+</ui:composition>
