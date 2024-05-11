@@ -318,6 +318,10 @@ public class DataUploadController implements Serializable {
     public String navigateToUploadDoctors() {
         return "/admin/staff/upload_doctors";
     }
+    
+    public String navigateToUploadStaff() {
+        return "/admin/staff/upload_staff";
+    }
 
     public String toUploadPatients() {
         return "/emr/admin/upload_patients";
