@@ -237,7 +237,7 @@ public class SearchController implements Serializable {
     private Long currentTokenId;
 
     public String navigateTobill(Bill bill) {
-        String navigateTo="";
+        String navigateTo = "";
         if (bill == null) {
             return "";
         }
@@ -245,25 +245,25 @@ public class SearchController implements Serializable {
             //Opd Bill Navigation
             case OPD_BILL_WITH_PAYMENT:
                 billSearch.setBill(bill);
-                navigateTo="/opd/bill_reprint.xhtml";
+                navigateTo = "/opd/bill_reprint.xhtml";
                 break;
             case OPD_BILL_REFUND:
                 billSearch.setBill(bill);
-                navigateTo= "/opd/bill_reprint.xhtml";
+                navigateTo = "/opd/bill_reprint.xhtml";
                 break;
             case OPD_BILL_CANCELLATION:
                 billSearch.setBill(bill);
-                navigateTo= "/opd/bill_reprint.xhtml";
+                navigateTo = "/opd/bill_reprint.xhtml";
                 break;
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 System.out.println("bill = " + bill);
                 opdBillController.setBatchBill(bill);
-                navigateTo= "/opd/opd_batch_bill_print.xhtml";
+                navigateTo = "/opd/opd_batch_bill_print.xhtml";
                 break;
             //Pharmacy Bill Navigation    
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
-                navigateTo= "/pharmacy/pharmacy_reprint_bill_sale.xhtml";
+                navigateTo = "/pharmacy/pharmacy_reprint_bill_sale.xhtml";
                 break;
             default:
                 return navigateTo;
@@ -437,7 +437,10 @@ public class SearchController implements Serializable {
 
     public String navigateToFailedSmsList() {
         return "/analytics/sms_faild?faces-redirect=true";
+    }
 
+    public String navigateToSendSms() {
+        return "/analytics/sms_send?faces-redirect=true";
     }
 
     public String navigateToListOtherInstitutionBills() {
