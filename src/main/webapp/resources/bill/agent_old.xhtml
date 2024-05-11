@@ -50,7 +50,7 @@
                                             <div class="receiptnoPrinting" >                                                  
                                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
-                                                <h:outputLabel value="#{cc.attrs.bill.insId}" 
+                                                <h:outputLabel value="#{cc.attrs.bill.deptId}" 
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId eq null}"/>  
                                                 <h:outputLabel value="  **Duplicate" 
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
