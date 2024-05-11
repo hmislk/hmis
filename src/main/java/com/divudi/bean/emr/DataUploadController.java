@@ -174,7 +174,6 @@ public class DataUploadController implements Serializable {
     CreditCompanyController creditCompanyController;
     @Inject
     DoctorController doctorController;
-    
 
     @EJB
     PatientFacade patientFacade;
@@ -217,18 +216,18 @@ public class DataUploadController implements Serializable {
     List<Department> departmentsSaved;
     private List<Consultant> consultantsToSave;
     private List<Institution> creditCompanies;
-    
+
     private List<Doctor> doctorsTosave;
     private List<Staff> staffToSave;
 
     private boolean pollActive;
     private boolean uploadComplete;
 
-    public String navigateToCollectingCenterUpload(){
-        uploadComplete=false;
+    public String navigateToCollectingCenterUpload() {
+        uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
     }
-    
+
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
         if (file != null) {
@@ -315,11 +314,11 @@ public class DataUploadController implements Serializable {
     public String navigateToUploadConsultants() {
         return "/admin/staff/upload_consultants";
     }
-    
+
     public String navigateToUploadDoctors() {
         return "/admin/staff/upload_doctors";
     }
-    
+
     public String navigateToUploadStaff() {
         return "/admin/staff/upload_staff";
     }
@@ -467,7 +466,7 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
-    
+
     public void uploadDoctors() {
         pollActive = true;
         items = new ArrayList<>();
@@ -480,7 +479,7 @@ public class DataUploadController implements Serializable {
         }
         pollActive = false;
     }
-    
+
     public void uploadStaff() {
         pollActive = true;
         items = new ArrayList<>();
@@ -611,8 +610,7 @@ public class DataUploadController implements Serializable {
         }
         return cons;
     }
-    
-    
+
     private List<Doctor> readDoctorsFromExcel(InputStream inputStream) throws IOException {
         List<Doctor> docs = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -730,7 +728,7 @@ public class DataUploadController implements Serializable {
         }
         return docs;
     }
-    
+
     private List<Staff> readStaffFromExcel(InputStream inputStream) throws IOException {
         List<Staff> stf = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -762,13 +760,17 @@ public class DataUploadController implements Serializable {
             String titleString = null;
             String name = null;
             String nameWithInitials = null;
-            
-            
+
             Cell epfNoCell = row.getCell(0);
-            if (epfNoCell != null && epfNoCell.getCellType() == CellType.STRING) {
-                epfNo = epfNoCell.getStringCellValue();
+            if (epfNoCell != null) {
+                if (epfNoCell.getCellType() == CellType.NUMERIC) {
+                    epfNo = String.valueOf((int) epfNoCell.getNumericCellValue());
+                }
+                if (epfNoCell.getCellType() == CellType.STRING) {
+                    epfNo = epfNoCell.getStringCellValue();
+                }
             }
-            
+
             Cell titleCell = row.getCell(1);
             if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
                 titleString = titleCell.getStringCellValue();
@@ -817,7 +819,7 @@ public class DataUploadController implements Serializable {
         JsfUtil.addErrorMessage("Saved");
         consultantsToSave = new ArrayList<>();
     }
-    
+
     public void saveDoctors() {
         for (Doctor doc : doctorsTosave) {
             doctorController.save(doc);
@@ -825,7 +827,7 @@ public class DataUploadController implements Serializable {
         JsfUtil.addErrorMessage("Saved");
         doctorsTosave = new ArrayList<>();
     }
-     
+
     public void saveStaff() {
         for (Staff stf : staffToSave) {
             staffController.save(stf);
@@ -1070,7 +1072,7 @@ public class DataUploadController implements Serializable {
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 item = ix;
-            }else if (itemType.equals("InwardService")) {
+            } else if (itemType.equals("InwardService")) {
 
                 if (masterItem == null) {
                     masterItem = new Investigation();
@@ -1604,15 +1606,15 @@ public class DataUploadController implements Serializable {
                 collectingCentres = readCollectingCentresFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
-                uploadComplete=false;
+                uploadComplete = false;
                 JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
             }
         }
-        uploadComplete=true;
+        uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
-    
-     public void uploadCreditCOmpanies() {
+
+    public void uploadCreditCOmpanies() {
         creditCompanies = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
@@ -1622,7 +1624,6 @@ public class DataUploadController implements Serializable {
             }
         }
     }
-
 
     private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -1882,7 +1883,6 @@ public class DataUploadController implements Serializable {
             String creditCompanyEmail = null;
             String creditCompanyaddress = null;
 
-           
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
 
@@ -1902,7 +1902,6 @@ public class DataUploadController implements Serializable {
             if (creditCompanyPrintingName == null || creditCompanyPrintingName.trim().equals("")) {
                 creditCompanyPrintingName = creditCompanyPrintingName;
             }
-
 
             Cell contactNumberCell = row.getCell(3);
 
@@ -1928,7 +1927,6 @@ public class DataUploadController implements Serializable {
             if (creditCompanyEmail == null || creditCompanyEmail.trim().equals("")) {
                 creditCompanyEmail = null;
             }
-
 
             Cell addressCell = row.getCell(5);
 
@@ -1962,7 +1960,7 @@ public class DataUploadController implements Serializable {
 
         return CreditCompanyList;
     }
-    
+
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
@@ -2252,7 +2250,7 @@ public class DataUploadController implements Serializable {
                     Double mobileLong;
                     mobileLong = mobileCell.getNumericCellValue();
                     Long mobileNumber = CommonFunctions.convertDoubleToLong(mobileLong);
-                    mobile = "0"+String.valueOf(mobileNumber);
+                    mobile = "0" + String.valueOf(mobileNumber);
                 }
                 patient.getPerson().setMobile(mobile);
             }
@@ -2326,14 +2324,13 @@ public class DataUploadController implements Serializable {
             patient.setCreatedAt(new Date());
             patient.setCreater(sessionController.getLoggedUser());
             patient.setCreatedInstitution(sessionController.getInstitution());
-            
-            
+
             Cell AreaCell = row.getCell(16);
             if (AreaCell != null) {
                 String strArea = AreaCell.getStringCellValue();
                 Area area = areaController.findAreaByName(strArea);
-                if (area==null) {
-                    Area areanew=new Area();
+                if (area == null) {
+                    Area areanew = new Area();
                     areanew.setCreatedAt(new Date());
                     areanew.setCreater(sessionController.getLoggedUser());
                     areanew.setName(strArea);
@@ -3252,7 +3249,7 @@ public class DataUploadController implements Serializable {
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation","Area"};
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation", "Area"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -3481,8 +3478,8 @@ public class DataUploadController implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
-     public StreamedContent getTemplateForCreditCompanyUpload() {
+
+    public StreamedContent getTemplateForCreditCompanyUpload() {
         try {
             createTemplateForCreditCOmpanyUpload();
         } catch (IOException e) {
@@ -3490,8 +3487,8 @@ public class DataUploadController implements Serializable {
         }
         return templateForCreditCompanyUpload;
     }
-     
-     public void createTemplateForCreditCOmpanyUpload() throws IOException {
+
+    public void createTemplateForCreditCOmpanyUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
         // Creating the first sheet for data entry
@@ -3499,7 +3496,7 @@ public class DataUploadController implements Serializable {
 
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Name", "Printing Name","Contact No", "Email Address","Agent Address"};
+        String[] columnHeaders = {"Name", "Printing Name", "Contact No", "Email Address", "Agent Address"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -3524,7 +3521,6 @@ public class DataUploadController implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-
 
     public StreamedContent getTemplateForCollectingCentreUpload() {
         try {
@@ -3656,7 +3652,7 @@ public class DataUploadController implements Serializable {
     public void setConsultantsToSave(List<Consultant> consultantsToSave) {
         this.consultantsToSave = consultantsToSave;
     }
-    
+
     public List<Staff> getStaffToSave() {
         return staffToSave;
     }
@@ -3688,7 +3684,5 @@ public class DataUploadController implements Serializable {
     public void setUploadComplete(boolean uploadComplete) {
         this.uploadComplete = uploadComplete;
     }
-    
-    
 
 }
