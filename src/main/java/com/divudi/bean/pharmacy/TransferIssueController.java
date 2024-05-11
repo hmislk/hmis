@@ -417,14 +417,17 @@ public class TransferIssueController implements Serializable {
                 continue;
             }
 
+//            System.out.println("//Remove Department Stock = ");
             //Remove Department Stock
             boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
+//            System.out.println("returnFlag = " + returnFlag);
             if (returnFlag) {
 
                 //Addinng Staff
+//                System.out.println("//Addinng Staff = ");
                 Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
