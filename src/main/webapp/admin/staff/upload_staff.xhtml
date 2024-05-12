@@ -14,7 +14,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    Upload Staff
+                    Upload Staffs
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
@@ -23,9 +23,27 @@
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
                                          class="ui-button-warning m-1"
-                                         action="#{dataUploadController.uploadDoctors}"
+                                         action="#{dataUploadController.uploadStaff()}"
                                          ajax="false"/>
 
+                        <h:panelGroup id="gpPoll" >
+                            <h:panelGroup rendered="#{dataUploadController.pollActive}" >
+                                <p:poll interval="10" process="@this" update="tbls gpPoll" ></p:poll>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                        </p:dialog>
+                        <script type="text/javascript">
+                            function start() {
+                                PF('statusDialog').show();
+                            }
+
+                            function stop() {
+                                PF('statusDialog').hide();
+                            }
+                        </script>
+                        
                         <h:panelGroup id="tbls" >
 
                             <table class="table">
@@ -75,49 +93,43 @@
         <h:form>
 
 
-            <p:commandButton value="Save" action="#{dataUploadController.saveDoctors()}" ajax="false" >
+            <p:commandButton class="ui-button-warning my-2" icon="fas fa-save" value="Save" action="#{dataUploadController.saveStaff()}" ajax="false" >
             </p:commandButton>
 
             <p:dataTable
+                class="my-2"
                 paginator="true"
                 rows="10"
                 rowKey="#{item.id}"
                 id="tbl"
-                value="#{dataUploadController.consultantsToSave}"
+                value="#{dataUploadController.staffToSave}"
                 var="item" >
                 <f:facet name="header">
                     <p:outputLabel value="Staff Saved"></p:outputLabel>
                 </f:facet>
 
-                <!-- EPF No. Column -->
+                 EPF No. Column 
                 <p:column headerText="EPF No.">
                     #{item.epfNo}
                 </p:column>
 
-                <!-- Title Column -->
+                 Title Column 
                 <p:column headerText="Title">
                     #{item.person.title.label}
                 </p:column>
 
-                <!-- Name Column -->
+                 Name Column 
                 <p:column headerText="Name">
                     #{item.person.name}
                 </p:column>
 
-                <!-- Name with initials Column -->
-<!--                <p:column headerText="Name with initials">
-                    #{item.}
-                </p:column>-->
+                 Name with initials Column 
+                <p:column headerText="Name with initials">
+                    #{item.person.nameWithInitials}
+                </p:column>
             </p:dataTable>
 
         </h:form>
-
-
-
-
-
-
-
 
     </ui:define>
 </ui:composition>
