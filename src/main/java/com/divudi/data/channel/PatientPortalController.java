@@ -127,10 +127,9 @@ public class PatientPortalController {
     PaymentGatewayController paymentGatewayController;
     private ChannelBean channelBean;
 
-    
-    public String booking(){
-        if(selectedSessionInstance!=null){
-            double amount=selectedSessionInstance.getOriginatingSession().getTotal();
+    public String booking() {
+        if (selectedSessionInstance != null) {
+            double amount = selectedSessionInstance.getOriginatingSession().getTotal();
             System.out.println("amount = " + amount);
             paymentGatewayController.setOrderAmount(String.valueOf(amount));
             paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
@@ -218,7 +217,6 @@ public class PatientPortalController {
 //    public void GoBackfromPatientAddAction() {
 //        addNewPatient = false;
 //    }
-
     public void fillSessionInstance() {
         if (channelSessions != null) {
             sessionInstances = new ArrayList<>();
@@ -317,15 +315,14 @@ public class PatientPortalController {
 
     public void addBooking() {
         bookingController.setPatient(patient);
-        bookingController.setPaymentMethod(PaymentMethod.Credit);
+        bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
         bookingController.setStaff(selectedConsultant);
         bookingController.setSelectedSessionInstance(selectedSessionInstance);
         bookingController.setSelectedServiceSession(selectedChannelSession);
         bookingController.addNormalChannelBooking();
         bookingController.sendSmsAfterBooking();
         bookingCompleted = true;
-        
-        
+
     }
 
     public String getPatientphoneNumber() {
