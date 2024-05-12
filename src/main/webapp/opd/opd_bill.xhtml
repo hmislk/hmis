@@ -117,6 +117,15 @@
                                                 update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
+                                            <p:commandButton
+                                                id="btnRefreshItemLight"
+                                                value="Refresh"
+                                                icon="fas fa-refresh"
+                                                class="w-100 mx-1 mt-5 ui-button-warning"
+                                                action="#{opdBillController.fillOpdItems()}"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                ajax="false"
+                                                />
                                         </div>
                                     </div>
                                     <div class="row" >
@@ -280,13 +289,18 @@
 
                                                 <p:column>
                                                     <f:facet name="header">Speciality</f:facet>
-                                                    <h:outputText value="#{bif.fee.speciality.name}" rendered="#{bif.fee !=null and bif.fee.speciality!=null}" ></h:outputText>
+<!--                                                    <h:outputText  value="#{bif.fee.speciality.name}" rendered="#{bif.fee !=null and bif.fee.speciality!=null}" ></h:outputText>-->
+                                                    <h:panelGroup>
+                                                        <p:selectOneMenu id="drSp" value="#{bif.fee.speciality}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
+                                                            <f:selectItems  value="#{specialityController.items}" var="bis" itemLabel="#{bis.name}" itemValue="#{bis}" />
+                                                            <p:ajax process="drSp" update="drs"/>
+                                                        </p:selectOneMenu>
+                                                    </h:panelGroup>
                                                 </p:column>
 
                                                 <p:column>
                                                     <f:facet name="header">Payee</f:facet>                                                
-                                                    <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
-                                                        <f:selectItem itemLabel="Select Staff" />
+                                                    <p:selectOneMenu id="drs" value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
                                                         <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
                                                     </p:selectOneMenu>
 

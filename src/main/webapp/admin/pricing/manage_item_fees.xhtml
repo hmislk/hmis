@@ -15,6 +15,7 @@
             <ui:define name="subcontent">
 
                 <h:form>
+                    <p:growl id="msg"/>
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
@@ -87,7 +88,7 @@
                                 <p:commandButton value="Save" 
                                                  action="#{itemFeeManager.addNewFee()}" 
                                                  style="margin-left: 30px;" 
-                                                 update="gpFees lblTotal dlg lblTotalF"
+                                                 update="gpFees lblTotal dlg lblTotalF msg"
                                                  process="gpDetail @this"
                                                  oncomplete="PF('dlg').hide();">
                                 </p:commandButton>

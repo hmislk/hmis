@@ -89,12 +89,14 @@
                                 </div>
 
                                 <div class="d-flex col-6 justify-content-end m-1">
-                                    <p:commandButton 
-                                        class="ui-button-info m-1 w-25"
-                                        icon="fas fa-pen"
-                                        onclick="PF('editBill').show()"
-                                        >
-                                    </p:commandButton>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Users To Modify Reffering Doctor For Opd Bills')}">
+                                        <p:commandButton 
+                                            class="ui-button-info m-1 w-25"
+                                            icon="fas fa-pen"
+                                            onclick="PF('editBill').show()"
+                                            >
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
                                     <p:commandButton 
                                         value="Print" 
