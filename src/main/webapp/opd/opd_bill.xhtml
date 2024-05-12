@@ -117,6 +117,15 @@
                                                 update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
+                                            <p:commandButton
+                                                id="btnRefreshItemLight"
+                                                value="Refresh"
+                                                icon="fas fa-refresh"
+                                                class="w-100 mx-1 mt-5 ui-button-warning"
+                                                action="#{opdBillController.fillOpdItems()}"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                ajax="false"
+                                                />
                                         </div>
                                     </div>
                                     <div class="row" >

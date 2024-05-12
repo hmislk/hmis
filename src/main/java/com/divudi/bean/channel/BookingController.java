@@ -67,6 +67,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
@@ -749,19 +750,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (paymentMethod == null) {
             return true;
         }
-      
+
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
                 return true;
             }
         }
-      
+
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
                 return true;
             }
         }
-      
+
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
             if (paymentMethod == PaymentMethod.Card) {
                 if (paymentMethodData.getCreditCard().getInstitution() == null) {
@@ -778,7 +779,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 if (paymentMethodData.getCheque().getInstitution() == null) {
                     return true;
                 }
-                if (paymentMethodData.getCheque().getDate()== null) {
+                if (paymentMethodData.getCheque().getDate() == null) {
                     return true;
                 }
             }
@@ -830,7 +831,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
         patientController.save(patient);
         printingBill = saveBilledBill(reservedBooking);
 
-        createPayment(printingBill, paymentMethod);
+        if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
+            createPayment(printingBill, paymentMethod);
+        }
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
@@ -1374,24 +1377,36 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void generateSessions() {
         sessionInstances = new ArrayList<>();
-        String sql;
-        Map m = new HashMap();
-        m.put("staff", getStaff());
-        m.put("class", ServiceSession.class);
+        String jpql;
+        Map params = new HashMap();
+        params.put("staff", getStaff());
+        params.put("class", ServiceSession.class);
         if (staff != null) {
-            sql = "Select s From ServiceSession s "
+            jpql = "Select s From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
                     + " and s.originatingSession is null"
-                    + " and type(s)=:class "
-                    + " order by s.sessionWeekday,s.startingTime ";
-            List<ServiceSession> selectedDoctorsServiceSessions = getServiceSessionFacade().findByJpql(sql, m);
+                    + " and type(s)=:class ";
+            boolean listChannelSessionsForLoggedDepartmentOnly = configOptionApplicationController.getBooleanValueByKey("List Channel Sessions For Logged Department Only", false);
+            boolean listChannelSessionsForLoggedInstitutionOnly = configOptionApplicationController.getBooleanValueByKey("List Channel Sessions For Logged Institution Only", false);
+            if (listChannelSessionsForLoggedDepartmentOnly) {
+                jpql += " and s.department=:dept ";
+                params.put("dept", sessionController.getDepartment());
+            }
+            if (listChannelSessionsForLoggedInstitutionOnly) {
+                jpql += " and s.institution=:ins ";
+                params.put("ins", sessionController.getInstitution());
+            }
+            jpql += " order by s.sessionWeekday,s.startingTime ";
+            List<ServiceSession> selectedDoctorsServiceSessions = getServiceSessionFacade().findByJpql(jpql, params);
             calculateFee(selectedDoctorsServiceSessions, channelBillController.getPaymentMethod());
             try {
                 sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedDoctorsServiceSessions, sessionStartingDate);
             } catch (Exception e) {
             }
             generateSessionEvents(sessionInstances);
+        } else {
+            sessionInstances = new ArrayList<>();
         }
 
     }
@@ -1542,7 +1557,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
     }
-    
+
     public void markAsNotArrived() {
         if (selectedSessionInstance == null) {
             return;
@@ -2611,6 +2626,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillType(BillType.ChannelOnCall);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
+
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
@@ -2637,11 +2653,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
         }
 //        String insId = generateBillNumberInsId(bill);

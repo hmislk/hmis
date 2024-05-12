@@ -9,6 +9,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -281,6 +282,7 @@ public class TransferReceiveController implements Serializable {
 
     public void saveBill() {
         getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
+        getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
         getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
