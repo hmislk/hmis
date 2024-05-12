@@ -3,14 +3,17 @@ package com.divudi.bean.common;
 import com.divudi.entity.Patient;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.bean.common.CommonController;
+import com.divudi.data.channel.PatientPortalController;
 import com.divudi.entity.PaymentGatewayTransaction;
 import com.divudi.facade.PaymentGatewayTransactionFacade;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.inject.Inject;
 import org.apache.http.client.HttpClient;
@@ -31,6 +34,8 @@ public class PaymentGatewayController implements Serializable {
     CommonController commonController;
     @Inject
     SessionController sessionController;
+    @Inject
+    PatientPortalController patientPortalController;
 
     private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
     private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
@@ -51,9 +56,9 @@ public class PaymentGatewayController implements Serializable {
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
 
     public void resetOrderStatus() {
-        orderId=null;
+        orderId = null;
         orderStatus = null;
-        
+
     }
 
     public void generateTemplateForOrderDescription() {
@@ -86,7 +91,7 @@ public class PaymentGatewayController implements Serializable {
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
                     newPaymentGatewayTransaction.getIdStr(), orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
-                    commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml", "Sethma");
+                    commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_status.xhtml", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
@@ -122,6 +127,45 @@ public class PaymentGatewayController implements Serializable {
                 System.out.println("status = " + extractStatusCode(responseString));
                 orderStatus = extractStatusCode(responseString);
                 System.out.println("orderStatus = " + orderStatus);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
+
+    public String checkPaymentStatusForOnlineChannelBooking() {
+        String status = null;
+        HttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost(gatewayUrl);
+        post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+        try {
+            String requestBody = String.format(
+                    "apiOperation=RETRIEVE_ORDER&apiPassword=%s"
+                    + "&apiUsername=%s&merchant=%s&order.id=%s",
+                    apiPassword, apiUsername, merchantId,
+                    newPaymentGatewayTransaction.getIdStr());
+            post.setEntity(new StringEntity(requestBody));
+            HttpResponse response = client.execute(post);
+            String responseString = EntityUtils.toString(response.getEntity());
+            if (response.getStatusLine().getStatusCode() == 200) {
+                System.out.println("status = " + extractStatusCode(responseString));
+                orderStatus = extractStatusCode(responseString);
+                System.out.println("orderStatus = " + orderStatus);
+                if (orderStatus.equalsIgnoreCase("success")) {
+                    patientPortalController.completeBooking();
+                    try {
+                        FacesContext.getCurrentInstance().getExternalContext().redirect("/patient_portal_channelling_payment_successful.xhtml");
+                    } catch (IOException e) {
+                        System.out.println("e = " + e);
+                    }
+                }else{
+                    try {
+                        FacesContext.getCurrentInstance().getExternalContext().redirect("/patient_portal_channelling_payment_unsuccessful.xhtml");
+                    } catch (IOException e) {
+                        System.out.println("e = " + e);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.divudi.data.channel;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.PatientController;
@@ -23,7 +24,6 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Sms;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
-import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillSessionFacade;
@@ -33,17 +33,16 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import javax.ejb.EJB;
 import javax.inject.Named;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import org.primefaces.model.ScheduleModel;
@@ -52,43 +51,9 @@ import org.primefaces.model.ScheduleModel;
  *
  * @author acer
  */
-@Named(value = "patientPortalController")
-@ApplicationScoped
-public class PatientPortalController {
-
-    private String PatientphoneNumber;
-    private boolean bookDoctor;
-    private Staff selectedConsultant;
-    private List<Bill> patientBills;
-    private List<Payment> PatientPayments;
-    private List<Payment> channelPayments;
-    private List<ServiceSession> docotrSessions;
-    private List<Staff> consultants;
-    private List<ServiceSession> channelSessions;
-    private Speciality selectedSpeciality;
-    private ServiceSession selectedChannelSession;
-    private Date date;
-    private List<SessionInstance> sessionInstances;
-    private Date sessionStartingDate;
-    private String messageForSms;
-    private String otp;
-    private String patientEnteredOtp;
-    private boolean otpVerify;
-    private List<Patient> searchedPatients;
-    private Patient patient;
-    private boolean searchedPatientIsNull;
-    private SessionInstance selectedSessionInstance;
-    private boolean selectPatient;
-    private boolean addNewProfile;
-    private boolean addNewPatient;
-    private boolean bookingCompleted;
-
-    private List<BillSession> pastBookings;
-    private List<Payment> pastPayments;
-
-    ScheduleModel eventModel;
-    Staff staff;
-    ServiceSession serviceSession;
+@Named
+@SessionScoped
+public class PatientPortalController implements Serializable {
 
     @EJB
     private StaffFacade staffFacade;
@@ -125,10 +90,59 @@ public class PatientPortalController {
     CommonController commonController;
     @Inject
     PaymentGatewayController paymentGatewayController;
+    @Inject
+    ChannelBillController channelBillController;
+
+    private String PatientphoneNumber;
+    private boolean bookDoctor;
+    private Staff selectedConsultant;
+    private List<Bill> patientBills;
+    private List<Payment> PatientPayments;
+    private List<Payment> channelPayments;
+    private List<ServiceSession> docotrSessions;
+    private List<Staff> consultants;
+    private List<ServiceSession> channelSessions;
+    private Speciality selectedSpeciality;
+    private ServiceSession selectedChannelSession;
+    private Date date;
+    private List<SessionInstance> sessionInstances;
+    private Date sessionStartingDate;
+    private String messageForSms;
+    private String otp;
+    private String patientEnteredOtp;
+    private boolean otpVerify;
+    private List<Patient> searchedPatients;
+    private Patient patient;
+    private boolean searchedPatientIsNull;
+    private SessionInstance selectedSessionInstance;
+    private boolean selectPatient;
+    private boolean addNewProfile;
+    private boolean addNewPatient;
+    private boolean bookingCompleted;
+
+    private List<BillSession> pastBookings;
+    private List<Payment> pastPayments;
+
+    private BillSession channelBookingBillSession;
+    private BillSession channelSettlingBillSession;
+
+    ScheduleModel eventModel;
+    Staff staff;
+    ServiceSession serviceSession;
+
     private ChannelBean channelBean;
 
     public String booking() {
         if (selectedSessionInstance != null) {
+
+            bookingController.setPatient(patient);
+            bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
+            bookingController.setStaff(selectedConsultant);
+            bookingController.setSelectedSessionInstance(selectedSessionInstance);
+            bookingController.setSelectedServiceSession(selectedChannelSession);
+            channelBookingBillSession = bookingController.addChannelBookingForOnlinePayment();
+            bookingCompleted = false;
+
             double amount = selectedSessionInstance.getOriginatingSession().getTotal();
             System.out.println("amount = " + amount);
             paymentGatewayController.setOrderAmount(String.valueOf(amount));
@@ -261,8 +275,6 @@ public class PatientPortalController {
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(PatientphoneNumber);
         e.setSendingMessage("Your authentication code is " + otp);
-        e.setDepartment(getSessionController().getDepartment());
-        e.setInstitution(getSessionController().getInstitution());
         e.setPending(false);
         e.setOtp(otp);
         getSmsFacade().create(e);
@@ -313,16 +325,17 @@ public class PatientPortalController {
         }
     }
 
-    public void addBooking() {
-        bookingController.setPatient(patient);
-        bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
-        bookingController.setStaff(selectedConsultant);
-        bookingController.setSelectedSessionInstance(selectedSessionInstance);
-        bookingController.setSelectedServiceSession(selectedChannelSession);
-        bookingController.addNormalChannelBooking();
-        bookingController.sendSmsAfterBooking();
+    public void completeBooking() {
+        if(channelBookingBillSession==null){
+            JsfUtil.addErrorMessage("No Chanel Booking Session. Please contact system administator");
+            return;
+        }
+        if(channelBookingBillSession.getPaidBillSession()!=null){
+            JsfUtil.addErrorMessage("This is already Paid");
+            return;
+        }
+        channelSettlingBillSession = channelBillController.settleCreditForOnlinePayments(channelBookingBillSession);
         bookingCompleted = true;
-
     }
 
     public String getPatientphoneNumber() {
@@ -602,5 +615,23 @@ public class PatientPortalController {
     public void setPastPayments(List<Payment> pastPayments) {
         this.pastPayments = pastPayments;
     }
+
+    public BillSession getChannelBookingBillSession() {
+        return channelBookingBillSession;
+    }
+
+    public void setChannelBookingBillSession(BillSession channelBookingBillSession) {
+        this.channelBookingBillSession = channelBookingBillSession;
+    }
+
+    public BillSession getChannelSettlingBillSession() {
+        return channelSettlingBillSession;
+    }
+
+    public void setChannelSettlingBillSession(BillSession channelSettlingBillSession) {
+        this.channelSettlingBillSession = channelSettlingBillSession;
+    }
+
+   
 
 }
