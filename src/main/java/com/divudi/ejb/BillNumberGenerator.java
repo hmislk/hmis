@@ -549,7 +549,7 @@ public class BillNumberGenerator {
             billNumber.setLastBillNumber(0l);
         }
         billNumber.setLastBillNumber(billNumber.getLastBillNumber()+1);
-        billNumberFacade.editAndCommit(billNumber);
+        billNumberFacade.editAndFlush(billNumber);
         return billNumber;
 
     }
