@@ -417,7 +417,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale'}">
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale' or cc.attrs.bill.billType eq 'PharmacyWholeSale' }">
                         <tr>
                             <td class="totalsBlock" style="text-align: left; width: 60%;">
                                 <h:outputLabel value="Balance" />
