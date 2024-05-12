@@ -23,15 +23,15 @@ import org.apache.http.util.EntityUtils;
 @Named
 @SessionScoped
 public class PaymentGatewayController implements Serializable {
+
     @EJB
     PaymentGatewayTransactionFacade paymentGatewayTransactionFacade;
-    
-    
+
     @Inject
     CommonController commonController;
-    @Inject 
+    @Inject
     SessionController sessionController;
-    
+
     private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
     private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
     private String apiPassword = "49de22fcd8ade9ecb3d81790f3ad152c"; // Actual API Password
@@ -47,13 +47,15 @@ public class PaymentGatewayController implements Serializable {
     private String returnUrl;
     private String orderStatus;
     private PaymentGatewayTransaction newPaymentGatewayTransaction;
-    
+
     private final String gatewayUrl = "https://cbcmpgs.gateway.mastercard.com/api/nvp/version/61";
-    
-    public void resetOrderStatus(){
-        orderStatus=null;
+
+    public void resetOrderStatus() {
+        orderId=null;
+        orderStatus = null;
+        
     }
-    
+
     public void generateTemplateForOrderDescription() {
         StringBuilder template = new StringBuilder();
         if (selectedSessioninstance == null) {
@@ -64,21 +66,19 @@ public class PaymentGatewayController implements Serializable {
         template.append(" - Session: ").append(selectedSessioninstance.getName()).append("\n\n");
         templateForOrderDescription = template.toString();
     }
-    
+
     public String createCheckoutSession() {
         generateTemplateForOrderDescription();
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(gatewayUrl);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-        
-        
+
         newPaymentGatewayTransaction = new PaymentGatewayTransaction();
         newPaymentGatewayTransaction.setSessionInstance(selectedSessioninstance);
         newPaymentGatewayTransaction.setCreater(sessionController.getLoggedUser());
         newPaymentGatewayTransaction.setCreatedAt(new Date());
         paymentGatewayTransactionFacade.create(newPaymentGatewayTransaction);
-       
-        
+
         try {
             String requestBody = String.format(
                     "apiOperation=CREATE_CHECKOUT_SESSION&apiUsername=%s&apiPassword=%s&merchant=%s"
@@ -95,7 +95,7 @@ public class PaymentGatewayController implements Serializable {
                 sessionId = extractSessionId(responseString);
                 System.out.println("sessionId = " + sessionId);
                 if (sessionId != null) {
-                    return "/pay?faces-redirect=true";
+                    return "/patient_portal_pay?faces-redirect=true";
                 }
             }
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class PaymentGatewayController implements Serializable {
         }
         return null;
     }
-    
+
     public String checkPaymentStatus() {
         String status = null;
         HttpClient client = HttpClients.createDefault();
@@ -120,7 +120,7 @@ public class PaymentGatewayController implements Serializable {
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
                 System.out.println("status = " + extractStatusCode(responseString));
-                orderStatus =  extractStatusCode(responseString);
+                orderStatus = extractStatusCode(responseString);
                 System.out.println("orderStatus = " + orderStatus);
             }
         } catch (Exception e) {
@@ -128,22 +128,21 @@ public class PaymentGatewayController implements Serializable {
         }
         return status;
     }
-    
-       
+
     private String constructPaymentUrl(String sessionId) {
         return "https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js?session.id=" + sessionId;
     }
-    
+
     private String extractStatusCode(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("result");
     }
-    
+
     private String extractSessionId(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("session.id");
     }
-    
+
     private Map<String, String> parseUrlEncodedResponse(String response) {
         Map<String, String> responseMap = new HashMap<>();
         String[] pairs = response.split("&");
@@ -162,79 +161,79 @@ public class PaymentGatewayController implements Serializable {
     public String getPaymentStatus() {
         return paymentStatus;
     }
-    
+
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
-    
+
     public String getSessionId() {
         return sessionId;
     }
-    
+
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
-    
+
     public String getPaymentUrl() {
         return paymentUrl;
     }
-    
+
     public void setPaymentUrl(String paymentUrl) {
         this.paymentUrl = paymentUrl;
     }
-    
+
     public String getOrderAmount() {
         return orderAmount;
     }
-    
+
     public void setOrderAmount(String orderAmount) {
         this.orderAmount = orderAmount;
     }
-    
+
     public String getOrderId() {
         return orderId;
     }
-    
+
     public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
-    
+
     public String getSuccessUrl() {
         return successUrl;
     }
-    
+
     public void setSuccessUrl(String successUrl) {
         this.successUrl = successUrl;
     }
-    
+
     public String getTemplateForOrderDescription() {
         return templateForOrderDescription;
     }
-    
+
     public void setTemplateForOrderDescription(String templateForOrderDescription) {
         this.templateForOrderDescription = templateForOrderDescription;
     }
-    
+
     public SessionInstance getSelectedSessioninstance() {
         return selectedSessioninstance;
     }
-    
+
     public void setSelectedSessioninstance(SessionInstance selectedSessioninstance) {
         this.selectedSessioninstance = selectedSessioninstance;
     }
-    
+
     public Patient getPatient() {
         return patient;
     }
-    
+
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
-    
+
     public String getReturnUrl() {
         return returnUrl;
     }
-    
+
     public void setReturnUrl(String returnUrl) {
         this.returnUrl = returnUrl;
     }
@@ -254,7 +253,5 @@ public class PaymentGatewayController implements Serializable {
     public void setNewPaymentGatewayTransaction(PaymentGatewayTransaction newPaymentGatewayTransaction) {
         this.newPaymentGatewayTransaction = newPaymentGatewayTransaction;
     }
-    
-    
-    
+
 }
