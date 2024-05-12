@@ -250,6 +250,13 @@ public class SmsController implements Serializable {
         m.put("td", toDate);
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
+    
+    public void sendSms() {
+        selectedSms = new Sms();
+        selectedSms.setSendingMessage(smsMessage);
+        selectedSms.setReceipientNumber(smsNumber);
+        smsManager.sendSms(selectedSms);
+    }
 
     public void fillAllFaildSms() {
         // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
