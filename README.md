@@ -18,12 +18,7 @@ Developed using Java Enterprise Edition, the system offers both a web applicatio
 
 ## Current Version
 
-<<<<<<< HEAD
-
-Current Version: 3.0.0.20240511.6 (This line will be automatically updated to reflect the latest version)
-=======
 Current Version: 3.0.0.20240511.3 (This line will be automatically updated to reflect the latest version)
->>>>>>> 1c4db5fe338cdaa16dcd7e1f182b3e2a5c09ebe4
 
 
 ## History
