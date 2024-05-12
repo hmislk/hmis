@@ -6,13 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
-
-    <f:metadata>
-        <f:event type="preRenderView"
-                 listener="#{paymentGatewayController.checkPaymentStatus()}"/>
-    </f:metadata>
     <h:head>
-        <title>Channeling</title>
+        <title>Channelling</title>
         <link rel="stylesheet" 
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
         <link 
@@ -357,7 +352,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end  p-2">
-<!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
+<!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.completeBooking}">
                                         <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
                                     </p:commandButton>-->
                                     <p:commandButton 
