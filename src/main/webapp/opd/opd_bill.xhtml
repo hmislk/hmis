@@ -453,6 +453,49 @@
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
+                                            
+                                             <h:panelGroup
+                                                class="row"
+                                                layout="block"  
+                                                rendered="#{opdBillController.paymentMethod eq 'Staff_Welfare'}" >
+                                                <div class="my-1" id="credit">
+                                                    <div class="row mt-1">
+                                                        <div class="col-12">
+                                                            <p:autoComplete  
+                                                                minQueryLength="4"
+                                                                forceSelection="true" 
+                                                                value="#{opdBillController.toStaff}" 
+                                                                id="welfareStaff"
+                                                                completeMethod="#{staffController.completeStaff}" 
+                                                                var="mys" 
+                                                                class="w-100"
+                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                inputStyleClass="form-control"
+                                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                                itemValue="#{mys}"
+                                                                size="10">
+                                                                <p:column headerText="Name" >
+                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="Annual Entitlement">
+                                                                    <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>
+                                                                <p:column  headerText="Annual Utilized Value">
+                                                                    <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>
+                                                                <p:ajax process="@this" 
+                                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                        event="itemSelect"  
+                                                                        listener="#{opdBillController.calTotals()}" />
+                                                            </p:autoComplete>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
 
                                             <h:panelGroup
                                                 class="row my-1"

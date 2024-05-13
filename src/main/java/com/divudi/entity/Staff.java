@@ -137,6 +137,8 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
 //    double workingHourPerShift;
 //    double leaveHour;
+    private double creditLimitQualified;
+    private double currentCreditValue;
     double annualWelfareQualified;
     double annualWelfareUtilized;
     double workingTimeForOverTimePerWeek;
@@ -742,6 +744,22 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     public void setStaffWelfarePeriod(StaffWelfarePeriod staffWelfarePeriod) {
         this.staffWelfarePeriod = staffWelfarePeriod;
+    }
+
+    public double getCreditLimitQualified() {
+        return creditLimitQualified;
+    }
+
+    public void setCreditLimitQualified(double creditLimitQualified) {
+        this.creditLimitQualified = creditLimitQualified;
+    }
+
+    public double getCurrentCreditValue() {
+        return currentCreditValue;
+    }
+
+    public void setCurrentCreditValue(double currentCreditValue) {
+        this.currentCreditValue = currentCreditValue;
     }
     
     
