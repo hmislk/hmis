@@ -1872,7 +1872,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
         newBill.setDeptId(deptId);
-
         switch (sessionController.getDepartmentPreference().getOpdTokenNumberGenerationStrategy()) {
             case NO_TOKEN_GENERATION:
                 newBill.setSessionId(null);
