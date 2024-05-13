@@ -426,19 +426,19 @@
                                                                 class="w-100"
                                                                 placeholder="Staff (Type at least 4 letters to search)"
                                                                 inputStyleClass="form-control"
-                                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                                itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
                                                                 size="10">
                                                                 <p:column headerText="Name" >
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="Annual Entitlement">
-                                                                    <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                <p:column headerText="Credit Limit">
+                                                                    <h:outputText value="#{mys.creditLimitQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-                                                                <p:column  headerText="Annual Utilized Value">
-                                                                    <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                <p:column  headerText="Current Credit Amount">
+                                                                    <h:outputText value="#{mys.currentCreditValue}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
@@ -453,8 +453,8 @@
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
-                                            
-                                             <h:panelGroup
+
+                                            <h:panelGroup
                                                 class="row"
                                                 layout="block"  
                                                 rendered="#{opdBillController.paymentMethod eq 'Staff_Welfare'}" >
@@ -471,18 +471,18 @@
                                                                 class="w-100"
                                                                 placeholder="Staff (Type at least 4 letters to search)"
                                                                 inputStyleClass="form-control"
-                                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                                itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
                                                                 size="10">
                                                                 <p:column headerText="Name" >
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="Annual Entitlement">
+                                                                <p:column headerText="Welfare Entitlement">
                                                                     <h:outputText value="#{mys.annualWelfareQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-                                                                <p:column  headerText="Annual Utilized Value">
+                                                                <p:column  headerText="Welfare Utilized">
                                                                     <h:outputText value="#{mys.annualWelfareUtilized}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>

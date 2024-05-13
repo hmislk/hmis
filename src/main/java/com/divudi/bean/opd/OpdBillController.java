@@ -1625,7 +1625,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             b.setVat(b.getVat());
             b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
-            
+
             getBillFacade().edit(b);
             getBillBean().checkBillItemFeesInitiated(b);
             getBills().add(b);
@@ -1639,10 +1639,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
 
-        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-            staffBean.updateStaffCredit(toStaff, netPlusVat);
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            staffBean.updateStaffWelfare(toStaff, netPlusVat);
             JsfUtil.addSuccessMessage("User Credit Updated");
+        }else if(toStaff != null && getPaymentMethod() == PaymentMethod.Credit){
+            staffBean.updateStaffCredit(toStaff, netPlusVat);
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         }
+        
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             if (getPatient().getRunningBalance() != null) {
                 getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
@@ -1651,6 +1655,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             getPatientFacade().edit(getPatient());
         }
+        
         if (getToken() != null) {
             getToken().setBill(getBatchBill());
             tokenFacade.edit(getToken());
@@ -2141,6 +2146,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
 
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                return true;
+            }
+            if (Math.abs(toStaff.getCurrentCreditValue()) + netTotal > toStaff.getCreditLimitQualified()) {
+                JsfUtil.addErrorMessage("No enough credit.");
+                return true;
+            }
+
+        }
+
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             if (getPaymentMethodData() == null) {
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
@@ -2319,9 +2336,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
-        if(clearItemAfterAddingToOpdBill){
+        if (clearItemAfterAddingToOpdBill) {
             setItemLight(null);
-        }else{
+        } else {
             setItemLight(itemLight);
         }
         JsfUtil.addSuccessMessage("Added");
@@ -2374,7 +2391,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
-        payments=null;
+        payments = null;
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -3672,7 +3689,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Payment> getPayments() {
-        if(payments==null){
+        if (payments == null) {
             payments = new ArrayList<>();
         }
         return payments;
@@ -3738,7 +3755,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void setCanChangeSpecialityAndDoctorInAddedBillItem(boolean canChangeSpecialityAndDoctorInAddedBillItem) {
-        boolean config=configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
+        boolean config = configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
         this.canChangeSpecialityAndDoctorInAddedBillItem = config;
     }
 
