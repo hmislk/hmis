@@ -234,9 +234,9 @@
                                                 <p:tab title="Administartion" >
                                                         <h:panelGrid columns="2" id="gridAdmin" >
                                                             <p:outputLabel value="Eligible Welfare Period" ></p:outputLabel>
-                                                            <p:selectOneMenu class="mx-2" id="cmbIns" value="#{staffController.current.institution}" >
+                                                            <p:selectOneMenu class="mx-2" id="cmbIns" value="#{staffController.current.staffWelfarePeriod}" >
                                                                 <f:selectItem itemLabel="Please select"/>
-                                                                <f:selectItems value="#{enumController.}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                                <f:selectItems value="#{enumController.staffWelfarePeriods}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                             </p:selectOneMenu>  
                                                             
                                                             <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
@@ -244,7 +244,7 @@
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </p:inputText>
 
-                                                            <p:outputLabel value="Utilized Welfare Value for this year" ></p:outputLabel>
+                                                            <p:outputLabel value="Utilized Welfare Value for this Period" ></p:outputLabel>
                                                             <p:outputLabel class="mx-2" style="width: 300px" value="#{staffController.current.annualWelfareUtilized}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </p:outputLabel>

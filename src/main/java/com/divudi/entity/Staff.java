@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.StaffWelfarePeriod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
@@ -146,6 +147,9 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
+    
+    @Enumerated
+    private StaffWelfarePeriod staffWelfarePeriod;
 
     @Transient
     private String name;
@@ -731,5 +735,15 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public StaffWelfarePeriod getStaffWelfarePeriod() {
+        return staffWelfarePeriod;
+    }
+
+    public void setStaffWelfarePeriod(StaffWelfarePeriod staffWelfarePeriod) {
+        this.staffWelfarePeriod = staffWelfarePeriod;
+    }
+    
+    
 
 }
