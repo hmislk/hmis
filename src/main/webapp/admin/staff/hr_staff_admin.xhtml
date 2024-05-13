@@ -233,8 +233,14 @@
                                                 </p:tab>
                                                 <p:tab title="Administartion" >
                                                         <h:panelGrid columns="2" id="gridAdmin" >
+                                                            <p:outputLabel value="Eligible Welfare Period" ></p:outputLabel>
+                                                            <p:selectOneMenu class="mx-2" id="cmbIns" value="#{staffController.current.institution}" >
+                                                                <f:selectItem itemLabel="Please select"/>
+                                                                <f:selectItems value="#{enumController.}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                            </p:selectOneMenu>  
+                                                            
                                                             <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
-                                                            <p:inputText class="mx-2" style="width: 300px" autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
+                                                            <p:inputText class="mx-2" autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </p:inputText>
 
@@ -242,6 +248,7 @@
                                                             <p:outputLabel class="mx-2" style="width: 300px" value="#{staffController.current.annualWelfareUtilized}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </p:outputLabel>
+                                                            
                                                             <p:separator/>
                                                             <p:separator/>
                                                             <p:outputLabel value="Institution" ></p:outputLabel>                                     
