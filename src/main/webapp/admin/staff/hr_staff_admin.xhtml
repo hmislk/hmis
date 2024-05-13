@@ -232,11 +232,11 @@
 
                                                 </p:tab>
                                                 <p:tab title="Administartion" >
-                                                        <h:panelGrid columns="2" id="gridAdmin" >
+                                                        <p:panelGrid columns="2" id="gridAdmin" >
                                                             <p:outputLabel value="Eligible Welfare Period" ></p:outputLabel>
-                                                            <p:selectOneMenu class="mx-2" id="cmbIns" value="#{staffController.current.staffWelfarePeriod}" >
+                                                            <p:selectOneMenu class="w-100"  value="#{staffController.current.staffWelfarePeriod}" >
                                                                 <f:selectItem itemLabel="Please select"/>
-                                                                <f:selectItems value="#{enumController.staffWelfarePeriods}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                                <f:selectItems value="#{enumController.staffWelfarePeriods}" />
                                                             </p:selectOneMenu>  
                                                             
                                                             <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
@@ -319,7 +319,7 @@
                                                             <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedLateInLeave}" />
                                                             <p:outputLabel value="Allowed Early Out Leave"/>
                                                             <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedEarlyOutLeave}" />
-                                                        </h:panelGrid>
+                                                        </p:panelGrid>
                                                    
 
                                                 </p:tab>
