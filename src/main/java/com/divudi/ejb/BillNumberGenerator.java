@@ -491,7 +491,7 @@ public class BillNumberGenerator {
 
     }
 
-    private BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
+    private synchronized BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
                 + " where b.retired=false "
@@ -544,8 +544,15 @@ public class BillNumberGenerator {
                 dd = 0l;
             }
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.createAndFlush(billNumber);
+            billNumberFacade.create(billNumber);
         }
+        if(billNumber.getLastBillNumber()==null){
+            billNumber.setLastBillNumber(0l);
+        }
+        
+        billNumber.setLastBillNumber(billNumber.getLastBillNumber()+1);
+        System.out.println("billNumber = " + billNumber.getLastBillNumber());
+        billNumberFacade.edit(billNumber);
         return billNumber;
 
     }
@@ -1135,6 +1142,13 @@ public class BillNumberGenerator {
         if (toDept == null) {
             return "";
         }
+        
+        System.out.println("dep = " + dep);
+        System.out.println("dep = " + toDept);
+        System.out.println("dep = " + billType);
+        System.out.println("dep = " + billClassType);
+        
+        
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
@@ -1144,11 +1158,11 @@ public class BillNumberGenerator {
         result.append(toDept.getDepartmentCode());
 
         result.append("/");
-        dd++;
+//        dd++;
         result.append(dd);
-
-        billNumber.setLastBillNumber(dd);
-        billNumberFacade.editAndFlush(billNumber);
+//
+//        billNumber.setLastBillNumber(dd);
+//        billNumberFacade.editAndFlush(billNumber);
 
         return result.toString();
     }

@@ -151,7 +151,7 @@
                                                 </div>
                                                 <div>
                                                     <p:commandButton value="View Charges" type="button" onclick="PF('chargesList').show();" />
-                                                    
+
                                                     <p:dialog header="Inward Charges List" widgetVar="chargesList" modal="true" height="60vh" width="75vw">
                                                         <in:finalTable bill="#{inwardSearch.bill}"/>
                                                     </p:dialog>
@@ -270,31 +270,73 @@
 
                                     </p:panel>
                                 </div>
-                            </div>
+                            </div> 
 
                             <p:tabView rendered="true">
                                 <p:tab title="Final Bill"  >  
-                                    <p:panel class="col-md-6">
-                                        <f:facet name="header">
-                                            <div class="d-flex justify-content-between">
-                                                <div><h:outputLabel value="Original" class="mt-2"/></div>
-                                                <div>
-                                                    <p:commandButton 
-                                                        icon="fa fa-print"
-                                                        value="Final Bill"
-                                                        class="ui-button-info"
-                                                        ajax="false">
-                                                        <p:printer target="finalBillPriview" ></p:printer>
-                                                    </p:commandButton>
-                                                </div>
-                                            </div>
-                                        </f:facet>
 
-                                        <h:panelGroup id="finalBillPriview">
-                                            <bi:finalBill bill="#{inwardSearch.bill}" />
-                                        </h:panelGroup>
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                        <div class="d-flex gap-2">
+                                                            <p:selectBooleanCheckbox
+                                                                id="box"
+                                                                value="#{inwardSearch.withProfessionalFee}"
+                                                                itemLabel="With Professional Fee"  
+                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                <p:ajax process="@this" update="finalOriginalBillPriview"/>
+                                                            </p:selectBooleanCheckbox>
+                                                            <p:commandButton 
+                                                                icon="fa fa-print"
+                                                                value="Hospital Bill"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="finalOriginalBillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
 
-                                    </p:panel>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="finalOriginalBillPriview">
+                                                    <bi:finalBill bill="#{inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                        <div class="d-flex gap-2">
+                                                            <p:selectBooleanCheckbox
+                                                                value="#{inwardSearch.withProfessionalFee}"
+                                                                itemLabel="With Professional Fee"  
+                                                                onchange="#{inwardSearch.showProfessionalFee()}">
+                                                                <p:ajax process="@this" update="finalDuplicateBillPriview"/>
+                                                            </p:selectBooleanCheckbox>
+                                                            <p:commandButton 
+                                                                icon="fa fa-print"
+                                                                value="Hospital Bill"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="finalDuplicateBillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="finalDuplicateBillPriview">
+                                                    <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                    </div>
 
                                 </p:tab>
 
@@ -324,12 +366,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalHospitalBillPriview">
-                                                    <h:panelGroup id="originalHospitalBillwithoutProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq false}">
-                                                        <bi:finalBill bill="#{inwardSearch.bill}" hosCopy="true" /><!-- **Hospital Bill**Original Bill**-->
-                                                    </h:panelGroup>
-                                                    <h:panelGroup id="originalHospitalBillwithProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq true}">
-                                                        <bi:finalBill bill="#{inwardSearch.bill}" hosCopy="true" showProfessional="true" /><!-- **Hospital Bill**Original Bill**-->
-                                                    </h:panelGroup>
+                                                    <bi:finalBill bill="#{inwardSearch.bill}" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup>  
 
                                             </p:panel>
@@ -358,12 +395,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateHospitalBillPriview">
-                                                    <h:panelGroup id="duplicateHospitalBillwithoutProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq false}">
-                                                        <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true"/><!-- Final Bill - **Hospital Bill**Duplicate Bill**-->
-                                                    </h:panelGroup>
-                                                    <h:panelGroup id="duplicateHospitalBillwithProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq true}">
-                                                        <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true" showProfessional="true" /><!-- **Hospital Bill**Original Bill**-->
-                                                    </h:panelGroup>
+                                                    <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup> 
 
                                             </p:panel>

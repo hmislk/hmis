@@ -10,6 +10,8 @@ public enum BillFinanceType {
     NO_FINANCE_TRANSACTIONS("No Finance Transactions"),
     CASH_IN("Cash In"),
     CASH_OUT("Cash Out"),
+    ONLINE_PAYMENT_IN("Online Payment In"),
+    ONLINE_PAYMENT_OUT("Online Payment Out"),
     CREDIT_IN("Credit In"),
     CREDIT_OUT("Credit Out"),
     CREDIT_SETTLEMENT("Credit Settlement"),
