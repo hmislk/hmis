@@ -311,6 +311,7 @@ public class DoctorController implements Serializable {
         current = new Doctor();
         recreateModel();
         // getItems();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectText(String selectText) {
