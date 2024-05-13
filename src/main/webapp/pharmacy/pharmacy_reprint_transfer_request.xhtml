@@ -36,7 +36,7 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.forwardReferenceBills.size() ne 0}"
                                 class="ui-button-danger mx-1"
                                 style="float: right;"
                                 icon="fas fa-cancel"
