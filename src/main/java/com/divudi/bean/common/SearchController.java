@@ -52,6 +52,7 @@ import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
@@ -2690,6 +2691,8 @@ public class SearchController implements Serializable {
 
     public void createRequestTable() {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2697,10 +2700,12 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
         tmp.put("bTp", BillType.PharmacyTransferRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
