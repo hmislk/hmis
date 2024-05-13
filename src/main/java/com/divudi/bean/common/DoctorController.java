@@ -231,6 +231,7 @@ public class DoctorController implements Serializable {
         //  getItems();
         current = null;
         getCurrent();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectedItems(List<Doctor> selectedItems) {
