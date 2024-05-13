@@ -516,6 +516,7 @@ public class BillNumberGenerator {
             sql = "SELECT count(b) FROM Bill b "
                     + " where b.billType=:bTp "
                     + " and b.retired=false"
+                    + " and b.deptId is not null "
                     + " and type(b)=:class"
                     + " and b.department=:dep "
                     + " and b.toDepartment=:tDep";
@@ -543,13 +544,15 @@ public class BillNumberGenerator {
                 dd = 0l;
             }
             billNumber.setLastBillNumber(dd);
-            billNumberFacade.createAndFlush(billNumber);
+            billNumberFacade.create(billNumber);
         }
         if(billNumber.getLastBillNumber()==null){
             billNumber.setLastBillNumber(0l);
         }
+        
         billNumber.setLastBillNumber(billNumber.getLastBillNumber()+1);
-        billNumberFacade.editAndCommit(billNumber);
+        System.out.println("billNumber = " + billNumber.getLastBillNumber());
+        billNumberFacade.edit(billNumber);
         return billNumber;
 
     }
@@ -1139,6 +1142,13 @@ public class BillNumberGenerator {
         if (toDept == null) {
             return "";
         }
+        
+        System.out.println("dep = " + dep);
+        System.out.println("dep = " + toDept);
+        System.out.println("dep = " + billType);
+        System.out.println("dep = " + billClassType);
+        
+        
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
