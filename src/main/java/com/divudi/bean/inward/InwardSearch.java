@@ -191,55 +191,19 @@ public class InwardSearch implements Serializable {
         JsfUtil.addSuccessMessage("Patient Details Updated.");
     }
 
-    public String fillDataForInpatientsForFinalBill(String template, Bill bill) {
+    public String fillDataForInpatientsFinalBillHeader(String template, Bill bill) {
+        
         if (isInvalidInput(template, bill)) {
             return "";
         }
 
-        PatientEncounter pe = bill.getPatientEncounter();
-        Patient patient = pe.getPatient();
-        Person person = patient.getPerson();
-
-        String finalBillInsId = "";
-        String finalBillDeptId = "";
-
-        if (pe.getFinalBill() != null) {
-            finalBillInsId = pe.getFinalBill().getInsId();
-            finalBillDeptId = pe.getFinalBill().getDeptId();
-        }
-
         String output = template
-                .replace("{dept_id}", String.valueOf(bill.getDeptId()))
-                .replace("{ins_id}", String.valueOf(bill.getInsId()))
-                .replace("{gross_total}", String.valueOf(bill.getTotal()))
-                .replace("{discount}", String.valueOf(bill.getDiscount()))
-                .replace("{net_total}", String.valueOf(bill.getNetTotal()))
-                .replace("{cancelled}", String.valueOf(bill.isRefunded()))
-                .replace("{returned}", String.valueOf(bill.isCancelled()))
-                .replace("{cashier_username}", bill.getCreater().getName())
-                .replace("{patient_nic}", person.getNic())
-                .replace("{patient_phn_number}", patient.getPhn())
-                .replace("{admission_number}", pe.getBhtNo())
-                .replace("{admission_date}", formatDate(pe.getDateOfAdmission(), sessionController))
-                .replace("{net_total_in_words}", "") // Assuming a method to convert net total to words
-                .replace("{bht}", "") // Assuming value for bht if required
-                .replace("{date_of_discharge}", formatDate(pe.getDateOfDischarge(), sessionController))
-                .replace("{admission_type}", getAdmissionType(pe))
-                .replace("{patient_name}", person.getNameWithTitle())
-                .replace("{patient_age}", patient.getAgeOnBilledDate(pe.getDateOfAdmission()))
-                .replace("{patient_sex}", person.getSex().name())
-                .replace("{patient_address}", person.getAddress())
-                .replace("{patient_phone}", person.getPhone())
-                .replace("{from_institution}", getInstitutionName(pe))
-                .replace("{to_institution}", getInstitutionName(pe))
-                .replace("{from_department}", getDepartmentName(pe))
-                .replace("{to_department}", getDepartmentName(pe))
-                .replace("{payment_method}", pe.getPaymentMethod().getLabel())
-                .replace("{bill_date}", formatDate(bill.getBillDate(), sessionController))
-                .replace("{bill_time}", formatTime(bill.getBillTime(), sessionController))
-                .replace("{fian_bill_number}", finalBillDeptId != null ? finalBillDeptId : "")
-                .replace("{fian_bill_number_dept_id}", finalBillDeptId != null ? finalBillDeptId : "")
-                .replace("{fian_bill_number_ins_id}", finalBillInsId != null ? finalBillInsId : "");
+                .replace("{ins_name}", String.valueOf(bill.getInstitution().getName()))
+                .replace("{ins_address}", String.valueOf(bill.getInstitution().getAddress()))
+                .replace("{ins_phone}", String.valueOf(bill.getInstitution().getPhone()))
+                .replace("{ins_fax}", String.valueOf(bill.getInstitution().getFax()))
+                .replace("{ins_email}", String.valueOf(bill.getInstitution().getEmail()))
+                .replace("{ins_web}", String.valueOf(bill.getInstitution().getWeb()));
 
         return output;
     }
@@ -354,11 +318,11 @@ public class InwardSearch implements Serializable {
         }
         withProfessionalFee = false;
 
-        return "/inward/inward_reprint_bill_final";
+        return "/inward/inward_reprint_bill_final?faces-redirect=true";
     }
 
     public String navigateDoctorPayment() {
-        return "/inward/inward_bill_payment";
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     public boolean calculateRefundTotal() {
