@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl />
+                <p:growl id="msg"/>
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="gpDetail" />
 
@@ -28,12 +28,12 @@
                                         value="Add"  
                                         action="#{doctorController.prepareAdd()}" 
                                         process="btnAdd"
-                                        update="lstSelect gpDetail"
+                                        update="lstSelect gpDetail detailFocus"
                                        icon="fa-solid fa-plus" 
                                        class="ui-button-success w-25"/>                                   
                                     <p:commandButton 
                                         process="btnDelete"
-                                        update="lstSelect gpDetail"
+                                        update="lstSelect gpDetail selectFocus msg"
                                         icon="fa fa-trash"
                                         id="btnDelete" 
                                                      onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -109,7 +109,7 @@
                                              class=" m-1 ui-button-warning w-25"
                                              action="#{doctorController.saveSelected()}" 
                                              process="btnSave gpDetail"
-                                             update="lstSelect"
+                                             update="lstSelect selectFocus msg gpDetail"
                                              />
                             <p:defaultCommand target="btnSave"/>
                             </p:panel>
