@@ -59,16 +59,16 @@
                                             <h:outputLabel styleClass="fas fa-file-invoice" />
                                             <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                         </f:facet>
-                                        <h:panelGrid columns="2" class="w-75">
-                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Bill No " ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                            <h:outputLabel value="Total :" ></h:outputLabel>
+                                            <h:outputLabel value="Total" ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                            <h:outputLabel value="Discount :" ></h:outputLabel>
+                                            <h:outputLabel value="Discount" ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                            <h:outputLabel value="Net Total" ></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:panel>
                                 </div>
                             </div>
@@ -110,7 +110,7 @@
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Value</f:facet>
-                                            #{bip.netValue}
+                                        <h:outputLabel value="#{bip.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
