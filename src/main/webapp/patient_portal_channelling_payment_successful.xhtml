@@ -15,7 +15,7 @@
                     </div>
                 </nav>
             </div>
-            
+
             <h1>Success</h1>
 
             <div class="d-flex justify-content-center align-items-center mt-5">
@@ -55,7 +55,11 @@
                             <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.sessionDate}</p>
                         </div>
                     </div>
-
+                    <h3 class="my-4">Payment Information</h3>
+                    <div class="d-flex justify-content-between">
+                        <p>Appointment no: </p>
+                        <p style="font-weight: bolder">#{patientPortalController.channelSettlingBillSession.serialNo}</p>
+                    </div>
                     <!-- Add more session details as needed -->
 
                     <h3 class="my-4">Payment Information</h3>
@@ -63,25 +67,11 @@
                         <p>Total Amount: </p>
                         <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.originatingSession.total}</p>
                     </div>
-                    <button type="button" onclick="startPayment();" class="btn btn-primary w-100">Pay Now</button>
+
                 </div>
             </div>
         </h:form>
 
-        <script src="https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js"></script>
-        <script type="text/javascript">
-                        function startPayment() {
-                            Checkout.configure({
-                                session: {id: '#{paymentGatewayController.sessionId}'},
-                                interaction: {
-                                    merchant: {
-                                        name: "Sethma Hospital",
-                                        address: {line1: 'Test address'}
-                                    }
-                                }
-                            });
-                            Checkout.showPaymentPage();  // Or Checkout.showLightbox();
-                        }
-        </script>
+
     </ui:define>
 </ui:composition>
