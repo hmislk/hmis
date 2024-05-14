@@ -251,6 +251,10 @@ public class EnumController implements Serializable {
     public BillType[] getBillTypes() {
         return BillType.values();
     }
+    
+    public StaffWelfarePeriod[] getStaffWelfarePeriods() {
+        return StaffWelfarePeriod.values();
+    }
 
     public BillClassType[] getBillClassTypes() {
         return BillClassType.values();
