@@ -437,6 +437,9 @@
                                                                 <p:column headerText="Name" >
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
+                                                                <p:column headerText="EPF" >
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                </p:column>
                                                                 <p:column headerText="Credit Entitlement">
                                                                     <h:outputText value="#{mys.creditLimitQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -478,6 +481,9 @@
                                                                 size="10">
                                                                 <p:column headerText="Name" >
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF" >
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement">
                                                                     <h:outputText value="#{mys.annualWelfareQualified}" >
