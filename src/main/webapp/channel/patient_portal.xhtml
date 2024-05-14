@@ -248,7 +248,7 @@
                                             <p:selectOneMenu class="w-100" id="acSessions" value="#{patientPortalController.selectedChannelSession}">
                                                 <f:selectItem itemLabel="Select One" itemValue="con" />
                                                 <f:selectItems  value="#{patientPortalController.channelSessions}"  var="consultant" itemLabel="#{consultant.name}" itemValue="#{consultant}" />
-                                                <p:ajax event="itemSelect" listener="#{patientPortalController.fillSessionInstance()}" process="acSessions" update="sessionDates" />
+                                                <p:ajax event="itemSelect"  process="acSessions" update="sessionDates" />
                                             </p:selectOneMenu>
                                         </div>
                                     </div>
@@ -256,7 +256,7 @@
 
                                 <div class="row mt-2">
                                     <div class="col">
-                                        <p:commandButton value="Find a Session" class="btn btn-success w-100" ajax="false" />
+                                        <p:commandButton value="Find a Session" action="#{patientPortalController.fillSessionInstance()}" class="btn btn-success w-100" ajax="false" />
                                     </div>
                                 </div>
                             </div>
