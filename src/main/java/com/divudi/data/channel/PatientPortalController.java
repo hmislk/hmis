@@ -234,17 +234,19 @@ public class PatientPortalController implements Serializable {
     public void fillSessionInstance() {
         if (channelSessions != null) {
             sessionInstances = new ArrayList<>();
-            sessionStartingDate = new Date();
+            Date currentDate = new Date();
             String jpql = "select i "
                     + " from SessionInstance i "
                     + " where i.originatingSession.staff=:os "
-                    + " and i.retired=:ret ";
+                    + " and i.retired=:ret "
+                    + " and i.sessionAt>=:cd";
 
             Map m = new HashMap();
             m.put("ret", false);
             m.put("os", selectedConsultant);
+            m.put("cd", currentDate);
 
-            sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
+            sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }
     }
 
