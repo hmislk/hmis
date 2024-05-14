@@ -61,6 +61,8 @@ public class EnumController implements Serializable {
 
     private PaymentScheme paymentScheme;
     private List<Class<? extends Enum<?>>> enumList;
+    ConfigOptionApplicationController configOptionApplicationController;
+    List<PaymentMethod> paymentMethodsForOpdBilling;
 
     SessionNumberType[] sessionNumberTypes;
 
@@ -71,6 +73,27 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForOpdBilling();
+        }
+        return paymentMethodsForOpdBilling;
+    }
+
+    public void resetPaymentMethods() {
+        paymentMethodsForOpdBilling = null;
+    }
+
+    public void fillPaymentMethodsForOpdBilling() {
+        paymentMethodsForOpdBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+            if (include) {
+                paymentMethodsForOpdBilling.add(pm);
+            }
+        }
     }
 
     public List<String> getEnumValues(String enumClassName) {
@@ -251,7 +274,7 @@ public class EnumController implements Serializable {
     public BillType[] getBillTypes() {
         return BillType.values();
     }
-    
+
     public StaffWelfarePeriod[] getStaffWelfarePeriods() {
         return StaffWelfarePeriod.values();
     }
