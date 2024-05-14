@@ -13,33 +13,81 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder" >
+        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        <div style="font-family: sans-serif!important;
+             font-size: 11px!important;
+             position: relative!important;
+             margin: 0px auto!important;
+             width: 95%;
+             height: 95%;
+             padding: 0px;
+             font-size: 100%;
+             page-break-after: always;" >
 
 
-            <div class="headingBill">
+            <div style=" margin-top: 10px; text-align: center;font-weight: bold;font-size: 13pt">
                 <h:outputLabel value="Stock Adjustment Note" style="text-decoration: underline;"/>                           
             </div>
 
-            <h:panelGrid columns="4" style="min-width: 100%;">
+            <div class="billDetailsFiveFive" style="margin-top: 20px;">
+                <table style="width: 99%!important;" >
 
-                <h:outputLabel value="Adj No "/>
-                <h:outputLabel value="#{cc.attrs.bill.deptId}"/> 
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Adj No "/>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"/> 
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Adjusted At  "/>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                            </h:outputLabel >
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Adjusted By  "/>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}">
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Department "/>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.department.name}">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
 
-                <h:outputLabel value="Adjusted At  "/>
-                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
-                </h:outputLabel >
-
-                <h:outputLabel value="Adjusted By  "/>
-                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}">
-                </h:outputLabel>
-
-                <h:outputLabel value="Department "/>
-                <h:outputLabel value="#{cc.attrs.bill.department.name}">
-                </h:outputLabel>
-            </h:panelGrid>
 
 
             <div >
@@ -65,10 +113,9 @@
                         <f:facet name="header">                           
                             <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stockHistory.stockQty}">
-                            <f:convertNumber pattern="#,###.##"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
+                            <f:convertNumber pattern="#,##" ></f:convertNumber>
                         </h:outputLabel>
-                        #{bip.pharmaceuticalBillItem.stockHistory.id}
                     </p:column>                  
 
                     <p:column style="text-align: right!important;"> 
@@ -85,7 +132,7 @@
                         <f:facet name="header">                           
                             <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.stockHistory.stockQty}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.stock.stock}">
                             <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>                  
@@ -93,7 +140,7 @@
                 </p:dataTable>
             </div>
 
-            <h:panelGrid columns="2" style="min-width: 100%;">
+            <h:panelGrid columns="2" style="min-width: 100%;" class="billDetailsFiveFive">
                 <h:outputLabel value="Comment" ></h:outputLabel>
                 <h:outputLabel value="#{cc.attrs.bill.comments}" >
                 </h:outputLabel>
