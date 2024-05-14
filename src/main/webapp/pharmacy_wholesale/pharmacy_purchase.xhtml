@@ -102,11 +102,11 @@
                                             <p:outputLabel id="gro"  value="#{pharmacyPurchaseController.bill.total}" /> 
                                             <p:outputLabel value="Tax"/>
                                             <p:inputText autocomplete="off" id="tx" value="#{pharmacyPurchaseController.bill.tax}" > 
-                                                <p:ajax process="gro tx dis" update="net" event="keyup"/>
+                                                <p:ajax process="gro tx dis" update="net" event="keyup" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
                                             </p:inputText>
                                             <p:outputLabel value="Discount"/>
                                             <p:inputText autocomplete="off" id="dis" value="#{pharmacyPurchaseController.bill.discount}" >
-                                                <p:ajax process="@this" update="gro tx net" event="blur" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
+                                                <p:ajax process="@this" update="gro tx net" event="keyup" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
                                             </p:inputText>
                                             <p:outputLabel value="Net Total"/>
                                             <h:outputLabel id="net"  value="#{pharmacyPurchaseController.bill.netTotal}" > 
@@ -239,13 +239,14 @@
                                                 pattern="dd MM yy"
                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"
                                                 class="w-25">
-                                        <f:ajax event="dateSelect" execute="@this" render="tmp" 
+                                        <f:ajax event="dateSelect" execute="@this tmp" render="tmp" 
                                                 listener="#{pharmacyPurchaseController.setBatch()}"/>
                                     </p:calendar> 
 
-                                    <p:inputText autocomplete="off"  styleClass="numericTxt" 
-                                                 id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
-
+                                    <p:inputText autocomplete="off" 
+                                                 styleClass="numericTxt" 
+                                                 id="tmp"
+                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  /> 
                                     <p:commandButton id="btnAdd" 
                                                      value="Add Item*" 
                                                      action="#{pharmacyPurchaseController.addItem}"
@@ -359,12 +360,35 @@
                     </p:dataTable>
                 </h:panelGroup>
             </p:panel>
+
+
+            <p:panel rendered="#{pharmacyPurchaseController.printPreview}">
+                <p:panel class="m-0 p-0" >
+                    <f:facet name="header" >
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                <h:outputLabel value="Direct Purchassse Order" class="mx-4"></h:outputLabel>
+                            </div>
+                            <div>
+                                <p:commandButton ajax="false" 
+                                                 class="ui-button-success"
+                                                 icon="fa fa-plus"
+                                                 action="#{pharmacyPurchaseController.makeNull()}" value="New Bill"/>                    
+                                <p:commandButton value="Print" ajax="false" action="#" 
+                                                 class="ui-button-info mx-2"
+                                                 icon="fas fa-print">
+                                    <p:printer target="gpBillPreview1" ></p:printer>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+                    <p:panel id="gpBillPreview1" style="overflow: hidden;">
+                        <pharmacy:purhcase_ws bill="#{pharmacyPurchaseController.bill}"/>
+                    </p:panel>
+                </p:panel>
+            </p:panel>
         </h:form>
-
-        <p:panel rendered="#{!pharmacyPurchaseController.printPreview}">
-            <pharmacy:purhcase_ws bill="#{pharmacyPurchaseController.bill}"/>
-        </p:panel>
-
     </ui:define>  
 
 </ui:composition>

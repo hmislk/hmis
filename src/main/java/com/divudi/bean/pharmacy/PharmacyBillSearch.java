@@ -167,6 +167,7 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
         CancelledBill cb=pharmacyCreateCancelBill();
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
         cb.setBillItems(getBill().getBillItems());
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
