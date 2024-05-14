@@ -169,7 +169,6 @@
                     <div>
                         <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
                     </div>
-                    <h1>Success</h1>
                     <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
                 </div>
             </h:panelGroup>
@@ -204,7 +203,7 @@
                             </div>
                             <div >
                                 <div class="row">
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-4">
                                         <div>
                                             <h6>Select Speciality</h6>
                                         </div>
@@ -212,7 +211,7 @@
                                             <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
                                             <div>
                                                 <p:selectOneMenu class="w-100" id="acSpeciality" value="#{patientPortalController.selectedSpeciality}">
-                                                    <f:selectItem itemLabel="Select One" itemValue="con" />
+                                                    <f:selectItem itemLabel="Select One"/>
                                                     <f:selectItems  value="#{doctorSpecialityController.selectedItems}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
                                                     <p:ajax event="itemSelect" listener="#{patientPortalController.fillConsultants()}" process="acSpeciality" update="scStaff" />
                                                 </p:selectOneMenu>
@@ -220,7 +219,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-4">
                                         <div>
                                             <h6>Select Doctor</h6>
                                         </div>
@@ -228,35 +227,20 @@
                                             <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
                                             <div>
                                                 <p:selectOneMenu filter="true" class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
-                                                    <f:selectItem itemLabel="Select One" itemValue="con" />
+                                                    <f:selectItem itemLabel="Select One"/>
                                                     <f:selectItems  value="#{patientPortalController.consultants}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
-                                                    <p:ajax  event="itemSelect"
-                                                             listener="#{patientPortalController.fillChannelSessions()}"
-                                                             process="scStaff"
-                                                             update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId}"
-                                                             />
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-4">
                                         <div>
-                                            <h6>Select Session</h6>
+                                            <p></p>
                                         </div>
                                         <div>
-                                            <p:selectOneMenu class="w-100" id="acSessions" value="#{patientPortalController.selectedChannelSession}">
-                                                <f:selectItem itemLabel="Select One" itemValue="con" />
-                                                <f:selectItems  value="#{patientPortalController.channelSessions}"  var="consultant" itemLabel="#{consultant.name}" itemValue="#{consultant}" />
-                                                <p:ajax event="itemSelect"  process="acSessions" update="sessionDates" />
-                                            </p:selectOneMenu>
+                                            <p:commandButton value="Find" action="#{patientPortalController.fillSessionInstance()}" class="btn btn-success w-100" ajax="false" />
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mt-2">
-                                    <div class="col">
-                                        <p:commandButton value="Find a Session" action="#{patientPortalController.fillSessionInstance()}" class="btn btn-success w-100" ajax="false" />
                                     </div>
                                 </div>
                             </div>
