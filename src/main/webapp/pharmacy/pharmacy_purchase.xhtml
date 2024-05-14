@@ -299,11 +299,11 @@
                                     <p:outputLabel id="gro"  value="#{pharmacyPurchaseController.bill.total}" /> 
                                     <p:outputLabel value="Tax"/>
                                     <p:inputText autocomplete="off" id="tx" value="#{pharmacyPurchaseController.bill.tax}" > 
-                                        <p:ajax process="gro tx dis" update="net" event="keyup"/>
+                                        <p:ajax process="tx" update="gro tx net" event="keyup" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
                                     </p:inputText>
                                     <p:outputLabel value="Discount"/>
                                     <p:inputText autocomplete="off" id="dis" value="#{pharmacyPurchaseController.bill.discount}" >
-                                        <p:ajax process="@this" update="gro tx net" event="blur" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
+                                        <p:ajax process="@this" update="gro tx net" event="keyup" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
                                     </p:inputText>
                                     <p:outputLabel value="Net Total"/>
                                     <h:outputLabel id="net"  value="#{pharmacyPurchaseController.bill.netTotal}" > 
