@@ -24,9 +24,7 @@
                                 </p:printer>
                             </p:commandButton>
                             <p:commandButton  class="ui-button-success " icon="fas fa-file-excel" value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
-
-
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Staff_Stock_Report"
                                                 />
                             </p:commandButton>
                         </h:panelGrid>
@@ -222,7 +220,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}"  >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                </h:outputLabel>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="From Department"
                                           sortBy="#{bi.bill.fromDepartment.name}">
@@ -232,6 +230,34 @@
                                     <h:outputLabel value="#{bi.bill.fromDepartment.name}"  >
                                     </h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Issued Date"
+                                          sortBy="#{bi.bill.createdAt}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Issued Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.bill.createdAt}"  >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Retail Sale Value" 
+                                          styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Sale Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate * bi.qty}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Purchase Sale Value" 
+                                          styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Sale Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate * bi.qty}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

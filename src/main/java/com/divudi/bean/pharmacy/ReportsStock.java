@@ -635,10 +635,13 @@ public class ReportsStock implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         String sql = "select bi from BillItem bi"
+                + " where bi.bill.billType = :bt"
                 + " and bi.retired = :ret"
-                + " and bi.bill.toStaff != null"
-                + " and bi.bill.fromDepartment != null"
+                + " and bi.bill.toStaff is not null"
+                + " and bi.bill.fromDepartment is not null"
+                + " and bi.bill.forwardReferenceBills is empty"
                 + " order by bi.bill.toStaff.person.name";
+        m.put("bt", BillType.PharmacyTransferIssue);
         m.put("ret", false);
         billItems = billItemFacade.findByJpql(sql, m);
     }
