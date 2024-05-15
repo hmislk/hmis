@@ -373,7 +373,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="" >
+                                    <div  >
                                         <h:panelGroup id="paymentDetails"  >
                                             <h:panelGroup
                                                 class="row"
@@ -412,9 +412,14 @@
                                                                 actionListener="#{creditCompanyController.prepareAdd()}" />  
                                                         </div>
                                                     </div>
-
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"  
+                                                rendered="#{opdBillController.paymentMethod eq 'Staff'}" >
+                                                <div class="my-1" id="staffCredit">
                                                     <div class="row mt-1">
-
                                                         <div class="col-12">
                                                             <p:autoComplete  
                                                                 minQueryLength="4"
@@ -432,28 +437,28 @@
                                                                 <p:column headerText="Name" >
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="Credit Limit">
+                                                                <p:column headerText="EPF" >
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="Credit Entitlement">
                                                                     <h:outputText value="#{mys.creditLimitQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-                                                                <p:column  headerText="Current Credit Amount">
+                                                                <p:column  headerText="Credit Utilized">
                                                                     <h:outputText value="#{mys.currentCreditValue}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-
                                                                 <p:ajax process="@this" 
-                                                                        update="creditCompany :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
                                                                         event="itemSelect"  
                                                                         listener="#{opdBillController.calTotals()}" />
-
                                                             </p:autoComplete>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
-
                                             <h:panelGroup
                                                 class="row"
                                                 layout="block"  
@@ -462,7 +467,7 @@
                                                     <div class="row mt-1">
                                                         <div class="col-12">
                                                             <p:autoComplete  
-                                                                minQueryLength="4"
+                                                                minQueryLength="3"
                                                                 forceSelection="true" 
                                                                 value="#{opdBillController.toStaff}" 
                                                                 id="welfareStaff"
@@ -476,6 +481,9 @@
                                                                 size="10">
                                                                 <p:column headerText="Name" >
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF" >
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement">
                                                                     <h:outputText value="#{mys.annualWelfareQualified}" >
@@ -496,7 +504,6 @@
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
-
                                             <h:panelGroup
                                                 class="row my-1"
                                                 layout="block"  
@@ -535,6 +542,7 @@
                                                 <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" controller="#{opdBillController}" class="w-100"/>
 
                                             </h:panelGroup>
+
                                         </h:panelGroup>
                                     </div>
 
@@ -550,7 +558,7 @@
                                                     value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                     var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                                 <p:ajax process="@this" 
-                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                         event="change" 
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
@@ -576,14 +584,14 @@
                                                                  action="#{opdBillController.markAsForeigner}" 
                                                                  rendered="#{!opdBillController.foreigner}" 
                                                                  process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                                  ></p:commandButton>
                                                 <p:commandButton value="Mark Local" 
                                                                  class="mx-2"
                                                                  action="#{opdBillController.markAsLocal}" 
                                                                  rendered="#{opdBillController.foreigner}" 
                                                                  process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                                  ></p:commandButton>
                                                 <!--                                                <p:commandButton value="Print Last Bill" 
                                                                                                                  class="btn m-1"
