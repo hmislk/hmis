@@ -5,6 +5,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.WebUserController;
@@ -105,6 +106,8 @@ public class InwardSearch implements Serializable {
     private WebUserController webUserController;
     @Inject
     PatientInvestigationController patientInvestigationController;
+    @Inject
+    SearchController searchController;
     @EJB
     PersonFacade personFacade;
     /**
@@ -343,6 +346,10 @@ public class InwardSearch implements Serializable {
         }
 
         return true;
+    }
+    
+    public String navigateToProfessionalFeeList(){
+        return "/inward/inward_search_professional_estimate?faces-redirect=true";
     }
 
     public void dateChangeListen() {
