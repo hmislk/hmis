@@ -13,6 +13,8 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
@@ -27,6 +29,8 @@ import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
@@ -80,6 +84,7 @@ public class ReportsStock implements Serializable {
     Vmp vmp;
     BillType[] billTypes;
     ReportKeyWord reportKeyWord;
+    private List<BillItem> billItems;
     /**
      * Managed Beans
      */
@@ -94,6 +99,8 @@ public class ReportsStock implements Serializable {
      */
     @EJB
     StockFacade stockFacade;
+    @EJB
+    BillItemFacade billItemFacade;
 
     /**
      * Methods
@@ -128,7 +135,6 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        
     }
 
     public String fillDepartmentNonEmptyStocksByVmp() {
@@ -161,8 +167,6 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
-
-        
 
         return "pharmacy_report_department_stock_by_single_product";
 
@@ -205,7 +209,6 @@ public class ReportsStock implements Serializable {
         }
         pharmacyStockRows = lsts;
 
-        
     }
 
     public void fillDepartmentNonEmptyItemStocks() {
@@ -240,7 +243,6 @@ public class ReportsStock implements Serializable {
         }
         pharmacyStockRows = lsts;
 
-        
     }
 
     public void fillDepartmentInventryStocks() {
@@ -287,7 +289,6 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        
     }
 
     @EJB
@@ -483,8 +484,6 @@ public class ReportsStock implements Serializable {
 
         stocks = stk;
 
-        
-
     }
 
     private Date date;
@@ -517,7 +516,6 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        
     }
 
     public void addComment(Stock st) {
@@ -591,7 +589,6 @@ public class ReportsStock implements Serializable {
 
         Collections.sort(items);
 
-        
     }
 
     public void fillStaffStocks() {
@@ -615,29 +612,35 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
 
-        
     }
-    
+
     public void fillAllStaffStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+//        Date startTime = new Date();
+//        Date fromDate = null;
+//        Date toDate = null;
+//
+//        Map m = new HashMap();
+//        String sql;
+//        sql = "select s from Stock s where s.stock!=:d "
+//                + " order by s.staff.person.name, "
+//                + " s.itemBatch.item.name ";
+//        m.put("d", 0.0);
+//        stocks = getStockFacade().findByJpql(sql, m);
+//        stockPurchaseValue = 0.0;
+//        stockSaleValue = 0.0;
+//        for (Stock ts : stocks) {
+//            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+//            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+//        }
 
-        Map m = new HashMap();
-        String sql;
-        sql = "select s from Stock s where s.stock!=:d "
-                + " order by s.staff.person.name, "
-                + " s.itemBatch.item.name ";
-        m.put("d", 0.0);
-        stocks = getStockFacade().findByJpql(sql, m);
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        for (Stock ts : stocks) {
-            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-        }
-
-        
+        Map<String, Object> m = new HashMap<>();
+        String sql = "select bi from BillItem bi"
+                + " and bi.retired = :ret"
+                + " and bi.bill.toStaff != null"
+                + " and bi.bill.fromDepartment != null"
+                + " order by bi.bill.toStaff.person.name";
+        m.put("ret", false);
+        billItems = billItemFacade.findByJpql(sql, m);
     }
 
     public String fillDistributorStocks() {
@@ -673,8 +676,6 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
-
-        
 
         return "/pharmacy/pharmacy_report_supplier_stock_by_batch";
     }
@@ -717,7 +718,6 @@ public class ReportsStock implements Serializable {
             totalRetailSaleValue += ts.getItemBatch().getRetailsaleRate() * ts.getStock();
         }
         getReportKeyWord().setBool1(false);
-        
 
     }
 
@@ -794,14 +794,14 @@ public class ReportsStock implements Serializable {
                 totalQty += d;
             }
             getReportKeyWord().setBool1(true);
-        }else if(getReportKeyWord().getString().equals("3")){
+        } else if (getReportKeyWord().getString().equals("3")) {
             stocks = new ArrayList<>();
             for (int i = 0; i < 70; i++) {
                 Stock s = new Stock();
                 s.setStock(1.0);
                 stocks.add(s);
             }
-        }else if(getReportKeyWord().getString().equals("4")){
+        } else if (getReportKeyWord().getString().equals("4")) {
             stocks = new ArrayList<>();
             for (int i = 0; i < 30; i++) {
                 Stock s = new Stock();
@@ -891,8 +891,6 @@ public class ReportsStock implements Serializable {
                 stockSaleValue = stockSaleValue + r.getRetailsaleValue();
             }
         }
-
-        
 
     }
 
@@ -1043,7 +1041,6 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
-        
     }
 
     public void fillSixMonthsNonmoving() {
@@ -1055,7 +1052,6 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
-        
     }
 
     public void fillOneYearNonmoving() {
@@ -1067,7 +1063,6 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
-        
     }
 
     public void setToDate(Date toDate) {
@@ -1243,6 +1238,14 @@ public class ReportsStock implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBills(List<BillItem> billItems) {
+        this.billItems = billItems;
     }
 
 }

@@ -568,6 +568,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setNetTotal(calTotal());
 
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
+        getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
 
         getBillFacade().edit(getIssuedBill());
 
