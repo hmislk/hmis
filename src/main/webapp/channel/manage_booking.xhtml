@@ -990,14 +990,7 @@
                             </h:panelGroup>
                             <h:panelGroup id="gpSettlePrintAD" rendered="#{channelBillController.printPreview}" >
                                 <div class="d-flex justify-content-between">
-                                        <p:commandButton
-                                            class="ui-button-secondary mx-2"
-                                            icon="fa-solid fa-arrow-left"
-                                            action="#{bookingController.navigateBackToBookingsLoagingBillSessions()}"
-                                            value="Back to Channel Booking"
-                                            process="@this"
-                                            update="@all">
-                                        </p:commandButton>
+                                    <h:outputLabel value="" />
 
                                         <div class="d-flex  gap-2">
                                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
