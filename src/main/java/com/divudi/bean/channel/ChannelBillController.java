@@ -10,6 +10,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -57,10 +58,8 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
@@ -148,8 +147,6 @@ public class ChannelBillController implements Serializable {
     private SmsFacade smsFacade;
     @EJB
     SmsManagerEjb smsManagerEjb;
-    @EJB
-    StaffBean staffBean;
     //////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -160,11 +157,9 @@ public class ChannelBillController implements Serializable {
     @Inject
     DoctorSpecialityController doctorSpecialityController;
     @Inject
+    MembershipSchemeController membershipSchemeController;
+    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private PaymentSchemeController paymentSchemeController;
-    @Inject
-    private BillBeanController billBean;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -263,10 +258,6 @@ public class ChannelBillController implements Serializable {
                     return;
                 }
             }
-            if (errorChecksettle()) {
-                return;
-            }
-
         }
 
         Bill b = savePaidBill();
@@ -289,121 +280,9 @@ public class ChannelBillController implements Serializable {
 
         createPayment(b, settlePaymentMethod);
 
-        if (toStaff != null && settlePaymentMethod == PaymentMethod.Staff_Welfare) {
-            staffBean.updateStaffWelfare(toStaff, getBillSession().getBill().getTotal());
-            JsfUtil.addSuccessMessage("User Credit Updated");
-        } else if (toStaff != null && settlePaymentMethod == PaymentMethod.Staff) {
-            staffBean.updateStaffCredit(toStaff, getBillSession().getBill().getTotal());
-            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-        }
-
-        if (settlePaymentMethod == PaymentMethod.PatientDeposit) {
-            if (getBillSession().getBill().getPatient().getRunningBalance() != null) {
-                getBillSession().getBill().getPatient().setRunningBalance(getBillSession().getBill().getPatient().getRunningBalance() - getBillSession().getBill().getTotal());
-            } else {
-                getBillSession().getBill().getPatient().setRunningBalance(0.0 - getBillSession().getBill().getTotal());
-            }
-            getPatientFacade().edit(getBillSession().getBill().getPatient());
-        }
-
         printPreview = true;
-        creditCompany = null;
-        toStaff = null;
-        
+
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
-    }
-
-    private boolean errorChecksettle() {
-        if (getPaymentSchemeController().errorCheckPaymentMethod(settlePaymentMethod, getPaymentMethodData())) {
-            return true;
-        }
-
-        if (settlePaymentMethod == PaymentMethod.PatientDeposit) {
-            if (!getBillSession().getBill().getPatient().getHasAnAccount()) {
-                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
-                return true;
-            }
-            double creditLimitAbsolute = Math.abs(getBillSession().getBill().getPatient().getCreditLimit());
-            double runningBalance;
-            if (getBillSession().getBill().getPatient().getRunningBalance() != null) {
-                runningBalance = getBillSession().getBill().getPatient().getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
-
-            if (getBillSession().getBill().getTotal() > availableForPurchase) {
-                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                return true;
-            }
-
-        }
-
-        if (settlePaymentMethod == PaymentMethod.Credit) {
-            if (creditCompany == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
-                return true;
-            }
-        }
-
-        if (settlePaymentMethod == PaymentMethod.Staff) {
-            if (toStaff == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member.");
-                return true;
-            }
-            if (toStaff.getCurrentCreditValue() + getBillSession().getBill().getTotal() > toStaff.getCreditLimitQualified()) {
-                JsfUtil.addErrorMessage("No enough Credit.");
-                return true;
-            }
-        }
-
-        if (settlePaymentMethod == PaymentMethod.Staff_Welfare) {
-            if (toStaff == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
-                return true;
-            }
-            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + getBillSession().getBill().getTotal() > toStaff.getAnnualWelfareQualified()) {
-                JsfUtil.addErrorMessage("No enough credit.");
-                return true;
-            }
-
-        }
-
-        if (settlePaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            if (getPaymentMethodData() == null) {
-                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-                return true;
-            }
-            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
-                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-                return true;
-            }
-            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
-                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-                return true;
-            }
-            double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-            }
-            double differenceOfBillTotalAndPaymentValue = getBillSession().getBill().getTotal() - multiplePaymentMethodTotalValue;
-            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
-                return true;
-            }
-            if (getBillSession().getBill().getCashPaid() == 0.0) {
-                getBillSession().getBill().setCashPaid(multiplePaymentMethodTotalValue);
-            }
-
-        }
-        return false;
     }
 
     public BillSession settleCreditForOnlinePayments(BillSession bookingBillSession) {
@@ -572,6 +451,7 @@ public class ChannelBillController implements Serializable {
         p.setPaymentMethod(pm);
         p.setPaidValue(bill.getNetTotal());
 
+        
         p.setPaidValue(p.getBill().getNetTotal());
         paymentFacade.create(p);
 
@@ -3284,22 +3164,6 @@ public class ChannelBillController implements Serializable {
 
     public void setDisableRefund(boolean disableRefund) {
         this.disableRefund = disableRefund;
-    }
-
-    public PaymentSchemeController getPaymentSchemeController() {
-        return paymentSchemeController;
-    }
-
-    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
-        this.paymentSchemeController = paymentSchemeController;
-    }
-
-    public BillBeanController getBillBean() {
-        return billBean;
-    }
-
-    public void setBillBean(BillBeanController billBean) {
-        this.billBean = billBean;
     }
 
 }
