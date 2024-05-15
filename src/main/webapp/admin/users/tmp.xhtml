@@ -8,120 +8,32 @@
 
     <h:body>
 
-
-        <style>
-            .diagnosis-card {
-                font-family: Arial, sans-serif;
-                margin: 1cm;
-                padding: 1cm;
-                border: none;
-                width: 100%;
-            }
-            .header-img {
-                width: 100%;
-                height: auto;
-            }
-            .patient-details {
-                margin-top: 20px;
-            }
-            .patient-details th {
-                text-align: left;
-                padding-right: 15px;
-            }
-            .patient-details td {
-                padding: 5px 0;
-            }
-        </style>
-
-
-        <div class="diagnosis-card" style="font-family: Arial, sans-serif; width: 210mm; height: 297mm; margin: auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0px 0px 8px #ddd;">
-            <img src="https://lh3.googleusercontent.com/pw/ABLVV86R8kEJBiyoLlA2xBeNQc1VkmqPHiu7RmVuzvifGIJhdIMraLTTh7XvigmMHMeCvLYA4hjY2BSzqt97o4EkZYX87GmD7DqSO1cjH9b79z2xuSrxooPH=w600-h199-p-k" style="width: 100%; height: auto;" alt="Header Image">
-
-                <table class="patient-details" style="width: 100%; margin-top: 20px;">
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Name of Patient:</th>
-                        <td>{name}</td>
-                        <th style="text-align: left; padding-right: 15px;">Age:</th>
-                        <td>{age}</td>
+        <div class="ui-selectlistbox-listcontainer" style="height:200px">
+            <table class="ui-selectlistbox-list">
+                <tbody>
+                    <tr class="ui-selectlistbox-item ui-corner-all">
+                        <td><span> Angiotensin-Converting Enzyme (ACE)  GC</span></td>
+                        <td><span>12100.0</span></td>
+                        <td><span>Outsource Lab</span></td>
                     </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Sex:</th>
-                        <td>{sex}</td>
-                        <th style="text-align: left; padding-right: 15px;">Phone:</th>
-                        <td>{phone}</td>
+                    <tr class="ui-selectlistbox-item ui-corner-all">
+                        <td><span> Blood Transfusion Charges Blood Transfusion Charges</span></td>
+                        <td><span>7500.0</span></td>
+                        <td><span>Inward</span></td>
                     </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Address:</th>
-                        <td colspan="3">{address}</td>
+                    <tr class="ui-selectlistbox-item ui-corner-all">
+                        <td><span> Serum Albumin Corrected Calcium( AS)</span>
+                        </td><td><span>1560.0</span></td>
+                        <td><span>Outsource Lab</span></td>
                     </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Date of Admission:</th>
-                        <td>{doa}</td>
-                        <th style="text-align: left; padding-right: 15px;">Date of Discharge:</th>
-                        <td>{dod}</td>
+                    <tr class="ui-selectlistbox-item ui-corner-all">
+                        <td><span>(25) OH D3 LEVEL (A)</span>
+                        </td><td><span>9150.0</span></td>
+                        <td><span>Outsource Lab</span>
+                        </td>
                     </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Room No:</th>
-                        <td>{room}</td>
-                        <th style="text-align: left; padding-right: 15px;">BHT No:</th>
-                        <td>{bht}</td>
-                    </tr>
-                    <tr>
-                        <th colspan="4" >
-                            <hr/>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th colspan="4" style="text-align: center; padding-right: 20px; font-weight: bold;">
-                            {dx}
-                        </th>
-                    </tr>
-                    <tr>
-                        <th colspan="4" >
-                            <hr/>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Comments:</th>
-                        <td colspan="3">{comments}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Height:</th>
-                        <td>{height}</td>
-                        <th style="text-align: left; padding-right: 15px;">Weight:</th>
-                        <td>{weight}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Blood Pressure:</th>
-                        <td colspan="3">{bp}</td>
-                    </tr>
-
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Past Diagnosis:</th>
-                        <td colspan="3">{past-dx}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Inpatient Treatment:</th>
-                        <td colspan="3">{rx}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Discharge Treatment:</th>
-                        <td colspan="3">{drx}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Routine Medicines:</th>
-                        <td colspan="3">{routine-medicines}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Allergies:</th>
-                        <td colspan="3">{allergies}</td>
-                    </tr>
-                    <tr>
-                        <th style="text-align: left; padding-right: 15px;">Investigations:</th>
-                        <td colspan="3">{ix}</td>
-                    </tr>
-
-                </table>
+                </tbody>
+            </table>
         </div>
 
 

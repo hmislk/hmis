@@ -53,7 +53,7 @@
                                     class="w-100 form">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
-                                        <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                        <h:outputText value="Add New Item" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row" >
 
@@ -63,7 +63,7 @@
                                                 filter="true"
                                                 filterMatchMode="contains"
                                                 id="acIx"
-                                                class="w-100"
+                                                class="w-100 compact-listbox"
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
                                                 value="#{opdBillController.itemLight}" 
@@ -73,7 +73,7 @@
                                                 >
                                                 <f:selectItems 
                                                     value="#{opdBillController.opdItems}"
-                                                    var="item" 
+                                                    var="item"
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
                                                 </f:selectItems>
@@ -81,19 +81,21 @@
                                                     listener="#{opdBillController.fillBillSessions}" 
                                                     process="acIx" 
                                                     update="tblSs txtQty" ></p:ajax>
-                                                <p:column  headerText="Name">
+                                                <p:column headerText="Name" style="padding: 0px; margin: 0px;">
                                                     <f:facet name="header" >
                                                         Name
                                                     </f:facet>
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column style="text-align: right;" headerText="Value">
-                                                    <h:outputText value="#{ix.total}"></h:outputText>
+                                                <p:column  width="7em" style="text-align: right; margin: 0px; padding: 0px;" headerText="Value">
+                                                    <h:outputText value="#{ix.total}">
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
                                                 </p:column>
-                                                <p:column  headerText="Dept">
+                                                <p:column  headerText="Dept" style="padding: 0px; margin: 0px; width: 3rem;">
                                                     <h:outputText value="#{ix.departmentName}"></h:outputText>
                                                 </p:column>
-                                                <p:column  headerText="Code">
+                                                <p:column  headerText="Code" rendered="false" style="padding: 0px; margin: 0px;">
                                                     <h:outputText value="#{ix.code}"></h:outputText>
                                                 </p:column>
 
@@ -434,18 +436,18 @@
                                                                 itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
                                                                 size="10">
-                                                                <p:column headerText="Name" >
+                                                                <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="EPF" >
+                                                                <p:column headerText="EPF" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="Credit Entitlement">
+                                                                <p:column headerText="Credit Entitlement" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.creditLimitQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-                                                                <p:column  headerText="Credit Utilized">
+                                                                <p:column  headerText="Credit Utilized" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.currentCreditValue}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
@@ -479,18 +481,18 @@
                                                                 itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
                                                                 size="10">
-                                                                <p:column headerText="Name" >
+                                                                <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="EPF" >
+                                                                <p:column headerText="EPF" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="Welfare Entitlement">
+                                                                <p:column headerText="Welfare Entitlement" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.annualWelfareQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-                                                                <p:column  headerText="Welfare Utilized">
+                                                                <p:column  headerText="Welfare Utilized" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.annualWelfareUtilized}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
