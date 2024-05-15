@@ -199,13 +199,13 @@ th.align-right-header .ui-column-title {
 
 .compact-listbox .ui-selectlistbox-item span {
     display: block;
-    margin: 0!important;
-    padding: 0!important;
+    margin: 2px!important;
+    padding: 2px!important;
 }
 
 .compact-listbox .ui-selectlistbox-listcontainer {
-    padding: 0!important;
-    margin: 0!important;
+    padding: 1px!important;
+    margin: 1px!important;
     /*height: 100px;*/
     overflow-y: auto; /* Ensures proper scrolling */
 }
@@ -216,10 +216,10 @@ th.align-right-header .ui-column-title {
 .compact-listbox th,
 .compact-listbox td,
 .compact-listbox span {
-    margin: 0!important;  /* Eliminate margin for all table elements and spans */
-    padding: 1px!important; /* Eliminate padding for all table elements and spans */
-    border: none!important; /* Optional: Remove borders to minimize visual clutter */
-    line-height: 1; /* Normalize line height for content compactness */
+    margin: 3px!important;  
+    padding: 3px!important; 
+    border: none!important; 
+    line-height: 1.2; 
 }
 
 .compact-listbox .ui-selectlistbox-item {
