@@ -15,24 +15,24 @@
                     </div>
                 </nav>
             </div>
-            
-            <h1>Success</h1>
+
 
             <div class="d-flex justify-content-center align-items-center mt-5">
                 <div style="max-width: 800px"  class="card w-100 shadow p-4">
-                    <h3 class="my-4">Patient Details</h3>
+                    <h3 class="my-4 text-center" style="color: green; border-color: green;" >PAYMENT SUCCESS</h3>
+                    <h3 class="my-4">Patient</h3>
                     <div style="display: flex; flex-direction: column;">
                         <div class="d-flex justify-content-between">
                             <p>Name: </p>
-                            <p style="font-weight: bolder">#{patientPortalController.patient.person.nameWithTitle}</p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.nameWithTitle}</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Address: </p>
-                            <p style="font-weight: bolder">#{patientPortalController.patient.person.address}</p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.address}</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Phone Number: </p>
-                            <p style="font-weight: bolder">#{patientPortalController.patient.person.phone}</p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.phone}</p>
                         </div>
                     </div>
 
@@ -40,22 +40,26 @@
                     <div>
                         <div class="d-flex justify-content-between">
                             <p>Doctor: </p>
-                            <p style="font-weight: bolder">#{patientPortalController.selectedConsultant.person.nameWithTitle}</p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.person.nameWithTitle}</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Speciality: </p>
-                            <p style="font-weight: bolder">#{patientPortalController.selectedConsultant.speciality.name}</p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.speciality.name}</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Session: </p>
-                            <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.name}</p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.name}</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Session Date: </p>
                             <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.sessionDate}</p>
                         </div>
                     </div>
-
+                    <h3 class="my-4">Payment Information</h3>
+                    <div class="d-flex justify-content-between">
+                        <p>Appointment no: </p>
+                        <p style="font-weight: bolder">#{patientPortalController.channelSettlingBillSession.serialNo}</p>
+                    </div>
                     <!-- Add more session details as needed -->
 
                     <h3 class="my-4">Payment Information</h3>
@@ -63,25 +67,14 @@
                         <p>Total Amount: </p>
                         <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.originatingSession.total}</p>
                     </div>
-                    <button type="button" onclick="startPayment();" class="btn btn-primary w-100">Pay Now</button>
+                    <p:commandButton value="go back" class="w-100 ui btn-success" 
+                                     style="background-color: green; border-color: green;" 
+                                     action="#{patientPortalController.navigateBookingMenue()}" ajax="false"/>
+
                 </div>
             </div>
         </h:form>
 
-        <script src="https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js"></script>
-        <script type="text/javascript">
-                        function startPayment() {
-                            Checkout.configure({
-                                session: {id: '#{paymentGatewayController.sessionId}'},
-                                interaction: {
-                                    merchant: {
-                                        name: "Sethma Hospital",
-                                        address: {line1: 'Test address'}
-                                    }
-                                }
-                            });
-                            Checkout.showPaymentPage();  // Or Checkout.showLightbox();
-                        }
-        </script>
+
     </ui:define>
 </ui:composition>

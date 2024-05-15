@@ -235,7 +235,7 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
-    private Long currentTokenId;
+    private Long barcodeIdLong;
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -313,7 +313,7 @@ public class SearchController implements Serializable {
         }
     }
 
-    public Bill searchBillFromBillId(Long currentTokenId) {
+    public Bill searchBillFromTokenId(Long currentTokenId) {
         if (currentTokenId == null) {
             JsfUtil.addErrorMessage("Enter Correct Bill Number !");
             return null; // Return null if the token ID is null
@@ -325,24 +325,31 @@ public class SearchController implements Serializable {
         hm.put("tid", currentTokenId);
         return getBillFacade().findFirstByJpql(sql, hm);
     }
+    
+    public Bill searchBillFromBillId(Long currentTokenId) {
+        if (currentTokenId == null) {
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
+        }
+        String sql = " SELECT b "
+                + " FROM Bill b "
+                + " WHERE b.retired = false "
+                + "AND b.id = :bid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bid", currentTokenId);
+        return getBillFacade().findFirstByJpql(sql, hm);
+    }
 
     public String settleBillByBarcode() {
-        currentBill = searchBillFromBillId(currentTokenId);
-        String action;
-        if (currentBill == null) {
-            Token t = tokenController.findToken(currentBillId);
-            if (t != null) {
-                if (t.getBill() != null) {
-
-                    currentBill = t.getBill();
-                }
-            }
+        currentBill = searchBillFromBillId(barcodeIdLong);
+        if(currentBill==null){
+            currentBill = searchBillFromTokenId(barcodeIdLong);
         }
+        String action;
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
         }
-
         if (currentBill.isPaid()) {
             JsfUtil.addErrorMessage("Error : Bill is Already Paid");
             return " ";
@@ -1220,12 +1227,12 @@ public class SearchController implements Serializable {
         this.currentBillId = currentBillId;
     }
 
-    public Long getCurrentTokenId() {
-        return currentTokenId;
+    public Long getBarcodeIdLong() {
+        return barcodeIdLong;
     }
 
-    public void setCurrentTokenId(Long currentTokenId) {
-        this.currentTokenId = currentTokenId;
+    public void setBarcodeIdLong(Long barcodeIdLong) {
+        this.barcodeIdLong = barcodeIdLong;
     }
 
     public List<Payment> getPayments() {
@@ -2691,7 +2698,7 @@ public class SearchController implements Serializable {
 
     public void createRequestTable() {
         Date startTime = new Date();
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
         List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
@@ -2730,6 +2737,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2737,10 +2746,12 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
         tmp.put("bTp", BillType.InwardPharmacyRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.department=:dep "
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -2797,6 +2808,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTForIssueTable(Boolean bool) {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2805,9 +2818,11 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bct", bct);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
