@@ -155,13 +155,14 @@ public class PaymentGatewayController implements Serializable {
                 if (orderStatus.equalsIgnoreCase("success")) {
                     patientPortalController.completeBooking();
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect("/patient_portal_channelling_payment_successful.xhtml");
+                        patientPortalController.setCurrentPaymentGatewayTransaction(newPaymentGatewayTransaction);
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
                     } catch (IOException e) {
                         System.out.println("e = " + e);
                     }
                 }else{
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect("/patient_portal_channelling_payment_unsuccessful.xhtml");
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
                     } catch (IOException e) {
                         System.out.println("e = " + e);
                     }
