@@ -325,7 +325,7 @@ public class SearchController implements Serializable {
         hm.put("tid", currentTokenId);
         return getBillFacade().findFirstByJpql(sql, hm);
     }
-    
+
     public Bill searchBillFromBillId(Long currentTokenId) {
         if (currentTokenId == null) {
             JsfUtil.addErrorMessage("Enter Correct Bill Number !");
@@ -342,7 +342,7 @@ public class SearchController implements Serializable {
 
     public String settleBillByBarcode() {
         currentBill = searchBillFromBillId(barcodeIdLong);
-        if(currentBill==null){
+        if (currentBill == null) {
             currentBill = searchBillFromTokenId(barcodeIdLong);
         }
         String action;
@@ -359,39 +359,56 @@ public class SearchController implements Serializable {
 
     }
 
-    public String toSettle(Bill args) {
-        String sql = "Select b from BilledBill b"
+    public String toSettle(Bill preBill) {
+        if(preBill==null){
+            JsfUtil.addErrorMessage("No Such Prebill");
+            return "";
+        }
+        String sql = "Select b from "
+                + " BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
-        hm.put("bil", args);
+        hm.put("bil", preBill);
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
             JsfUtil.addErrorMessage("Allready Paid");
             return "";
-        } else {
-
-            BillType btype = args.getBillType();
+        }
+        
+        if (preBill.getBillTypeAtomic() != null) {
+            BillTypeAtomic bta = preBill.getBillTypeAtomic();
+            switch (bta) {
+                case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+                    return opdPreSettleController.toSettle(preBill);
+                default:
+                    System.out.println("No Adomic bill type for = " + b);
+            }
+        }
+        if (preBill.getBillType() != null) {
+            BillType btype = preBill.getBillType();
             switch (btype) {
                 case OpdPreBill:
-                    setPreBillForOpd(args);
+                    setPreBillForOpd(preBill);
                     return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
                 case PharmacyPre:
-                    setPreBillForPharmecy(args);
+                    setPreBillForPharmecy(preBill);
                     return "/pharmacy/pharmacy_bill_pre_settle";
 
-                case OpdBathcBillPre:
-                    setPreBillForOpd(args);
-                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
+//                case OpdBathcBillPre:
+//                    opdPreBatchBillSettleController.setPreBill(preBill);
+//                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
                 default:
                     throw new AssertionError();
             }
 
         }
+        JsfUtil.addErrorMessage("No bill error");
+        return null;
     }
 
     public void setPreBillForOpd(Bill preBill) {
@@ -2698,7 +2715,7 @@ public class SearchController implements Serializable {
 
     public void createRequestTable() {
         Date startTime = new Date();
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
         List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;

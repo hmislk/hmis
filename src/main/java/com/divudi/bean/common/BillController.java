@@ -2274,7 +2274,7 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
 
