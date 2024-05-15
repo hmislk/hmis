@@ -1,6 +1,7 @@
 package com.divudi.light.common;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  *
@@ -187,5 +188,30 @@ public class BillLight {
     public void setBillTime(Date billTime) {
         this.billTime = billTime;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BillLight other = (BillLight) obj;
+        return Objects.equals(this.id, other.id);
+    }
+    
+    
+    
 
 }

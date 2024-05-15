@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.bean.common.StaffWelfarePeriod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
@@ -136,6 +137,8 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
 //    double workingHourPerShift;
 //    double leaveHour;
+    private double creditLimitQualified;
+    private double currentCreditValue;
     double annualWelfareQualified;
     double annualWelfareUtilized;
     double workingTimeForOverTimePerWeek;
@@ -146,6 +149,9 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
+    
+    @Enumerated
+    private StaffWelfarePeriod staffWelfarePeriod;
 
     @Transient
     private String name;
@@ -731,5 +737,31 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public StaffWelfarePeriod getStaffWelfarePeriod() {
+        return staffWelfarePeriod;
+    }
+
+    public void setStaffWelfarePeriod(StaffWelfarePeriod staffWelfarePeriod) {
+        this.staffWelfarePeriod = staffWelfarePeriod;
+    }
+
+    public double getCreditLimitQualified() {
+        return creditLimitQualified;
+    }
+
+    public void setCreditLimitQualified(double creditLimitQualified) {
+        this.creditLimitQualified = creditLimitQualified;
+    }
+
+    public double getCurrentCreditValue() {
+        return currentCreditValue;
+    }
+
+    public void setCurrentCreditValue(double currentCreditValue) {
+        this.currentCreditValue = currentCreditValue;
+    }
+    
+    
 
 }

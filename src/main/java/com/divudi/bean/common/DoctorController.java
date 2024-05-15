@@ -231,6 +231,7 @@ public class DoctorController implements Serializable {
         //  getItems();
         current = null;
         getCurrent();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectedItems(List<Doctor> selectedItems) {
@@ -310,6 +311,7 @@ public class DoctorController implements Serializable {
         current = new Doctor();
         recreateModel();
         // getItems();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectText(String selectText) {

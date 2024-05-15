@@ -159,19 +159,21 @@
                                 <p:dataTable 
                                     value="#{opdBillController.bills}" 
                                     var="b" 
+                                    resizeMode="expand"
+                                    reflow="true"
                                     class="w-100 m-1" 
                                     rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                     <f:facet name="header" >
                                         <h:outputText value="Individual Bills" ></h:outputText>
                                     </f:facet>
                                     <p:column headerText="ID" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.id}" ></h:outputText>
+                                        <p:inputText value="#{b.id}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Ins No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.insId}" ></h:outputText>
+                                        <p:inputText readonly="true" value="#{b.insId}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.deptId}" ></h:outputText>
+                                        <p:inputText value="#{b.deptId}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Bill Type" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <h:outputText value="#{b.billType.label}" ></h:outputText>

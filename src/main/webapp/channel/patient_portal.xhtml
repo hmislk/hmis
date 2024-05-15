@@ -6,13 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
-
-    <f:metadata>
-        <f:event type="preRenderView"
-                 listener="#{paymentGatewayController.checkPaymentStatus()}"/>
-    </f:metadata>
     <h:head>
-        <title>Channeling</title>
+        <title>Channelling</title>
         <link rel="stylesheet" 
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
         <link 
@@ -96,7 +91,7 @@
             }
 
             .card-header {
-                background-image: linear-gradient(to right, #218838,#28a745); /* Gradient from green to dark green */
+                background-image:linear-gradient(90deg, rgba(4,116,8,1) 0%, rgba(29,221,71,1) 100%);
                 color: #fff; /* White */
                 border-top-left-radius: 10px;
                 border-top-right-radius: 10px;
@@ -253,7 +248,7 @@
                                             <p:selectOneMenu class="w-100" id="acSessions" value="#{patientPortalController.selectedChannelSession}">
                                                 <f:selectItem itemLabel="Select One" itemValue="con" />
                                                 <f:selectItems  value="#{patientPortalController.channelSessions}"  var="consultant" itemLabel="#{consultant.name}" itemValue="#{consultant}" />
-                                                <p:ajax event="itemSelect" listener="#{patientPortalController.fillSessionInstance()}" process="acSessions" update="sessionDates" />
+                                                <p:ajax event="itemSelect"  process="acSessions" update="sessionDates" />
                                             </p:selectOneMenu>
                                         </div>
                                     </div>
@@ -261,7 +256,7 @@
 
                                 <div class="row mt-2">
                                     <div class="col">
-                                        <p:commandButton value="Find a Session" class="btn btn-success w-100" ajax="false" />
+                                        <p:commandButton value="Find a Session" action="#{patientPortalController.fillSessionInstance()}" class="btn btn-success w-100" ajax="false" />
                                     </div>
                                 </div>
                             </div>
@@ -275,14 +270,14 @@
                                 <a href="#" class="btn btn-primary">View Bookings</a>
                             </div>
                         </div>
-                         <div class="card mx-2 w-100">
+                        <div class="card mx-2 w-100">
                             <div class="card-body">
                                 <h5 class="card-title">My Bookings</h5>
                                 <p class="card-text">View your booked sessions here.</p>
                                 <a href="#" class="btn btn-primary">View Bookings</a>
                             </div>
                         </div>
-                         <div class="card  w-100">
+                        <div class="card  w-100">
                             <div class="card-body">
                                 <h5 class="card-title">My Bookings</h5>
                                 <p class="card-text">View your booked sessions here.</p>
@@ -314,9 +309,11 @@
                                 </h:outputText>
                             </h5>
                             <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <img src="https://lordicon.com/icons/wired/lineal/671-male-doctor-care.gif" width="100" alt="Male Doctor" />
-                                </div>
+                                <h:panelGroup>
+                                    <div>
+                                        <img src="https://lordicon.com/icons/wired/lineal/671-male-doctor-care.gif" width="100" alt="Male Doctor" />
+                                    </div>
+                                </h:panelGroup>
 
                                 <div class="card-body">
                                     <h5 class="card-title">
@@ -355,7 +352,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end  p-2">
-<!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
+<!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.completeBooking}">
                                         <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
                                     </p:commandButton>-->
                                     <p:commandButton 

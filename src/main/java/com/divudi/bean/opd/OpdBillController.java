@@ -1625,7 +1625,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             b.setVat(b.getVat());
             b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
-            
+
             getBillFacade().edit(b);
             getBillBean().checkBillItemFeesInitiated(b);
             getBills().add(b);
@@ -1639,10 +1639,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
 
-        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-            staffBean.updateStaffCredit(toStaff, netPlusVat);
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            staffBean.updateStaffWelfare(toStaff, netPlusVat);
             JsfUtil.addSuccessMessage("User Credit Updated");
+        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+            staffBean.updateStaffCredit(toStaff, netPlusVat);
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         }
+
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             if (getPatient().getRunningBalance() != null) {
                 getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
@@ -1651,6 +1655,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             getPatientFacade().edit(getPatient());
         }
+
         if (getToken() != null) {
             getToken().setBill(getBatchBill());
             tokenFacade.edit(getToken());
@@ -1872,7 +1877,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
         newBill.setDeptId(deptId);
-
         switch (sessionController.getDepartmentPreference().getOpdTokenNumberGenerationStrategy()) {
             case NO_TOKEN_GENERATION:
                 newBill.setSessionId(null);
@@ -2020,6 +2024,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Can not bill without a name for the new Patient !");
             return true;
         }
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return true;
+        }
         if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
             if (getPatient().getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please Add Patient Area");
@@ -2095,11 +2103,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return true;
         }
 
-        if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return true;
-        }
-
         if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -2126,20 +2129,33 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
 
         if (paymentMethod == PaymentMethod.Credit) {
-            if (toStaff == null && creditCompany == null && collectingCentre == null) {
+            if (creditCompany == null && collectingCentre == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
                 return true;
             }
-            if (toStaff != null && creditCompany != null) {
-                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+        }
+
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member.");
                 return true;
             }
-            if (toStaff != null) {
-                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    JsfUtil.addErrorMessage("No enough walfare credit.");
-                    return true;
-                }
+            if (toStaff.getCurrentCreditValue()+ netTotal > toStaff.getCreditLimitQualified()) {
+                JsfUtil.addErrorMessage("No enough Credit.");
+                return true;
             }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                return true;
+            }
+            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + netTotal > toStaff.getAnnualWelfareQualified()) {
+                JsfUtil.addErrorMessage("No enough credit.");
+                return true;
+            }
+
         }
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -2177,11 +2193,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-            JsfUtil.addErrorMessage("Check Payment method");
-            return true;
-        }
-
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
@@ -2189,10 +2200,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
 
         }
-
-//        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
-//            return true;
-//        }
         return false;
     }
 
@@ -2320,9 +2327,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
-        if(clearItemAfterAddingToOpdBill){
+        if (clearItemAfterAddingToOpdBill) {
             setItemLight(null);
-        }else{
+        } else {
             setItemLight(itemLight);
         }
         JsfUtil.addSuccessMessage("Added");
@@ -2375,7 +2382,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
-        payments=null;
+        payments = null;
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -3673,7 +3680,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Payment> getPayments() {
-        if(payments==null){
+        if (payments == null) {
             payments = new ArrayList<>();
         }
         return payments;
@@ -3739,7 +3746,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void setCanChangeSpecialityAndDoctorInAddedBillItem(boolean canChangeSpecialityAndDoctorInAddedBillItem) {
-        boolean config=configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
+        boolean config = configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
         this.canChangeSpecialityAndDoctorInAddedBillItem = config;
     }
 
