@@ -87,7 +87,7 @@ public class IncomeExpensessBillController implements Serializable {
 
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 

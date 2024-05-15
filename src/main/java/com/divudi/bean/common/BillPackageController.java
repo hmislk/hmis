@@ -494,7 +494,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
         if (paymentMethod == PaymentMethod.Credit && creditCompany == null) {

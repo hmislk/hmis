@@ -223,9 +223,10 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     Staff toStaff;
     //Booleans
-    boolean cancelled;
-    boolean refunded;
-    boolean reactivated;
+    private boolean paid;
+    private boolean cancelled;
+    private boolean refunded;
+    private boolean reactivated;
     //Created Properties
     @ManyToOne(fetch = FetchType.LAZY)
     WebUser creater;
@@ -651,7 +652,7 @@ public class Bill implements Serializable {
         this.billTotal = billTotal;
     }
 
-    private boolean paid;
+    
 
     public Bill getPaidBill() {
         return paidBill;
