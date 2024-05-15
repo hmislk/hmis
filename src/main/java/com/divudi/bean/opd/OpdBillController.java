@@ -124,7 +124,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -138,21 +137,21 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @EJB
     private SmsManagerEjb smsManagerEjb;
     @EJB
-    TokenFacade tokenFacade;
+    private TokenFacade tokenFacade;
 
     /**
      * Controllers
      */
     @Inject
-    BillController billController;
+    private BillController billController;
     @Inject
     private SessionController sessionController;
     @Inject
     private ItemController itemController;
     @Inject
-    ItemApplicationController itemApplicationController;
+    private ItemApplicationController itemApplicationController;
     @Inject
-    ItemMappingController itemMappingController;
+    private ItemMappingController itemMappingController;
     @Inject
     private CommonController commonController;
     @Inject
@@ -176,9 +175,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @Inject
     private AuditEventController auditEventController;
     @Inject
-    WorkingTimeController workingTimeController;
+    private WorkingTimeController workingTimeController;
     @Inject
-    FinancialTransactionController financialTransactionController;
+    private FinancialTransactionController financialTransactionController;
+    @Inject
+    private DepartmentController departmentController;
 
     @Inject
     OpdTokenController opdTokenController;
@@ -191,6 +192,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     /**
      * Class Variables
      */
+    
+    private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
@@ -277,6 +280,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
     List<BillSession> billSessions;
+    private List<Department> opdItemDepartments;
 
     private boolean duplicatePrint;
     private Token token;
@@ -413,9 +417,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return temItems;
     }
     
-    public void fillOpdItemDepartments(List<ItemLight> items){
-        List<Department> deps = new ArrayList<>();
-        
+    public void fillOpdItemDepartments(List<ItemLight> itemLightesToAddDepartments){
+        opdItemDepartments = new ArrayList<>();
+        for(ItemLight il:itemLightesToAddDepartments){
+            if(il.getDepartmentId()!=null){
+                continue;
+            }
+            Department d = departmentController.findDepartment(il.getDepartmentId());
+            opdItemDepartments.add(d);
+        }
     }
 
     public void searchDepartmentOpdBillLights() {
@@ -3763,5 +3773,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         boolean config = configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
         this.canChangeSpecialityAndDoctorInAddedBillItem = config;
     }
+
+    public List<Department> getOpdItemDepartments() {
+        return opdItemDepartments;
+    }
+
+    public void setOpdItemDepartments(List<Department> opdItemDepartments) {
+        this.opdItemDepartments = opdItemDepartments;
+    }
+    
+    
 
 }
