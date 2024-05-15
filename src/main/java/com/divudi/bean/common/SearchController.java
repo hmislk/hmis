@@ -397,7 +397,7 @@ public class SearchController implements Serializable {
 
                 case PharmacyPre:
                     setPreBillForPharmecy(preBill);
-                    return "/pharmacy/pharmacy_bill_pre_settle";
+                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
 
 //                case OpdBathcBillPre:
 //                    opdPreBatchBillSettleController.setPreBill(preBill);
