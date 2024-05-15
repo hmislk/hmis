@@ -2369,7 +2369,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         savingBill.setInstitution(selectedSessionInstance.getInstitution());
         savingBill.setBillType(BillType.ChannelOnCall);
         savingBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-
+        savingBill.setRetired(true);
         String deptId = generateBillNumberDeptIdForOnlinePayment(savingBill);
 
         if (deptId.equals("")) {
