@@ -9,6 +9,7 @@ import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
@@ -18,8 +19,10 @@ import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Consultant;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
+import com.divudi.entity.PaymentGatewayTransaction;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Sms;
 import com.divudi.entity.Speciality;
@@ -92,6 +95,8 @@ public class PatientPortalController implements Serializable {
     PaymentGatewayController paymentGatewayController;
     @Inject
     ChannelBillController channelBillController;
+    @Inject
+    StaffController staffController;
 
     private String PatientphoneNumber;
     private boolean bookDoctor;
@@ -125,12 +130,18 @@ public class PatientPortalController implements Serializable {
 
     private BillSession channelBookingBillSession;
     private BillSession channelSettlingBillSession;
+    
+    private PaymentGatewayTransaction currentPaymentGatewayTransaction;
 
     ScheduleModel eventModel;
     Staff staff;
     ServiceSession serviceSession;
 
     private ChannelBean channelBean;
+    
+    public String navigateBookingMenue(){
+        return commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
+    }
 
     public String booking() {
         if (selectedSessionInstance != null) {
@@ -232,20 +243,29 @@ public class PatientPortalController implements Serializable {
 //        addNewPatient = false;
 //    }
     public void fillSessionInstance() {
-        if (channelSessions != null) {
-            sessionInstances = new ArrayList<>();
-            sessionStartingDate = new Date();
-            String jpql = "select i "
-                    + " from SessionInstance i "
-                    + " where i.originatingSession.staff=:os "
-                    + " and i.retired=:ret ";
+        sessionInstances = new ArrayList<>();
+        Date currentDate = new Date();
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate >=:cd");
 
-            Map m = new HashMap();
-            m.put("ret", false);
+        if (selectedConsultant != null) {
+            jpql.append(" and i.originatingSession.staff=:os");
+            System.out.println("selectedConsultant = " + selectedConsultant);
             m.put("os", selectedConsultant);
-
-            sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
         }
+
+        if (selectedSpeciality != null) {
+            List<Staff> staffListBySelectedSpeciality = staffController.getSpecialityStaff(selectedSpeciality);
+            System.out.println("staffListBySelectedSpeciality = " + staffListBySelectedSpeciality.size());
+            jpql.append(" and i.originatingSession.staff in :staffs");
+            m.put("staffs", staffListBySelectedSpeciality);
+        }
+
+        m.put("ret", false);
+        m.put("cd", currentDate);
+
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public void otpCodeConverter() {
@@ -326,11 +346,11 @@ public class PatientPortalController implements Serializable {
     }
 
     public void completeBooking() {
-        if(channelBookingBillSession==null){
+        if (channelBookingBillSession == null) {
             JsfUtil.addErrorMessage("No Chanel Booking Session. Please contact system administator");
             return;
         }
-        if(channelBookingBillSession.getPaidBillSession()!=null){
+        if (channelBookingBillSession.getPaidBillSession() != null) {
             JsfUtil.addErrorMessage("This is already Paid");
             return;
         }
@@ -632,6 +652,12 @@ public class PatientPortalController implements Serializable {
         this.channelSettlingBillSession = channelSettlingBillSession;
     }
 
-   
+    public PaymentGatewayTransaction getCurrentPaymentGatewayTransaction() {
+        return currentPaymentGatewayTransaction;
+    }
+
+    public void setCurrentPaymentGatewayTransaction(PaymentGatewayTransaction currentPaymentGatewayTransaction) {
+        this.currentPaymentGatewayTransaction = currentPaymentGatewayTransaction;
+    }
 
 }
