@@ -485,7 +485,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Bill Fees");
             return "";
         }
-
+        channelBillController.setPrintPreview(false);
         return "/channel/manage_booking?faces-redirect=true";
     }
 
