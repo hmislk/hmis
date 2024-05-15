@@ -914,7 +914,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     private boolean errorCheckForSaleBill() {
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), paymentMethodData)) {
             return true;
         }
         return false;
