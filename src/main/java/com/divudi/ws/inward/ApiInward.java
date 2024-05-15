@@ -443,7 +443,7 @@ public class ApiInward {
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(bill.getPaymentMethod(), pmd)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(bill.getPaymentMethod(), pmd)) {
             return true;
         }
 
