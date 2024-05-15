@@ -2164,6 +2164,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
                 return true;
             }
+
             if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
                 JsfUtil.addErrorMessage("No enough Credit.");
                 return true;
