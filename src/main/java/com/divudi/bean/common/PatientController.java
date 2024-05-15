@@ -941,7 +941,7 @@ public class PatientController implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (paymentSchemeController.errorCheckPaymentMethod(getBill().getPaymentMethod(), paymentMethodData)) {
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
         return false;
@@ -952,7 +952,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
         }
-        if (paymentSchemeController.errorCheckPaymentMethod(getBill().getPaymentMethod(), paymentMethodData)) {
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
             return;
         }
