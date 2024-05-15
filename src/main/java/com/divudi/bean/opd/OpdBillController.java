@@ -409,7 +409,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 temItems = itemApplicationController.getInvestigationsAndServices();
                 break;
         }
+        
         return temItems;
+    }
+    
+    public void fillOpdItemDepartments(List<ItemLight> items){
+        List<Department> deps = new ArrayList<>();
+        
     }
 
     public void searchDepartmentOpdBillLights() {
