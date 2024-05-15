@@ -153,6 +153,27 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
+        if (comment==null) {
+            JsfUtil.addErrorMessage("Provide Comment To Cancel !");
+            return "";
+        }
+        CancelledBill cb=pharmacyCreateCancelBill();
+        cb.setBillItems(getBill().getBillItems());
+        bill.setCancelled(true);
+        bill.setCancelledBill(cb);
+        billFacade.edit(bill);
+        return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+    }
+    
+    public String cancelInwardPharmacyRequestBillFromInward(){
+        if (bill==null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (comment==null) {
+            JsfUtil.addErrorMessage("Provide Comment To Cancel !");
+            return "";
+        }
         CancelledBill cb=pharmacyCreateCancelBill();
         cb.setBillItems(getBill().getBillItems());
         bill.setCancelled(true);

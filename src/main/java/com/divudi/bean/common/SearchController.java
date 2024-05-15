@@ -2698,7 +2698,7 @@ public class SearchController implements Serializable {
 
     public void createRequestTable() {
         Date startTime = new Date();
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
         List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
@@ -2737,6 +2737,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2744,10 +2746,12 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
         tmp.put("bTp", BillType.InwardPharmacyRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.department=:dep "
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -2804,6 +2808,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTForIssueTable(Boolean bool) {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2812,9 +2818,11 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bct", bct);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {

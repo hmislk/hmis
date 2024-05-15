@@ -213,10 +213,10 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bi.qty}"/> 
                                 </p:column>
-                                <p:column headerText="Expiary"
+                                <p:column headerText="Expiry"
                                           sortBy="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Expiary"/>
+                                        <h:outputLabel value="Expiry"/>
                                     </f:facet>
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}"  >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
