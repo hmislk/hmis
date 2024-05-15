@@ -461,15 +461,15 @@ public class TransferIssueController implements Serializable {
 
         getIssuedBill().setNetTotal(calTotal());
 
-        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
+//        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
         notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
-        getRequestedBill().getForwardReferenceBills().add(getIssuedBill());
-        getBillFacade().edit(getRequestedBill());
+//        getRequestedBill().getForwardReferenceBills().add(getIssuedBill());
+//        getBillFacade().edit(getRequestedBill());
 
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
@@ -568,6 +568,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setNetTotal(calTotal());
 
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
+        getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
 
         getBillFacade().edit(getIssuedBill());
 
