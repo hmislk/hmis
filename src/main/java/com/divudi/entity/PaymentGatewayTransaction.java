@@ -31,9 +31,7 @@ public class PaymentGatewayTransaction implements Serializable {
     private String orderId;
     private Double orderAmount;
     private String sessionId;
-
     private String orderStatus;
-
     private String transactionId;
 
     @ManyToOne

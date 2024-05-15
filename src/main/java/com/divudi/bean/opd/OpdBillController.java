@@ -388,20 +388,34 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
+        List<ItemLight> temItems;
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
-                return itemApplicationController.getInvestigationsAndServices();
+                temItems = itemApplicationController.getInvestigationsAndServices();
+                break;
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
-                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+                temItems = itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+                break;
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
-                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+                temItems = itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+                break;
             case ITEMS_OF_LOGGED_DEPARTMENT:
-                return itemController.getDepartmentItems();
+                temItems = itemController.getDepartmentItems();
+                break;
             case ITEMS_OF_LOGGED_INSTITUTION:
-                return itemController.getInstitutionItems();
+                temItems = itemController.getInstitutionItems();
+                break;
             default:
-                return itemApplicationController.getInvestigationsAndServices();
+                temItems = itemApplicationController.getInvestigationsAndServices();
+                break;
         }
+        
+        return temItems;
+    }
+    
+    public void fillOpdItemDepartments(List<ItemLight> items){
+        List<Department> deps = new ArrayList<>();
+        
     }
 
     public void searchDepartmentOpdBillLights() {
@@ -2140,7 +2154,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
                 return true;
             }
-            if (toStaff.getCurrentCreditValue()+ netTotal > toStaff.getCreditLimitQualified()) {
+            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
                 JsfUtil.addErrorMessage("No enough Credit.");
                 return true;
             }

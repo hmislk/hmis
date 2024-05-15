@@ -67,7 +67,7 @@
                                         <h:outputLabel value="New Quantity" ></h:outputLabel>
                                         <p:inputText id="input" autocomplete="off" value="#{pharmacyAdjustmentController.qty}" 
                                                      disabled="#{pharmacyAdjustmentController.manualAdjust}" class="w-100" >
-                                            <f:ajax event="keyup" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerChangeAdjustedStock}"/>
+                                            <p:ajax event="keyup" process="@this det" update="det" listener="#{pharmacyAdjustmentController.listnerChangeAdjustedStock}"/>
                                         </p:inputText>
                                         <h:outputLabel value="Comment" />
                                         <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" class="w-100"/>
@@ -209,9 +209,7 @@
                         </div>
 
                         <h:panelGroup id="print">
-                            <ui:repeat value="#{pharmacyAdjustmentController.bills}" var="b" >
-                                <ph:adjustmentBill_Single  bill="#{b}" />
-                            </ui:repeat>
+                                <ph:adjustmentBill_Single  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
                         </h:panelGroup>
                     </p:panel>
 
