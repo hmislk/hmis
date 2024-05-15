@@ -192,7 +192,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     /**
      * Class Variables
      */
-    
     private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
@@ -275,12 +274,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private int opdAnalyticsIndex;
 
     private List<ItemLight> opdItems;
+    private List<ItemLight> departmentOpdItems;
     private boolean patientDetailsEditable;
 
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
     List<BillSession> billSessions;
     private List<Department> opdItemDepartments;
+    private Department selectedOpdItemDepartment;
 
     private boolean duplicatePrint;
     private Token token;
@@ -413,17 +414,54 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 temItems = itemApplicationController.getInvestigationsAndServices();
                 break;
         }
-        
+        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
+        if (listItemsByDepartment) {
+            fillOpdItemDepartments(temItems);
+        } else {
+            opdItemDepartments = null;
+        }
+        if (getSelectedOpdItemDepartment() != null) {
+            departmentOpdItems = filterItemLightesByDepartment(temItems, getSelectedOpdItemDepartment());
+        }
+
         return temItems;
     }
-    
-    public void fillOpdItemDepartments(List<ItemLight> itemLightesToAddDepartments){
-        opdItemDepartments = new ArrayList<>();
-        for(ItemLight il:itemLightesToAddDepartments){
-            if(il.getDepartmentId()!=null){
+
+    private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
+        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
+        if (!listItemsByDepartment) {
+            return ils;
+        }
+        List<ItemLight> tils = new ArrayList<>();
+        for (ItemLight il : ils) {
+            if (il.getDepartmentId() == null) {
                 continue;
             }
-            Department d = departmentController.findDepartment(il.getDepartmentId());
+            if (il.getDepartmentId().equals(dept.getId())) {
+                tils.add(il);
+            }
+        }
+        return tils;
+    }
+
+    public void departmentChanged() {
+        if (selectedOpdItemDepartment == null) {
+            departmentOpdItems = getOpdItems();
+        } else {
+            departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
+        }
+    }
+
+    public void fillOpdItemDepartments(List<ItemLight> itemLightsToAddDepartments) {
+        opdItemDepartments = new ArrayList<>();
+        Set<Long> uniqueDeptIds = new HashSet<>();
+        for (ItemLight il : itemLightsToAddDepartments) {
+            if (il.getDepartmentId() != null) {
+                uniqueDeptIds.add(il.getDepartmentId());
+            }
+        }
+        for (Long deptId : uniqueDeptIds) {
+            Department d = departmentController.findDepartment(deptId);
             opdItemDepartments.add(d);
         }
     }
@@ -3776,13 +3814,39 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Department> getOpdItemDepartments() {
+        if(opdItemDepartments==null){
+            getOpdItems();
+        }
         return opdItemDepartments;
     }
 
     public void setOpdItemDepartments(List<Department> opdItemDepartments) {
         this.opdItemDepartments = opdItemDepartments;
     }
-    
-    
+
+    public Department getSelectedOpdItemDepartment() {
+        if (selectedOpdItemDepartment == null) {
+            if (opdItemDepartments != null && !opdItemDepartments.isEmpty()) {
+                selectedOpdItemDepartment = opdItemDepartments.get(0);
+            }
+        }
+        return selectedOpdItemDepartment;
+    }
+
+    public void setSelectedOpdItemDepartment(Department selectedOpdItemDepartment) {
+        this.selectedOpdItemDepartment = selectedOpdItemDepartment;
+    }
+
+    public List<ItemLight> getDepartmentOpdItems() {
+        if(departmentOpdItems==null){
+            getOpdItems();
+            departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
+        }
+        return departmentOpdItems;
+    }
+
+    public void setDepartmentOpdItems(List<ItemLight> departmentOpdItems) {
+        this.departmentOpdItems = departmentOpdItems;
+    }
 
 }

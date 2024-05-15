@@ -70,6 +70,15 @@ public class ItemLight {
         this.code = code;
         this.total = total;
     }
+    
+    public ItemLight(Long id, String departmentName, String name, String code, Double total, Long departmentId) {
+        this.id = id;
+        this.departmentName = departmentName;
+        this.name = name;
+        this.code = code;
+        this.total = total;
+        this.departmentId = departmentId;
+    }
 
     
     
