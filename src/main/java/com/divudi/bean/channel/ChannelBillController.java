@@ -314,7 +314,7 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorChecksettle() {
-        if (getPaymentSchemeController().errorCheckPaymentMethod(settlePaymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(settlePaymentMethod, getPaymentMethodData())) {
             return true;
         }
 
