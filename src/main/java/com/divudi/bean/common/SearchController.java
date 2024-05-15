@@ -236,6 +236,7 @@ public class SearchController implements Serializable {
     private Bill preBill;
     boolean billPreview;
     private Long barcodeIdLong;
+    private Date maxDate;
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -360,7 +361,7 @@ public class SearchController implements Serializable {
     }
 
     public String toSettle(Bill preBill) {
-        if(preBill==null){
+        if (preBill == null) {
             JsfUtil.addErrorMessage("No Such Prebill");
             return "";
         }
@@ -377,7 +378,7 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Allready Paid");
             return "";
         }
-        
+
         if (preBill.getBillTypeAtomic() != null) {
             BillTypeAtomic bta = preBill.getBillTypeAtomic();
             switch (bta) {
@@ -401,7 +402,6 @@ public class SearchController implements Serializable {
 //                case OpdBathcBillPre:
 //                    opdPreBatchBillSettleController.setPreBill(preBill);
 //                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
-
                 default:
                     throw new AssertionError();
             }
@@ -1346,6 +1346,15 @@ public class SearchController implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public Date getMaxDate() {
+        maxDate = commonFunctions.getEndOfDay(new Date());
+        return maxDate;
+    }
+
+    public void setMaxDate(Date maxDate) {
+        this.maxDate = maxDate;
     }
 
     public class billsWithbill {
