@@ -235,7 +235,8 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
-    private Long currentTokenId;
+    private Long barcodeIdLong;
+    private Date maxDate;
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -313,7 +314,7 @@ public class SearchController implements Serializable {
         }
     }
 
-    public Bill searchBillFromBillId(Long currentTokenId) {
+    public Bill searchBillFromTokenId(Long currentTokenId) {
         if (currentTokenId == null) {
             JsfUtil.addErrorMessage("Enter Correct Bill Number !");
             return null; // Return null if the token ID is null
@@ -326,23 +327,30 @@ public class SearchController implements Serializable {
         return getBillFacade().findFirstByJpql(sql, hm);
     }
 
-    public String settleBillByBarcode() {
-        currentBill = searchBillFromBillId(currentTokenId);
-        String action;
-        if (currentBill == null) {
-            Token t = tokenController.findToken(currentBillId);
-            if (t != null) {
-                if (t.getBill() != null) {
-
-                    currentBill = t.getBill();
-                }
-            }
+    public Bill searchBillFromBillId(Long currentTokenId) {
+        if (currentTokenId == null) {
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
         }
+        String sql = " SELECT b "
+                + " FROM Bill b "
+                + " WHERE b.retired = false "
+                + "AND b.id = :bid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bid", currentTokenId);
+        return getBillFacade().findFirstByJpql(sql, hm);
+    }
+
+    public String settleBillByBarcode() {
+        currentBill = searchBillFromBillId(barcodeIdLong);
+        if (currentBill == null) {
+            currentBill = searchBillFromTokenId(barcodeIdLong);
+        }
+        String action;
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
         }
-
         if (currentBill.isPaid()) {
             JsfUtil.addErrorMessage("Error : Bill is Already Paid");
             return " ";
@@ -352,39 +360,55 @@ public class SearchController implements Serializable {
 
     }
 
-    public String toSettle(Bill args) {
-        String sql = "Select b from BilledBill b"
+    public String toSettle(Bill preBill) {
+        if (preBill == null) {
+            JsfUtil.addErrorMessage("No Such Prebill");
+            return "";
+        }
+        String sql = "Select b from "
+                + " BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
-        hm.put("bil", args);
+        hm.put("bil", preBill);
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
             JsfUtil.addErrorMessage("Allready Paid");
             return "";
-        } else {
+        }
 
-            BillType btype = args.getBillType();
+        if (preBill.getBillTypeAtomic() != null) {
+            BillTypeAtomic bta = preBill.getBillTypeAtomic();
+            switch (bta) {
+                case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+                    return opdPreSettleController.toSettle(preBill);
+                default:
+                    System.out.println("No Adomic bill type for = " + b);
+            }
+        }
+        if (preBill.getBillType() != null) {
+            BillType btype = preBill.getBillType();
             switch (btype) {
                 case OpdPreBill:
-                    setPreBillForOpd(args);
+                    setPreBillForOpd(preBill);
                     return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
                 case PharmacyPre:
-                    setPreBillForPharmecy(args);
-                    return "/pharmacy/pharmacy_bill_pre_settle";
+                    setPreBillForPharmecy(preBill);
+                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
 
-                case OpdBathcBillPre:
-                    setPreBillForOpd(args);
-                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
-
+//                case OpdBathcBillPre:
+//                    opdPreBatchBillSettleController.setPreBill(preBill);
+//                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
                 default:
                     throw new AssertionError();
             }
 
         }
+        JsfUtil.addErrorMessage("No bill error");
+        return null;
     }
 
     public void setPreBillForOpd(Bill preBill) {
@@ -1220,12 +1244,12 @@ public class SearchController implements Serializable {
         this.currentBillId = currentBillId;
     }
 
-    public Long getCurrentTokenId() {
-        return currentTokenId;
+    public Long getBarcodeIdLong() {
+        return barcodeIdLong;
     }
 
-    public void setCurrentTokenId(Long currentTokenId) {
-        this.currentTokenId = currentTokenId;
+    public void setBarcodeIdLong(Long barcodeIdLong) {
+        this.barcodeIdLong = barcodeIdLong;
     }
 
     public List<Payment> getPayments() {
@@ -1322,6 +1346,15 @@ public class SearchController implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public Date getMaxDate() {
+        maxDate = commonFunctions.getEndOfDay(new Date());
+        return maxDate;
+    }
+
+    public void setMaxDate(Date maxDate) {
+        this.maxDate = maxDate;
     }
 
     public class billsWithbill {
@@ -2691,7 +2724,7 @@ public class SearchController implements Serializable {
 
     public void createRequestTable() {
         Date startTime = new Date();
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
         List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
@@ -2730,6 +2763,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2737,10 +2772,12 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
         tmp.put("bTp", BillType.InwardPharmacyRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.department=:dep "
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -2797,6 +2834,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTForIssueTable(Boolean bool) {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2805,9 +2844,11 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bct", bct);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {

@@ -16,35 +16,37 @@
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:datePicker id="fromDate" value="#{searchController.fromDate}" showTime="true"
-                                                  showButtonBar="true"
-                                                  timeInput="true" 
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                  styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control"
-                                                  required="true" requiredMessage="Missing From Date"
-                                                  maxdate="#{sessionController.currentDate}"
-                                                  >
+                                    <p:datePicker 
+                                        id="fromDate" value="#{searchController.fromDate}" showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control"
+                                        required="true" requiredMessage="Missing From Date"
+                                        maxdate="#{searchController.maxDate}"
+                                        >
 
                                     </p:datePicker>
                                     <h:outputLabel value="To Date"/>
-                                    <p:datePicker id="toDate" value="#{searchController.toDate}" showTime="true"
-                                                  showButtonBar="true"
-                                                  timeInput="true"
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                  styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" 
-                                                  required="true" requiredMessage="Missing to Date"
-                                                  maxdate="#{sessionController.currentDate}"
-                                                  >
-
-                                    </p:datePicker>>
+                                    <p:datePicker 
+                                        id="toDate" value="#{searchController.toDate}" showTime="true"
+                                        showButtonBar="true"
+                                        timeInput="true"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" 
+                                        required="true" requiredMessage="Missing to Date"
+                                        maxdate="#{searchController.maxDate}"
+                                        >
+                                    </p:datePicker>
                                     <p:spacer height="10" width="5" ></p:spacer>
-                                    <p:commandButton ajax="false" 
-                                                     action="#{searchController.createInwardProBills()}" 
-                                                     value="Search"
-                                                     class="ui-button-warning"
-                                                     icon="fas fa-search"
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="#{searchController.createInwardProBills()}" 
+                                        value="Search"
+                                        class="ui-button-warning"
+                                        icon="fas fa-search"
 
-                                                     />
+                                        />
 
                                     <p:spacer height="10" width="5" class="mt-2" ></p:spacer>
                                     <h:outputLabel value="Bill No"/>
@@ -73,12 +75,6 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,25"
                                     >
-                                    <p:column>
-                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_professional"  >
-                                            <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
-                                        </p:commandButton>
-                                    </p:column>
-
                                     <p:column headerText="Bill No"  >
                                         <h:outputLabel value="#{bill.insId}" ></h:outputLabel>
                                     </p:column>
@@ -125,6 +121,11 @@
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                         </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Action">
+                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_professional"  >
+                                            <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </div>

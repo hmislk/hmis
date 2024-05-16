@@ -131,7 +131,7 @@ public class InwardPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Please enter paying amount");
             return true;
         }
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 

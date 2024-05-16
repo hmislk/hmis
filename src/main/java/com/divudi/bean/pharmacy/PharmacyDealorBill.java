@@ -267,7 +267,7 @@ public class PharmacyDealorBill implements Serializable {
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return true;
         }
 
