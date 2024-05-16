@@ -9,6 +9,7 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
                 xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
@@ -126,6 +127,11 @@
                         </h:panelGroup>
 
 
+                    </div>
+                    <div class="col-4" >
+                        <common:patient_details
+                            editable="true"
+                            controller="#{bookingController}"/>
                     </div>
                 </div>
 
