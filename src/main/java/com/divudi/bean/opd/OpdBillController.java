@@ -2073,7 +2073,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
             if (referredBy == null && referredByInstitution == null) {
-                JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+                JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
                 return true;
             }
         }
@@ -2082,7 +2082,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem() instanceof Investigation) {
                     if (referredBy == null && referredByInstitution == null) {
-                        JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+                        JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
                         return true;
                     }
                 }
