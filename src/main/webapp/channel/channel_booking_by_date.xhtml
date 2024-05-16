@@ -1,0 +1,333 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <style >
+                .fullHeightListbox,
+                .fullHeightListbox .ui-selectlistbox-listcontainer,
+                .fullHeightListbox * {
+                    box-sizing: border-box;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                .fullHeightListbox .ui-selectlistbox-listcontainer {
+                    height: 80vh !important;
+                }
+
+                .ring-container {
+                    position: relative;
+                }
+
+                .circle {
+                    width: 10px;
+                    height: 10px;
+                    background-color: #62bd19;
+                    border-radius: 50%;
+                    position: absolute;
+                    top: -5.3px;
+                    left: 1.2px;
+                }
+
+                .ringring {
+                    border: 3px solid #62bd19;
+                    -webkit-border-radius: 20px;
+                    height: 20px;
+                    width: 20px;
+                    top : -9.45px;
+                    left: -4.10px;
+                    position: absolute;
+                    -webkit-animation: pulsate 1s ease-out;
+                    -webkit-animation-iteration-count: infinite;
+                    opacity: 0.0
+                }
+                @-webkit-keyframes pulsate {
+                    0% {
+                        -webkit-transform: scale(0.1, 0.1);
+                        opacity: 0.0;
+                    }
+                    50% {
+                        opacity: 1.0;
+                    }
+                    100% {
+                        -webkit-transform: scale(1.2, 1.2);
+                        opacity: 0.0;
+                    }
+                }
+            </style>
+
+            <p:panel class="my-2">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                            <h:outputText class="mx-4" value="Channel Booking"/>
+                        </div>
+
+                        <div class="d-flex justify-content-center align-items-center">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="To Add Booking" 
+                                icon="fas fa-plus"
+                                class="ui-button-success"
+
+                                action="#{bookingControllerViewScopeViewScope.navigateToAddBooking()}"
+                                />
+
+                            <!-- View Session Data Button -->
+                            <p:commandButton 
+                                ajax="false" 
+                                value="View Session Data"
+                                icon="fas fa-eye"
+                                class="mx-1 ui-button-primary"
+                                action="#{bookingControllerViewScope.navigateToViewSessionData()}"
+                                />
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Consulant Room"
+                                icon="fas fa-eye"
+                                class=" ui-button-primary"
+                                action="#{bookingControllerViewScope.navigateToViewSessionData()}"
+                                />
+
+                            <!-- Manage Booking Button -->
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Manage Booking" 
+                                class="ui-button-warning mx-1"
+                                action="#{bookingControllerViewScope.navigateToManageBooking()}"
+                                icon="fa-solid fa-bars-progress" />
+
+                            <p:commandButton 
+                                rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
+                                id="btnArrival"
+                                ajax="false"
+                                value="Mark Arrival " 
+                                class="ui-button-info"
+                                action="#{bookingControllerViewScope.markAsArrived()}"
+                                icon="fa-solid fa-check" />
+                            <p:commandButton 
+                                rendered="#{bookingControllerViewScope.selectedSessionInstance.arrived}"
+                                id="btnNotArrival"
+                                ajax="false"
+                                value="Mark Not Arrival " 
+                                class="ui-button-info"
+                                action="#{bookingControllerViewScope.markAsNotArrived()}"
+                                icon="fa-solid fa-check" />
+
+                        </div>
+                    </div>
+                </f:facet>
+                <div class="row">
+                    <div class="col-2">
+                        <div >
+                            <div>
+                                <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                                <p:selectOneListbox 
+                                    id="acSpeciality"
+                                    filter="true"
+                                    value="#{bookingControllerViewScope.speciality}"
+                                    class="w-100 fullHeightListbox"
+                                    >
+                                    <p:ajax
+                                        event="change"
+                                        process="@this" 
+                                        update="acBookings scStaff acSessions pnlArrived"
+                                        listener="#{bookingControllerViewScope.listnerStaffListForRowSelect}"/> 
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{doctorSpecialityController.selectedItems}"
+                                        var="spe" 
+                                        itemValue="#{spe}"
+                                        itemLabel="#{spe.name}">
+                                    </f:selectItems>
+                                </p:selectOneListbox>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                        <div>
+                            <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
+                            <p:selectOneListbox 
+                                id="scStaff"
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{bookingControllerViewScope.staff}"
+                                class="w-100 fullHeightListbox"
+                                >
+                                <p:ajax  
+                                    process="@this" 
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
+                                    listener="#{bookingControllerViewScope.generateSessions}"/>
+
+                                <f:selectItems value="#{bookingControllerViewScope.consultants}"
+                                               var="con" 
+                                               itemValue="#{con}"
+                                               itemLabel="#{con.name}">
+                                </f:selectItems>
+                            </p:selectOneListbox>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 p-0"  >
+                        <p:watermark for="acSessions" value="Select Session" ></p:watermark>
+                        <p:selectOneListbox 
+                            id="acSessions"
+                            filter="true"
+                            value="#{bookingControllerViewScope.selectedSessionInstance}" 
+                            class="w-100 fullHeightListbox"
+                            var="s">
+
+                            <f:selectItems 
+                                value="#{bookingControllerViewScope.sessionInstances}" 
+                                var="ses" 
+                                itemValue="#{ses}"
+                                itemLabel="#{ses.name}">
+                            </f:selectItems>
+
+                            <p:column headerText="Name">
+                                <f:facet name="header" >
+                                    <h:outputText value="Name" ></h:outputText>
+                                </f:facet>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText value="#{s.name}" />
+                                    <h:panelGroup rendered="#{s.started and !s.completed}">
+                                        <div class="ring-container">
+                                            <div class="ringring"></div>
+                                            <div class="circle"></div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="pnlArrived" rendered="#{s.arrived}">
+                                        <div>
+                                            <p:badge class="px-1" value="Arrived" severity="info" />
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+
+                            </p:column>
+                            <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{s.sessionDate}">
+                                    <f:convertDateTime pattern="dd MMM"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Start" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.startingTime}">
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Max" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column rendered="false" headerText="Booked" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.displayCount}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value="&nbsp;"></h:outputText>
+                                <h:outputText value="(" class="text-danger"></h:outputText>
+                                <h:outputText value="#{s.transCreditBillCount}"  class="text-danger">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                                <h:outputText value=")"  class="text-danger"></h:outputText>
+                            </p:column>
+                            <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.originatingSession.total}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:ajax 
+                                event="change" 
+                                process="@this"
+                                update="pnlArrived acBookings acSessions"
+                                listener="#{bookingControllerViewScope.fillBillSessions}" />
+                        </p:selectOneListbox>
+                    </div>
+
+                    <div class="col-4" >
+                        <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
+                        <h:outputText id="test" value="#{bookingControllerViewScope.selectedBillSession}" rendered="false"></h:outputText>
+                        <p:selectOneListbox
+                            id="acBookings" 
+                            value="#{bookingControllerViewScope.selectedBillSession}" 
+                            filter="true"
+                            filterMatchMode="contains"
+                            var="bs"
+                            class="w-100 fullHeightListbox">
+                            <f:selectItems value="#{bookingControllerViewScope.billSessions}" var="item" itemValue="#{item}" itemLabel="#{item.bill.patient.person.nameWithTitle}" />
+                            <p:ajax process="acBookings" update="test"></p:ajax>
+
+                            <p:column style="width: 5px!important;">
+                                <h:outputText value="#{bs.serialNo}" />
+                            </p:column>
+
+                            <p:column style="width: 50px!important;">
+                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column style="width: 20px!important;" rendered="#{bookingControllerViewScope.selectedSessionInstance.started}">
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{!bs.completed and bookingControllerViewScope.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq bs.serialNo}"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{!bs.completed and bookingControllerViewScope.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo eq bs.serialNo}"/>
+                            </p:column>
+
+                            <p:column style="width: 20px!important;">
+                                <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
+                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
+                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
+                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
+                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                            </p:column>
+
+                            <p:column style="width: 10px!important;">
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                            </p:column>
+
+                            <p:column style="width: 5px!important;">
+                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                            </p:column>
+
+                            <p:column style="width: 10px!important;">
+                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                            </p:column>
+
+                            <p:column style="width: 10px!important;">
+                                <h:panelGroup rendered="#{bs.markedToCancel}">
+                                    <i class="fas fa-ban text-danger"></i>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bs.markedToRefund}">
+                                    <i class="fas fa-undo-alt  text-danger"></i>
+                                </h:panelGroup>
+                            </p:column>
+
+                        </p:selectOneListbox>
+                    </div>
+                </div>
+
+
+            </p:panel>
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>
