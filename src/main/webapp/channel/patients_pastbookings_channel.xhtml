@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -89,7 +90,7 @@
 
                                         </h:outputLabel>
                                     </p:column> 
-                                    <p:column headerText="Session"  >
+                                    <p:column headerText="Session" filterBy="#{bfp.singleBillSession.sessionInstance.name}" >
                                         <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.name}" />
                                         <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.sessionDate}">
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="MM/dd/yyyy" />
@@ -111,7 +112,23 @@
                                     <p:column headerText="Patient" >
                                         <h:outputLabel value="#{bfp.patient.person.nameWithTitle}" >                                      
                                         </h:outputLabel>
-                                    </p:column>    
+                                    </p:column>  
+
+                                    <p:column headerText="Action">
+                                        <p:commandButton 
+                                            class="m-2 ui-button-success" 
+                                            value="View Bill" 
+                                            onclick="PF('confirmationDialog').show();"
+                                            />
+
+                                        <p:dialog  minHeight="100" width="800" widgetVar="confirmationDialog" modal="true" >
+                                            <h:panelGroup>
+                                                <div class="p-4">
+                                                    <ez:bms5x5ChannelBill bill="#{bfp}"/>
+                                                </div>
+                                            </h:panelGroup>
+                                        </p:dialog>
+                                    </p:column>
 
                                 </p:dataTable>
 
