@@ -201,38 +201,38 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Staff toStaff;
     private boolean foriegn;
     private PaymentScheme paymentScheme;
-    boolean settleSucessFully;
-    Bill printingBill;
+    private boolean settleSucessFully;
+    private Bill printingBill;
 
-    @Temporal(javax.persistence.TemporalType.DATE)
-    Date channelDay;
-    @Deprecated
-    private ServiceSession selectedServiceSession;
+    private Date channelDay;
+
     private SessionInstance selectedSessionInstance;
     private List<ItemFee> selectedItemFees;
     private List<ItemFee> sessionFees;
     private List<ItemFee> addedItemFees;
     private BillSession selectedBillSession;
     private List<AppointmentActivity> selectedAppointmentActivities;
-    @Deprecated
-    private BillSession managingBillSession;
+
     private List<SessionInstance> sessionInstances;
+    private List<SessionInstance> sessionInstancesFiltered;
+    private String sessionInstanceFilter;
     private List<BillSession> billSessions;
-    List<Staff> consultants;
-    List<BillSession> getSelectedBillSession;
-    boolean printPreview;
-    double absentCount;
-    int serealNo;
-    Date date;
-    Date sessionStartingDate;
-    String selectTextSpeciality = "";
-    String selectTextConsultant = "";
-    String selectTextSession = "";
-    ArrivalRecord arrivalRecord;
+    private List<Staff> consultants;
+    private List<BillSession> getSelectedBillSession;
+    private boolean printPreview;
+    private double absentCount;
+    private int serealNo;
+    private Date fromDate;
+    private Date toDate;
+    private Date sessionStartingDate;
+    private String selectTextSpeciality = "";
+    private String selectTextConsultant = "";
+    private String selectTextSession = "";
+    private ArrivalRecord arrivalRecord;
     private String errorText;
     private Patient patient;
     private PaymentMethod paymentMethod;
-    PaymentMethodData paymentMethodData;
+    private PaymentMethodData paymentMethodData;
     private AppointmentActivity appointmentActivity;
 
     private ScheduleModel eventModel;
@@ -248,6 +248,88 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
     private Double feeTotalForSelectedBill;
+
+    @Deprecated
+    private ServiceSession selectedServiceSession;
+    @Deprecated
+    private BillSession managingBillSession;
+
+    public void addSingleDateToToDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.DATE, 1);
+        toDate = cal.getTime();
+        listAllSesionInstances();
+        filterSessionInstances();
+    }
+
+    public void addToDayToToDate() {
+        toDate = new Date();
+        listAllSesionInstances();
+        filterSessionInstances();
+    }
+
+    public void addTwoDays() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.DATE, 2);
+        toDate = cal.getTime();
+        listAllSesionInstances();
+        filterSessionInstances();
+    }
+
+    public void addSevenDays() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.DATE, 7);
+        toDate = cal.getTime();
+        listAllSesionInstances();
+        filterSessionInstances();
+    }
+
+    public void addMonth() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getFromDate());
+        cal.add(Calendar.MONTH, 1);
+        toDate = cal.getTime();
+        listAllSesionInstances();
+        filterSessionInstances();
+    }
+
+    public void filterSessionInstances() {
+        if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
+            sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+            return;
+        }
+
+        sessionInstancesFiltered = new ArrayList<>();
+        String[] filterKeywords = sessionInstanceFilter.trim().toLowerCase().split("\\s+");
+
+        for (SessionInstance si : sessionInstances) {
+            String match1 = (si.getOriginatingSession() != null && si.getOriginatingSession().getName() != null)
+                    ? si.getOriginatingSession().getName().toLowerCase() : "";
+            String match2 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
+                    && si.getOriginatingSession().getStaff().getPerson() != null
+                    && si.getOriginatingSession().getStaff().getPerson().getName() != null)
+                    ? si.getOriginatingSession().getStaff().getPerson().getName().toLowerCase() : "";
+            String match3 = (si.getOriginatingSession() != null && si.getOriginatingSession().getStaff() != null
+                    && si.getOriginatingSession().getStaff().getSpeciality() != null
+                    && si.getOriginatingSession().getStaff().getSpeciality().getName() != null)
+                    ? si.getOriginatingSession().getStaff().getSpeciality().getName().toLowerCase() : "";
+
+            boolean matchesAll = true;
+            for (String keyword : filterKeywords) {
+                if (!(match1.contains(keyword) || match2.contains(keyword) || match3.contains(keyword))) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                sessionInstancesFiltered.add(si);
+            }
+        }
+    }
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -404,6 +486,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public String navigateToChannelBookingFromMenuByDate() {
         prepareForNewChannellingBill();
+        fromDate = new Date();
+        toDate = new Date();
+        listAllSesionInstances();
+        sessionInstanceFilter = null;
+        filterSessionInstances();
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -422,20 +509,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/channel_queue?faces-redirect=true";
     }
 
-    public void listTodaysAllSesionInstances() {
-        sessionInstances = channelBean.listTodaysSessionInstances(null, null, null);
+    public void listAllSesionInstances() {
+        sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
     }
 
-    public void listTodaysOngoingSesionInstances() {
-        sessionInstances = channelBean.listTodaysSessionInstances(true, null, null);
+    public void listOngoingSesionInstances() {
+        sessionInstances = channelBean.listSessionInstances(fromDate, toDate, true, null, null);
     }
 
-    public void listTodaysCompletedSesionInstances() {
-        sessionInstances = channelBean.listTodaysSessionInstances(null, true, null);
+    public void listCompletedSesionInstances() {
+        sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, true, null);
     }
 
-    public void listTodaysPendingSesionInstances() {
-        sessionInstances = channelBean.listTodaysSessionInstances(null, null, true);
+    public void listPendingSesionInstances() {
+        sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, true);
     }
 
     public void prepareForNewChannellingBill() {
@@ -1188,12 +1275,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        serviceSessionLeaveController.setSelectedServiceSession(null);
 //        serviceSessionLeaveController.setCurrentStaff(staff);
 //    }
-    public Date getDate() {
-        return date;
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = new Date();
+        }
+        return fromDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
 
     public StaffFacade getStaffFacade() {
@@ -1460,13 +1550,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void generateSessionsFutureBooking(SelectEvent event) {
-        date = null;
-        date = ((Date) event.getObject());
+        fromDate = null;
+        fromDate = ((Date) event.getObject());
         sessionInstances = new ArrayList<>();
         Map m = new HashMap();
 
         Date currenDate = new Date();
-        if (getDate().before(currenDate)) {
+        if (getFromDate().before(currenDate)) {
             JsfUtil.addErrorMessage("Please Select Future Date");
             return;
         }
@@ -1475,7 +1565,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (staff != null) {
             Calendar c = Calendar.getInstance();
-            c.setTime(getDate());
+            c.setTime(getFromDate());
             int wd = c.get(Calendar.DAY_OF_WEEK);
 
             sql = "Select s From ServiceSession s "
@@ -1487,7 +1577,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             m.put("wd", wd);
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());//check work future bokking
-            sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(tmp, date);
+            sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(tmp, fromDate);
         }
 
         billSessions = new ArrayList<>();
@@ -3801,6 +3891,33 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
         this.appointmentActivity = appointmentActivity;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<SessionInstance> getSessionInstancesFiltered() {
+        return sessionInstancesFiltered;
+    }
+
+    public void setSessionInstancesFiltered(List<SessionInstance> sessionInstancesFiltered) {
+        this.sessionInstancesFiltered = sessionInstancesFiltered;
+    }
+
+    public String getSessionInstanceFilter() {
+        return sessionInstanceFilter;
+    }
+
+    public void setSessionInstanceFilter(String sessionInstanceFilter) {
+        this.sessionInstanceFilter = sessionInstanceFilter;
     }
 
 }

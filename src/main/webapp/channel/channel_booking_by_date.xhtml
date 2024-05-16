@@ -12,7 +12,133 @@
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
-        <h:form id="form">
+        <h:form >
+            <div class="container-fluid" >
+                <div class="row" >
+                    <div class="col-12 p-1" >
+                        <p:outputLabel value="From" class="mx-1"></p:outputLabel>
+                        <p:calendar value="#{bookingControllerViewScope.fromDate}"  class="mx-3"></p:calendar>
+                        <p:outputLabel value="To" class="mx-1"></p:outputLabel>
+                        <p:calendar value="#{bookingControllerViewScope.toDate}"  class="mx-3"></p:calendar>
+                        <p:outputLabel value="Filter" class="mx-1"></p:outputLabel>
+                        <p:inputText id="txtFilter" value="#{bookingControllerViewScope.sessionInstanceFilter}">
+                            <p:ajax event="keyup" process="@this" update="groupFilteredSessions" listener="#{bookingControllerViewScope.filterSessionInstances}"></p:ajax>
+                        </p:inputText>
+                        <p:commandButton value="Today" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1"></p:commandButton>
+                        <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1"></p:commandButton>
+                        <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1"></p:commandButton>
+                        <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1"></p:commandButton>
+                        <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1"></p:commandButton>
+                        <p:commandButton ajax="false" 
+                                         value="Completed" 
+                                         icon="fa fa-check" 
+                                         styleClass="ui-button-success mx-1" 
+                                         action="#{bookingControllerViewScope.listCompletedSesionInstances()}" />
+
+                        <!-- View Ongoing Session Data Button -->
+                        <p:commandButton ajax="false" 
+                                         value="Ongoing"
+                                         icon="fa fa-sync-alt" 
+                                         styleClass="ui-button-info mx-1" 
+                                         action="#{bookingControllerViewScope.listOngoingSesionInstances()}" />
+
+                        <!-- List Pending Button -->
+                        <p:commandButton ajax="false" 
+                                         value="Pending"
+                                         icon="fa fa-hourglass-start" 
+                                         styleClass="ui-button-warning mx-1" 
+                                         action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
+
+                        <!-- List All Button -->
+                        <p:commandButton ajax="false" 
+                                         value="All"
+                                         icon="fa fa-list" 
+                                         styleClass="ui-button-primary mx-1" 
+                                         action="#{bookingControllerViewScope.listAllSesionInstances()}" />
+
+
+                    </div>
+                </div>
+
+                <div class="row" >
+                    <div class="col-8" >
+                        <h:panelGroup id="groupFilteredSessions" >
+                            <ui:repeat var="s" 
+                                       id="tblSessions"
+                                       value="#{bookingControllerViewScope.sessionInstancesFiltered}" 
+                                       class="w-100 mt-5">
+                                <div class="bgCard row  w-100 shadow mt-1">
+                                    <div class="col-3">
+                                        <div class="">
+                                            <h:outputText rendered="false" value="#{s.name}" />
+                                            <h:outputText value="#{s.sessionDate}"  >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                            <h:outputText class="mx-2" value="#{s.originatingSession.startingTime}"  >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                    <div class="col-5 bg-dark">
+                                        <div class="d-flex align-items-center">
+                                            <div class="text-white">
+                                                <h:outputText value="#{s.staff.person.nameWithTitle}" />
+                                                <p:spacer width="10" ></p:spacer>
+                                                <h:outputText value="(#{s.staff.speciality.name})" />
+                                            </div>
+                                            <div>
+                                                <p:badge class="mx-2" value="Arrived" rendered="#{s.arrived}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4" >
+                                        <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <span>
+                                                    <div class="d-flex align-items-center mt-2">
+                                                        <span class="text-center mx-1">
+                                                            <h:outputText  style="font-size: 8pt;font-weight: bold" value="Paid"/>
+                                                            <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.paidPatientCount}">
+                                                                <f:convertNumber pattern="00"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                        <span class="text-center mx-1"> 
+                                                            <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
+                                                            <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
+                                                                <f:convertNumber pattern="00"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                        <span class="text-center mx-1"> 
+                                                            <h:outputText style="font-size: 8pt;font-weight: bold" value="Completed"/>
+                                                            <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.completedPatientCount}">
+                                                                <f:convertNumber pattern="00"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                    </div>
+                                                </span>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+
+                                </div>
+
+                            </ui:repeat>
+                        </h:panelGroup>
+
+
+                    </div>
+                </div>
+
+            </div>  
+
+
+
+
+        </h:form >
+
+
+
+        <h:form rendered="false" id="form">
             <style >
                 .fullHeightListbox,
                 .fullHeightListbox .ui-selectlistbox-listcontainer,
