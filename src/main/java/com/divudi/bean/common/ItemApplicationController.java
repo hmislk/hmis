@@ -46,11 +46,13 @@ public class ItemApplicationController {
         String jpql = "SELECT new com.divudi.data.ItemLight("
                 + "i.id, "
                 + "CASE WHEN d.name IS NULL THEN 'No Department' ELSE d.name END, "
-                + "i.name, i.code, i.total) "
+                + "i.name, i.code, i.total, "
+                + "d.id) "
                 + "FROM Item i "
                 + "LEFT JOIN i.department d "
-                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service OR TYPE(i) = MedicalPackage ) "
+                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service OR TYPE(i) = MedicalPackage) "
                 + "ORDER BY i.name";
+
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);

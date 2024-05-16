@@ -48,6 +48,7 @@
                                     id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
+
                                 <p:panel 
                                     id='pIxAdd' 
                                     class="w-100 form">
@@ -55,6 +56,26 @@
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Add New Item" class="mx-4"></h:outputText>
                                     </f:facet>
+
+                                    <h:panelGroup  rendered="#{opdBillController.opdItemDepartments ne null}" id="departments">
+                                        <div class="row" >
+                                            <div class="col-md-12" >
+                                                <ui:repeat  value="#{opdBillController.opdItemDepartments}" var="dept">
+                                                    <p:commandButton 
+                                                                     value="#{dept.name}"
+                                                                     process="@this"
+                                                                     update=":#{p:resolveFirstComponentWithId('acIx',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
+                                                                     action="#{opdBillController.departmentChanged}"
+                                                                     class="m-1 #{dept eq opdBillController.selectedOpdItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
+                                                        <f:setPropertyActionListener value="#{dept}" target="#{opdBillController.selectedOpdItemDepartment}"></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </ui:repeat>
+
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+
                                     <div class="row" >
 
                                         <div class="col-md-10" >
@@ -72,7 +93,7 @@
                                                 hideNoSelectionOption="true"
                                                 >
                                                 <f:selectItems 
-                                                    value="#{opdBillController.opdItems}"
+                                                    value="#{opdBillController.departmentOpdItems}"
                                                     var="item"
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
@@ -92,11 +113,14 @@
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
-                                                <p:column  headerText="Dept" style="padding: 0px; margin: 0px; width: 3rem;">
+                                                <p:column  headerText="Dept"  rendered="#{opdBillController.opdItemDepartments eq null}" style="padding: 0px; margin: 0px; width: 3rem;">
                                                     <h:outputText value="#{ix.departmentName}"></h:outputText>
                                                 </p:column>
                                                 <p:column  headerText="Code" rendered="false" style="padding: 0px; margin: 0px;">
                                                     <h:outputText value="#{ix.code}"></h:outputText>
+                                                </p:column>
+                                                <p:column  headerText="ID" rendered="false" style="padding: 0px; margin: 0px;">
+                                                    <h:outputText value="ID is #{ix.departmentId}"></h:outputText>
                                                 </p:column>
 
                                             </p:selectOneListbox>
