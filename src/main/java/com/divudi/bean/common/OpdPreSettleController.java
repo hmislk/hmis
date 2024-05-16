@@ -24,11 +24,13 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
+import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -132,6 +134,8 @@ public class OpdPreSettleController implements Serializable {
     double balance;
     Double editingQty;
     private Token token;
+    private Staff toStaff;
+    private Institution creditCompany;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -1319,6 +1323,22 @@ public class OpdPreSettleController implements Serializable {
 
     public void setBillsOfBatchBillPre(List<Bill> billsOfBatchBillPre) {
         this.billsOfBatchBillPre = billsOfBatchBillPre;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
 }
