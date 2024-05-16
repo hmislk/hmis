@@ -5,6 +5,7 @@ package com.divudi.data;
  * a cancellation, or a refund.
  */
 public enum BillCategory {
+
     BILL("Bill"),
     CANCELLATION("Cancellation"),
     REFUND("Refund");

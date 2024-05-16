@@ -6,12 +6,12 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddhika_ari
  */
 public enum Dashboard {
+
     Opd,
     Lab,
     Pharmacy,
-    Channelling,
+    Channelling
 }

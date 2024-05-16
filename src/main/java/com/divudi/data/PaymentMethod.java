@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public enum PaymentMethod {
+
     // Enum constants with @Deprecated where necessary
     Cash("Cash", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Credit("Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),
@@ -48,7 +49,7 @@ public enum PaymentMethod {
                 .filter(pm -> pm.contexts.contains(context))
                 .collect(Collectors.toList());
     }
-    
+
 
     private static boolean isDeprecated(PaymentMethod method) {
         try {
@@ -93,10 +94,7 @@ public enum PaymentMethod {
         }
     }
     
-    
-
     public static List<PaymentMethod> asList() {
         return Arrays.asList(PaymentMethod.values());
     }
-
 }

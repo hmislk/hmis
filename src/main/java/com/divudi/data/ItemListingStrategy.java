@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 public enum ItemListingStrategy {
+
     ALL_ITEMS("All Items"),
     ITEMS_OF_LOGGED_DEPARTMENT("Items of the Logged Department"),
     ITEMS_OF_LOGGED_INSTITUTION("Items of the Logged Institution"),
