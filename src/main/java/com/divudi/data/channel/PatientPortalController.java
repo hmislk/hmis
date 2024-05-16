@@ -38,6 +38,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -130,7 +131,7 @@ public class PatientPortalController implements Serializable {
 
     private BillSession channelBookingBillSession;
     private BillSession channelSettlingBillSession;
-    
+
     private PaymentGatewayTransaction currentPaymentGatewayTransaction;
 
     ScheduleModel eventModel;
@@ -138,8 +139,8 @@ public class PatientPortalController implements Serializable {
     ServiceSession serviceSession;
 
     private ChannelBean channelBean;
-    
-    public String navigateBookingMenue(){
+
+    public String navigateBookingMenue() {
         return commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
     }
 
@@ -245,8 +246,11 @@ public class PatientPortalController implements Serializable {
     public void fillSessionInstance() {
         sessionInstances = new ArrayList<>();
         Date currentDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 2);
         Map<String, Object> m = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate >=:cd");
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate BETWEEN :cd AND :nextTwoDays");
 
         if (selectedConsultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");
@@ -263,6 +267,7 @@ public class PatientPortalController implements Serializable {
 
         m.put("ret", false);
         m.put("cd", currentDate);
+        m.put("nextTwoDays", calendar.getTime());
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
         System.out.println("sessionInstances = " + sessionInstances.size());
