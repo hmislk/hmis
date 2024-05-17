@@ -830,13 +830,14 @@ public class OpdPreSettleController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bil", preBatchBill);
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
-
+        System.out.println("b = " + b);
         if (b != null) {
             JsfUtil.addErrorMessage("Already Paid");
             return "";
         } else {
             setPreBill(preBatchBill);
             billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
+            System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
             getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
             return "/opd/opd_bill_pre_settle?faces-redirect=true";
         }
