@@ -91,6 +91,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -329,7 +330,93 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sessionInstancesFiltered.add(si);
             }
         }
+        if(!sessionInstancesFiltered.isEmpty()){
+            selectedSessionInstance = selectedSessionInstance = sessionInstancesFiltered.get(0);
+            sessionInstanceSelected();
+        }
     }
+
+    public void handleDropAndNavigate() {
+        // Retrieve the session ID from the request parameter
+        String sessionId = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("sessionId");
+
+        // Find the session by ID and navigate
+        SessionInstance selectedSession = sessionInstancesFiltered.stream()
+                .filter(s -> s.getId().equals(sessionId))
+                .findFirst()
+                .orElse(null);
+
+        if (selectedSession != null) {
+            this.selectedSessionInstance = selectedSession;
+            navigateToAddBooking();
+        }
+    }
+
+    public void sessionInstanceSelected() {
+        if (selectedSessionInstance == null) {
+            return ;
+        }
+        if (selectedSessionInstance.getOriginatingSession() == null) {
+            return ;
+        }
+        fillItemAvailableToAdd();
+        fillFees();
+        printPreview = false;
+        paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -511,18 +598,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void listAllSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null);
+        filterSessionInstances();
     }
 
     public void listOngoingSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, true, null, null);
+        filterSessionInstances();
     }
 
     public void listCompletedSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, true, null);
+        filterSessionInstances();
     }
 
     public void listPendingSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, true);
+        filterSessionInstances();
     }
 
     public void prepareForNewChannellingBill() {
@@ -3824,6 +3915,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<ItemFee> getFilteredSelectedItemFees() {
+        if(selectedItemFees==null){
+            
+            return null;
+        }
         return selectedItemFees.stream()
                 .filter(i -> (foriegn ? i.getFfee() != 0 : i.getFee() != 0))
                 .collect(Collectors.toList());
