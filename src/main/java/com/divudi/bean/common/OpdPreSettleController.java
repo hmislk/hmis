@@ -268,7 +268,104 @@ public class OpdPreSettleController implements Serializable {
 //            return true;
 //        }
 
-        if (getPaymentSchemeController().checkPaymentMethodError(getPreBill().getPaymentMethod(), paymentMethodData));
+       if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
+            return true;
+        }
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (!preBill.getPatient().getHasAnAccount()) {
+                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                return true;
+            }
+            double creditLimitAbsolute = Math.abs(preBill.getPatient().getCreditLimit());
+            double runningBalance;
+            if (preBill.getPatient().getRunningBalance() != null) {
+                runningBalance = preBill.getPatient().getRunningBalance();
+            } else {
+                runningBalance = 0.0;
+            }
+            double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+            if (netTotal > availableForPurchase) {
+                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.Credit) {
+            if (creditCompany == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+                return true;
+            }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member.");
+                return true;
+            }
+
+            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
+                JsfUtil.addErrorMessage("No enough Credit.");
+                return true;
+            }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                return true;
+            }
+            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + netTotal > toStaff.getAnnualWelfareQualified()) {
+                JsfUtil.addErrorMessage("No enough credit.");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            if (getPaymentMethodData() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                //TODO - filter only relavant value
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+            }
+            double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
+            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
+            if (differenceOfBillTotalAndPaymentValue > 1.0) {
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+                return true;
+            }
+            if (cashPaid == 0.0) {
+                setCashPaid(multiplePaymentMethodTotalValue);
+            }
+
+        }
+
+        if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (cashPaid == 0.0) {
+                JsfUtil.addErrorMessage("Please enter the paid amount");
+                return true;
+            }
+
+        }
 
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
