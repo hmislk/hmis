@@ -408,6 +408,9 @@ public class OpdPreSettleController implements Serializable {
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
 
+        getSaleBill().setSessionId(billNumberBean.generateDailyBillNumberForOpd(getPreBill().getDepartment()));
+        
+        
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         }
