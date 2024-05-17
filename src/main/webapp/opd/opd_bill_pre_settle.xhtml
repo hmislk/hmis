@@ -164,11 +164,6 @@
                                                         itemValue="#{ix}" 
                                                         >
 
-                                                        <f:ajax  
-                                                            event="itemSelect" 
-                                                            listener="#{opdBillController.calTotals()}"
-                                                            execute="@this" 
-                                                            render="pBillDetails :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}}" />
                                                     </p:autoComplete> 
                                                     <p:commandLink 
                                                         id="btnAddNewCreditCom" 
