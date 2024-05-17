@@ -717,8 +717,75 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         return p;
     }
 
+//    public String settleBill() {
+//
+//        if (errorCheck()) {
+//            return null;
+//        }
+//        savePatient(getPatient());
+//        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+//            PreBill newPreBill = new PreBill();
+//            PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), newPreBill);
+//
+//            if (b == null) {
+//                return null;
+//            }
+//
+//            List<BillItem> list = new ArrayList<>();
+//            for (BillEntry billEntry : getLstBillEntries()) {
+//                list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
+//            }
+//            b.setBillItems(list);
+//            getBillFacade().edit(b);
+//            getBillBean().calculateBillItems(b, getLstBillEntries());
+//            System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
+////            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+////                b.setCashPaid(cashPaid);
+////                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
+////                    b.setBalance(0.0);
+////                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
+////                } else {
+////                    b.setBalance(b.getTransSaleBillTotalMinusDiscount() - b.getCashPaid());
+////                    b.setNetTotal(b.getCashPaid());
+////                }
+////            }
+//            b.setBalance(b.getNetTotal());
+//            getBillFacade().edit(b);
+//            getBills().add(b);
+//
+//            if (getToken() == null) {
+//                System.out.println("token null");
+//            }
+//
+//            if (getToken() != null) {
+//                getToken().setBill(b);
+//                tokenFacade.edit(getToken());
+//                markToken(b);
+//
+//            }
+//
+//        } else {
+//            boolean result = putToBills();
+//            if (result == false) {
+//                return null;
+//            }
+//        }
+//
+//        saveBatchBill();
+//        saveBillItemSessions();
+//
+////        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
+////            staffBean.updateStaffCredit(toStaff, netTotal);
+////            JsfUtil.addSuccessMessage("User Credit Updated");
+////        }
+//        JsfUtil.addSuccessMessage("Bill Saved");
+//        setPrintigBill();
+//        checkBillValues();
+////        printPreview = true;
+//
+//        return opdTokenController.navigateToOpdQueue();
+//    }
     public String settleBill() {
-
         if (errorCheck()) {
             return null;
         }
@@ -735,10 +802,12 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
             }
+
             b.setBillItems(list);
+
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
-            System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
+
 //            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                b.setCashPaid(cashPaid);
 //                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
@@ -752,17 +821,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             b.setBalance(b.getNetTotal());
             getBillFacade().edit(b);
             getBills().add(b);
-
-            if (getToken() == null) {
-                System.out.println("token null");
-            }
-
-            if (getToken() != null) {
-                getToken().setBill(b);
-                tokenFacade.edit(getToken());
-                markToken(b);
-
-            }
 
         } else {
             boolean result = putToBills();
@@ -778,10 +836,10 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 //            staffBean.updateStaffCredit(toStaff, netTotal);
 //            JsfUtil.addSuccessMessage("User Credit Updated");
 //        }
+        
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
-//        printPreview = true;
 
         return opdTokenController.navigateToOpdQueue();
     }
@@ -902,12 +960,12 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
-//        if (getToken() != null) {
-//            getToken().setBill(tmp);
-//            tokenFacade.edit(getToken());
-//            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
-//            markToken(tmp);
-//        }
+        if (getToken() != null) {
+            getToken().setBill(tmp);
+            tokenFacade.edit(getToken());
+            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
+            markToken(tmp);
+        }
         System.out.println("wb = " + wb);
     }
 

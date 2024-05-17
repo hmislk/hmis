@@ -390,25 +390,24 @@ public class SearchController implements Serializable {
                     System.out.println("No Adomic bill type for = " + b);
             }
         }
-        if (preBill.getBillType() != null) {
-            BillType btype = preBill.getBillType();
-            switch (btype) {
-                case OpdPreBill:
-                    setPreBillForOpd(preBill);
-                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
-
-                case PharmacyPre:
-                    setPreBillForPharmecy(preBill);
-                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
-
-//                case OpdBathcBillPre:
-//                    opdPreBatchBillSettleController.setPreBill(preBill);
-//                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
-                default:
-                    throw new AssertionError();
-            }
-
-        }
+//        if (preBill.getBillType() != null) {
+//            BillType btype = preBill.getBillType();
+//            switch (btype) {
+//                case OpdPreBill:
+//                    setPreBillForOpd(preBill);
+//
+//                case PharmacyPre:
+//                    setPreBillForPharmecy(preBill);
+//                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
+//
+////                case OpdBathcBillPre:
+////                    opdPreBatchBillSettleController.setPreBill(preBill);
+////                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
+//                default:
+//                    throw new AssertionError();
+//            }
+//
+//        }
         JsfUtil.addErrorMessage("No bill error");
         return null;
     }
@@ -416,6 +415,8 @@ public class SearchController implements Serializable {
     public void setPreBillForOpd(Bill preBill) {
         makeNull();
         opdPreSettleController.setPreBill(preBill);
+        System.out.println("preBill = " + preBill.getBillItems().size());
+        opdPreSettleController.toSettle(preBill);
         //System.err.println("Setting Bill " + preBill);
         opdPreSettleController.setBillPreview(false);
 
