@@ -238,6 +238,8 @@ public class SearchController implements Serializable {
     private Long barcodeIdLong;
     private Date maxDate;
 
+   
+
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {

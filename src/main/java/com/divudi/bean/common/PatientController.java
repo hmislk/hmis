@@ -270,6 +270,44 @@ public class PatientController implements Serializable {
      *
      *
      */
+    
+    
+    private List<Bill> patientsPastChannelBookings;
+    
+     public String navigateToPatientPastChannelBiiking() {
+        return "/channel/patients_pastbookings_channel?faces-redirect=true";
+    }
+
+    public void fillPatientsPastChannelbookings() {
+        if (current == null) {
+            return;
+        }
+        System.out.println("patient = " + current);
+//        List<BillTypeAtomic> billTypesAtomics=new ArrayList<>();
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.ChannelCash);
+        billTypes.add(BillType.ChannelOnCall);
+        billTypes.add(BillType.ChannelPaid);
+        Map m = new HashMap<>();
+        String jpql = "Select b from Bill b where b.retired=:ret and b.billType in :btas and b.patient=:pt";
+        m.put("ret", false);
+        m.put("btas", billTypes);
+        m.put("pt", current);
+        patientsPastChannelBookings = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("PatientsPastChannelBookings = " + patientsPastChannelBookings.size());
+    }
+    
+    
     public Map<String, Patient> CreatePatientMap(List<Patient> patients) {
 
         Map<String, Patient> patientMap = new HashMap<>();
@@ -3209,6 +3247,14 @@ public class PatientController implements Serializable {
 
     public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
         this.quickSearchPatientList = quickSearchPatientList;
+    }
+
+    public List<Bill> getPatientsPastChannelBookings() {
+        return patientsPastChannelBookings;
+    }
+
+    public void setPatientsPastChannelBookings(List<Bill> patientsPastChannelBookings) {
+        this.patientsPastChannelBookings = patientsPastChannelBookings;
     }
 
     /**
