@@ -103,7 +103,7 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class PatientController implements Serializable {
+public class PatientController implements Serializable, ControllerWithPatient {
 
     /**
      *
@@ -206,6 +206,8 @@ public class PatientController implements Serializable {
 
     private Date dob;
     private String membershipTypeListner = "1";
+    
+    boolean patientDetailsEditable;
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
@@ -3255,6 +3257,32 @@ public class PatientController implements Serializable {
 
     public void setPatientsPastChannelBookings(List<Bill> patientsPastChannelBookings) {
         this.patientsPastChannelBookings = patientsPastChannelBookings;
+    }
+
+    @Override
+    public Patient getPatient() {
+        return current;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.current = patient;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     /**
