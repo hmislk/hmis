@@ -86,9 +86,15 @@
 
                             <p:panelGrid id="gpDetailText" columns="2">
                                 <p:outputLabel for="txtName" id="lblName" value="Name" ></p:outputLabel>
-                                <p:inputText autocomplete="off" required="true" id="txtName" value="#{membershipSchemeController.current.name}"  style="min-width: 450px"></p:inputText>
+                                <p:inputText autocomplete="off" required="true" id="txtName" value="#{membershipSchemeController.current.name}"  ></p:inputText>
+                                
                                 <p:outputLabel for="txtCode" id="lblCode" value="Code" ></p:outputLabel>
-                                <p:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.code}" style="min-width: 450px" ></p:inputText>
+                                <p:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.code}" ></p:inputText>
+                                
+                                <p:outputLabel for="txtPoints" id="lblPoints" value="Pointes for 1000" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtPoints" value="#{membershipSchemeController.current.pointesForThousand}"  ></p:inputText>
+                                
+                                
                                 <p:outputLabel for="lstDiscountScheme" id="lblDs" value="Discount Scheme" ></p:outputLabel>
                                 <p:selectOneMenu
                                     filter="true"

@@ -69,6 +69,8 @@ public class Category implements Serializable {
     
     Double wholeSaleMargin = 0.0;
 
+    private Double pointesForThousand;
+    
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     List<Item> items;
     String code;
@@ -76,8 +78,8 @@ public class Category implements Serializable {
     List<Category> childCategories;
     @Enumerated
     SymanticHyrachi symanticType;
+
     @Transient
-    
     private String entityClass;
     
     boolean filled;
@@ -318,6 +320,14 @@ public class Category implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    public Double getPointesForThousand() {
+        return pointesForThousand;
+    }
+
+    public void setPointesForThousand(Double pointesForThousand) {
+        this.pointesForThousand = pointesForThousand;
     }
 
     
