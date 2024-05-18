@@ -728,8 +728,8 @@
                                      rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
                     </p:submenu>
                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('TheaterTransfer')}" >
-                        <p:menuitem  ajax="false" action="/theater/theater_transfer_request?faces-redirect=true"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request_list?faces-redirect=true"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>                                           
+                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="#{transferIssueController.navigateToDirectPharmacyIssue}"  value="Direct Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferReport')}" ></p:menuitem>
                     </p:submenu>
@@ -859,6 +859,12 @@
                         ajax="false"  
                         value="Channel Booking"  
                         action="#{bookingController.navigateToChannelBookingFromMenu()}" 
+                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Channel Booking - By Dates"  
+                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem 

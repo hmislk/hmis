@@ -2231,7 +2231,7 @@ public class BillController implements Serializable {
 //            for (BillEntry be : getLstBillEntries()) {
 //                if (be.getBillItem().getItem() instanceof Investigation) {
 //                    if (referredBy == null && referredByInstitution == null) {
-//                        JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+//                        JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
 //                        return true;
 //                    }
 //                }
