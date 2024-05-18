@@ -2806,6 +2806,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         patient = pt;
         return "/opd/opd_bill?faces-redirect=true";
     }
+    
+    public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {
+        navigateToNewOpdBill();
+        patient = pt;
+        paymentScheme = ps;
+        return "/opd/opd_bill?faces-redirect=true";
+    }
 
     public String toOpdBilling() {
         return "/opd/opd_bill?faces-redirect=true";

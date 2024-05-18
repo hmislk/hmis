@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+
+    <h:head>
+
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:panelGroup >
+                    <h:form  >
+                        <p:growl />
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-people-group" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Add Family" class="m-2"/>
+                                <div style="float: right;">
+                                    <p:commandButton value="Save Family" action="#{patientController.saveFamily()}" ajax="false" class="ui-button-warning mx-1" icon="fas fa-save"></p:commandButton>
+                                    <p:commandButton value="Save &amp; Clear for a new Family" action="#{patientController.saveAndClearForNewFamily() }" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
+                                </div>
+                            </f:facet>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p:panel header="Family Membership" >
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <p:outputLabel value="Membership Card No:" for="membershipCardNo" />
+                                            <p:inputText class="w-100"
+                                                         autocomplete="off" id="membershipCardNo" value="#{patientController.currentFamily.membershipCardNo}" title="MembershipCardNo" />
+
+                                            <p:outputLabel value="Phone No.:" for="phoneNo" />
+                                            <p:inputText  autocomplete="off" class="w-100"
+                                                          id="phoneNo" value="#{patientController.currentFamily.phoneNo}" title="MembershipCardNo" />
+
+
+                                            <p:outputLabel value="MembershipScheme:" for="membershipScheme" />
+                                            <p:selectOneMenu id="membershipScheme" class="w-100" value="#{patientController.currentFamily.membershipScheme}" >
+                                                <f:selectItems value="#{membershipSchemeController.items}" var="m" itemLabel="#{m.name}" itemValue="#{m}"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Comments:" for="comments" />
+                                            <p:inputTextarea rows="4" cols="30" class="w-100" id="comments" value="#{patientController.currentFamily.comments}" title="Comments" />
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel header="Add Family Members" >
+
+                                        <common:patient_details
+                                            id="ccPatientDetails"
+                                            editable="true"
+                                            controller="#{patientController}"/>
+
+                                        <p:outputLabel class="w-100 m-2" value="Relationship to Chief House Holder" />
+                                        <p:selectOneMenu   
+                                            value="#{patientController.currentRelation}" 
+                                            class="w-100 m2">
+                                            <f:selectItems value="#{relationController.items}" var="r"
+                                                           itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
+
+
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Add as a Family Member"
+                                            action="#{patientController.addNewMemberToFamily()}"
+                                            class="ui-button-success m-2"  icon="fas fa-plus">
+                                        </p:commandButton> 
+
+
+
+
+
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <p:panel header="Family Members" >
+                                <p:dataTable value="#{patientController.currentFamily.familyMembers}" var="fm"
+                                             rowIndexVar="#{fm.id}"
+                                             class="w-100"
+                                             style="table-layout: auto;">
+                                    <p:column headerText="Name">
+                                        <p:outputLabel value="#{fm.patient.person.nameWithTitle}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Relation to CHH">
+                                        <p:outputLabel value="#{fm.relationToChh.name}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Membership" rendered="false">
+                                        <p:outputLabel value="#{fm.patient.person.membershipScheme.name}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Billing" rendered="true">
+
+                                        <p:commandButton value="OPD Bill" 
+                                                         action="#{patientController.navigateToOpdBillFromFamilyMembership()}" 
+                                                         ajax="false"
+                                                         class="w-100"
+                                                         styleClass="mx-2">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+
+                                        <p:commandButton value="OPD Bill for Cashier" 
+                                                         action="#{patientController.navigateToBillingForCashierFromFamilyMembership()}" 
+                                                         ajax="false"
+                                                         class="w-100"
+                                                         styleClass="mx-2">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+
+
+                                        <p:commandButton ajax="false" action="/channel/channel_booking" 
+                                                         icon="fa fa-fw fa-calendar-check" 
+                                                         class="mx-1"
+                                                         actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
+                                                         value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+
+
+
+
+                                    </p:column>
+                                    <p:column headerText="Actions" >
+                                        <p:commandButton ajax="false" value="Profile"
+                                                         action="#{patientController.navigateToOpdPatientProfile()}"
+                                                         class="ui-button-warning mx-1" icon="pi pi-user">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                        </p:commandButton>
+
+                                        <p:commandButton ajax="false" value="Edit" action="patient"   class="ui-button-warning mx-1" icon="fa-solid fa-pen">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" value="Remove" class="ui-button-danger mx-1" icon="fas fa-trash" action="#{patientController.removeFamilyMember()}" >
+                                            <f:setPropertyActionListener value="#{fm}" target="#{patientController.removingFamilyMember}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+
+
+
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
