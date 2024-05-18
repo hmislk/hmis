@@ -1571,6 +1571,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Membership Updated");
     }
 
+    @Deprecated
     public String toAddAFamily() {
         currentFamily = new Family();
         return "/membership/add_family";
@@ -1578,7 +1579,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToAddNewFamilyMembership() {
         currentFamily = new Family();
-        return "/membership/family_membership_new";
+        return "/membership/family_membership_new?faces-redirect=true";
     }
 
     public String navigateToManageFamilyMembership() {
@@ -1695,6 +1696,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
             getPersonFacade().edit(current.getPerson());
         }
+        save(current);
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);
         tfm.setFamily(currentFamily);
@@ -3344,6 +3346,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     @Override
     public Patient getPatient() {
+        if(current==null){
+            current = new Patient();
+        }
         return current;
     }
 
