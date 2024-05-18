@@ -103,7 +103,7 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class PatientController implements Serializable {
+public class PatientController implements Serializable, ControllerWithPatient {
 
     /**
      *
@@ -207,6 +207,8 @@ public class PatientController implements Serializable {
     private Date dob;
     private String membershipTypeListner = "1";
 
+    boolean patientDetailsEditable;
+
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
 
@@ -270,11 +272,9 @@ public class PatientController implements Serializable {
      *
      *
      */
-    
-    
     private List<Bill> patientsPastChannelBookings;
-    
-     public String navigateToPatientPastChannelBiiking() {
+
+    public String navigateToPatientPastChannelBiiking() {
         return "/channel/patients_pastbookings_channel?faces-redirect=true";
     }
 
@@ -306,8 +306,7 @@ public class PatientController implements Serializable {
         patientsPastChannelBookings = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("PatientsPastChannelBookings = " + patientsPastChannelBookings.size());
     }
-    
-    
+
     public Map<String, Patient> CreatePatientMap(List<Patient> patients) {
 
         Map<String, Patient> patientMap = new HashMap<>();
@@ -819,7 +818,7 @@ public class PatientController implements Serializable {
 
     public String navigatePatientAdmit() {
         Admission ad = new Admission();
-        if (ad.getDateOfAdmission()==null) {
+        if (ad.getDateOfAdmission() == null) {
             ad.setDateOfAdmission(commonController.getCurrentDateTime());
         }
         admissionController.setCurrent(ad);
@@ -861,6 +860,33 @@ public class PatientController implements Serializable {
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getCurrent());
+        return "/opd/opd_pre_bill?faces-redirect=true;";
+    }
+    
+    public String navigateToBillingForCashierFromFamilyMembership() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No person");
+            return "";
+        }
+        if (current.getPerson().getMembershipScheme() == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (current.getPerson().getMembershipScheme().getPaymentScheme() == null) {
+            JsfUtil.addErrorMessage("No Discount Scheme");
+            return "";
+        }
+        opdPreBillController.prepareNewBill();
+        opdPreBillController.setPatient(getCurrent());
+        opdPreBillController.setPaymentScheme(current.getPerson().getMembershipScheme().getPaymentScheme());
         return "/opd/opd_pre_bill?faces-redirect=true;";
     }
 
@@ -918,6 +944,27 @@ public class PatientController implements Serializable {
         return opdBillController.navigateToNewOpdBill(current);
     }
 
+    public String navigateToOpdBillFromFamilyMembership() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No person");
+            return "";
+        }
+        if (current.getPerson().getMembershipScheme() == null) {
+            JsfUtil.addErrorMessage("No Membership");
+            return "";
+        }
+        if (current.getPerson().getMembershipScheme().getPaymentScheme() == null) {
+            JsfUtil.addErrorMessage("No Discount Scheme");
+            return "";
+        }
+        
+        return opdBillController.navigateToNewOpdBillWithPaymentScheme(current, current.getPerson().getMembershipScheme().getPaymentScheme());
+    }
+
     public String navigateToOpdPackageBillFromOpdPatient() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -933,11 +980,10 @@ public class PatientController implements Serializable {
         }
         return "/opd/opd_bill?faces-redirect=true;";
     }
-    
-    public String navigateToConvertOldPatientPhoneNumbers(){
-        return "/dataAdmin/phone_number_converter" ;
+
+    public String navigateToConvertOldPatientPhoneNumbers() {
+        return "/dataAdmin/phone_number_converter";
     }
-    
 
     public String navigateToSearchPatients() {
         setSearchedPatients(null);
@@ -1530,6 +1576,20 @@ public class PatientController implements Serializable {
         return "/membership/add_family";
     }
 
+    public String navigateToAddNewFamilyMembership() {
+        currentFamily = new Family();
+        return "/membership/family_membership_new";
+    }
+
+    public String navigateToManageFamilyMembership() {
+        return "/membership/family_membership_manage?faces-redirect=true";
+    }
+
+    public String navigateToSearchFamilyMembership() {
+        currentFamily = null;
+        return "/membership/family_membership_search?faces-redirect=true";
+    }
+
     public String searchFamily() {
         families = null;
         String j = "Select f from Family f where f.retired=false and f.phoneNo = :pn or f.membershipCardNo = :mcn";
@@ -1549,7 +1609,7 @@ public class PatientController implements Serializable {
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
             searchText = "";
-            return "/membership/add_family?faces-redirect=true;";
+            return navigateToManageFamilyMembership();
         } else {
             families = fs;
             searchText = "";
@@ -1576,10 +1636,35 @@ public class PatientController implements Serializable {
 
     }
 
-    public String saveAndClearForNewFamily() {
+    public String saveFamilyAndNavigateToManageFamily() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family Selected to Save or Update");
+            return "";
+        }
+        if (currentFamily.getId() == null) {
+            currentFamily.setCreatedAt(new Date());
+            currentFamily.setCreater(getSessionController().getLoggedUser());
+            getFamilyFacade().create(currentFamily);
+            JsfUtil.addSuccessMessage("Family Added");
+        } else {
+            currentFamily.setEditedAt(new Date());
+            currentFamily.setEditer(getSessionController().getLoggedUser());
+            getFamilyFacade().edit(currentFamily);
+            JsfUtil.addSuccessMessage("Family Updated");
+        }
+        return navigateToManageFamilyMembership();
+    }
+
+    public String saveAndClearForNewFamilyMembership() {
         saveFamily();
         currentFamily = new Family();
         return toFamily();
+    }
+
+    public String saveAndClearForNewFamily() {
+        saveFamily();
+        currentFamily = new Family();
+        return navigateToAddNewFamilyMembership();
     }
 
     public String toAddNewFamily() {
@@ -1995,7 +2080,7 @@ public class PatientController implements Serializable {
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findByJpql(sql, hm, 20);
-        
+
         return patientList;
     }
 
@@ -3255,6 +3340,31 @@ public class PatientController implements Serializable {
 
     public void setPatientsPastChannelBookings(List<Bill> patientsPastChannelBookings) {
         this.patientsPastChannelBookings = patientsPastChannelBookings;
+    }
+
+    @Override
+    public Patient getPatient() {
+        return current;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.current = patient;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     /**
