@@ -1089,16 +1089,19 @@ public class OpdPreSettleController implements Serializable {
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-
+        System.out.println("paid value opd bill refund = " + p.getPaidValue());
         if (p.getBill().getBillType() == BillType.PaymentBill) {
+            System.out.println("p.getBill().getNetTotal()" +p.getBill().getNetTotal());
             p.setPaidValue(p.getBill().getNetTotal());
         } else {
+            System.out.println("p.getBill().getCashPaid() = " + p.getBill().getCashPaid());
             p.setPaidValue(p.getBill().getCashPaid());
         }
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
+        getPaymentFacade().edit(p);
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
@@ -1185,7 +1188,9 @@ public class OpdPreSettleController implements Serializable {
     public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        p.setPaidValue(0 - Math.abs(bill.getNetTotal()));
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        System.out.println("valueToSet = " + valueToSet);
+        p.setPaidValue(valueToSet);
         setPaymentMethodData(p, pm);
         return p;
     }
