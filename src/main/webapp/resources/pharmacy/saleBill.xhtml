@@ -96,7 +96,7 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" class="billDetails">
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.name}" class="billDetails">
                             </h:outputLabel>
                         </td>
 
@@ -380,16 +380,18 @@
                     </tr>
 
 
-                    <tr>
-                        <td  class="totalsItemBlock" style="text-align: left;">
-                            <h:outputLabel   value="Cashier" />
-                        </td>
-                        <td  class="totalsItemBlock" style="text-align: right; ">
-                            <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
+                        <tr >
+                            <td style="text-align: left;">
+                                <h:outputLabel   value="Prepared by" />
+                            </td>
+                            <td style="text-align: right; ">
+                                <h:outputLabel   value="#{cc.attrs.bill.referenceBill.creater.name}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
 
                 </table>
