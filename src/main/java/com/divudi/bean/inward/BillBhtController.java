@@ -156,7 +156,7 @@ public class BillBhtController implements Serializable {
     
     public String navigateToAddServiceFromMenu() {
         resetBillData();
-        return "/theater/inward_bill_surgery_service?faces-redirect=true";
+        return "/inward/inward_bill_service?faces-redirect=true";
     }
 
     public String navigateToPrintLabelsForInvestigations() {
