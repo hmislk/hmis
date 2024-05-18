@@ -575,9 +575,8 @@ public class FinancialTransactionController implements Serializable {
             if (p.getBill().getBillTypeAtomic() == null) {
                 System.err.println("NO ATOMIC BILL TYPE in p.getBill().getBillType() = " + p.getBill().getBillType());
             } else {
-                System.out.println("p.getBill().getPaidAmount() = " + p.getBill().getPaidAmount());
-                System.out.println("p.getBill().getPaidAmount() = " + p.getBill().getCashPaid());
-                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getBill().getTotal());
+                System.out.println("p.getPaidValue() = " + p.getPaidValue());
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
                 System.out.println("p.getBill().getBillTypeAtomic() = " + p.getBill().getBillTypeAtomic());
             }
             //            calculateBillValuesFromBillTypes(p);

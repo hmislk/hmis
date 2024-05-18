@@ -220,8 +220,7 @@ public class FinancialReport {
     }
 
     public double getNetCashTotal() {
-        System.out.println("getRefundedCash() = " + getRefundedCash());
-        netCashTotal = getCollectedCash() + getRefundedCash();
+        netCashTotal = getCollectedCash() - getRefundedCash();
         return netCashTotal;
     }
 
@@ -251,7 +250,7 @@ public class FinancialReport {
     }
 
     public double getNetCreditCardTotal() {
-        netCreditCardTotal = getCollectedCreditCard() + getRefundedCreditCard();
+        netCreditCardTotal = getCollectedCreditCard() - getRefundedCreditCard();
         return netCreditCardTotal;
     }
 
