@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 public enum BillItemStatus {
+
     ORDERING("Ordering"),
     ORDER_COMPLETED("Order Completed"),
     SAMPLE_COLLECTED("Sample Collected"),

@@ -5,14 +5,14 @@
 package com.divudi.data;
 
 /**
- *
  * @author safrin
  */
 public enum SessionNumberType {
+
     ByItem,
     ByDoctor,
     ByCategory,
     BySubCategory,
     ByDoctorSession,
-    ByBill,
+    ByBill
 }

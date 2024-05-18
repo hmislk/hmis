@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 public enum PaperType {
+
     PosPaper("POS Paper"),
     PosPrintedPaper("POS Paper without headings"),
     FiveFivePaper("5 inch to 5 inch Paper with headings"),
@@ -15,37 +16,37 @@ public enum PaperType {
 
     private String label;
 
-    private PaperType(String label) {
+    PaperType(String label) {
         this.label = label;
     }
 
     public String getLabel() {
-        switch (this){
+        switch (this) {
             case A4Paper:
-                label="A4 Paper";
+                label = "A4 Paper";
                 break;
-                
+
             case A4PrintedPaper:
-                label="A4 Printed Paper";
+                label = "A4 Printed Paper";
                 break;
-               
+
             case FiveFivePaper:
-                label="5x5 Papaer";
+                label = "5x5 Papaer";
                 break;
-                
+
             case FiveFivePrintedPaper:
-                label="5x5 Printed Paper";
+                label = "5x5 Printed Paper";
                 break;
-               
+
             case Paper24_2x9_3:
-                label="24.2x9.3 Paper";
+                label = "24.2x9.3 Paper";
                 break;
-                
+
             case PosPaper:
-                label="POS Paper";
+                label = "POS Paper";
                 break;
         }
-                
+
         return label;
     }
 }

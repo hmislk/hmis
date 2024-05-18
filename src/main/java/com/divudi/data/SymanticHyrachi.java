@@ -8,20 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author Buddhika
- http://www.nlm.nih.gov/research/umls/META3_current_semantic_types.html
- *
+ * http://www.nlm.nih.gov/research/umls/META3_current_semantic_types.html
  */
 public enum SymanticHyrachi {
 //http://www.nlm.nih.gov/research/umls/META3_current_semantic_types.html
 
     Symantic(null),
-        Symantic_Type_Entity(Symantic),
-            Physical_Object(Symantic_Type_Entity),
-                Organism(Physical_Object),
-                    Plant(Organism),
-                    Fungus(Organism),
+    Symantic_Type_Entity(Symantic),
+    Physical_Object(Symantic_Type_Entity),
+    Organism(Physical_Object),
+    Plant(Organism),
+    Fungus(Organism),
+
     Virus(Organism),
     Bacterium(Organism),
     Archaeon(Organism),
@@ -149,17 +148,17 @@ public enum SymanticHyrachi {
     Neoplastic_Process(Disease_or_Syndrome),
     Cell_or_Molecular_Dysfunction(Pathologic_Function),
     Experimental_Model_of_Disease(Pathologic_Function),
-    Injury_or_Poisoning(Phenomenon_or_Process),;
-    
-    
-    private SymanticHyrachi parent = null;
+    Injury_or_Poisoning(Phenomenon_or_Process);
 
-    private SymanticHyrachi(SymanticHyrachi parent) {
+    private final SymanticHyrachi parent;
+
+    SymanticHyrachi(SymanticHyrachi parent) {
         this.parent = parent;
         if (this.parent != null) {
             this.parent.addChild(this);
         }
     }
+
     private final List<SymanticHyrachi> children = new ArrayList<>();
 
     public SymanticHyrachi[] children() {

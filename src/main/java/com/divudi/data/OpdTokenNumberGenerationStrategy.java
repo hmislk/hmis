@@ -5,7 +5,6 @@
 package com.divudi.data;
 
 /**
- *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 public enum OpdTokenNumberGenerationStrategy {
@@ -17,7 +16,7 @@ public enum OpdTokenNumberGenerationStrategy {
 
     private final String label;
 
-    private OpdTokenNumberGenerationStrategy(String label) {
+    OpdTokenNumberGenerationStrategy(String label) {
         this.label = label;
     }
 

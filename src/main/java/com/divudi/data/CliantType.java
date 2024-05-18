@@ -6,13 +6,13 @@ package com.divudi.data;
 
 
 /**
- *
  * @author www.divudi.com
  */
 public enum CliantType {
+
     Outpatient,
     Inward,
     Institution,
     CollectingCentre,
-    Staff,
+    Staff
 }

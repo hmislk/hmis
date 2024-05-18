@@ -5,6 +5,7 @@ package com.divudi.data;
  * buddhika.ari@gmail.com
  */
 public enum InstitutionType {
+    
     Agency("Agency"),
     Bank("Bank"),
     branch("Branch"), // Original enum spelling retained

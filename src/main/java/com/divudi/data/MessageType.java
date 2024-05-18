@@ -6,10 +6,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author ruhunu
  */
 public enum MessageType {
+
     LabReport,
     OpdBillSettle,
     Marketing,
@@ -23,6 +23,6 @@ public enum MessageType {
     ChannelDoctorPayment,
     ChannelCustom,
     ChannelReminder,
-    
-    DoctorPayment,
+
+    DoctorPayment
 }
