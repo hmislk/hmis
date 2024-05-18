@@ -9,6 +9,8 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.OpdPreBillController;
@@ -101,6 +103,8 @@ public class WorkingTimeController implements Serializable {
     ItemController itemController;
     @Inject
     FeeController feeController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     List<WorkingTime> selectedItems;
     private WorkingTime current;
@@ -130,21 +134,52 @@ public class WorkingTimeController implements Serializable {
         return selectedItems;
     }
 
-    public String selectStaffForOpdPayment() {
+    public String selectStaffForOpdPaymentForShifts() {
+        System.out.println("selectStaffForOpdPayment");
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
             return "";
         }
         workingTimeForPayment = findLastWorkingTime(staff);
+        System.out.println("workingTimeForPayment = " + workingTimeForPayment);
         if (workingTimeForPayment == null) {
+            System.out.println("no work time record");
             JsfUtil.addErrorMessage("No Work Time Recorded");
             return "";
         }
         if (workingTimeForPayment.getProfessinoalPaymentBill() != null) {
+            System.out.println("workingTimeForPayment.getProfessinoalPaymentBill()");
             return toViewOpdPaymentsDone();
         }
         staffAdmissionsForPayments = admissionController.findAdmissions(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
-        staffBillFeesForPayment = billController.findBillFees(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
+        boolean payDoctorAfterMarkingOut = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking Out", false);
+        boolean payDoctorAfterMarkingIn = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking In", false);
+        Date startTime =null;
+        Date endTime = null;
+        
+        if(payDoctorAfterMarkingIn){
+            startTime = workingTimeForPayment.getStartRecord().getRecordTimeStamp();
+        }
+        if(payDoctorAfterMarkingOut){
+            endTime = workingTimeForPayment.getEndRecord().getRecordTimeStamp();
+        }
+        System.out.println("before");
+        staffBillFeesForPayment = billController.findBillFees(staff, startTime, endTime);
+        System.out.println("staffBillFeesForPayment = " + staffBillFeesForPayment);
+        
+        calculateStaffPayments();
+        return "/opd/pay_doctor?faces-redirect=true";
+    }
+    
+    public String selectStaffForOpdPaymentForAll() {
+        System.out.println("selectStaffForOpdPayment");
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Select staff");
+            return "";
+        }
+        System.out.println("before");
+        staffBillFeesForPayment = billController.findBillFees(staff, null, null);
+        System.out.println("staffBillFeesForPayment = " + staffBillFeesForPayment);
         calculateStaffPayments();
         return "/opd/pay_doctor?faces-redirect=true";
     }
@@ -251,7 +286,6 @@ public class WorkingTimeController implements Serializable {
         }
 
         //System.out.println("admissionRate = " + admissionRate);
-
         BillItem admiddionFeeItem = new BillItem();
         admiddionFeeItem.setBill(b);
         admiddionFeeItem.setQty((double) admissionCount);
@@ -314,7 +348,6 @@ public class WorkingTimeController implements Serializable {
         b.getBillFees().add(otherFee);
 
         //System.out.println("b.getBillItems() = " + b.getBillItems());
-
         billController.save(b);
 
     }

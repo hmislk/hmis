@@ -59,66 +59,25 @@
                                             editable="true"
                                             controller="#{patientController}"/>
 
+                                        <p:outputLabel class="w-100 m-2" value="Relationship to Chief House Holder" />
+                                        <p:selectOneMenu   
+                                            value="#{patientController.currentRelation}" 
+                                            class="w-100 m2">
+                                            <f:selectItems value="#{relationController.items}" var="r"
+                                                           itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
+                                        </p:selectOneMenu>
 
 
 
 
-                                        <h:panelGrid columns="2" class="w-100">
-
-                                            <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
-                                            <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                            value="#{patientController.current}" minQueryLength="4"
-                                                            completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                            var="apt" itemLabel="#{apt.person.name}" 
-                                                            itemValue="#{apt}" class="w-100" inputStyleClass="w-100"
-                                                            >
-                                                <p:column headerText="Name">
-                                                    <h:outputLabel value="#{apt.person.nameWithTitle}" />
-                                                </p:column>
-
-                                                <p:column headerText="Age">
-                                                    <h:outputLabel value="#{apt.age}" />
-                                                </p:column>
-                                                <p:column headerText="NIC">
-                                                    <h:outputLabel value="#{apt.person.nic}"/>
-                                                </p:column>
-                                                <p:column headerText="Code">
-                                                    <h:outputLabel value="#{apt.code}" />
-                                                </p:column>
-                                                <p:column headerText="PHN">
-                                                    <h:outputLabel value="#{apt.phn}"/>
-                                                </p:column>
-                                                <p:column headerText="Sex">
-                                                    <h:outputLabel value="#{apt.person.sex}" />
-                                                </p:column>
-                                                <p:column headerText="Address">
-                                                    <h:outputLabel value="#{apt.person.address}" />
-                                                </p:column>
-                                                <p:column headerText="Date of Birth">
-                                                    <h:outputLabel value="#{apt.person.dob}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                            </p:autoComplete>
-
-                                            <p:outputLabel value="Relationship to Chief House Holder" />
-                                            <p:selectOneMenu value="#{patientController.currentRelation}" class="w-100">
-                                                <f:selectItems value="#{relationController.items}" var="r"
-                                                               itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
-                                            </p:selectOneMenu>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Add as a Family Member"
+                                            action="#{patientController.addNewMemberToFamily()}"
+                                            class="ui-button-success m-2"  icon="fas fa-plus">
+                                        </p:commandButton> 
 
 
-
-                                            <p:commandButton ajax="false" value="To add a new Family Member" 
-                                                             action="#{patientController.toNewPatient()}" class="ui-button-success"  icon="fas fa-plus">
-
-                                            </p:commandButton>
-                                            <p:commandButton ajax="false" value="Add as a Family Member"
-                                                             action="#{patientController.addNewMemberToFamily()}" class="ui-button-success"  icon="fas fa-plus">
-                                            </p:commandButton> 
-
-
-                                        </h:panelGrid>
 
 
 
@@ -140,12 +99,25 @@
                                     <p:column headerText="Membership" rendered="false">
                                         <p:outputLabel value="#{fm.patient.person.membershipScheme.name}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Billing">
+                                    <p:column headerText="Billing" rendered="true">
 
-                                        <p:commandButton ajax="false" action="/opd/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
-                                                         value="OPD" disabled="#{!webUserController.hasPrivilege('OpdBilling')}" icon="fa fa-fw fa-notes-medical" >
-                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
+                                        <p:commandButton value="OPD Bill" 
+                                                         action="#{patientController.navigateToOpdBillFromFamilyMembership()}" 
+                                                         ajax="false"
+                                                         class="w-100"
+                                                         styleClass="mx-2">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
+
+                                        <p:commandButton value="OPD Bill for Cashier" 
+                                                         action="#{patientController.navigateToBillingForCashierFromFamilyMembership()}" 
+                                                         ajax="false"
+                                                         class="w-100"
+                                                         styleClass="mx-2">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+
+
                                         <p:commandButton ajax="false" action="/channel/channel_booking" 
                                                          icon="fa fa-fw fa-calendar-check" 
                                                          class="mx-1"
@@ -153,21 +125,18 @@
                                                          value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                                         </p:commandButton>
-                                        <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
-                                                         actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
-                                                         icon="fa-solid fa-prescription-bottle-medical" 
-                                                         class="my-1"
-                                                         value="Phamacy" disabled="#{!webUserController.hasPrivilege('PharmacySale')}" >
-                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{pharmacySaleController.searchedPatient}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                        <p:commandButton ajax="false" action="#{admissionController.toAdmitAMember()}" 
-                                                         icon="fa-solid fa-bed" 
-                                                         value="Admit" disabled="#{!webUserController.hasPrivilege('InwardAdmissionsAdmission')}" >
-                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{admissionController.current.patient}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
+
+
+
 
                                     </p:column>
                                     <p:column headerText="Actions" >
+                                        <p:commandButton ajax="false" value="Profile"
+                                                         action="#{patientController.navigateToOpdPatientProfile()}"
+                                                         class="ui-button-warning mx-1" icon="pi pi-user">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                        </p:commandButton>
+
                                         <p:commandButton ajax="false" value="Edit" action="patient"   class="ui-button-warning mx-1" icon="fa-solid fa-pen">
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
