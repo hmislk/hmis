@@ -20,7 +20,7 @@
                         <p:panel >
                             <f:facet name="header">
                                 <h:outputText styleClass="fa-solid fa-people-group" /> <!-- FontAwesome Icon -->
-                                <p:outputLabel value="Add Family" class="m-2"/>
+                                <p:outputLabel value="Add Family Mambership" class="m-2"/>
                                 <div style="float: right;">
                                     <p:commandButton value="Save Family &amp; Manage" action="#{patientController.saveFamilyAndNavigateToManageFamily()}" ajax="false" class="ui-button-warning mx-1" icon="fas fa-save"></p:commandButton>
                                     <p:commandButton value="Save &amp; Clear for a new Family" action="#{patientController.saveAndClearForNewFamily()}" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
@@ -40,8 +40,16 @@
 
 
                                             <p:outputLabel value="MembershipScheme:" for="membershipScheme" />
-                                            <p:selectOneMenu id="membershipScheme" class="w-100" value="#{patientController.currentFamily.membershipScheme}" >
-                                                <f:selectItems value="#{membershipSchemeController.items}" var="m" itemLabel="#{m.name}" itemValue="#{m}"/>
+                                            <p:selectOneMenu 
+                                                id="membershipScheme"
+                                                class="w-100" 
+                                                value="#{patientController.currentFamily.membershipScheme}" 
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItems 
+                                                    value="#{membershipSchemeController.items}" 
+                                                    var="m" 
+                                                    itemLabel="#{m.name}" itemValue="#{m}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Comments:" for="comments" />
                                             <p:inputTextarea rows="4" cols="30" class="w-100" id="comments" value="#{patientController.currentFamily.comments}" title="Comments" />
