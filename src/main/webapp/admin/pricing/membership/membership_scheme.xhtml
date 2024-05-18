@@ -18,78 +18,105 @@
 
 
 
-                <p:panel header="Manage Memership Schemes" styleClass="verticalAndHorizontalCentering" >
+                <p:panel id ="gpVeda" class="w-100" >
+                    <f:facet name="header" >
+                        <h:outputText value="Manage Memership Schemes" ></h:outputText>
+                    </f:facet>
+                    <div class="row" >
+                        <div class="col-4" >
 
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                            <p:commandButton
+                                id="btnAdd" 
+                                value="Add"
+                                action="#{membershipSchemeController.prepareAdd()}"
+                                process="btnAdd"
+                                icon="pi pi-plus"  
+                                class="ui-button-Warning m-2"
+                                update="lstSelect gpDetailText detailFocus">
+                                <p:ajax
+                                    event="click" 
+                                    update="gpDetailText detailFocus" 
+                                    process="@this" >
+                                </p:ajax>
+                            </p:commandButton>
+                            <p:commandButton 
+                                id="btnDelete"
+                                icon="pi pi-trash" 
+                                class="ui-button-danger  m-2"
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" action="#{membershipSchemeController.delete()}"  value="Delete" ajax="false"  >
+                            </p:commandButton>
 
-                        <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >
-                                <h:panelGrid id="gpSelectText" >
-                                    <p:selectOneListbox  
-                                        id="lstSelect"  
-                                        class="w-100" 
-                                        scrollHeight="500" 
-                                        value="#{membershipSchemeController.current}" 
-                                        filter="true">
-                                        <f:selectItems  value="#{membershipSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <!--                                        <f:ajax render="gpDetail" execute="lstSelect" >
-                                                                                </f:ajax>-->
-                                        <p:ajax process="lstSelect" update="gpDetail"/>
-                                    </p:selectOneListbox>
-                                </h:panelGrid>
-                                <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <p:commandButton  value="Fill" action="#{membershipSchemeController.fillItems()}" styleClass="buttons" >
-                                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetail',view).clientId} detailFocus" execute="@this" >
-                                        </f:ajax>
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        id="btnAdd" 
-                                        value="Add"
-                                        action="#{membershipSchemeController.prepareAdd()}"
-                                        process="btnAdd"
-                                        update="lstSelect gpDetail detailFocus">
-                                        <!--                                        <f:ajax
-                                                                                    event="click" 
-                                                                                    render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetail',view).clientId} detailFocus" execute="@this" >
-                                                                                </f:ajax>-->
-                                    </p:commandButton>
+                            <p:commandButton  
+                                value="Reload"
+                                action="#{membershipSchemeController.fillItems()}" 
+                                class="mx-2 ui-button-info" 
+                                icon="pi pi-refresh" 
+                                >
+                                <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetailText',view).clientId} detailFocus" execute="@this" >
+                                </f:ajax>
+                            </p:commandButton>
 
-                                    <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{membershipSchemeController.delete()}"  value="Delete" ajax="false"  >
-                                    </p:commandButton>
-                                </h:panelGrid>
-                            </p:panel>
-                        </h:panelGrid  >
 
-                        <p:panel style="width: 600px; height: 550px">
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText value="Id" ></h:outputText>
-                                    <h:outputText value="#{membershipSchemeController.current.id}" ></h:outputText>
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{membershipSchemeController.current.name}"  style="min-width: 450px"></h:inputText>
-                                    <h:outputText id="lblCode" value="Code" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.code}" style="min-width: 450px" ></h:inputText>
-                                    <h:outputText id="lblins" value="Institution" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.institution}" style="min-width: 450px" ></h:inputText>
-                                </h:panelGrid>
+                            <p:selectOneListbox  
+                                id="lstSelect"  
+                                class="w-100" 
+                                scrollHeight="500" 
+                                value="#{membershipSchemeController.current}" 
+                                filter="true">
+                                <f:selectItems  value="#{membershipSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <!--                                        <f:ajax render="gpDetailText" execute="lstSelect" >
+                                                                        </f:ajax>-->
+                                <p:ajax process="lstSelect" update="gpDetailText"/>
+                            </p:selectOneListbox>
 
-                            </h:panelGrid>
-                            <h:panelGrid id="gpDetailButtons" columns="2">
-                                <p:commandButton 
-                                    id="btnSave" 
-                                    value="Save"
-                                    action="#{membershipSchemeController.saveSelected()}" 
-                                    process="btnSave gpDetail " 
-                                    update="lstSelect selectFocus msg"
-                                    >
-                                </p:commandButton>
-                                <p:messages id="msg"  />
-                                <p:defaultCommand target="btnSave"/>
-                            </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid>
+
+                        </div>
+                        <div class="col-8" >
+                            <p:commandButton 
+                                id="btnSave" 
+                                value="Save"
+                                icon="pi pi-save" 
+                                class="ui-button-success m-2"
+                                action="#{membershipSchemeController.saveSelected()}" 
+                                process="btnSave gpDetailText " 
+                                update="lstSelect selectFocus msg"
+                                >
+                            </p:commandButton>
+
+                            <p:panelGrid id="gpDetailText" columns="2">
+                                <p:outputLabel for="txtName" id="lblName" value="Name" ></p:outputLabel>
+                                <p:inputText autocomplete="off" required="true" id="txtName" value="#{membershipSchemeController.current.name}"  style="min-width: 450px"></p:inputText>
+                                <p:outputLabel for="txtCode" id="lblCode" value="Code" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.code}" style="min-width: 450px" ></p:inputText>
+                                <p:outputLabel for="lstDiscountScheme" id="lblDs" value="Discount Scheme" ></p:outputLabel>
+                                <p:selectOneMenu
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    id="lstDiscountScheme"   
+                                    class="w-100" 
+                                    value="#{membershipSchemeController.current.paymentScheme}" >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems  value="#{paymentSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:ajax render="gpDetail" execute="lstSelect" >
+                                    </f:ajax>
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+
+
+                            <p:messages id="msg"  />
+                            <p:defaultCommand target="btnSave"/>
+                        </div>
+                    </div>
+
+
+
+
+
+
                 </p:panel>
+
+
             </h:form>
 
         </h:panelGroup>
