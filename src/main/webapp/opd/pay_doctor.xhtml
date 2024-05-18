@@ -47,9 +47,16 @@
                                 </p:autoComplete>
                                 <p:commandButton 
                                     ajax="false" 
-                                    value="Select"
-                                    action="#{workingTimeController.selectStaffForOpdPayment}" ></p:commandButton>
+                                    value="Select for Shift Payments"
+                                    action="#{workingTimeController.selectStaffForOpdPaymentForShifts()}" ></p:commandButton>
 
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Select for All Payments"
+                                    action="#{workingTimeController.selectStaffForOpdPaymentForAll()}" ></p:commandButton>
+
+                           
+                                
                             </p:panelGrid>
 
 
@@ -64,6 +71,9 @@
                                             <h:outputText value="#{workingTimeController.staff.person.name}" />
                                             <p:outputLabel value="Speciality" />
                                             <h:outputText value="#{workingTimeController.staff.speciality.name}" />
+                                            <p:outputLabel value="ID" />
+                                            <h:outputText value="#{workingTimeController.staff.id}" />
+
                                             <p:outputLabel value="Shift Start" />
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.startRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
