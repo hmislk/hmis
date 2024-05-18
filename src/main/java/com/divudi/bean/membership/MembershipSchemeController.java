@@ -120,14 +120,14 @@ public class MembershipSchemeController implements Serializable {
 
     public void saveSelected() {
 //        getCurrent().setInstitution(getSessionController().getInstitution());
-        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
-            JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
-            return;
-        }
-        if (getCurrent().getCode().length() > 2) {
-            JsfUtil.addErrorMessage("Please Set Code Using 2 Charactors");
-            return;
-        }
+//        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+//            JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
+//            return;
+//        }
+//        if (getCurrent().getCode().length() > 2) {
+//            JsfUtil.addErrorMessage("Please Set Code Using 2 Charactors");
+//            return;
+//        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -176,7 +176,6 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -207,11 +206,10 @@ public class MembershipSchemeController implements Serializable {
         String j;
         j = "select s "
                 + " from MembershipScheme s "
-                + " where s.retired=false "
-                + " and s.institution=:ins "
+                + " where s.retired=:ret "
                 + " order by s.name";
         Map m = new HashMap();
-        m.put("ins", sessionController.getInstitution());
+        m.put("ret", false);
         items = getFacade().findByJpql(j, m);
     }
 
@@ -261,7 +259,7 @@ public class MembershipSchemeController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + MembershipSchemeController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + MembershipScheme.class.getName());
             }
         }
     }
