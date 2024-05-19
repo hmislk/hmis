@@ -11,6 +11,12 @@
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
+
+            <f:metadata>
+                <f:event type="preRenderView" 
+                         listener="#{opdBillController.reloadCurrentlyWorkingStaff()}"/>
+            </f:metadata>
+
             <ui:define name="content">
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
                     You are NOT authorized
@@ -62,11 +68,11 @@
                                             <div class="col-md-12" >
                                                 <ui:repeat  value="#{opdBillController.opdItemDepartments}" var="dept">
                                                     <p:commandButton 
-                                                                     value="#{dept.name}"
-                                                                     process="@this"
-                                                                     update=":#{p:resolveFirstComponentWithId('acIx',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
-                                                                     action="#{opdBillController.departmentChanged}"
-                                                                     class="m-1 #{dept eq opdBillController.selectedOpdItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
+                                                        value="#{dept.name}"
+                                                        process="@this"
+                                                        update=":#{p:resolveFirstComponentWithId('acIx',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
+                                                        action="#{opdBillController.departmentChanged}"
+                                                        class="m-1 #{dept eq opdBillController.selectedOpdItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
                                                         <f:setPropertyActionListener value="#{dept}" target="#{opdBillController.selectedOpdItemDepartment}"></f:setPropertyActionListener>
                                                     </p:commandButton>
                                                 </ui:repeat>
