@@ -72,7 +72,6 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     FinancialTransactionController financialTransactionController;
     @Inject
     OpdPreBillController opdPreBillController;
- 
 
     // </editor-fold> 
     private Token currentToken;
@@ -169,6 +168,13 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             patientController.save(patient);
             currentToken.setPatient(getPatient());
         }
+        if (sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
+            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim()=="") {
+                JsfUtil.addErrorMessage("Please select a patient Area");
+                return "";
+            }
+        }
+
         if (currentToken.getToDepartment() == null) {
             currentToken.setToDepartment(sessionController.getDepartment());
         }
@@ -277,23 +283,22 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         opdPreBillController.makeNull();
         opdPreBillController.setPatient(currentToken.getPatient());
         opdPreBillController.setToken(currentToken);
-        
+
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
-    
-     public String navigateToNewOpdBillForCashierTabView() {
+
+    public String navigateToNewOpdBillForCashierTabView() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-        
+
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
         opdTabPreBillController.setToken(currentToken);
         opdTabPreBillController.setSelectedCurrentlyWorkingStaff(currentToken.getStaff());
         return "/opd/token/opd_prebill_for_tab?faces-redirect=true";
     }
-
 
     public void navigateToNewOpdBill() {
         if (currentToken == null) {
@@ -324,7 +329,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
         j += " order by t.id ASC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
-        
+
     }
 
     public String getTokenStatus(Token token) {
@@ -388,7 +393,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         fillOpdTokens();
         return "/opd/token/opd_queue?faces-redirect=true";
     }
-    
+
     public String navigateToManageOpdTokensCompleted() {
         counter = null;
         fillOpdTokensCompleted();
