@@ -24,11 +24,18 @@
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
                     <p:growl id="panelErrorMsg"/>
+                    
+                    <div class="d-flex gap-2 mb-2 mt-2 mx-3">
+                        <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                        <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                        <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                        <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                    </div> 
 
                     <p:panel rendered="#{!pharmacySaleController2.billPreview}"  >
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between align-items-center">
-                                <h:outputLabel value="Pharmacy Retail Bill" />
+                                <h:outputLabel value="Pharmacy Retail Bill (Sale 3)" />
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         value="Back"
@@ -52,6 +59,8 @@
                                         ajax="false" 
                                         value="Settle Bill At Cashier"
                                         icon="fas fa-check"
+                                        onclick="if (!confirm('Are you sure?'))
+                                                                            return false"
                                         action="#{pharmacySaleController2.settlePreBill()}"
                                         class="ui-button-success" 
                                         >
@@ -63,13 +72,6 @@
                             </div>
 
                         </f:facet>
-
-                        <div class="d-flex gap-2 mb-2">
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-                        </div>
 
                         <div class="row">
                             <div class="col-md-6">
