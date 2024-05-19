@@ -94,7 +94,7 @@
                                     <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
