@@ -74,6 +74,7 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstanceActivity;
 import com.divudi.entity.lab.ItemForItem;
@@ -544,6 +545,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
+    public UserPreference getDepartmentPreference() {
+        return sessionController.getDepartmentPreference();
+    }
+
+    public String navigateToChannelBookingByDate() {
+        fillBillSessions();
+        prepareForNewChannellingBill();
+        return null;
+    }
+
     public String navigateToChannelQueueFromMenu() {
         sessionInstances = channelBean.listTodaysSesionInstances();
         return "/channel/channel_queue?faces-redirect=true";
@@ -580,7 +591,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void prepareForNewChannellingBill() {
-        listnerStaffListForRowSelect();
+        selectedBillSession = null;
+        getSelectedBillSession();
+        printPreview=false;
     }
 
     public String navigateToViewSessionData() {
@@ -803,8 +816,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public boolean billSessionErrorPresent() {
         boolean flag = false;
-        List<BillSession> billSessions = getBillSessions();
-        if (billSessions != null && selectedBillSession != null) {
+        if (billSessions != null && getSelectedBillSession() != null) {
             for (BillSession bs : billSessions) {
                 if (!bs.equals(selectedBillSession)) {
                     List<BillItem> billItems = bs.getBill().getBillItems();
@@ -3465,14 +3477,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.patientFacade = patientFacade;
     }
 
+    public void createNewChannelBooking() {
+        patient = new Patient();
+        selectedBillSession = new BillSession();
+        Bill b = new BilledBill();
+        b.setPatient(patient);
+        selectedBillSession.setBill(b);
+    }
+
     public BillSession getSelectedBillSession() {
         if (selectedBillSession == null) {
-            selectedBillSession = new BillSession();
-            Bill b = new BilledBill();
-            Patient p = new Patient();
-            p.setPerson(new Person());
-            b.setPatient(p);
-            selectedBillSession.setBill(b);
+            createNewChannelBooking();
         }
         return selectedBillSession;
     }
