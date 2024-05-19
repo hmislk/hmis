@@ -1608,7 +1608,8 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         }
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt);
+        //savePreBillFinally(pt);
+        savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -1633,6 +1634,44 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+    }
+    
+    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        }
+        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getPreBill().setCreater(getSessionController().getLoggedUser());
+
+        getPreBill().setPatient(pt);
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+        getPreBill().setToStaff(toStaff);
+        getPreBill().setToInstitution(toInstitution);
+
+        getPreBill().setComments(comment);
+
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
+
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setPaymentMethod(getPaymentMethod());
+        getPreBill().setPaymentScheme(getPaymentScheme());
+
+        getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setInsId(insId);
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setDeptId(deptId);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
+
     }
 
     @EJB
