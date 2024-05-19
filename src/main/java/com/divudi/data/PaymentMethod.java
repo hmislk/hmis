@@ -12,22 +12,23 @@ public enum PaymentMethod {
 
     // Enum constants with @Deprecated where necessary
     Cash("Cash", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Credit("Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),
-    OnCall("On Call", PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Card("Credit Card", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    MultiplePaymentMethods("Multiple Payment Methods", PaymentContext.ACCEPTING_PAYMENTS),
     Staff("Staff Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Credit("Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),
     Staff_Welfare("Staff Welfare", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    OnCall("On Call", PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     @Deprecated
     Voucher("Voucher", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     IOU("IOU", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Agent("Agent Payment", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Card("Credit Card", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Cheque("Cheque", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Slip("Slip Payment", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     ewallet("e-Wallet Payment", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     PatientDeposit("Patient Deposit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     PatientPoints("Patient Points", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     OnlineSettlement("Online Settlement", PaymentContext.ACCEPTING_PAYMENTS),
-    MultiplePaymentMethods("Multiple Payment Methods", PaymentContext.ACCEPTING_PAYMENTS),
+    
     @Deprecated
     YouOweMe("You Owe Me", PaymentContext.ACCEPTING_PAYMENTS);
 
