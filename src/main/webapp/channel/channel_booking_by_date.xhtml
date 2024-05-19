@@ -48,32 +48,45 @@
                                     <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1"></p:commandButton>
                                     <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1"></p:commandButton>
                                     <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1"></p:commandButton>
-                                    <p:commandButton ajax="false" 
-                                                     value="Completed" 
-                                                     icon="fa fa-check" 
-                                                     styleClass="ui-button-success mx-1" 
-                                                     action="#{bookingControllerViewScope.listCompletedSesionInstances()}" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        title="Completed" 
+                                        icon="fa fa-check" 
+                                        styleClass="ui-button-secondary mx-1" 
+                                        action="#{bookingControllerViewScope.listCompletedSesionInstances()}" />
 
                                     <!-- View Ongoing Session Data Button -->
-                                    <p:commandButton ajax="false" 
-                                                     value="Ongoing"
-                                                     icon="fa fa-sync-alt" 
-                                                     styleClass="ui-button-info mx-1" 
-                                                     action="#{bookingControllerViewScope.listOngoingSesionInstances()}" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        title="Ongoing"
+                                        icon="fa fa-sync-alt" 
+                                        styleClass="ui-button-success mx-1" 
+                                        action="#{bookingControllerViewScope.listOngoingSesionInstances()}" />
 
                                     <!-- List Pending Button -->
-                                    <p:commandButton ajax="false" 
-                                                     value="Pending"
-                                                     icon="fa fa-hourglass-start" 
-                                                     styleClass="ui-button-warning mx-1" 
-                                                     action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        title="Pending"
+                                        icon="fa fa-hourglass-start" 
+                                        styleClass="ui-button-primary mx-1" 
+                                        action="#{bookingControllerViewScope.listPendingSesionInstances()}" />
+
+                                    <!-- List Cancelled Button -->
+                                    <p:commandButton 
+                                        title="Cancelled"
+                                        ajax="false" 
+                                        icon="fa fa-times-circle" 
+                                        styleClass="ui-button-danger mx-1" 
+                                        action="#{bookingControllerViewScope.listCancelledSesionInstances()}" />
+
 
                                     <!-- List All Button -->
-                                    <p:commandButton ajax="false" 
-                                                     value="All"
-                                                     icon="fa fa-list" 
-                                                     styleClass="ui-button-primary mx-1" 
-                                                     action="#{bookingControllerViewScope.listAllSesionInstances()}" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        title="All"
+                                        icon="fa fa-list" 
+                                        styleClass="ui-button-primary mx-1" 
+                                        action="#{bookingControllerViewScope.listAllSesionInstances()}" />
 
 
                                 </div>
@@ -92,14 +105,10 @@
                                             <p:ajax 
                                                 event="rowSelect" 
                                                 process="@this"
-                                                update=""
+                                                update=":#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId}"
                                                 listener="#{bookingControllerViewScope.sessionInstanceSelected()}" />
 
-                                            <p:ajax 
-                                                event="rowUnselect" 
-                                                process="@this"
-                                                update=""
-                                                listener="#{bookingControllerViewScope.sessionInstanceSelected}" />
+
 
                                             <p:column  >
                                                 <h:outputText value="#{s.staff.person.nameWithTitle}" />
@@ -107,9 +116,11 @@
                                                 <h:outputText value="(#{s.staff.speciality.name})" />
                                                 <br/>
                                                 <h:outputText rendered="true" value="#{s.name}"  />
-                                                <p:badge rendered="#{!s.started}" value="Room: #{s.roomNo}"  severity="primary" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{!s.started and !s.cancelled}" value="Room: #{s.roomNo}"  severity="primary" styleClass="mr-2"></p:badge>
                                                 <p:badge rendered="#{s.started}" value="Room: #{s.roomNo}"  severity="success" styleClass="mr-2"></p:badge>
                                                 <p:badge rendered="#{s.completed}" value="Room: #{s.roomNo}"  severity="warning" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{s.cancelled}" value="Room: #{s.roomNo}"  severity="danger" styleClass="mr-2"></p:badge>
+                                                
                                                 <br/>
                                                 <h:outputText value="#{s.sessionDate}"  >
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
@@ -153,13 +164,6 @@
                                                 <p:badge value="Available : #{s.originatingSession.maxNo - s.bookedPatientCount}" size="large" severity="success" styleClass="mr-2"></p:badge>
                                                 <p:badge value="Next : #{s.bookedPatientCount + 1}" size="large" severity="info" styleClass="mr-2"></p:badge>
 
-
-
-
-
-
-
-
                                                 <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
                                                     <div class="d-flex justify-content-center align-items-center">
                                                         <span>
@@ -186,6 +190,17 @@
                                                         </span>
                                                     </div>
                                                 </h:panelGroup>
+
+
+                                                <p:commandButton 
+                                                    value="Manage"
+                                                    action="#{bookingControllerViewScope.navigateToManageSessioinInstance(s)}" 
+                                                    ajax="false" >
+                                                </p:commandButton>
+
+
+
+
                                             </p:column>
 
                                         </p:dataTable>
@@ -195,50 +210,26 @@
                                     <common:patient_details
                                         editable="true"
                                         controller="#{bookingControllerViewScope}"/>
-                                    <p:panel class="my-2">
+
+
+                                    <p:panelGrid id="gdManageBookings" class="w-100 m-2"  >
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
-                                            <h:outputText class="mx-4" value="Payment Details"/>
-                                        </f:facet>
-                                        <p:panelGrid id="gdManageBookings" class="w-100"  >
-                                            <p:row >
-                                                <p:column >
-                                                    <p:outputLabel value="Item" ></p:outputLabel>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
-                                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                        <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                        <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
-                                                    </p:selectOneMenu>
+                                            <p:row>
+                                                <p:column  colspan="2" >
+                                                    <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                                    <h:outputText class="mx-4" value="Payment Details"/>
                                                 </p:column>
                                             </p:row>
-                                            <p:row >
-
-                                                <p:column >
-                                                    <p:outputLabel value="Amount"/>
-                                                </p:column>
-                                                <p:column >
-                                                    <h:panelGroup class="mx-2" id="lblSessionTotal">
-                                                        <p:outputLabel
-                                                            value="#{bookingControllerViewScope.feeTotalForSelectedBill}"
-                                                            rendered="#{bookingControllerViewScope.foriegn}">
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </p:outputLabel>
-                                                        <p:outputLabel
-                                                            value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"
-                                                            rendered="#{!bookingControllerViewScope.foriegn}">
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </p:outputLabel>
-                                                    </h:panelGroup>
-                                                </p:column>
-                                                <p:column rowspan="4">
+                                        </f:facet>
+                                        <f:facet name="footer">
+                                            <p:row>
+                                                <p:column colspan="2" >
                                                     <p:commandButton
                                                         id="btnAdd"
                                                         value="Add Normal Booking"
                                                         ajax="false"
                                                         update="gpThisBookingDetails"
-                                                        class="ui-button-info w-75 m-2"
+                                                        class="ui-button-info m-2"
                                                         icon="pi pi-check"
                                                         action="#{bookingControllerViewScope.addNormalChannelBooking}" >
                                                     </p:commandButton>
@@ -247,236 +238,265 @@
                                                         value="Add Reserved Booking"
                                                         ajax="false"
                                                         update="gpThisBookingDetails"
-                                                        class="ui-button-warning w-75 m-2"
+                                                        class="ui-button-warning m-2"
                                                         icon="pi pi-bookmark"
                                                         action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
                                                     </p:commandButton>
-
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column >
-                                                    <p:outputLabel value="Payment Method"/>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs" value="#{bookingControllerViewScope.paymentMethod}">
-                                                        <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
-                                                        <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
-                                                    </p:selectOneMenu>
-                                                    <h:outputScript>
-                                                        $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
-                                                        var keycode = (event.keyCode ? event.keyCode : event.which);
-                                                        alert("sdf");
-                                                        if (keycode == '13') {
-                                                        document.getElementById("form:txtSearch3").focus();
-                                                        return false;
-                                                        }
-
-                                                        });
-                                                    </h:outputScript>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column >
-                                                    <p:outputLabel value="Discount Scheme"/>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs2" value="#{bookingControllerViewScope.paymentScheme}">
-                                                        <f:selectItem itemLabel="Select Discount Scheme"/>
-                                                        <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}"
-                                                                       var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                        <p:ajax process="@this"
-                                                                update="lblSessionTotal"
-                                                                event="change"
-                                                                listener="#{bookingControllerViewScope.changeListener()}"/>
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>
-                                                <p:column >
-                                                </p:column>
-                                                <p:column >
-                                                    <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}" itemLabel="Foriegner">
-                                                        <f:ajax event="change" execute="@this" render="lblSessionTotal panelBookingDetails"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                <p:column colspan="3" >
-                                                    <h:outputLabel id="agent" value="Agent"   />
-                                                </p:column>
-                                            </p:row>
-                                            <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                <p:column >
-                                                    <h:outputLabel  value="Agent Details"   />
-                                                </p:column>
-                                                <p:column colspan="2" >
-                                                    <p:autoComplete class="w-75" id="agent2" forceSelection="true"
-                                                                    value="#{bookingControllerViewScope.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                                                    itemLabel="#{ix.name}" itemValue="#{ix}" size="38" >
-                                                        <f:ajax  event="itemSelect" execute="@this"  render=" ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
-                                                        <!--<p:ajax event="click" process="@this" update=":#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" />-->
-                                                        <p:column>#{ix.institutionCode}</p:column>
-                                                        <p:column>#{ix.name}</p:column>
-                                                    </p:autoComplete>
                                                 </p:column>
                                             </p:row>
 
-                                            <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                <p:column>
-                                                    <p:outputLabel for="agRefTxt" value="Agent Ref No"/>
-                                                </p:column>
-                                                <p:column colspan="2">
-                                                    <p:inputText size="38" autocomplete="off" id="agRefTxt" value="#{bookingControllerViewScope.agentRefNo}"
-                                                                 style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; "/>
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                <p:column>
-                                                    <p:outputLabel  value="Agent Balance"/>
-                                                </p:column>
-                                                <p:column colspan="2">
-                                                    <h:outputLabel id="ballance2" value="#{bookingControllerViewScope.institution.ballance}"
-                                                                   style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; "/>
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
-                                                <p:column colspan="3">
-                                                    <p:dataTable class="w-100" id="tblAgentBooks"
-                                                                 emptyMessage="No Referance Books"
-                                                                 value="#{bookingControllerViewScope.institution.agentReferenceBooks}" var="a">
-                                                        <f:facet name="header" >
-                                                            <p:outputLabel value="Agent Referance Number Details" ></p:outputLabel>
-                                                        </f:facet>
-                                                        <p:column headerText="S.R.N.">
-                                                            <p:outputLabel value="#{a.startingReferenceNumber}">
-                                                                <f:convertNumber pattern="00000" />
-                                                            </p:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="E.R.N.">
-                                                            <p:outputLabel value="#{a.endingReferenceNumber}">
-                                                                <f:convertNumber pattern="00000" />
-                                                            </p:outputLabel>
-                                                        </p:column>
-                                                    </p:dataTable>
-
-                                                </p:column>
-                                            </p:row>
+                                        </f:facet>
 
 
+                                        <p:row >
+                                            <p:column >
+                                                <p:outputLabel value="Item" ></p:outputLabel>
+                                            </p:column>
+                                            <p:column >
+                                                <p:selectOneMenu class="w-75" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                    <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                                    <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row >
 
+                                            <p:column >
+                                                <p:outputLabel value="Amount"/>
+                                            </p:column>
+                                            <p:column >
+                                                <h:panelGroup class="mx-2" id="lblSessionTotal">
+                                                    <p:outputLabel
+                                                        value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.totalForForeigner}"
+                                                        rendered="#{bookingControllerViewScope.foriegn}">
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </p:outputLabel>
+                                                    <p:outputLabel
+                                                        value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"
+                                                        rendered="#{!bookingControllerViewScope.foriegn}">
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </p:outputLabel>
+                                                </h:panelGroup>
+                                                <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}" itemLabel="Foriegner">
+                                                    <f:ajax event="change" execute="@this" render="lblSessionTotal panelBookingDetails"/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column >
+                                                <p:outputLabel value="Payment Method"/>
+                                            </p:column>
+                                            <p:column >
+                                                <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs" value="#{bookingControllerViewScope.paymentMethod}">
+                                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                                    <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
+                                                    <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
+                                                </p:selectOneMenu>
+                                                <h:outputScript>
+                                                    $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
+                                                    var keycode = (event.keyCode ? event.keyCode : event.which);
+                                                    alert("sdf");
+                                                    if (keycode == '13') {
+                                                    document.getElementById("form:txtSearch3").focus();
+                                                    return false;
+                                                    }
 
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
-                                                <p:column colspan="3" >
-                                                    <h:outputLabel id="card" value="Card Payment"   />
-                                                </p:column>
-                                            </p:row>
+                                                    });
+                                                </h:outputScript>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column >
+                                                <p:outputLabel value="Discount Scheme"/>
+                                            </p:column>
+                                            <p:column >
+                                                <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs2" value="#{bookingControllerViewScope.paymentScheme}">
+                                                    <f:selectItem itemLabel="Select Discount Scheme"/>
+                                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}"
+                                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                    <p:ajax process="@this"
+                                                            update="lblSessionTotal"
+                                                            event="change"
+                                                            listener="#{bookingControllerViewScope.changeListener()}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
+                                            <p:column colspan="2" >
+                                                <h:outputLabel id="agent" value="Agent"   />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
+                                            <p:column >
+                                                <h:outputLabel  value="Agent Details"   />
+                                            </p:column>
+                                            <p:column  >
+                                                <p:autoComplete class="w-75" id="agent2" forceSelection="true"
+                                                                value="#{bookingControllerViewScope.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                                itemLabel="#{ix.name}" itemValue="#{ix}" size="38" >
+                                                    <f:ajax  event="itemSelect" execute="@this"  render=" ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" listener="#{bookingControllerViewScope.validateAgentBalance()}"/>
+                                                    <!--<p:ajax event="click" process="@this" update=":#{p:resolveFirstComponentWithId('agRefLbl',view).clientId} :#{p:resolveFirstComponentWithId('tblAgentBooks',view).clientId} gdManageBookings" />-->
+                                                    <p:column>#{ix.institutionCode}</p:column>
+                                                    <p:column>#{ix.name}</p:column>
+                                                </p:autoComplete>
+                                            </p:column>
+                                        </p:row>
 
-                                            <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
-                                                <p:column><p:outputLabel id="creditCardbnkLbl" value="Select Bank" /></p:column>
-                                                <p:column>
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="creditCardSlc" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
-                                                        <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
-                                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                            </p:row>
+                                        <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
+                                            <p:column>
+                                                <p:outputLabel for="agRefTxt" value="Agent Ref No"/>
+                                            </p:column>
+                                            <p:column >
+                                                <p:inputText size="38" autocomplete="off" id="agRefTxt" value="#{bookingControllerViewScope.agentRefNo}"
+                                                             style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; "/>
+                                            </p:column>
+                                        </p:row>
 
+                                        <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
+                                            <p:column>
+                                                <p:outputLabel  value="Agent Balance"/>
+                                            </p:column>
+                                            <p:column >
+                                                <h:outputLabel id="ballance2" value="#{bookingControllerViewScope.institution.ballance}"
+                                                               style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; "/>
+                                            </p:column>
+                                        </p:row>
 
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
-                                                <p:column>
-                                                    <p:outputLabel for="creditCardTxt" value="Card Ref. No"/>
-                                                </p:column>
-                                                <p:column>
-                                                    <p:inputText class="w-75" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}"
-                                                                 style="display: #{bookingControllerViewScope.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                                                </p:column>
-                                            </p:row>
+                                        <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
+                                            <p:column colspan="2">
+                                                <p:dataTable class="w-100" id="tblAgentBooks"
+                                                             emptyMessage="No Referance Books"
+                                                             value="#{bookingControllerViewScope.institution.agentReferenceBooks}" var="a">
+                                                    <f:facet name="header" >
+                                                        <p:outputLabel value="Agent Referance Number Details" ></p:outputLabel>
+                                                    </f:facet>
+                                                    <p:column headerText="S.R.N.">
+                                                        <p:outputLabel value="#{a.startingReferenceNumber}">
+                                                            <f:convertNumber pattern="00000" />
+                                                        </p:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="E.R.N.">
+                                                        <p:outputLabel value="#{a.endingReferenceNumber}">
+                                                            <f:convertNumber pattern="00000" />
+                                                        </p:outputLabel>
+                                                    </p:column>
+                                                </p:dataTable>
 
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                <p:column colspan="3" >
-                                                    <h:outputLabel  value="Cheque Payment"   />
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                <p:column><p:outputLabel id="lblCheque" value="Cheque No" /></p:column>
-                                                <p:column colspan="2">
-                                                    <p:inputText size="38" id="chequNo" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.cheque.no}"
-                                                                 style="display: #{bookingControllerViewScope.paymentMethod ne 'Cheque' ? 'none' : 'block'};" />
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                <p:column><p:outputLabel id="lblBank" value="Select Bank" /></p:column>
-                                                <p:column colspan="2">
-                                                    <p:selectOneMenu style="width: 335px" autoWidth="false" id="bankSel" value="#{bookingControllerViewScope.paymentMethodData.cheque.institution}">
-                                                        <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
-                                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
-                                                <p:column><p:outputLabel id="lblChequeDate" value="Cheque Date" /></p:column>
-                                                <p:column colspan="2">
-                                                    <p:calendar size="38" id="ChequeDate" value="#{bookingControllerViewScope.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy"
-                                                                style="display: #{bookingControllerViewScope.paymentMethod ne 'Cheque' ? 'none' : 'block'};" />
-                                                </p:column>
-                                            </p:row>
-
-
-
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}">
-                                                <p:column><p:outputLabel id="staff" value="Staff" /></p:column>
-                                                <p:column>
-                                                    <h:panelGroup id="autoStaff" style="display: #{bookingControllerViewScope.paymentMethod eq 'Staff' ? 'block' : 'none'};">
-                                                        <au:completeStaffChannel  value="#{bookingControllerViewScope.toStaff}" />
-                                                    </h:panelGroup>
-                                                </p:column>
-                                            </p:row>
-
-
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
-                                                <p:column colspan="3" >
-                                                    <h:outputLabel  value="Slip Payment"   />
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
-                                                <p:column><p:outputLabel id="slipLblBank" value="Select Bank" /></p:column>
-                                                <p:column>
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="slipSelBank" value="#{bookingControllerViewScope.paymentMethodData.slip.institution}">
-                                                        <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
-                                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                            </p:row>
-
-                                            <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
-                                                <p:column><p:outputLabel id="slipLblDate" value="Slip Date" /></p:column>
-                                                <p:column>
-                                                    <p:datePicker  class="w-100"
-                                                                   showTime="true"
-                                                                   showButtonBar="true"
-                                                                   timeInput="true" id="date" value="#{bookingControllerViewScope.paymentMethodData.slip.date}" pattern="dd MMMM yyyy"
-                                                                   style="display: #{bookingControllerViewScope.paymentMethod ne 'Slip' ? 'none' : 'block'};" />
-                                                </p:column>
-                                            </p:row>
+                                            </p:column>
+                                        </p:row>
 
 
 
 
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
+                                            <p:column colspan="2" >
+                                                <h:outputLabel id="card" value="Card Payment"   />
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row  rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
+                                            <p:column><p:outputLabel id="creditCardbnkLbl" value="Select Bank" /></p:column>
+                                            <p:column>
+                                                <p:selectOneMenu class="w-75" autoWidth="false" id="creditCardSlc" value="#{bookingControllerViewScope.paymentMethodData.creditCard.institution}">
+                                                    <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
 
 
-                                        </p:panelGrid>
-                                    </p:panel>
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}">
+                                            <p:column>
+                                                <p:outputLabel for="creditCardTxt" value="Card Ref. No"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText class="w-75" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}"
+                                                             style="display: #{bookingControllerViewScope.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
+                                            </p:column>
+                                        </p:row>
+
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
+                                            <p:column colspan="2" >
+                                                <h:outputLabel  value="Cheque Payment"   />
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
+                                            <p:column><p:outputLabel id="lblCheque" value="Cheque No" /></p:column>
+                                            <p:column >
+                                                <p:inputText size="38" id="chequNo" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.cheque.no}"
+                                                             style="display: #{bookingControllerViewScope.paymentMethod ne 'Cheque' ? 'none' : 'block'};" />
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
+                                            <p:column><p:outputLabel id="lblBank" value="Select Bank" /></p:column>
+                                            <p:column >
+                                                <p:selectOneMenu style="width: 335px" autoWidth="false" id="bankSel" value="#{bookingControllerViewScope.paymentMethodData.cheque.institution}">
+                                                    <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}">
+                                            <p:column><p:outputLabel id="lblChequeDate" value="Cheque Date" /></p:column>
+                                            <p:column >
+                                                <p:calendar size="38" id="ChequeDate" value="#{bookingControllerViewScope.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy"
+                                                            style="display: #{bookingControllerViewScope.paymentMethod ne 'Cheque' ? 'none' : 'block'};" />
+                                            </p:column>
+                                        </p:row>
+
+
+
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}">
+                                            <p:column><p:outputLabel id="staff" value="Staff" /></p:column>
+                                            <p:column>
+                                                <h:panelGroup id="autoStaff" style="display: #{bookingControllerViewScope.paymentMethod eq 'Staff' ? 'block' : 'none'};">
+                                                    <au:completeStaffChannel  value="#{bookingControllerViewScope.toStaff}" />
+                                                </h:panelGroup>
+                                            </p:column>
+                                        </p:row>
+
+
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
+                                            <p:column colspan="2" >
+                                                <h:outputLabel  value="Slip Payment"   />
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
+                                            <p:column><p:outputLabel id="slipLblBank" value="Select Bank" /></p:column>
+                                            <p:column>
+                                                <p:selectOneMenu class="w-75" autoWidth="false" id="slipSelBank" value="#{bookingControllerViewScope.paymentMethodData.slip.institution}">
+                                                    <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}" />
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}">
+                                            <p:column><p:outputLabel id="slipLblDate" value="Slip Date" /></p:column>
+                                            <p:column>
+                                                <p:datePicker  class="w-100"
+                                                               showTime="true"
+                                                               showButtonBar="true"
+                                                               timeInput="true" id="date" value="#{bookingControllerViewScope.paymentMethodData.slip.date}" pattern="dd MMMM yyyy"
+                                                               style="display: #{bookingControllerViewScope.paymentMethod ne 'Slip' ? 'none' : 'block'};" />
+                                            </p:column>
+                                        </p:row>
+
+
+
+
+
+
+                                    </p:panelGrid>
+
 
                                     <p:panelGrid id="panelBookingDetails" class="w-100">
                                         <f:facet name="header">

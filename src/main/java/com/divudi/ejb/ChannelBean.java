@@ -679,8 +679,6 @@ public class ChannelBean {
         return listTodaysSessionInstances(null, null, null);
     }
 
-    
-
     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
@@ -723,8 +721,12 @@ public class ChannelBean {
         });
         return sessionInstances;
     }
-    
-     public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
+
+    public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
+        return listSessionInstances(fromDate, toDate, ongoing, completed, pending, null);
+    }
+
+    public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending, Boolean cancelled) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret");
 
@@ -758,6 +760,9 @@ public class ChannelBean {
         }
         if (pending != null && pending) {
             conditions.add("(i.started = false and i.completed = false)");
+        }
+        if (cancelled != null && cancelled) {
+            conditions.add("i.cancelled = true");
         }
 
         // Adding the conditions to the JPQL query

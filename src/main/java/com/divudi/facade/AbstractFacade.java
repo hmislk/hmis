@@ -208,7 +208,7 @@ public abstract class AbstractFacade<T> {
         getEntityManager().persist(entity);
         getEntityManager().flush(); // Immediately write to the database
     }
-    
+
     public void editAndFlush(T entity) {
         getEntityManager().merge(entity);
         getEntityManager().flush(); // Immediately write to the database
@@ -262,7 +262,7 @@ public abstract class AbstractFacade<T> {
 
     public void editAndCommit(T entity) {
         getEntityManager().merge(entity);
-        getEntityManager().getTransaction().commit();
+        getEntityManager().flush(); // Immediately write to the database
     }
 
     public void remove(T entity) {

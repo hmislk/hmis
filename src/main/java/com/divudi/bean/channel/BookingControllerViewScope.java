@@ -95,6 +95,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.context.Flash;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -258,6 +259,78 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @Deprecated
     private BillSession managingBillSession;
 
+    public String navigateToManageSessioinInstance(SessionInstance sessionInstance) {
+        this.selectedSessionInstance = sessionInstance;
+        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+        flash.put("selectedSessionInstance", sessionInstance);
+        return "/channel/session_instance";
+    }
+
+    public void cancelSession() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is Selected");
+            return;
+        }
+        if (selectedSessionInstance.isStarted()) {
+            JsfUtil.addErrorMessage("Session Already Started. Can not cancel.");
+            return;
+        }
+        if (selectedSessionInstance.isCompleted()) {
+            JsfUtil.addErrorMessage("Session Already Completed. Can not cancel.");
+            return;
+        }
+        selectedSessionInstance.setCancelled(true);
+        selectedSessionInstance.setCancelledAt(new Date());
+        selectedSessionInstance.setCancelledBy(sessionController.getLoggedUser());
+        sessionInstanceFacade.edit(selectedSessionInstance);
+        JsfUtil.addErrorMessage("Cancelled");
+    }
+    
+    public void reopenSession() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is Selected");
+            return;
+        }
+        if (!selectedSessionInstance.isCompleted()) {
+            JsfUtil.addErrorMessage("Session Not Completed. Can not Reopen.");
+            return;
+        }
+        selectedSessionInstance.setCompleted(false);
+        sessionInstanceFacade.editAndCommit(selectedSessionInstance);
+        JsfUtil.addErrorMessage("Reopened");
+    }
+    
+    public void completeSession() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is Selected");
+            return;
+        }
+        if (selectedSessionInstance.isStarted()) {
+            JsfUtil.addErrorMessage("Session not yet Started. Can not complete.");
+            return;
+        }
+        if (selectedSessionInstance.isCompleted()) {
+            JsfUtil.addErrorMessage("Session already Completed. Can not complete again.");
+            return;
+        }
+        selectedSessionInstance.setCompleted(true);
+        selectedSessionInstance.setCompletedAt(new Date());
+        selectedSessionInstance.setCompletedBy(sessionController.getLoggedUser());
+        sessionInstanceFacade.editAndCommit(selectedSessionInstance);
+        JsfUtil.addErrorMessage("Reopened");
+    }
+
+    public void saveSessionInstanceDetails() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is Selected");
+            return;
+        }
+        selectedSessionInstance.setEditedAt(new Date());
+        selectedSessionInstance.setEditer(sessionController.getLoggedUser());
+        sessionInstanceFacade.edit(selectedSessionInstance);
+        JsfUtil.addErrorMessage("Updated");
+    }
+
     public void addSingleDateToToDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(getFromDate());
@@ -368,14 +441,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void sessionInstanceSelected() {
+        System.out.println("sessionInstanceSelected");
+        System.out.println("1 = " + (new Date().getTime()));
+        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
+            System.out.println("r1");
             return;
         }
         if (selectedSessionInstance.getOriginatingSession() == null) {
+            System.out.println("r2");
             return;
         }
+        System.out.println("2 = " + (new Date().getTime()));
         fillItemAvailableToAdd();
+        System.out.println("3 = " + (new Date().getTime()));
         fillFees();
+        System.out.println("4 = " + (new Date().getTime()));
         printPreview = false;
         paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
     }
@@ -537,10 +618,24 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void init() {
         fromDate = new Date();
         toDate = new Date();
+        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+        Date tmpfromDate = (Date) flash.get("fromDate");
+        Date tmptoDate = (Date) flash.get("toDate");
+        if (tmpfromDate != null) {
+            fromDate = tmpfromDate;
+        }
+        if (tmptoDate != null) {
+            toDate = tmptoDate;
+        }
+        sessionInstanceFilter = (String) flash.get("sessionInstanceFilter");
         listAllSesionInstances();
+        selectedSessionInstance = (SessionInstance) flash.get("selectedSessionInstance");
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
+        fromDate = new Date();
+        toDate = new Date();
+        listAllSesionInstances();
         prepareForNewChannellingBill();
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
@@ -589,11 +684,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, true);
         filterSessionInstances();
     }
+    
+    public void listCancelledSesionInstances() {
+        sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null, true);
+        filterSessionInstances();
+    }
 
     public void prepareForNewChannellingBill() {
         selectedBillSession = null;
         getSelectedBillSession();
-        printPreview=false;
+        printPreview = false;
     }
 
     public String navigateToViewSessionData() {
@@ -645,8 +745,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateBackToBookings() {
-        fillBillSessions();
-        return "/channel/channel_booking?faces-redirect=true";
+        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
+        flash.put("selectedSessionInstance", selectedSessionInstance);
+        flash.put("sessionInstanceFilter", sessionInstanceFilter);
+        flash.put("fromDate", fromDate);
+        flash.put("toDate", toDate);
+        return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
     public String navigateBackToBookingsLoagingBillSessions() {

@@ -81,15 +81,23 @@ public class SessionInstance implements Serializable {
     private WebUser completedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
+    
+    private boolean cancelled;
+    @ManyToOne
+    private WebUser cancelledBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date cancelledAt;
+    
+    
 
-    String name;
-    String sname;
-    String tname;
-    String code;
-    String barcode;
-    String printName;
-    String shortName;
-    String fullName;
+    private String name;
+    private String sname;
+    private String tname;
+    private String code;
+    private String barcode;
+    private String printName;
+    private String shortName;
+    private String fullName;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -213,6 +221,8 @@ public class SessionInstance implements Serializable {
     @ManyToOne
     private ArrivalRecord arrivalRecord;
 
+    
+    
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
     }
@@ -1228,6 +1238,30 @@ public class SessionInstance implements Serializable {
 
     public void setArrivalRecord(ArrivalRecord arrivalRecord) {
         this.arrivalRecord = arrivalRecord;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public WebUser getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(WebUser cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+
+    public Date getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Date cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
     
     
