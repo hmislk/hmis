@@ -1632,6 +1632,7 @@ public class BillSearch implements Serializable {
         }
         Date bd = Calendar.getInstance().getTime();
         rb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
+        rb.setBillType(billType.PaymentBill);
         rb.setBillDate(bd);
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
