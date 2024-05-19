@@ -213,12 +213,11 @@
                 <h:outputLabel value="Net Total : #{cc.attrs.billController.batchBill.netTotal}"/>
             </div>
 
-
-
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.billController.batchBill.creater.webUserPerson.name}"/>
             </div>
-    
+
+
             <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
                 <div class="d-flex gap-2 justify-content-center" style="font-size: 11px;">
                     <h:outputLabel value="Dublicate Printing By"/>
