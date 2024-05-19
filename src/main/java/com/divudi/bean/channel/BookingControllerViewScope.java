@@ -298,8 +298,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void filterSessionInstances() {
+        System.out.println("filterSessionInstances");
+        System.out.println("sessionInstances = " + sessionInstances);
         if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
-            sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+            if (sessionInstances != null) {
+                sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+            }else{
+                sessionInstancesFiltered = new ArrayList<>();
+                return;
+            }
+
+            if (!sessionInstancesFiltered.isEmpty()) {
+                selectedSessionInstance = sessionInstancesFiltered.get(0);
+            }
+            System.out.println("sessionInstancesFiltered = " + sessionInstancesFiltered);
             return;
         }
 
@@ -330,7 +342,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sessionInstancesFiltered.add(si);
             }
         }
-        if(!sessionInstancesFiltered.isEmpty()){
+        if (!sessionInstancesFiltered.isEmpty()) {
             selectedSessionInstance = selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
@@ -354,69 +366,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void sessionInstanceSelected() {
         if (selectedSessionInstance == null) {
-            return ;
+            return;
         }
         if (selectedSessionInstance.getOriginatingSession() == null) {
-            return ;
+            return;
         }
         fillItemAvailableToAdd();
         fillFees();
         printPreview = false;
         paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -575,9 +534,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         prepareForNewChannellingBill();
         fromDate = new Date();
         toDate = new Date();
-        listAllSesionInstances();
         sessionInstanceFilter = null;
-        filterSessionInstances();
+        listAllSesionInstances();
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -3915,8 +3873,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<ItemFee> getFilteredSelectedItemFees() {
-        if(selectedItemFees==null){
-            
+        if (selectedItemFees == null) {
+
             return null;
         }
         return selectedItemFees.stream()
