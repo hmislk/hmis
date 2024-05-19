@@ -81,6 +81,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -89,6 +90,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -303,7 +305,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
             if (sessionInstances != null) {
                 sessionInstancesFiltered = new ArrayList<>(sessionInstances);
-            }else{
+            } else {
                 sessionInstancesFiltered = new ArrayList<>();
                 return;
             }
@@ -530,13 +532,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
-    public String navigateToChannelBookingFromMenuByDate() {
-        prepareForNewChannellingBill();
+    @PostConstruct
+    public void init() {
         fromDate = new Date();
         toDate = new Date();
-        sessionInstanceFilter = null;
         listAllSesionInstances();
-        return "/channel/channel_booking_by_date?faces-redirect=true&includeViewParams=true";
+    }
+
+    public String navigateToChannelBookingFromMenuByDate() {
+        prepareForNewChannellingBill();
+        return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
     public String navigateToChannelQueueFromMenu() {
