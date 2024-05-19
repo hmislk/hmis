@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author Buddhika
  */
 public enum BillTypeAtomic {
+
     //INWARD
     INWARD_PHARMACY_REQUEST("Inward Request Medicines From Pharmacy", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
     INWARD_SERVICE_BATCH_BILL("Inward Service Batch Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
@@ -143,7 +143,7 @@ public enum BillTypeAtomic {
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN),
     IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT),
     IOU_CASH_RETURN("Iou Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN);
-    
+
 
     private final String label;
     private final BillCategory billCategory;
@@ -185,5 +185,4 @@ public enum BillTypeAtomic {
                 .filter(e -> e.getBillCategory() == category)
                 .collect(Collectors.toList());
     }
-
 }

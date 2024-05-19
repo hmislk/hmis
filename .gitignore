@@ -5,3 +5,4 @@
 /src/main/resources/VERSION.txt
 /src/main/webapp/WEB-INF/glassfish-resources.xml
 /faces-config.NavData
+.idea

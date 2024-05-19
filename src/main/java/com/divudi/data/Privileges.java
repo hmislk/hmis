@@ -5,7 +5,6 @@
 package com.divudi.data;
 
 /**
- *
  * @author www.divudi.com
  */
 public enum Privileges {
@@ -152,7 +151,7 @@ public enum Privileges {
     ReportsSearchCashCardOther,
     ReportSearchCreditOther,
     ReportsItemOther,
-    
+
     PharmacyOrderCreation,
     PharmacyOrderApproval,
     PharmacyOrderCancellation,
@@ -478,9 +477,7 @@ public enum Privileges {
     //
     PharmacyItemSearch,
     PharmacyGenarateReports,
-    PharmacySummaryViews
-    
-    ;
+    PharmacySummaryViews;
 
     public String getLabel() {
         switch (this) {
@@ -627,8 +624,8 @@ public enum Privileges {
             case PharmacyPurchaseCancellation:
             case PharmacyReturnWithoutTraising:
             case PharmacyStockAdjustmentSingleItem:
-            
-            //Inpatient medication management 
+
+                //Inpatient medication management
             case InpatientMedicationManagementMenue:
             case PharmacyDirectIssueToBht:
             case PharmacyDirectIssueToTheaterCases:
@@ -637,7 +634,7 @@ public enum Privileges {
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
             case PharmacysSearchInpatientDirectIssueReturnsbyItem:
-            //Procurement
+                //Procurement
             case PharmacyProcurementMenu:
             case CreatePurchaseOrder:
             case AutoOrderPModel:
@@ -647,7 +644,7 @@ public enum Privileges {
             case GoodsRecipt:
             case ReturnReceviedGoods:
             case ReturnWithoutRecipt:
-            //Disburesement
+                //Disburesement
             case PharmacyDisburesementMenu:
             case PharmacyDisbursementRequest:
             case PharmacyDisbursementIssurForRequest:
@@ -655,7 +652,7 @@ public enum Privileges {
             case PharmacyDisbursementRecieve:
             case PharmacyDisbursementReports:
 
-            //Retail Transactions
+                //Retail Transactions
             case PharmacyRetailTransaction:
             case PharmacySale:
             case PharmacySaleForCashier:
@@ -668,7 +665,7 @@ public enum Privileges {
             case PharmacySearchReturnBill:
             case PharmacyAddToStock:
 
-            //Wholesale Transaction
+                //Wholesale Transaction
             case PharmacyWholeSaleTransaction:
             case PharmacyWholesaleSale:
             case PharmacyWholesaleSaleForCashier:
@@ -679,14 +676,14 @@ public enum Privileges {
             case PharmacyWholesaleWholeSaleAddToStock:
             case PharmacyWholeSalePurchase:
 
-            //Disposal
+                //Disposal
             case PharmacyDisposalIssue:
             case PharmacyDisposalSearchIssueBill:
             case PharmacyDisposalSearchIssueBillItems:
             case PharmacyDisposalSearchIssueReturnBill:
             case PharmacyDisposalUnitIssueMargin:
-                
-            //Pharmacy Adjustment
+
+                //Pharmacy Adjustment
             case PharmacyAdjustmentDepartmentStockQTY:
             case PharmacyAdjustmentDepartmentStockBySingleItemQTY:
             case PharmacyAdjustmentStaffStockAdjustment:
@@ -697,14 +694,14 @@ public enum Privileges {
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
 
-            //Pharmacy Dealer Payments
+                //Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
             case PharmacyDealerDueByAge:
             case PharmacyPayment:
             case PharmacyGRNPaymentApprove:
             case PharmacyGRNPaymentDoneSearch:
             case PharmacyCreditDueAndAccess:
-                
+
             case PharmacyItemSearch:
             case PharmacyGenarateReports:
             case PharmacySummaryViews:
@@ -712,8 +709,6 @@ public enum Privileges {
                 return "Pharmacy";
             default:
                 return this.toString();
-
         }
     }
-
 }

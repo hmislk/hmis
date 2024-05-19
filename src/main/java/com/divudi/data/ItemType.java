@@ -6,10 +6,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddhika_ari
  */
 public enum ItemType {
+
     Medicine,
     Investigation,
     Service,
@@ -22,5 +22,5 @@ public enum ItemType {
     Amp,
     Vmpp,
     Ampp,
-    Other,
+    Other
 }

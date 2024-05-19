@@ -5,6 +5,7 @@
 package com.divudi.data;
 
 public enum TokenType {
+
     APPOINTMENT_TOKEN("Appointment Token"),
     WALK_IN_TOKEN("Walk-in Token"),
     PHARMACY_TOKEN("Pharmacy Token"),
