@@ -34,6 +34,24 @@
                                      icon="fa fa-times" 
                                      onclick="return confirm('Are you sure you want to cancel?');" />
 
+                    <!-- Reopen Session Button -->
+                    <p:commandButton action="#{bookingControllerViewScope.reopenSession}" 
+                                     value="Reopen Session"
+                                     disabled="#{!bookingControllerViewScope.selectedSessionInstance.completed}"
+                                     ajax="false"
+                                     styleClass="ui-button-success mx-1" 
+                                     icon="fa fa-check" 
+                                     onclick="return confirm('Are you sure you want to reopen?');" />
+
+                    <!-- Complete Session Button -->
+                    <p:commandButton action="#{bookingControllerViewScope.completeSession()}" 
+                                     value="Complete Session"
+                                     disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                     ajax="false"
+                                     styleClass="ui-button-success mx-1" 
+                                     icon="fa fa-check" 
+                                     onclick="return confirm('Are you sure you want to complete this session?');" />
+
 
                     <p:commandButton action="#{bookingControllerViewScope.navigateBackToBookings()}" 
                                      value="Back to Booking"

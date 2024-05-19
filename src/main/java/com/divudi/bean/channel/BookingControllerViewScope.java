@@ -285,6 +285,40 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceFacade.edit(selectedSessionInstance);
         JsfUtil.addErrorMessage("Cancelled");
     }
+    
+    public void reopenSession() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is Selected");
+            return;
+        }
+        if (!selectedSessionInstance.isCompleted()) {
+            JsfUtil.addErrorMessage("Session Not Completed. Can not Reopen.");
+            return;
+        }
+        selectedSessionInstance.setCompleted(false);
+        sessionInstanceFacade.editAndCommit(selectedSessionInstance);
+        JsfUtil.addErrorMessage("Reopened");
+    }
+    
+    public void completeSession() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No Session Instance is Selected");
+            return;
+        }
+        if (selectedSessionInstance.isStarted()) {
+            JsfUtil.addErrorMessage("Session not yet Started. Can not complete.");
+            return;
+        }
+        if (selectedSessionInstance.isCompleted()) {
+            JsfUtil.addErrorMessage("Session already Completed. Can not complete again.");
+            return;
+        }
+        selectedSessionInstance.setCompleted(true);
+        selectedSessionInstance.setCompletedAt(new Date());
+        selectedSessionInstance.setCompletedBy(sessionController.getLoggedUser());
+        sessionInstanceFacade.editAndCommit(selectedSessionInstance);
+        JsfUtil.addErrorMessage("Reopened");
+    }
 
     public void saveSessionInstanceDetails() {
         if (selectedSessionInstance == null) {
