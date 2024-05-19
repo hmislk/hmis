@@ -5,7 +5,6 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum CalculationType {
@@ -24,7 +23,7 @@ public enum CalculationType {
     AgeInDays,
     GenderDependentConstant,
     Comma,
-    Space,;
+    Space;
 
     public String getLabel() {
         switch (this) {

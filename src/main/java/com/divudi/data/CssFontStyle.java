@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum CssFontStyle {
+
     Normal,
     Italic,
     Oblique,

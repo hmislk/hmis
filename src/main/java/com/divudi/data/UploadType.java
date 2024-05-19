@@ -25,24 +25,23 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddhika
  */
 public enum UploadType {
+
     User_Signature("User Signature"),
     Web_Image("Web Image"),
     Report_background_image("Report Background Image"),
     Background_Image("Background Image"),
-    Diagnosis_Card_Template("Diagnosis Card Template"),
-    ;
-    
+    Diagnosis_Card_Template("Diagnosis Card Template");
+
     private final String label;
-    
-    private UploadType(String label){
+
+    UploadType(String label) {
         this.label = label;
     }
-    
-    public String getLabel(){
+
+    public String getLabel() {
         return label;
-    } 
+    }
 }

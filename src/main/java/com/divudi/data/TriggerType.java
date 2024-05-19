@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
  * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
  */
 public enum TriggerType {
+
     @Deprecated
     Order_Request("Order Request - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INPATIENT_ORDER_REQUEST), // Deprecated
     @Deprecated
@@ -42,7 +43,7 @@ public enum TriggerType {
     PURCHASE_ORDER_APPROVAL_EMAIL("Purchase Order Approval - Email", NotificationMedium.EMAIL, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     OPD_BILL_CANCELLATION("Bill Cancellation - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_SMS("Bill Cancellation - SMS", NotificationMedium.SMS, TriggerTypeParent.OPD_BILL_CANCELLATION),
-    OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION),;
+    OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION);
 
     private final String label;
     private final NotificationMedium medium;
@@ -91,5 +92,4 @@ public enum TriggerType {
                 .sorted(Comparator.comparing(TriggerType::name))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
-
 }

@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum DepartmentType {
+
     Pharmacy,
     Lab,
     Channelling,
@@ -20,8 +20,8 @@ public enum DepartmentType {
     Counter,
     Inward,
     Other;
-    
-    public String getLabel(){
+
+    public String getLabel() {
         return this.toString();
     }
 }
