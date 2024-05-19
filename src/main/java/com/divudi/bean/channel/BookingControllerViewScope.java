@@ -536,7 +536,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         toDate = new Date();
         sessionInstanceFilter = null;
         listAllSesionInstances();
-        return "/channel/channel_booking_by_date?faces-redirect=true";
+        return "/channel/channel_booking_by_date?faces-redirect=true&includeViewParams=true";
     }
 
     public String navigateToChannelQueueFromMenu() {
