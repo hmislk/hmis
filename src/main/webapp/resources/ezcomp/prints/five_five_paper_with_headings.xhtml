@@ -12,6 +12,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -358,6 +359,27 @@
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
 
+            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 10px;font-size: 8pt">
+                <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
+                <ui:repeat value="#{cc.attrs.payments}" var="p">
+                    <div class="d-flex align-items-center mt-1">
+                        <div>#{p.paymentMethod}</div>
+                        <div>&nbsp;&nbsp;(#{p.creditCardRefNo})</div>
+                        <div class="mx-2">#{p.paidValue}</div>
+                    </div>
+                </ui:repeat>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
+                <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
+                <ui:repeat value="#{cc.attrs.payments}" var="p">
+                    <div class="d-flex align-items-center m-1">
+                        <div>#{p.paymentMethod}</div>
+                        <div class="mx-2">#{p.paidValue}</div>
+                    </div>
+                </ui:repeat>
+            </h:panelGroup>
+
             <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
                 <div class="d-flex gap-2" style="font-size: 12px;">
                     <h:outputLabel value="Dublicate Printing By :"/>
@@ -368,7 +390,7 @@
                     </h:outputLabel>
                 </div>
             </h:panelGroup>
-            
+
             <div class="footer" style="text-align: center;">
                 <br/>
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
