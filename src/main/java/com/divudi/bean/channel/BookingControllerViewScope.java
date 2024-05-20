@@ -229,6 +229,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private int serealNo;
     private Date fromDate;
     private Date toDate;
+    private Boolean needToFillBillSessions;
     private Date sessionStartingDate;
     private String selectTextSpeciality = "";
     private String selectTextConsultant = "";
@@ -263,6 +264,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.selectedSessionInstance = sessionInstance;
         Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
         flash.put("selectedSessionInstance", sessionInstance);
+        flash.put("sessionInstanceFilter", sessionInstanceFilter);
+        flash.put("fromDate", fromDate);
+        flash.put("toDate", toDate);
+        flash.put("needToFillBillSessions", true);
         return "/channel/session_instance";
     }
 
@@ -285,7 +290,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceFacade.edit(selectedSessionInstance);
         JsfUtil.addErrorMessage("Cancelled");
     }
-    
+
     public void reopenSession() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No Session Instance is Selected");
@@ -299,7 +304,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceFacade.editAndCommit(selectedSessionInstance);
         JsfUtil.addErrorMessage("Reopened");
     }
-    
+
     public void completeSession() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No Session Instance is Selected");
@@ -630,6 +635,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceFilter = (String) flash.get("sessionInstanceFilter");
         listAllSesionInstances();
         selectedSessionInstance = (SessionInstance) flash.get("selectedSessionInstance");
+        needToFillBillSessions = (Boolean) flash.get("needToFillBillSessions");
+        if (needToFillBillSessions != null && needToFillBillSessions) {
+            fillBillSessions();
+        }
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
@@ -684,7 +693,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, true);
         filterSessionInstances();
     }
-    
+
     public void listCancelledSesionInstances() {
         sessionInstances = channelBean.listSessionInstances(fromDate, toDate, null, null, null, true);
         filterSessionInstances();
@@ -750,6 +759,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         flash.put("sessionInstanceFilter", sessionInstanceFilter);
         flash.put("fromDate", fromDate);
         flash.put("toDate", toDate);
+        flash.put("needToFillBillSessions", false);
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -4095,6 +4105,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setSessionInstanceFilter(String sessionInstanceFilter) {
         this.sessionInstanceFilter = sessionInstanceFilter;
+    }
+
+    public Boolean getNeedToFillBillSessions() {
+        return needToFillBillSessions;
+    }
+
+    public void setNeedToFillBillSessions(Boolean needToFillBillSessions) {
+        this.needToFillBillSessions = needToFillBillSessions;
     }
 
 }
