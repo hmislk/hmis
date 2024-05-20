@@ -74,6 +74,7 @@ import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstanceActivity;
 import com.divudi.entity.lab.ItemForItem;
@@ -81,6 +82,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -89,6 +91,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -298,8 +301,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void filterSessionInstances() {
+        System.out.println("filterSessionInstances");
+        System.out.println("sessionInstances = " + sessionInstances);
         if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
-            sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+            if (sessionInstances != null) {
+                sessionInstancesFiltered = new ArrayList<>(sessionInstances);
+            } else {
+                sessionInstancesFiltered = new ArrayList<>();
+                return;
+            }
+
+            if (!sessionInstancesFiltered.isEmpty()) {
+                selectedSessionInstance = sessionInstancesFiltered.get(0);
+            }
+            System.out.println("sessionInstancesFiltered = " + sessionInstancesFiltered);
             return;
         }
 
@@ -330,7 +345,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sessionInstancesFiltered.add(si);
             }
         }
-        if(!sessionInstancesFiltered.isEmpty()){
+        if (!sessionInstancesFiltered.isEmpty()) {
             selectedSessionInstance = selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
@@ -354,69 +369,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void sessionInstanceSelected() {
         if (selectedSessionInstance == null) {
-            return ;
+            return;
         }
         if (selectedSessionInstance.getOriginatingSession() == null) {
-            return ;
+            return;
         }
         fillItemAvailableToAdd();
         fillFees();
         printPreview = false;
         paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -571,14 +533,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
-    public String navigateToChannelBookingFromMenuByDate() {
-        prepareForNewChannellingBill();
+    @PostConstruct
+    public void init() {
         fromDate = new Date();
         toDate = new Date();
         listAllSesionInstances();
-        sessionInstanceFilter = null;
-        filterSessionInstances();
+    }
+
+    public String navigateToChannelBookingFromMenuByDate() {
+        prepareForNewChannellingBill();
         return "/channel/channel_booking_by_date?faces-redirect=true";
+    }
+
+    public UserPreference getDepartmentPreference() {
+        return sessionController.getDepartmentPreference();
+    }
+
+    public String navigateToChannelBookingByDate() {
+        fillBillSessions();
+        prepareForNewChannellingBill();
+        return null;
     }
 
     public String navigateToChannelQueueFromMenu() {
@@ -617,7 +591,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void prepareForNewChannellingBill() {
-        listnerStaffListForRowSelect();
+        selectedBillSession = null;
+        getSelectedBillSession();
+        printPreview=false;
     }
 
     public String navigateToViewSessionData() {
@@ -840,8 +816,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public boolean billSessionErrorPresent() {
         boolean flag = false;
-        List<BillSession> billSessions = getBillSessions();
-        if (billSessions != null && selectedBillSession != null) {
+        if (billSessions != null && getSelectedBillSession() != null) {
             for (BillSession bs : billSessions) {
                 if (!bs.equals(selectedBillSession)) {
                     List<BillItem> billItems = bs.getBill().getBillItems();
@@ -3502,14 +3477,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.patientFacade = patientFacade;
     }
 
+    public void createNewChannelBooking() {
+        patient = new Patient();
+        selectedBillSession = new BillSession();
+        Bill b = new BilledBill();
+        b.setPatient(patient);
+        selectedBillSession.setBill(b);
+    }
+
     public BillSession getSelectedBillSession() {
         if (selectedBillSession == null) {
-            selectedBillSession = new BillSession();
-            Bill b = new BilledBill();
-            Patient p = new Patient();
-            p.setPerson(new Person());
-            b.setPatient(p);
-            selectedBillSession.setBill(b);
+            createNewChannelBooking();
         }
         return selectedBillSession;
     }
@@ -3915,8 +3893,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<ItemFee> getFilteredSelectedItemFees() {
-        if(selectedItemFees==null){
-            
+        if (selectedItemFees == null) {
+
             return null;
         }
         return selectedItemFees.stream()
