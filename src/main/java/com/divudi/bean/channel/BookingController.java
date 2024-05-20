@@ -2063,6 +2063,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         appointmentActivity = activity;
         return "/channel/channel_session_activities?faces-redirect=true";
     }
+    
+    
 
     public void fillBillSessions() {
         selectedBillSession = null;
