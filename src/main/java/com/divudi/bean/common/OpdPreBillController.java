@@ -309,12 +309,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public void departmentChanged() {
-        System.out.println("departmentChanged ");
         if (selectedOpdItemDepartment == null) {
-            System.out.println("selectedOpdItemDepartment = null");
             departmentOpdItems = getOpdItems();
         } else {
-            System.out.println("departmentOpdItems not null");
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }
     }
@@ -335,7 +332,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
-        System.out.println("listItemsByDepartment = " + listItemsByDepartment);
         if (!listItemsByDepartment) {
             return ils;
         }
@@ -345,7 +341,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 continue;
             }
             if (il.getDepartmentId().equals(dept.getId())) {
-                System.out.println("il = " + il.getName());
                 tils.add(il);
             }
         }
@@ -2196,6 +2191,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public List<ItemLight> getDepartmentOpdItems() {
+        if (departmentOpdItems == null) {
+            getOpdItems();
+            departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
+        }
         return departmentOpdItems;
     }
 
@@ -2204,6 +2203,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public List<Department> getOpdItemDepartments() {
+        if (opdItemDepartments == null) {
+            getOpdItems();
+        }
         return opdItemDepartments;
     }
 

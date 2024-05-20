@@ -2220,6 +2220,10 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public List<ItemLight> getDepartmentOpdItems() {
+        if (departmentOpdItems == null) {
+            getOpdItems();
+            departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
+        }
         return departmentOpdItems;
     }
 
@@ -2228,6 +2232,9 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public List<Department> getOpdItemDepartments() {
+        if (opdItemDepartments == null) {
+            getOpdItems();
+        }
         return opdItemDepartments;
     }
 
