@@ -30,7 +30,15 @@
                                             class="ui-button-warning" action="#{billSearch.refundOpdBill()}"
                                             onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
                                                         return false;" >
-                                        </p:commandButton>  
+                                        </p:commandButton> 
+                                        <p:commandButton  
+                                        class="ui-button-secondary mx-2"
+                                        style="float: right"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/opd/opd_bill_search"
+                                        ajax="false">
+                                    </p:commandButton>
                                     </h:panelGrid>
                                 </f:facet>
 
@@ -201,7 +209,8 @@
                             <f:facet name="header">
 
                                 <div class="d-flex justify-content-between">
-                                    <h:outputLabel  value="Bill Preview" class="mt-2"/>
+                                    <h:outputLabel  value="Bill Preview" class="mt-2 "/>
+                                    <div class="d-flex ">
                                     <p:commandButton 
                                         class="ui-button-info d-flex justify-content-end"
                                         value="Print" 
@@ -209,6 +218,15 @@
                                         ajax="false" action="#"  >
                                         <p:printer target="printPreview" ></p:printer>
                                     </p:commandButton>
+                                    <p:commandButton  
+                                        class="ui-button-secondary d-flex justify-content-end mx-2"
+                                        style="float: right"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/opd/opd_bill_search"
+                                        ajax="false">
+                                    </p:commandButton>
+                                    </div>
                                 </div>
 
                             </f:facet>

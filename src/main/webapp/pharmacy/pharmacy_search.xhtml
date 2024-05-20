@@ -54,6 +54,10 @@
                                     <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnReturn'}" >
                                         <se:grn_return />
                                     </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{searchController.billType eq 'PharmacyReturnWithoutTraising'}" >
+                                        <se:grn_return_without_traising />
+                                    </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrder'}" >
                                         <se:po_request />
@@ -105,6 +109,10 @@
 
                                     <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferReceive'}" >
                                         <se:pharmacy_transfer_recieve />
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{searchController.billType eq 'GrnPaymentPre'}" >
+                                        <se:grn_payment />
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </div>

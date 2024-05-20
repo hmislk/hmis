@@ -592,6 +592,10 @@ public class PharmacyPreSettleController implements Serializable {
             JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
             return;
         }
+        if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())){
+            JsfUtil.addErrorMessage("Can't settle bills of "+getPreBill().getDepartment().getName());
+            return;
+        }
 
         saveSaleBill();
 //        saveSaleBillItems();
