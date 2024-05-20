@@ -119,7 +119,7 @@
                                         </h:outputLabel>
                                         <h:outputLabel value="Tendered" ></h:outputLabel>
                                         <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <p:inputText autocomplete="off"  id="paid" class="w-100" value="#{pharmacyPreSettleController.cashPaid}" >
+                                        <p:inputText autocomplete="off"  id="paid" class="w-100" value="#{pharmacyPreSettleController.cashPaid}" onfocus="this.select()">
                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
                                         </p:inputText>
                                         <h:outputLabel  value="Balance " ></h:outputLabel>
@@ -153,7 +153,9 @@
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">Value</f:facet>
-                                        #{bip.grossValue}
+                                    <h:outputLabel value="#{bip.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
