@@ -57,8 +57,25 @@
 
                                 <div class="row">
                                     <p:focus  context="acIx"/>
+
                                     <div class="col-7">
                                         <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
+                                        <h:panelGroup  rendered="#{opdTabPreBillController.opdItemDepartments ne null}" id="departments">
+                                            <div class="row" >
+                                                <div class="col-md-12" >
+                                                    <ui:repeat  value="#{opdTabPreBillController.opdItemDepartments}" var="dept">
+                                                        <p:commandButton 
+                                                            value="#{dept.name}"
+                                                            process="@this"
+                                                            update=":#{p:resolveFirstComponentWithId('acIx',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
+                                                            action="#{opdTabPreBillController.departmentChanged}"
+                                                            class="m-1 #{dept eq opdTabPreBillController.selectedOpdItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
+                                                            <f:setPropertyActionListener value="#{dept}" target="#{opdTabPreBillController.selectedOpdItemDepartment}"></f:setPropertyActionListener>
+                                                        </p:commandButton>
+                                                    </ui:repeat>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
                                         <p:selectOneListbox 
                                             filter="true"
                                             filterMatchMode="contains"
@@ -69,7 +86,7 @@
                                             value="#{opdTabPreBillController.itemLight}" 
                                             var="ix" 
                                             style="font-size: 8pt;font-weight: bolder;">
-                                            <f:selectItems value="#{opdTabPreBillController.opdItems}"
+                                            <f:selectItems value="#{opdTabPreBillController.departmentOpdItems}"
                                                            var="item" 
                                                            itemLabel="#{item.name}"
                                                            itemValue="#{item}" >
