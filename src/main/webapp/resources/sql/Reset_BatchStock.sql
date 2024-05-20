@@ -1,6 +1,6 @@
-select id,name from Department where name ="Ruhunu Pharmacy";
+select id,name, RETIRED from DEPARTMENT where name ="Ruhunu Pharmacy";
 
-update stock
+update STOCK
 set `STOCK` = 0
 where `DEPARTMENT_ID` = 51570;
 
