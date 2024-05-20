@@ -14,6 +14,7 @@
 
     <h:head>
         <title>Channel Booking By Date</title>
+      
     </h:head>
 
     <h:body>
@@ -33,7 +34,7 @@
                 <h:panelGroup rendered="#{!bookingControllerViewScope.printPreview}" >
                     <h:form >
                         <div class="container-fluid" >
-                            <div class="row bg-light my-2 py-2 shadow-sm sticky-top navbar" >
+                            <div class="row bg-light my-2 py-2 shadow-sm navbar" >
                                 <div class="col-12 p-2 d-flex" >
                                     <div class="d-flex align-items-center w-100">
                                         <div class="d-flex align-items-center ">
@@ -50,11 +51,11 @@
 
                                         </div>
                                         <div class="d-flex align-items-center w-100">
-                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDate()}" ajax="false" class="mx-1"></p:commandButton>
-                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1"></p:commandButton>
-                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1"></p:commandButton>
-                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1"></p:commandButton>
-                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1"></p:commandButton>
+                                            <p:commandButton value="Today" action="#{bookingControllerViewScope.addToDayToToDate()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1" action="#{bookingControllerViewScope.addSingleDateToToDate()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+2" action="#{bookingControllerViewScope.addTwoDays()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+7" action="#{bookingControllerViewScope.addSevenDays()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
+                                            <p:commandButton value="+1 Month" action="#{bookingControllerViewScope.addMonth()}" ajax="false" class="mx-1 ui-button-info"></p:commandButton>
                                         </div>
                                     </div>
 
@@ -258,7 +259,7 @@
                                                             value="Add Normal Booking"
                                                             ajax="false"
                                                             update="gpThisBookingDetails"
-                                                            class="ui-button-info"
+                                                            class="ui-button-info "
                                                             icon="pi pi-check"
                                                             action="#{bookingControllerViewScope.addNormalChannelBooking}" >
                                                         </p:commandButton>
