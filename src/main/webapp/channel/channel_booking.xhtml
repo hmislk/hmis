@@ -284,8 +284,8 @@
 
                             <p:column style="width: 20px!important;" rendered="#{bookingController.selectedSessionInstance.started}">
                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
-                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{!bs.completed and bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq bs.serialNo}"/>
-                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{!bs.completed and bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo eq bs.serialNo}"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{bs.nextInLine}"/>
                             </p:column>
 
                             <p:column style="width: 20px!important;">
