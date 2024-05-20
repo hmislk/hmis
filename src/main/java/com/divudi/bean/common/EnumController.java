@@ -497,6 +497,7 @@ public class EnumController implements Serializable {
         BillType[] b = {
             BillType.PharmacyGrnBill,
             BillType.PharmacyGrnReturn,
+            BillType.PharmacyReturnWithoutTraising,
             BillType.PharmacyOrder,
             BillType.PharmacyOrderApprove,
             BillType.PharmacyPre,
@@ -504,7 +505,7 @@ public class EnumController implements Serializable {
             BillType.PharmacySale,
             BillType.PharmacyAdjustment,
             BillType.PurchaseReturn,
-            BillType.GrnPayment,
+            BillType.GrnPaymentPre,
             BillType.PharmacyTransferRequest,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyWholeSale,
