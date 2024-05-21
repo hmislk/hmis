@@ -14,10 +14,11 @@
 
     <h:head>
         <title>Channel Booking By Date</title>
-      
+
     </h:head>
 
     <h:body>
+
         <f:metadata>
             <f:viewParam name="fromDate" value="#{bookingControllerViewScope.fromDate}">
                 <f:converter converterId="javax.faces.DateTime"/>
@@ -33,6 +34,8 @@
 
                 <h:panelGroup rendered="#{!bookingControllerViewScope.printPreview}" >
                     <h:form >
+                       
+
                         <div class="container-fluid" >
                             <div class="row bg-light my-2 py-2 shadow-sm navbar" >
                                 <div class="col-12 p-2 d-flex" >
@@ -177,9 +180,7 @@
                                                             <p:badge rendered="#{s.completed}" value="Room: #{s.roomNo}"  severity="warning" styleClass="mr-2"></p:badge>
                                                             <p:badge rendered="#{s.cancelled}" value="Room: #{s.roomNo}"  severity="danger" styleClass="mr-2"></p:badge>
                                                         </div>
-
-                                                        <br/>
-
+                                                        
                                                     </div>
                                                 </div>
                                             </p:column>
@@ -220,7 +221,8 @@
                                                                 </div>
                                                             </span>
 
-                                                            <div>
+                                                            <div class="text-center">
+                                                                <h:outputLabel /><br/>
                                                                 <p:commandButton 
                                                                     icon="fas fa-cog"
                                                                     class="mx-4"
