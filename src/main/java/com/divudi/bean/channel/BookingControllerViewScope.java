@@ -1663,10 +1663,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addNormalChannelBooking() {
         addChannelBooking(false);
+        fillBillSessions();
     }
 
     public void addReservedChannelBooking() {
         addChannelBooking(true);
+        fillBillSessions();
     }
 
     public void addChannelBooking(boolean reservedBooking) {
