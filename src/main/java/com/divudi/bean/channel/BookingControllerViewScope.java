@@ -4639,7 +4639,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
-        getBillFacade().edit(b);
+        getBillFacade().editAndCommit(b);
 
         createPayment(b, settlePaymentMethod);
 
