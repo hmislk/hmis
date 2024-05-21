@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
@@ -192,6 +193,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     SessionInstanceActivityController sessionInstanceActivityController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Properties
      */
@@ -402,8 +405,20 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToChannelBookingFromMenu() {
-        prepareForNewChannellingBill();
-        return "/channel/channel_booking?faces-redirect=true";
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                prepareForNewChannellingBill();
+                return "/channel/channel_booking?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            prepareForNewChannellingBill();
+            return "/channel/channel_booking?faces-redirect=true";
+        }
     }
 
     public String navigateToChannelQueueFromMenu() {
@@ -2063,8 +2078,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         appointmentActivity = activity;
         return "/channel/channel_session_activities?faces-redirect=true";
     }
-    
-    
 
     public void fillBillSessions() {
         selectedBillSession = null;
