@@ -15,6 +15,15 @@
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
 
+        <script type="text/javascript">
+            function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'si,ta'
+                }, 'google_translate_element');
+            }
+        </script>
+        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
         <style>
 
@@ -159,391 +168,396 @@
         </style>
     </h:head>
     <h:body class="container bgImage shadow-lg" style="min-width: 100%">
-        <h:form id="form">
+        <div id="google_translate_element">
 
-            <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
-                <div class="align-items-center justify-content-center" style="text-align: center">
-                    <div class="d-flex justify-content-end">
-                        <p:commandButton id="btnOrderStatus" ajax="false" action="#{paymentGatewayController.resetOrderStatus()}" icon="pi pi-times" styleClass="rounded-button ui-button-danger"  />
+            <h:form id="form">
+
+                <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
+                    <div class="align-items-center justify-content-center" style="text-align: center">
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton id="btnOrderStatus" ajax="false" action="#{paymentGatewayController.resetOrderStatus()}" icon="pi pi-times" styleClass="rounded-button ui-button-danger"  />
+                        </div>
+                        <div>
+                            <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
+                        </div>
+                        <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
                     </div>
-                    <div>
-                        <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
+                </h:panelGroup>
+
+                <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
+                    <div class="align-items-center justify-content-center" style="text-align: center">
+                        <div>
+                            <img src="https://cdn.dribbble.com/users/251873/screenshots/9388228/media/0d882a65a39bbdd294edc7fee5da59c6.gif" style="min-width: 20rem"/>
+                        </div>
+                        <h1>Oops! Payment Failed</h1>
+                        <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
                     </div>
-                    <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
+                </h:panelGroup>
+
+
+
+                <div class="row">
+                    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <a class="navbar-brand ml-4 mx-2 p-4"><h3>#{sessionController.institution.name}</h3></a>
+                            <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
+
+                        </div>
+                    </nav>
                 </div>
-            </h:panelGroup>
+                <div>
+                    <h:panelGroup rendered="#{patientPortalController.patient.id ne null}" class="h-100 container"  >
+                        <div class="mt-2">
+                            <div class="container w-100" style="min-width: 100%" >
+                                <div class="row h-50 my-4">
+                                    <h3>Find Your Session</h3>
+                                </div>
+                                <div >
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <div>
+                                                <h6>Select Speciality</h6>
+                                            </div>
+                                            <div>
+                                                <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                                                <div>
+                                                    <p:selectOneMenu class="w-100" id="acSpeciality" value="#{patientPortalController.selectedSpeciality}">
+                                                        <f:selectItem itemLabel="Select One"/>
+                                                        <f:selectItems  value="#{doctorSpecialityController.selectedItems}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
+                                                        <p:ajax event="itemSelect" listener="#{patientPortalController.fillConsultants()}" process="acSpeciality" update="scStaff" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                        </div>
 
-            <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
-                <div class="align-items-center justify-content-center" style="text-align: center">
-                    <div>
-                        <img src="https://cdn.dribbble.com/users/251873/screenshots/9388228/media/0d882a65a39bbdd294edc7fee5da59c6.gif" style="min-width: 20rem"/>
-                    </div>
-                    <h1>Oops! Payment Failed</h1>
-                    <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
-                </div>
-            </h:panelGroup>
+                                        <div class="col-4">
+                                            <div>
+                                                <h6>Select Doctor</h6>
+                                            </div>
+                                            <div>
+                                                <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
+                                                <div>
+                                                    <p:selectOneMenu filter="true" class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
+                                                        <f:selectItem itemLabel="Select One"/>
+                                                        <f:selectItems  value="#{patientPortalController.consultants}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                        </div>
 
-
-
-            <div class="row">
-                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <a class="navbar-brand ml-4 mx-2 p-4"><h3>#{sessionController.institution.name}</h3></a>
-                        <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
-
-                    </div>
-                </nav>
-            </div>
-            <div>
-                <h:panelGroup rendered="#{patientPortalController.patient.id ne null}" class="h-100 container"  >
-                    <div class="mt-2">
-                        <div class="container w-100" style="min-width: 100%" >
-                            <div class="row h-50 my-4">
-                                <h3>Find Your Session</h3>
+                                        <div class="col-4">
+                                            <div>
+                                                <p></p>
+                                            </div>
+                                            <div>
+                                                <p:commandButton value="Find" action="#{patientPortalController.fillSessionInstance()}" class="btn btn-success w-100" ajax="false" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div >
-                                <div class="row">
-                                    <div class="col-4">
+                        </div>
+                        <!--                    <div class="d-flex justify-content-between align-items-center mt-4 container-fluid">
+                                                <div class="card w-100 ">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">My Past Bookings</h5>
+                                                        <p class="card-text">View your Past booked sessions here.</p>
+                                                        <p:commandButton value="View" ajax="false" class="ui-button-success" />
+                                                    </div>
+                                                </div>
+                                                <div class="card mx-2 w-100">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">My Bookings</h5>
+                                                        <p class="card-text">View your booked sessions here.</p>
+                                                        <a href="#" class="btn btn-primary">View Bookings</a>
+                                                    </div>
+                                                </div>
+                                                <div class="card  w-100">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">My Bookings</h5>
+                                                        <p class="card-text">View your booked sessions here.</p>
+                                                        <a href="#" class="btn btn-primary">View Bookings</a>
+                                                    </div>
+                                                </div>
+                        
+                                            </div>-->
+                        <h:panelGroup rendered="false">
+                            <div  id="successPanel" class="d-flex justify-content-center align-items-center" style="z-index: 9999;" >
+                                <div class="success-message d-flex align-items-center justify-content-center" style="width: 300px;height: 150px">
+                                    <div class="success-icon d-flex justify-content-center align-items-center"><h:outputText styleClass="fas fa-check text-white"/></div>
+                                    <div class="success-text">Booking Successfully</div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </div>
+
+                <h:panelGroup id="pnlSessions">
+                    <div class="mt-2 w-100 container-fluid">
+                        <ui:repeat rendered="#{patientPortalController.sessionInstances != null}" 
+                                   id="sessionDates" 
+                                   value="#{patientPortalController.sessionInstances}" var="s">
+                            <div class="card mt-1 scaling-card">
+                                <h5 class="card-header">
+                                    <h:outputText value="#{s.sessionDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </h:outputText>
+                                </h5>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h:panelGroup>
                                         <div>
-                                            <h6>Select Speciality</h6>
+                                            <img src="https://lordicon.com/icons/wired/lineal/671-male-doctor-care.gif" width="100" alt="Male Doctor" />
                                         </div>
-                                        <div>
-                                            <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
-                                            <div>
-                                                <p:selectOneMenu class="w-100" id="acSpeciality" value="#{patientPortalController.selectedSpeciality}">
-                                                    <f:selectItem itemLabel="Select One"/>
-                                                    <f:selectItems  value="#{doctorSpecialityController.selectedItems}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
-                                                    <p:ajax event="itemSelect" listener="#{patientPortalController.fillConsultants()}" process="acSpeciality" update="scStaff" />
-                                                </p:selectOneMenu>
-                                            </div>
+                                    </h:panelGroup>
+
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <h:outputText value="#{s.staff.name}">
+                                            </h:outputText></h5>
+                                        <p class="card-text">
+                                            <h:outputText value="#{s.staff.speciality.name}"> </h:outputText>
+                                        </p>
+                                        <p class="card-text " style="font-weight: bolder">
+                                            <h:outputText value="#{s.startingTime}"> 
+                                                <f:convertDateTime pattern="hh:mm a"/>
+                                            </h:outputText>
+                                        </p>
+                                    </div>
+                                    <div class="d-flex justify-content-center align-items-center mx-2">
+                                        <h5>Session Status</h5>
+                                        <div class="mx-4 d-flex justify-content-center align-items-center">
+                                            <p:badge value="Session Started" severity="success" rendered="#{s.started}" styleClass="mr-2" />
+                                            <p:badge value="Session Not Started" severity="danger" rendered="#{not s.started}" />
                                         </div>
                                     </div>
 
-                                    <div class="col-4">
-                                        <div>
-                                            <h6>Select Doctor</h6>
-                                        </div>
-                                        <div>
-                                            <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
-                                            <div>
-                                                <p:selectOneMenu filter="true" class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
-                                                    <f:selectItem itemLabel="Select One"/>
-                                                    <f:selectItems  value="#{patientPortalController.consultants}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
-                                                </p:selectOneMenu>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <h:panelGroup rendered="#{s.started}">
+                                            <h5>Ongoing</h5>
+                                            <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
+                                                <h3 >#{s.completedPatientCount}</h3>
                                             </div>
-                                        </div>
+                                        </h:panelGroup>
                                     </div>
 
-                                    <div class="col-4">
-                                        <div>
-                                            <p></p>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <h5>Total Bookings</h5>
+                                        <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
+                                            <h3 >#{s.displayCount}</h3>
                                         </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end  p-2">
+    <!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.completeBooking}">
+                                            <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
+                                        </p:commandButton>-->
+                                        <p:commandButton 
+                                            value="Add Booking" 
+                                            class="ui-button-success" 
+                                            action="#{patientPortalController.booking()}">
+                                            <f:setPropertyActionListener target="#{patientPortalController.selectedSessionInstance}" value="#{s}"/>
+                                        </p:commandButton>
+
+                                        <p:dialog  minHeight="100" width="400"  header="Confirmation" widgetVar="confirmationDialog" modal="true" >
+                                            <p class="my-2">Are you sure you want to cancel the request?</p>
+                                            <div class="d-flex mt-2 justify-content-end">
+                                                <button type="button" onclick="startPayment();" class="btn btn-primary">Pay Now</button>
+                                                <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                                            </div>
+                                        </p:dialog>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}" >
+                    <div class="d-flex justify-content-center align-items-center h-100 w-100">
+                        <div class=" mt-4" style="min-width: 25rem">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <img src="https://cdn.dribbble.com/users/3821672/screenshots/7172846/media/bdcf195a8ceaf94cd2e55ee274095c91.gif" style="min-width: 20rem"/>
+                                </div>
+                                <div class="text-center">
+                                    <h3>OTP Verification</h3>
+                                    <h5 class="text-muted">We will Send You <b>One Time Password </b> To This Mobile Number</h5>
+                                </div>
+                                <div class="text-center">
+                                    <div>
+                                        <p:inputText value="#{patientPortalController.patientphoneNumber}" style="min-width: 25rem" /><br/>
+                                        <p:commandButton ajax="false" 
+                                                         value="Send Now" 
+                                                         class="ui-button-primary my-2"
+                                                         style="min-width: 25rem"
+                                                         action="#{patientPortalController.sendOtp}"/><br/>
+                                        <p:inputText value="#{patientPortalController.patientEnteredOtp}"  style="min-width: 25rem" /><br/>
+                                        <p:commandButton ajax="false" 
+                                                         value="Verify" 
+                                                         class="ui-button-primary my-2"
+                                                         style="min-width: 25rem"
+                                                         action="#{patientPortalController.otpVerification}"/>
                                         <div>
-                                            <p:commandButton value="Find" action="#{patientPortalController.fillSessionInstance()}" class="btn btn-success w-100" ajax="false" />
+                                            <p:commandLink value="Resend OTP" action="#{patientPortalController.sendOtp}"/>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-<!--                    <div class="d-flex justify-content-between align-items-center mt-4 container-fluid">
-                        <div class="card w-100 ">
-                            <div class="card-body">
-                                <h5 class="card-title">My Past Bookings</h5>
-                                <p class="card-text">View your Past booked sessions here.</p>
-                                <p:commandButton value="View" ajax="false" class="ui-button-success" />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}" >
+                    <h:panelGroup rendered="#{!patientPortalController.addNewPatient}"  >
+                        <div class="card-body">
+                            <ui:repeat id="sPt" class="w-100" value="#{patientPortalController.searchedPatients}" var="sp">
+                                <div class="card my-2" style="height: 100px">
+                                    <div class="w-100 row text-left mt-4 mx-2">
+                                        <div class="col-4 text-left d-flex align-items-center">
+                                            <h:outputLabel styleClass="fa-solid fa-user"/>
+                                            <h:outputText class="ptSelect" value="#{sp.person.nameWithTitle}"></h:outputText>
+
+                                        </div>
+                                        <div class="col-4">
+                                            <h3 class="card-title">
+                                                <h:outputLabel styleClass="fa-solid fa-location-dot"/>
+                                                <h:outputText style="text-transform: capitalize;margin-left: 20px" value="#{sp.person.address}">
+                                                </h:outputText></h3>
+                                        </div>
+                                        <div class="col-2">
+                                            <h3><h:outputText rendered="#{sp.age ne 'Date of birth NOT recorded.'}" value="#{sp.age}"> </h:outputText></h3>
+                                        </div>
+                                        <div class="col-2 d-flex justify-content-center">
+                                            <p:commandButton icon="fa-solid fa-check" class="ui-button-success" ajax="false">
+                                                <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </ui:repeat>
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h4>Not You ?</h4>
                             </div>
-                        </div>
-                        <div class="card mx-2 w-100">
-                            <div class="card-body">
-                                <h5 class="card-title">My Bookings</h5>
-                                <p class="card-text">View your booked sessions here.</p>
-                                <a href="#" class="btn btn-primary">View Bookings</a>
-                            </div>
-                        </div>
-                        <div class="card  w-100">
-                            <div class="card-body">
-                                <h5 class="card-title">My Bookings</h5>
-                                <p class="card-text">View your booked sessions here.</p>
-                                <a href="#" class="btn btn-primary">View Bookings</a>
+                            <div class="d-flex justify-content-center align-items-center">
+                                <p:commandButton class="ui-button-success mt-2" icon="fas fa-plus" value="Add New Patient" action="#{patientPortalController.addNewPatientAction}" ajax="false" />
                             </div>
                         </div>
 
-                    </div>-->
-                    <h:panelGroup rendered="false">
-                        <div  id="successPanel" class="d-flex justify-content-center align-items-center" style="z-index: 9999;" >
-                            <div class="success-message d-flex align-items-center justify-content-center" style="width: 300px;height: 150px">
-                                <div class="success-icon d-flex justify-content-center align-items-center"><h:outputText styleClass="fas fa-check text-white"/></div>
-                                <div class="success-text">Booking Successfully</div>
+                    </h:panelGroup>
+
+                    <h:panelGroup class="d-flex justify-content-center align-items-center w-100" rendered="#{patientPortalController.addNewPatient}" >
+
+                        <div class="card p-4 w-100">
+                            <div class="text-center my-2">
+                                <h5>Add new Patient</h5>
+                            </div>
+                            <div class="ui-fluid formgrid grid w-100">
+                                <div>
+                                    <div>
+                                        <p:outputLabel value="Title:"  class="form-label" />
+                                        <p:selectOneMenu id="cmbTitle" value="#{patientPortalController.patient.person.title}" class="form-control" requiredMessage="Please Select a title">
+                                            <f:selectItem itemLabel="Select Title" />
+                                            <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
+                                                           itemValue="#{i}" />
+                                            <p:ajax process="cmbTitle" update="somSex" ></p:ajax>
+                                            <p:ajax event="change" process="cmbTitle" update="somSex" ></p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div>
+                                        <p:outputLabel value="Sex:"  class="form-label" />
+                                        <p:selectOneMenu id="somSex" value="#{patientPortalController.patient.person.sex}" class="form-control" >
+                                            <f:selectItem itemLabel="Select Gender" />
+                                            <f:selectItems value="#{billController.sex}" />
+                                        </p:selectOneMenu>
+                                    </div>
+
+
+                                    <div class="mx-2" style="width: 100%">
+                                        <p:outputLabel value="Enter The Name Of The Patient"/>
+                                        <p:inputText value="#{patientPortalController.patient.person.name}" />
+                                    </div>
+
+                                    <div class="mx-2 w-100">
+                                        <p:outputLabel value="Enter Phone number"/>
+                                        <p:inputText 
+                                            value="#{patientPortalController.patient.phoneNumberStringTransient}" 
+                                            class="form-control" 
+                                            validatorMessage="Please enter Valid Phone Number."
+                                            validator="#{patientController.validateMobile}"
+                                            >
+                                        </p:inputText>
+                                    </div>
+                                    <div class="mx-2 w-100">
+                                        <p:outputLabel value="Email:"  class="form-label" />
+                                        <p:inputText 
+                                            value="#{patientPortalController.patient.person.email}" 
+                                            class="form-control"
+                                            validatorMessage="Please enter Valid Email."
+                                            >
+                                            <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="mx-2 w-100">
+                                        <h:outputLabel class="form-label" value="NIC No:" />
+                                        <h:panelGroup>
+                                            <p:inputText autocomplete="off" id="txtNIC" value="#{patientPortalController.patient.person.nic}" class="form-control" />
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="mx-2 w-100">
+                                        <p:outputLabel value="Address:"  class="form-label" />
+                                        <p:inputText value="#{patientPortalController.patient.person.address}" style="width: 100%;" class="form-control" />
+
+                                    </div>
+                                    <div class="mx-2 w-100">
+                                        <p:outputLabel value="Area"  class="form-label" />
+                                        <p:autoComplete 
+                                            id="area" 
+                                            class="w-100 -mx-2"
+                                            inputStyleClass="form-control"
+                                            forceSelection="true"
+                                            value="#{patientPortalController.patient.person.area}"  
+                                            completeMethod="#{areaController.completeArea}" 
+                                            var="pa"
+                                            placeholder="Area"
+                                            itemLabel="#{pa.name}" 
+                                            itemValue="#{pa}" 
+                                            size="10"  
+                                            required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
+                                            requiredMessage="Need an Area"
+                                            >
+
+                                        </p:autoComplete> 
+                                    </div>
+                                </div>
+                                <p:commandButton value="Save" class="ui-button-success m-4" ajax="false" action="#{patientPortalController.saveNewPatient}" >
+                                </p:commandButton>
+                                <div class="w-100 align-items-center" style="align-content: center">
+                                    <p:commandLink value="Go Back" action="#{patientPortalController.GoBackfromPatientAddAction}" ajax="false" />
+                                </div>
                             </div>
                         </div>
                     </h:panelGroup>
                 </h:panelGroup>
-            </div>
+            </h:form>
 
-            <h:panelGroup id="pnlSessions">
-                <div class="mt-2 w-100 container-fluid">
-                    <ui:repeat rendered="#{patientPortalController.sessionInstances != null}" 
-                               id="sessionDates" 
-                               value="#{patientPortalController.sessionInstances}" var="s">
-                        <div class="card mt-1 scaling-card">
-                            <h5 class="card-header">
-                                <h:outputText value="#{s.sessionDate}">
-                                    <f:convertDateTime pattern="dd MMM yyyy"/>
-                                </h:outputText>
-                            </h5>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h:panelGroup>
-                                    <div>
-                                        <img src="https://lordicon.com/icons/wired/lineal/671-male-doctor-care.gif" width="100" alt="Male Doctor" />
-                                    </div>
-                                </h:panelGroup>
+        </div>
 
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        <h:outputText value="#{s.staff.name}">
-                                        </h:outputText></h5>
-                                    <p class="card-text">
-                                        <h:outputText value="#{s.staff.speciality.name}"> </h:outputText>
-                                    </p>
-                                    <p class="card-text " style="font-weight: bolder">
-                                        <h:outputText value="#{s.startingTime}"> 
-                                            <f:convertDateTime pattern="hh:mm a"/>
-                                        </h:outputText>
-                                    </p>
-                                </div>
-                                <div class="d-flex justify-content-center align-items-center mx-2">
-                                    <h5>Session Status</h5>
-                                    <div class="mx-4 d-flex justify-content-center align-items-center">
-                                        <p:badge value="Session Started" severity="success" rendered="#{s.started}" styleClass="mr-2" />
-                                        <p:badge value="Session Not Started" severity="danger" rendered="#{not s.started}" />
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <h:panelGroup rendered="#{s.started}">
-                                        <h5>Ongoing</h5>
-                                        <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
-                                            <h3 >#{s.completedPatientCount}</h3>
-                                        </div>
-                                    </h:panelGroup>
-                                </div>
-
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <h5>Total Bookings</h5>
-                                    <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
-                                        <h3 >#{s.displayCount}</h3>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end  p-2">
-<!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.completeBooking}">
-                                        <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
-                                    </p:commandButton>-->
-                                    <p:commandButton 
-                                        value="Add Booking" 
-                                        class="ui-button-success" 
-                                        action="#{patientPortalController.booking()}">
-                                        <f:setPropertyActionListener target="#{patientPortalController.selectedSessionInstance}" value="#{s}"/>
-                                    </p:commandButton>
-
-                                    <p:dialog  minHeight="100" width="400"  header="Confirmation" widgetVar="confirmationDialog" modal="true" >
-                                        <p class="my-2">Are you sure you want to cancel the request?</p>
-                                        <div class="d-flex mt-2 justify-content-end">
-                                            <button type="button" onclick="startPayment();" class="btn btn-primary">Pay Now</button>
-                                            <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
-                                        </div>
-                                    </p:dialog>
-                                </div>
-                            </div>
-                        </div>
-                    </ui:repeat>
-                </div>
-            </h:panelGroup>
-
-            <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}" >
-                <div class="d-flex justify-content-center align-items-center h-100 w-100">
-                    <div class=" mt-4" style="min-width: 25rem">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-center align-items-center">
-                                <img src="https://cdn.dribbble.com/users/3821672/screenshots/7172846/media/bdcf195a8ceaf94cd2e55ee274095c91.gif" style="min-width: 20rem"/>
-                            </div>
-                            <div class="text-center">
-                                <h3>OTP Verification</h3>
-                                <h5 class="text-muted">We will Send You <b>One Time Password </b> To This Mobile Number</h5>
-                            </div>
-                            <div class="text-center">
-                                <div>
-                                    <p:inputText value="#{patientPortalController.patientphoneNumber}" style="min-width: 25rem" /><br/>
-                                    <p:commandButton ajax="false" 
-                                                     value="Send Now" 
-                                                     class="ui-button-primary my-2"
-                                                     style="min-width: 25rem"
-                                                     action="#{patientPortalController.sendOtp}"/><br/>
-                                    <p:inputText value="#{patientPortalController.patientEnteredOtp}"  style="min-width: 25rem" /><br/>
-                                    <p:commandButton ajax="false" 
-                                                     value="Verify" 
-                                                     class="ui-button-primary my-2"
-                                                     style="min-width: 25rem"
-                                                     action="#{patientPortalController.otpVerification}"/>
-                                    <div>
-                                        <p:commandLink value="Resend OTP" action="#{patientPortalController.sendOtp}"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </h:panelGroup>
-
-            <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}" >
-                <h:panelGroup rendered="#{!patientPortalController.addNewPatient}"  >
-                    <div class="card-body">
-                        <ui:repeat id="sPt" class="w-100" value="#{patientPortalController.searchedPatients}" var="sp">
-                            <div class="card my-2" style="height: 100px">
-                                <div class="w-100 row text-left mt-4 mx-2">
-                                    <div class="col-4 text-left d-flex align-items-center">
-                                        <h:outputLabel styleClass="fa-solid fa-user"/>
-                                        <h:outputText class="ptSelect" value="#{sp.person.nameWithTitle}"></h:outputText>
-
-                                    </div>
-                                    <div class="col-4">
-                                        <h3 class="card-title">
-                                            <h:outputLabel styleClass="fa-solid fa-location-dot"/>
-                                            <h:outputText style="text-transform: capitalize;margin-left: 20px" value="#{sp.person.address}">
-                                            </h:outputText></h3>
-                                    </div>
-                                    <div class="col-2">
-                                        <h3><h:outputText rendered="#{sp.age ne 'Date of birth NOT recorded.'}" value="#{sp.age}"> </h:outputText></h3>
-                                    </div>
-                                    <div class="col-2 d-flex justify-content-center">
-                                        <p:commandButton icon="fa-solid fa-check" class="ui-button-success" ajax="false">
-                                            <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
-                                        </p:commandButton>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </ui:repeat>
-                        <div class="d-flex justify-content-center align-items-center">
-                            <h4>Not You ?</h4>
-                        </div>
-                        <div class="d-flex justify-content-center align-items-center">
-                            <p:commandButton class="ui-button-success mt-2" icon="fas fa-plus" value="Add New Patient" action="#{patientPortalController.addNewPatientAction}" ajax="false" />
-                        </div>
-                    </div>
-
-                </h:panelGroup>
-
-                <h:panelGroup class="d-flex justify-content-center align-items-center w-100" rendered="#{patientPortalController.addNewPatient}" >
-
-                    <div class="card p-4 w-100">
-                        <div class="text-center my-2">
-                            <h5>Add new Patient</h5>
-                        </div>
-                        <div class="ui-fluid formgrid grid w-100">
-                            <div>
-                                <div>
-                                    <p:outputLabel value="Title:"  class="form-label" />
-                                    <p:selectOneMenu id="cmbTitle" value="#{patientPortalController.patient.person.title}" class="form-control" requiredMessage="Please Select a title">
-                                        <f:selectItem itemLabel="Select Title" />
-                                        <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
-                                                       itemValue="#{i}" />
-                                        <p:ajax process="cmbTitle" update="somSex" ></p:ajax>
-                                        <p:ajax event="change" process="cmbTitle" update="somSex" ></p:ajax>
-                                    </p:selectOneMenu>
-                                </div>
-                                <div>
-                                    <p:outputLabel value="Sex:"  class="form-label" />
-                                    <p:selectOneMenu id="somSex" value="#{patientPortalController.patient.person.sex}" class="form-control" >
-                                        <f:selectItem itemLabel="Select Gender" />
-                                        <f:selectItems value="#{billController.sex}" />
-                                    </p:selectOneMenu>
-                                </div>
-
-
-                                <div class="mx-2" style="width: 100%">
-                                    <p:outputLabel value="Enter The Name Of The Patient"/>
-                                    <p:inputText value="#{patientPortalController.patient.person.name}" />
-                                </div>
-
-                                <div class="mx-2 w-100">
-                                    <p:outputLabel value="Enter Phone number"/>
-                                    <p:inputText 
-                                        value="#{patientPortalController.patient.phoneNumberStringTransient}" 
-                                        class="form-control" 
-                                        validatorMessage="Please enter Valid Phone Number."
-                                        validator="#{patientController.validateMobile}"
-                                        >
-                                    </p:inputText>
-                                </div>
-                                <div class="mx-2 w-100">
-                                    <p:outputLabel value="Email:"  class="form-label" />
-                                    <p:inputText 
-                                        value="#{patientPortalController.patient.person.email}" 
-                                        class="form-control"
-                                        validatorMessage="Please enter Valid Email."
-                                        >
-                                        <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
-                                            <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
-                                        </c:if>
-                                    </p:inputText>
-                                </div>
-                                <div class="mx-2 w-100">
-                                    <h:outputLabel class="form-label" value="NIC No:" />
-                                    <h:panelGroup>
-                                        <p:inputText autocomplete="off" id="txtNIC" value="#{patientPortalController.patient.person.nic}" class="form-control" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="mx-2 w-100">
-                                    <p:outputLabel value="Address:"  class="form-label" />
-                                    <p:inputText value="#{patientPortalController.patient.person.address}" style="width: 100%;" class="form-control" />
-
-                                </div>
-                                <div class="mx-2 w-100">
-                                    <p:outputLabel value="Area"  class="form-label" />
-                                    <p:autoComplete 
-                                        id="area" 
-                                        class="w-100 -mx-2"
-                                        inputStyleClass="form-control"
-                                        forceSelection="true"
-                                        value="#{patientPortalController.patient.person.area}"  
-                                        completeMethod="#{areaController.completeArea}" 
-                                        var="pa"
-                                        placeholder="Area"
-                                        itemLabel="#{pa.name}" 
-                                        itemValue="#{pa}" 
-                                        size="10"  
-                                        required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
-                                        requiredMessage="Need an Area"
-                                        >
-
-                                    </p:autoComplete> 
-                                </div>
-                            </div>
-                            <p:commandButton value="Save" class="ui-button-success m-4" ajax="false" action="#{patientPortalController.saveNewPatient}" >
-                            </p:commandButton>
-                            <div class="w-100 align-items-center" style="align-content: center">
-                                <p:commandLink value="Go Back" action="#{patientPortalController.GoBackfromPatientAddAction}" ajax="false" />
-                            </div>
-                        </div>
-                    </div>
-                </h:panelGroup>
-            </h:panelGroup>
-        </h:form>
         <script src="https://cbcmpgs.gateway.mastercard.com/checkout/version/61/checkout.js"></script>
         <script type="text/javascript">
-                                                function startPayment() {
-                                                    Checkout.configure({
-                                                        session: {id: '#{paymentGatewayController.sessionId}'},
-                                                        interaction: {
-                                                            merchant: {
-                                                                name: "Sethma Hospital",
-                                                                address: {line1: 'Test address'}
+                                                    function startPayment() {
+                                                        Checkout.configure({
+                                                            session: {id: '#{paymentGatewayController.sessionId}'},
+                                                            interaction: {
+                                                                merchant: {
+                                                                    name: "Sethma Hospital",
+                                                                    address: {line1: 'Test address'}
+                                                                }
                                                             }
-                                                        }
-                                                    });
-                                                    Checkout.showPaymentPage();  // Or Checkout.showLightbox();
-                                                }
+                                                        });
+                                                        Checkout.showPaymentPage();  // Or Checkout.showLightbox();
+                                                    }
         </script>
     </h:body>
 </html>

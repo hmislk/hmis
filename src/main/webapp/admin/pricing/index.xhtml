@@ -11,7 +11,7 @@
                     <div class="col-md-3">
                         <h:form>
                             <p:panel header="Manage Financial Activities">
-                                <p:accordionPanel activeIndex="#{viewController.manageFeeIndex}">
+                                <p:accordionPanel activeIndex="#{viewScopeDataTransferController.manageFeeIndex}">
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Fees">
                                         <div class="d-grid gap-2">
@@ -19,7 +19,7 @@
                                                 class="w-100"
                                                 ajax="false" 
                                                 value="Item Fees"
-                                                actionListener="#{viewController.makeAdminFeesAsPreviousPage()}"
+                                                actionListener="#{viewScopeDataTransferController.makeAdminFeesAsPreviousPage()}"
                                                 action="#{itemFeeManager.navigateToItemFees()}"/>
 
 
