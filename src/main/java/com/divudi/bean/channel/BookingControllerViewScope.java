@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
@@ -200,6 +201,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Properties
      */
@@ -260,10 +263,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Double feeTotalForSelectedBill;
     private PaymentMethod cancelPaymentMethod;
     private PaymentMethod settlePaymentMethod;
-    
+
     private PaymentMethod refundPaymentMethod;
-    
-    
+
     private Institution settleInstitution;
     private Institution creditCompany;
     private double refundableTotal = 0;
@@ -663,11 +665,27 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
-        fromDate = new Date();
-        toDate = new Date();
-        listAllSesionInstances();
-        prepareForNewChannellingBill();
-        return "/channel/channel_booking_by_date?faces-redirect=true";
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                fromDate = new Date();
+                toDate = new Date();
+                listAllSesionInstances();
+                prepareForNewChannellingBill();
+                return "/channel/channel_booking_by_date?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            fromDate = new Date();
+            toDate = new Date();
+            listAllSesionInstances();
+            prepareForNewChannellingBill();
+            return "/channel/channel_booking_by_date?faces-redirect=true";
+        }
+
     }
 
     public UserPreference getDepartmentPreference() {
@@ -739,7 +757,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
-        selectedBillSession=bs;
+        selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
@@ -4528,19 +4546,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.paymentMethodData = paymentMethodData;
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public void settleCreditWithCash() {
         settlePaymentMethod = PaymentMethod.Cash;
         settleCredit();
@@ -4560,7 +4565,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         settlePaymentMethod = PaymentMethod.Credit;
         settleCredit();
     }
-    
+
     private boolean errorCheckForSettle() {
 
         if (getBillSession().getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -4649,10 +4654,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreview = true;
         creditCompany = null;
         toStaff = null;
-        
+
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
-    
+
     private BillSession savePaidBillSession(Bill bill, BillItem billItem) {
         BillSession bs = new BillSession();
         bs.copy(getBillSession());
@@ -4666,8 +4671,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     }
 
-    
-    
     private Bill savePaidBill() {
         Bill temp = new BilledBill();
         temp.copy(getBillSession().getBill());
@@ -4811,8 +4814,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return false;
     }
-    
-    
+
     public void channelBookingRefund() {
         if (refundableTotal > 0.0) {
             if (selectedBillSession.getBillItem().getBill().getPaymentMethod() == PaymentMethod.Agent) {
@@ -5028,8 +5030,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
     }
-    
-     private BillSession refundBillSession(BillSession billSession, Bill bill, BillItem billItem) {
+
+    private BillSession refundBillSession(BillSession billSession, Bill bill, BillItem billItem) {
         BillSession bs = new BillSession();
         bs.copy(billSession);
         bs.setBill(bill);
@@ -5043,7 +5045,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         return bs;
     }
-    
+
     public BillItem refundBillItems(BillItem bi, RefundBill rb) {
         BillItem rbi = new BillItem();
         rbi.copy(bi);
@@ -5121,7 +5123,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calRefundTotal();
     }
 
-
     public void refund1(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
         calRefundTotal();
 
@@ -5189,9 +5190,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     }
 
-    
-    
-     private Bill createRefundBill(Bill bill) {
+    private Bill createRefundBill(Bill bill) {
         RefundBill rb = new RefundBill();
         rb.copy(bill);
         rb.setBilledBill(bill);
@@ -5393,18 +5392,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public String changePatient() {
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("No Session Selected");
@@ -5653,7 +5640,5 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setDisableRefund(boolean disableRefund) {
         this.disableRefund = disableRefund;
     }
-    
-    
 
 }
