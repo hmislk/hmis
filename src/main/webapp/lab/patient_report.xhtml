@@ -306,6 +306,49 @@
                                 </f:view>
 
                             </p:panel>
+
+
+                            <p:panel header="Report Details"  >
+
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Ordered Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+
+                                    <p:outputLabel value="Sampelled Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+
+                                    <p:outputLabel value="Received to Lab At" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                    </p:calendar>
+
+
+
+                                    <p:outputLabel value="Peformed Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+
+                                    <p:outputLabel value="Data Entered Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+                                    <p:outputLabel value="Reported Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+
+                                    <p:outputLabel value="Approved Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.approveAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+                                    <p:outputLabel value="Printed Time" ></p:outputLabel>
+                                    <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+
+                                </p:panelGrid>
+
+                            </p:panel>
+
+
+
+
                         </div>
                         <p:panel header="Report"    
                                  rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >

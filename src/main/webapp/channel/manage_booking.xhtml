@@ -1063,6 +1063,10 @@
                         rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
 
                         <h:panelGrid columns="2" class="my-2">
+                            <h:outputLabel value="Patient Title"/>
+                            <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
+                                <f:selectItems value="#{billController.title}"/>
+                            </p:selectOneMenu>
                             <p:outputLabel value="Patient Name"/>
                             <p:inputText autocomplete="off" 
                                          value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
