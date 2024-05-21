@@ -618,10 +618,6 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Item?");
             return;
         }
-        if (getTmpStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
-            JsfUtil.addErrorMessage("Please not select Expired Items");
-            return;
-        }
         if (getQty() == null) {
             JsfUtil.addErrorMessage("Quantity?");
             return;
