@@ -2465,6 +2465,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         stock = null;
         editingQty = null;
         errorMessage = "";
+        paymentMethod = PaymentMethod.Cash;
+        paymentMethodData = null;
+        setCashPaid(0.0);
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
