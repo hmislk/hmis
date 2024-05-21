@@ -16,6 +16,7 @@ import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ViewScopeDataTransferController;
 
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
@@ -95,7 +96,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
-import javax.faces.context.Flash;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -203,6 +203,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private PaymentSchemeController paymentSchemeController;
     @Inject
     FinancialTransactionController financialTransactionController;
+    @Inject
+    ViewScopeDataTransferController viewScopeDataTransferController;
     /**
      * Properties
      */
@@ -276,16 +278,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @Deprecated
     private BillSession managingBillSession;
 
-    public String navigateToManageSessioinInstance(SessionInstance sessionInstance) {
+    public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
         this.selectedSessionInstance = sessionInstance;
-        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        flash.put("selectedSessionInstance", sessionInstance);
-        flash.put("sessionInstanceFilter", sessionInstanceFilter);
-        flash.put("fromDate", fromDate);
-        flash.put("toDate", toDate);
-        flash.put("needToFillBillSessions", true);
-        flash.put("needToFillBillSessionDetails", false);
-        return "/channel/session_instance";
+
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedSessionInstance(sessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+
+        return "/channel/session_instance?faces-redirect=true";
     }
 
     public void cancelSession() {
@@ -640,24 +644,26 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void init() {
         fromDate = new Date();
         toDate = new Date();
-        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        Date tmpfromDate = (Date) flash.get("fromDate");
-        Date tmptoDate = (Date) flash.get("toDate");
+
+        Date tmpfromDate = viewScopeDataTransferController.getFromDate();
+        Date tmptoDate = viewScopeDataTransferController.getToDate();
         if (tmpfromDate != null) {
             fromDate = tmpfromDate;
         }
         if (tmptoDate != null) {
             toDate = tmptoDate;
         }
-        sessionInstanceFilter = (String) flash.get("sessionInstanceFilter");
+        sessionInstanceFilter = viewScopeDataTransferController.getSessionInstanceFilter();
         listAllSesionInstances();
-        selectedSessionInstance = (SessionInstance) flash.get("selectedSessionInstance");
-        needToFillBillSessions = (Boolean) flash.get("needToFillBillSessions");
+        selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
+        needToFillBillSessions = viewScopeDataTransferController.getNeedToFillBillSessions();
+        System.out.println("needToFillBillSessions = " + needToFillBillSessions);
         if (needToFillBillSessions != null && needToFillBillSessions) {
             fillBillSessions();
         }
-        selectedBillSession = (BillSession) flash.get("selectedBillSession");
-        needToFillBillSessionDetails = (Boolean) flash.get("needToFillBillSessionDetails");
+        selectedBillSession = viewScopeDataTransferController.getSelectedBillSession();
+        needToFillBillSessionDetails = viewScopeDataTransferController.getNeedToFillBillSessionDetails();
+
         if (Boolean.TRUE.equals(needToFillBillSessionDetails) && selectedBillSession != null) {
             fillBillSessionDetails();
         }
@@ -763,14 +769,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return "";
         }
 
-        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        flash.put("selectedBillSession", selectedBillSession);
-        flash.put("selectedSessionInstance", selectedSessionInstance);
-        flash.put("sessionInstanceFilter", sessionInstanceFilter);
-        flash.put("fromDate", fromDate);
-        flash.put("toDate", toDate);
-        flash.put("needToFillBillSessions", true);
-        flash.put("needToFillBillSessionDetails", false);
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
@@ -814,26 +821,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateBackToBookingsFromSessionInstance() {
-        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        flash.put("selectedSessionInstance", selectedSessionInstance);
-        flash.put("selectedBillSession", selectedBillSession);
-        flash.put("sessionInstanceFilter", sessionInstanceFilter);
-        flash.put("fromDate", fromDate);
-        flash.put("toDate", toDate);
-        flash.put("needToFillBillSessions", false);
-        flash.put("needToFillBillSessionDetails", false);
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
     public String navigateBackToBookingsFromBillSession() {
-        Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-        flash.put("selectedSessionInstance", selectedSessionInstance);
-        flash.put("selectedBillSession", selectedBillSession);
-        flash.put("sessionInstanceFilter", sessionInstanceFilter);
-        flash.put("fromDate", fromDate);
-        flash.put("toDate", toDate);
-        flash.put("needToFillBillSessions", false);
-        flash.put("needToFillBillSessionDetails", false);
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -2935,6 +2941,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillBillSessions() {
+        System.out.println("fillBillSessions = ");
         selectedBillSession = null;
         BillType[] billTypes = {
             BillType.ChannelAgent,
