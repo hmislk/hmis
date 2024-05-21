@@ -655,11 +655,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             toDate = tmptoDate;
         }
         sessionInstanceFilter = viewScopeDataTransferController.getSessionInstanceFilter();
-        
+
         needToFillBillSessions = viewScopeDataTransferController.getNeedToFillBillSessions();
         System.out.println("needToFillBillSessions = " + needToFillBillSessions);
+        selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
         if (needToFillBillSessions != null && needToFillBillSessions) {
-            fillBillSessions();
+            if (selectedSessionInstance != null) {
+                fillBillSessions();
+            }
         }
         selectedBillSession = viewScopeDataTransferController.getSelectedBillSession();
         needToFillBillSessionDetails = viewScopeDataTransferController.getNeedToFillBillSessionDetails();
@@ -667,7 +670,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (Boolean.TRUE.equals(needToFillBillSessionDetails) && selectedBillSession != null) {
             fillBillSessionDetails();
         }
-        
+
         listAllSesionInstances();
         if (viewScopeDataTransferController.getSelectedSessionInstance() != null) {
             selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
@@ -1684,12 +1687,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
-        if (billSessionErrorPresent()) {
-            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
-            settleSucessFully = false;
-            return;
-        }
-        if (patientErrorPresent(patient)) {
+//        if (billSessionErrorPresent()) {
+//            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
+//            settleSucessFully = false;
+//            return;
+//        }
+        if (patientErrorPresent(getPatient())) {
             JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
             return;
