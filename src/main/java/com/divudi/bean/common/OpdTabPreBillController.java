@@ -1353,10 +1353,11 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             return;
         }
         clearBillItemValues();
-        //JsfUtil.addSuccessMessage("Item Added");
+        JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
+        System.out.println("clearBillItemValues");
         currentBillItem = null;
         recreateBillItems();
         setItemLight(itemLight);
@@ -1403,7 +1404,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-
+        System.out.println("recreateBillItems");
         //billTotal = 0.0;
     }
 
@@ -1556,6 +1557,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void makeNull() {
+        System.out.println("Make null");
         clearBillItemValues();
         clearBillValues();
         paymentMethod = null;
