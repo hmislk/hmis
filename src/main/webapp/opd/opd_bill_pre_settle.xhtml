@@ -364,24 +364,37 @@
 
                         <h:panelGroup id="gpBillPreview" >
 
+
                             <h:panelGroup id="groupPrint" >
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                    <prints:five_five_paper_with_headings bill="#{opdPreSettleController.saleBill}"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:five_five_paper_with_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >                              
-                                    <prints:five_five_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >  
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:five_five_paper_without_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
-                                    <prints:posOpdBillWithoutLogo bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:posOpdBillWithoutLogo bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                    <prints:posOpdBill bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:posOpdBill bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
-                                    <prints:A4_paper_with_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:A4_paper_with_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                    <prints:A4_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:A4_paper_without_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>
