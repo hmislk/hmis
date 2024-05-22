@@ -205,7 +205,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     FinancialTransactionController financialTransactionController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
-  
+
     /**
      * Properties
      */
