@@ -555,6 +555,7 @@ public class OpdPreSettleController implements Serializable {
     }
 
     private void saveOpdBatchBillItems() {
+        System.out.println("getBillBean().getBills() = " + getBillBean().getBills().size());
         for (Bill bill : getBillBean().getBills()) {
             for (BillItem tbi : bill.getBillItems()) {
                 BillItem newBil = new BillItem();
