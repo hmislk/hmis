@@ -22,7 +22,6 @@ Current Version: 3.0.0.20240521.4 (This line will be automatically updated to re
 
 
 
-
 ## History
 
 In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an Electronic Medical Record (EMR) System tailored for his general practice. Utilising Microsoft Visual Basic 6 and MS-Access, this system caught the attention of fellow doctors, leading to widespread adoption. As its user base grew, so did its features, evolving through collaborative discussions and feedback.
