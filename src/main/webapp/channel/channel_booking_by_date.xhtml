@@ -14,7 +14,7 @@
 
     <h:head>
         <title>Channel Booking By Date</title>
-      
+
     </h:head>
 
     <h:body>
@@ -199,38 +199,37 @@
                                                             <p:badge value="#{s.bookedPatientCount + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
-                                                    <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <span class="mx-4">
-                                                                <div class="d-flex align-items-center">
-                                                                    <span class="text-center">
-                                                                        <h:outputText value="P" style="font-weight: bolder"/><br/>
-                                                                        <p:badge value="#{s.paidPatientCount}" severity="warning" size="large" styleClass="mr-2"></p:badge>
 
-                                                                    </span>
-                                                                    <span class="text-center mx-4"> 
-                                                                        <h:outputText style="font-weight: bolder" value="B"/><br/>
-                                                                        <p:badge value="#{s.bookedPatientCount}" severity="warning"  size="large" styleClass="mr-2"></p:badge>
-
-                                                                    </span>
-                                                                    <span class="text-center"> 
-                                                                        <h:outputText style="font-weight: bolder" value="C"/><br/>
-                                                                        <p:badge value="#{s.completedPatientCount}" severity="danger" size="large" styleClass="mr-2"></p:badge>
-                                                                    </span>
-                                                                </div>
-                                                            </span>
-
-                                                            <div>
-                                                                <p:commandButton 
-                                                                    icon="fas fa-cog"
-                                                                    class="mx-4"
-                                                                    styleClass="rounded-button ui-button-secondary"
-                                                                    action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
-                                                                    ajax="false" >
-                                                                </p:commandButton>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="mx-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="text-center mx-1">
+                                                                    <h:outputText value="P" style="font-weight: bolder"/><br/>
+                                                                    <p:badge value="#{s.paidPatientCount != null ? s.paidPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
+                                                                </span>
+                                                                <span class="text-center mx-1"> 
+                                                                    <h:outputText style="font-weight: bolder" value="B"/><br/>
+                                                                    <p:badge value="#{s.bookedPatientCount != null ? s.bookedPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
+                                                                </span>
+                                                                <span class="text-center mx-1" > 
+                                                                    <h:outputText style="font-weight: bolder" value="C"/><br/>
+                                                                    <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="danger" size="large" styleClass="mr-2"></p:badge>
+                                                                </span>
+                                                                <span class="text-center mx-1" > 
+                                                                    <h:outputText style="font-weight: bolder" value="&nbsp;"/><br/>
+                                                                    <p:commandButton 
+                                                                        icon="fas fa-cog"
+                                                                        styleClass="rounded-button ui-button-secondary mr-2"
+                                                                        action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
+                                                                        ajax="false" >
+                                                                    </p:commandButton>
+                                                                </span>
                                                             </div>
-                                                        </div>
-                                                    </h:panelGroup>
+                                                        </span>
+                                                    </div>
+
+
+
                                                 </div>
                                             </p:column>
                                         </p:dataTable>
