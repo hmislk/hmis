@@ -57,7 +57,7 @@
                             </p:autoComplete> 
 
                             <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
-                            <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{bookingControllerViewScope.settleAgentRefNo}"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                            <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{bookingControllerViewScope.agentRefNo}"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
                             <h:outputLabel id="settleBallance" value="Balance"  style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="settleBallance2" value="#{bookingControllerViewScope.institution.ballance}"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
