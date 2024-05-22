@@ -84,13 +84,12 @@ public class ChannelScheduleController implements Serializable {
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
     @EJB
-    BillSessionFacade billSessionFacade; 
+    BillSessionFacade billSessionFacade;
     @EJB
     SmsFacade smsFacade;
     @EJB
     SmsManagerEjb smsManager;
-   
-    
+
     @Inject
     private SessionController sessionController;
     @Inject
@@ -99,7 +98,6 @@ public class ChannelScheduleController implements Serializable {
     SessionInstanceController sessionInstanceController;
     @Inject
     BookingController bookingController;
-    
 
     private DoctorSpeciality speciality;
     ServiceSession current;
@@ -136,13 +134,13 @@ public class ChannelScheduleController implements Serializable {
     public String navigateToChannelSchedule() {
         return "/channel/channel_shedule?faces-redirect=true";
     }
-    
+
     public String navigateToChannelScheduleManagement() {
         return "/channel/session_instance_management?faces-redirect=true";
     }
-    
+
     public void fillBillSessions() {
-     
+
         BillType[] billTypes = {
             BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -165,10 +163,9 @@ public class ChannelScheduleController implements Serializable {
         billSessions = billSessionFacade.findByJpql(sql, hh);
     }
 
-    
-     public void sendSmsOnChannelDoctorArrival() {
-         String smsTemplateForchannelBooking=sessionController.getApplicationPreference().getSmsTemplateForChannelBooking();
-         fillBillSessions();
+    public void sendSmsOnChannelDoctorArrival() {
+        String smsTemplateForchannelBooking = sessionController.getApplicationPreference().getSmsTemplateForChannelBooking();
+        fillBillSessions();
         if (billSessions == null || billSessions.isEmpty()) {
             return;
         }
@@ -213,15 +210,18 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void fillFees() {
-        String sql;
-        Map m = new HashMap();
-        sql = "Select f from ItemFee f "
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select f "
+                + " from ItemFee f "
                 + " where f.retired=false "
-                + " and (f.serviceSession=:ses "
-                + " or f.item=:ses )"
+                + " and (f.serviceSession=:ses or f.item=:ses )"
                 + " order by f.id";
-        m.put("ses", current);
-        itemFees = itemFeeFacade.findByJpql(sql, m);
+        params.put("ses", current);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        itemFees = itemFeeFacade.findByJpql(jpql, params);
+        System.out.println("itemFees = " + itemFees);
         additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
     }
 
@@ -235,6 +235,7 @@ public class ChannelScheduleController implements Serializable {
         stf.setSpeciality(speciality);
         stf.setStaff(currentStaff);
         stf.setServiceSession(current);
+        stf.setItem(current);
         return stf;
     }
 
@@ -251,7 +252,7 @@ public class ChannelScheduleController implements Serializable {
             hos.setDepartment(getSessionController().getDepartment());
         }
         hos.setServiceSession(current);
-
+        hos.setItem(current);
         return hos;
     }
 
@@ -262,6 +263,7 @@ public class ChannelScheduleController implements Serializable {
         agency.setFee(0.0);
         agency.setFfee(0.0);
         agency.setServiceSession(current);
+        agency.setItem(current);
         return agency;
     }
 
@@ -273,6 +275,7 @@ public class ChannelScheduleController implements Serializable {
         scn.setFeeType(FeeType.Service);
         scn.setInstitution(getCurrent().getInstitution());
         scn.setServiceSession(current);
+        scn.setItem(current);
         return scn;
     }
 
@@ -284,6 +287,7 @@ public class ChannelScheduleController implements Serializable {
         onc.setFfee(0.0);
         onc.setInstitution(getCurrent().getInstitution());
         onc.setServiceSession(current);
+        onc.setItem(current);
         return onc;
     }
 
@@ -319,6 +323,26 @@ public class ChannelScheduleController implements Serializable {
             sql = "select p from Staff p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) order by p.person.name";
         }
         suggestions = getStaffFacade().findByJpql(sql, m);
+        return suggestions;
+    }
+
+    public List<Staff> getSpecialityStaff() {
+        System.out.println("getSpecialityStaff");
+        List<Staff> suggestions = new ArrayList<>();
+        if (getSpeciality() == null) {
+            return suggestions;
+        }
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select p "
+                + " from Staff p "
+                + " where p.retired=false "
+                + " and p.speciality =:sp "
+                + " order by p.person.name";
+        params.put("sp", speciality);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        suggestions = getStaffFacade().findByJpql(jpql, params);
         return suggestions;
     }
 
@@ -519,14 +543,13 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         createFees();
     }
-    
-    public void saveNewSessioninstance(){
+
+    public void saveNewSessioninstance() {
         currentSessionInstance.setOriginatingSession(current);
         sessionInstanceController.save(currentSessionInstance);
         JsfUtil.addSuccessMessage("Saved successfully");
     }
-    
-    
+
     public void prepareAddFeeChange() {
         prepareAdd();
         createChangeFees();
@@ -757,9 +780,9 @@ public class ChannelScheduleController implements Serializable {
         items = getFacade().findByJpql(sql, m);
         return items;
     }
-    
-    public void fillSessionInstance(){
-        sessionInstances=fetchCreatedSessionsInstances(current);
+
+    public void fillSessionInstance() {
+        sessionInstances = fetchCreatedSessionsInstances(current);
     }
 
     public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {

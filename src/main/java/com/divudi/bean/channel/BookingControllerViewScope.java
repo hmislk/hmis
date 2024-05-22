@@ -205,6 +205,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     FinancialTransactionController financialTransactionController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
+
     /**
      * Properties
      */
@@ -2407,46 +2408,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return billSessions;
     }
 
-//    public void fillBillSessions(SelectEvent event) {
-//        selectedBillSession = null;
-//        selectedServiceSession = ((ServiceSession) event.getObject());
-//
-//        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
-//        List<BillType> bts = Arrays.asList(billTypes);
-//
-//        String sql = "Select bs From BillSession bs "
-//                + " where bs.retired=false"
-//                + " and bs.serviceSession=:ss "
-//                + " and bs.bill.billType in :bt"
-//                + " and type(bs.bill)=:class "
-//                + " and bs.sessionDate= :ssDate "
-//                + " order by bs.serialNo ";
-//        HashMap hh = new HashMap();
-//        hh.put("bt", bts);
-//        hh.put("class", BilledBill.class);
-//        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-//        hh.put("ss", getSelectedServiceSession());
-//        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
-//        System.out.println("hh = " + hh);
-//        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
-//        if (getSelectedServiceSession().isTransLeave()) {
-//            billSessions=null;
-//        }
-//        System.out.println("billSessions" + billSessions);
-//
-//    }
-    public void findArrivals() {
-
-        String sql = "Select bs From ArrivalRecord bs "
-                + " where bs.retired=false"
-                + " and bs.serviceSession=:ss "
-                + " and bs.sessionDate= :ssDate ";
-        HashMap hh = new HashMap();
-        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
-        hh.put("ss", getSelectedServiceSession());
-        arrivalRecord = (ArrivalRecord) fpFacade.findFirstByJpql(sql, hh);
-    }
-
     public void markAsArrived() {
         if (selectedSessionInstance == null) {
             return;
@@ -2496,27 +2457,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("this not arrived");
     }
 
-    public void markAsLeft() {
-        if (selectedServiceSession == null) {
-            return;
-        }
-        if (selectedServiceSession.getSessionDate() == null) {
-            return;
-        }
-        if (arrivalRecord == null) {
-            arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
-            arrivalRecord.setCreatedAt(new Date());
-            arrivalRecord.setCreater(sessionController.getLoggedUser());
-            fpFacade.create(arrivalRecord);
-        }
-
-        arrivalRecord.setApproved(true);
-        arrivalRecord.setApprovedAt(new Date());
-        arrivalRecord.setApprover(sessionController.getLoggedUser());
-        fpFacade.edit(arrivalRecord);
-    }
+  
 
     public void markToCancel() {
         if (selectedBillSession == null) {

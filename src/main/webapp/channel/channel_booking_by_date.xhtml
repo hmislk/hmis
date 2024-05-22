@@ -18,7 +18,6 @@
     </h:head>
 
     <h:body>
-
         <f:metadata>
             <f:viewParam name="fromDate" value="#{bookingControllerViewScope.fromDate}">
                 <f:converter converterId="javax.faces.DateTime"/>
@@ -34,8 +33,6 @@
 
                 <h:panelGroup rendered="#{!bookingControllerViewScope.printPreview}" >
                     <h:form >
-
-
                         <div class="container-fluid" >
                             <div class="row bg-light my-2 py-2 shadow-sm navbar" >
                                 <div class="col-12 p-2 d-flex" >
@@ -181,6 +178,8 @@
                                                             <p:badge rendered="#{s.cancelled}" value="Room: #{s.roomNo}"  severity="danger" styleClass="mr-2"></p:badge>
                                                         </div>
 
+                                                        <br/>
+
                                                     </div>
                                                 </div>
                                             </p:column>
@@ -200,39 +199,37 @@
                                                             <p:badge value="#{s.bookedPatientCount + 1}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                     </div>
-                                                    <h:panelGroup rendered="#{s.paidPatientCount ne null and s.bookedPatientCount ne null}">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <span class="mx-4">
-                                                                <div class="d-flex align-items-center">
-                                                                    <span class="text-center">
-                                                                        <h:outputText value="P" style="font-weight: bolder"/><br/>
-                                                                        <p:badge value="#{s.paidPatientCount}" severity="warning" size="large" styleClass="mr-2"></p:badge>
 
-                                                                    </span>
-                                                                    <span class="text-center mx-4"> 
-                                                                        <h:outputText style="font-weight: bolder" value="B"/><br/>
-                                                                        <p:badge value="#{s.bookedPatientCount}" severity="warning"  size="large" styleClass="mr-2"></p:badge>
-
-                                                                    </span>
-                                                                    <span class="text-center"> 
-                                                                        <h:outputText style="font-weight: bolder" value="C"/><br/>
-                                                                        <p:badge value="#{s.completedPatientCount}" severity="danger" size="large" styleClass="mr-2"></p:badge>
-                                                                    </span>
-                                                                </div>
-                                                            </span>
-
-                                                            <div class="text-center">
-                                                                <h:outputLabel /><br/>
-                                                                <p:commandButton 
-                                                                    icon="fas fa-cog"
-                                                                    class="mx-4"
-                                                                    styleClass="rounded-button ui-button-secondary"
-                                                                    action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
-                                                                    ajax="false" >
-                                                                </p:commandButton>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="mx-4">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="text-center mx-1">
+                                                                    <h:outputText value="P" style="font-weight: bolder"/><br/>
+                                                                    <p:badge value="#{s.paidPatientCount != null ? s.paidPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
+                                                                </span>
+                                                                <span class="text-center mx-1"> 
+                                                                    <h:outputText style="font-weight: bolder" value="B"/><br/>
+                                                                    <p:badge value="#{s.bookedPatientCount != null ? s.bookedPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
+                                                                </span>
+                                                                <span class="text-center mx-1" > 
+                                                                    <h:outputText style="font-weight: bolder" value="C"/><br/>
+                                                                    <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="danger" size="large" styleClass="mr-2"></p:badge>
+                                                                </span>
+                                                                <span class="text-center mx-1" > 
+                                                                    <h:outputText style="font-weight: bolder" value="&nbsp;"/><br/>
+                                                                    <p:commandButton 
+                                                                        icon="fas fa-cog"
+                                                                        styleClass="rounded-button ui-button-secondary mr-2"
+                                                                        action="#{bookingControllerViewScope.navigateToManageSessionInstance(s)}" 
+                                                                        ajax="false" >
+                                                                    </p:commandButton>
+                                                                </span>
                                                             </div>
-                                                        </div>
-                                                    </h:panelGroup>
+                                                        </span>
+                                                    </div>
+
+
+
                                                 </div>
                                             </p:column>
                                         </p:dataTable>
@@ -468,6 +465,9 @@
                                                 </p:column>
                                             </p:row>
 
+
+
+
                                             <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}">
                                                 <p:column><p:outputLabel id="staff" value="Staff" /></p:column>
                                                 <p:column>
@@ -505,80 +505,108 @@
                                                                    style="display: #{bookingControllerViewScope.paymentMethod ne 'Slip' ? 'none' : 'block'};" />
                                                 </p:column>
                                             </p:row>
-                                        </h:panelGrid>
-                                    </p:panel>
 
-                                    <p:panel class="p-2">
-                                        <h:panelGrid id="panelBookingDetails" class=" p-2" columns="2">
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fa-solid fa-calendar-plus"/>
-                                                <h:outputText class="mx-4" value="Booking Details"/>
-                                            </f:facet>
-                                            <p:outputLabel value="Speciality" />
-                                            <p:outputLabel style="font-weight: 600;" value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" />
 
-                                            <p:outputLabel value="Consultant" />
-                                            <p:outputLabel style="font-weight: 600;" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.staff.person.nameWithTitle}" />
 
-                                            <p:outputLabel value="Session" />
-                                            <p:outputLabel style="font-weight: 600;" value="#{bookingControllerViewScope.selectedSessionInstance.name}" />
 
-                                            <p:outputLabel value="Date" />
-                                            <p:outputLabel style="font-weight: 600;" value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                            </p:outputLabel>
 
-                                            <p:outputLabel value="Time" />
-                                            <p:outputLabel style="font-weight: 600;" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                            </p:outputLabel>
-
-                                            <p:outputLabel value="Reserved Numbers" />
-                                            <p:outputLabel style="font-weight: 600;" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.reserveNumbers}">
-                                            </p:outputLabel>
-
-                                            <p:outputLabel value="Total Fee" />
-                                            <h:panelGroup  id="gpFeeTotal">
-                                                <p:outputLabel style="font-weight: 600;" rendered="#{!bookingControllerViewScope.foriegn}"
-                                                                value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-                                                <p:outputLabel rendered="#{bookingControllerViewScope.foriegn}"
-                                                               value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
-                                            </h:panelGroup>
-
-                                            <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
-                                                <p:column headerText="Name">
-                                                    <h:outputLabel value="#{i.name}"/> 
-                                                </p:column>
-                                                <p:column headerText="Fee Type">
-                                                    #{i.feeType.label}
-                                                </p:column>
-                                                <p:column headerText="Fee for">
-                                                    <h:outputLabel rendered="#{i.speciality.name ne null}" value="#{i.speciality.name} - "></h:outputLabel>
-
-                                                    <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
-
-                                                    <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name} - "></h:outputLabel>
-
-                                                    <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Local Fee" rendered="#{!bookingControllerViewScope.foriegn}">
-                                                    <h:outputText value="#{i.fee}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Foriegn Fee" rendered="#{bookingControllerViewScope.foriegn}">
-                                                    <h:outputText value="#{i.ffee}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputText>
-                                                </p:column>
-                                            </p:dataTable>
 
                                         </h:panelGrid>
                                     </p:panel>
+
+                                    <p:panelGrid id="panelBookingDetails" class="w-100">
+                                        <f:facet name="header">
+                                            <p:row>
+                                                <p:column colspan="2" class="w-100" style="text-align: left" >
+                                                    <h:outputText styleClass="fa-solid fa-calendar-plus"/>
+                                                    <h:outputText class="mx-4" value="Booking Details"/>
+                                                </p:column>
+                                            </p:row>
+
+                                        </f:facet>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Speciality" /></p:column>
+                                            <p:column><p:outputLabel value="#{bookingControllerViewScope.speciality.name}" /></p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Consultant" /></p:column>
+                                            <p:column><p:outputLabel value="#{bookingControllerViewScope.staff.person.nameWithTitle}" /></p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Session" /></p:column>
+                                            <p:column><p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.name}" /></p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Date" /></p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Time" /></p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Reserved Numbers" /></p:column>
+                                            <p:column>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.reserveNumbers}">
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column><p:outputLabel value="Total Fee" /></p:column>
+                                            <p:column >
+                                                <h:panelGroup id="gpFeeTotal">
+                                                    <p:outputLabel  rendered="#{!bookingControllerViewScope.foriegn}"
+                                                                    value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </p:outputLabel>
+                                                    <p:outputLabel rendered="#{bookingControllerViewScope.foriegn}"
+                                                                   value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </p:outputLabel>
+                                                </h:panelGroup>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
+                                                    <p:column headerText="Name">
+                                                        <h:outputLabel value="#{i.name}"/> 
+                                                    </p:column>
+                                                    <p:column headerText="Fee Type">
+                                                        #{i.feeType.label}
+                                                    </p:column>
+                                                    <p:column headerText="Fee for">
+                                                        <h:outputLabel rendered="#{i.speciality.name ne null}" value="#{i.speciality.name} - "></h:outputLabel>
+
+                                                        <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
+
+                                                        <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name} - "></h:outputLabel>
+
+                                                        <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Local Fee" rendered="#{!bookingControllerViewScope.foriegn}">
+                                                        <h:outputText value="#{i.fee}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Foriegn Fee" rendered="#{bookingControllerViewScope.foriegn}">
+                                                        <h:outputText value="#{i.ffee}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:column>
+
+                                        </p:row>
+                                    </p:panelGrid>
 
                                 </div>
                             </div>
