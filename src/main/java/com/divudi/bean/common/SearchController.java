@@ -237,14 +237,13 @@ public class SearchController implements Serializable {
     boolean billPreview;
     private Long barcodeIdLong;
     private Date maxDate;
-    
+
     private double cashTotal;
     private double cardTotal;
     private double chequeTotal;
     private double slipTotal;
     private double totalOfOtherPayments;
     private double billCount;
-   
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -350,9 +349,12 @@ public class SearchController implements Serializable {
     }
 
     public String settleBillByBarcode() {
+        System.out.println("settleBillByBarcode");
         currentBill = searchBillFromBillId(barcodeIdLong);
+        System.out.println("currentBill by bill id= " + currentBill);
         if (currentBill == null) {
             currentBill = searchBillFromTokenId(barcodeIdLong);
+            System.out.println("currentBill by token id = " + currentBill);
         }
         String action;
         if (currentBill == null) {
@@ -369,6 +371,9 @@ public class SearchController implements Serializable {
     }
 
     public String toSettle(Bill preBill) {
+        System.out.println("preBill = " + preBill);
+        System.out.println("preBill ATOMIC BILL TYPE= " + preBill.getBillTypeAtomic());
+
         if (preBill == null) {
             JsfUtil.addErrorMessage("No Such Prebill");
             return "";
@@ -392,8 +397,14 @@ public class SearchController implements Serializable {
             switch (bta) {
                 case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
                     return opdPreSettleController.toSettle(preBill);
+                case PHARMACY_RETAIL_SALE_PRE:
+                case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                    setPreBillForPharmecy(preBill);
+                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
                 default:
+                    JsfUtil.addErrorMessage("Other Bill Type Error");
                     System.out.println("No Adomic bill type for = " + b);
+                    return null;
             }
         }
 //        if (preBill.getBillType() != null) {
@@ -2820,7 +2831,7 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
-        BillClassType[] billClassTypes = {BillClassType.CancelledBill,BillClassType.RefundBill};
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
         List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
@@ -6886,7 +6897,7 @@ public class SearchController implements Serializable {
             setDepartments(getDepartmentController().getInstitutionDepatrments(ins));
         }
     }
-    
+
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
         System.out.println("institution = " + institution);
         if (institution == null) {
@@ -6899,7 +6910,7 @@ public class SearchController implements Serializable {
         chequeTotal = 0.0;
         slipTotal = 0.0;
         totalOfOtherPayments = 0.0;
-        
+
         String jpql;
         Map params = new HashMap();
         List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
@@ -6942,21 +6953,17 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
         billSummaryRows = paymentFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         for (BillSummaryRow bss : billSummaryRows) {
-            if (bss.getPaymentMethod() == PaymentMethod.Cash){
+            if (bss.getPaymentMethod() == PaymentMethod.Cash) {
                 cashTotal += bss.getPaidValue();
-            }
-            else if (bss.getPaymentMethod() == PaymentMethod.Card){
+            } else if (bss.getPaymentMethod() == PaymentMethod.Card) {
                 cardTotal += bss.getPaidValue();
-            }
-            else if (bss.getPaymentMethod() == PaymentMethod.Cheque){
+            } else if (bss.getPaymentMethod() == PaymentMethod.Cheque) {
                 chequeTotal += bss.getPaidValue();
-            } 
-            else if (bss.getPaymentMethod() == PaymentMethod.Slip){
+            } else if (bss.getPaymentMethod() == PaymentMethod.Slip) {
                 slipTotal += bss.getPaidValue();
-            } 
-            else {
+            } else {
                 totalOfOtherPayments += bss.getPaidValue();
             }
             totalPaying += bss.getPaidValue();
@@ -7025,7 +7032,6 @@ public class SearchController implements Serializable {
 //        }
 //
 //    }
-
     public void processAllFinancialTransactionalSummarybyUsers() {
         //System.out.println("institution = " + institution);
         //System.out.println("department = " + department);
