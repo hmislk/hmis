@@ -890,10 +890,9 @@
                         ajax="false"  
                         value="Channel Scheduling"
                         action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
-<!--                    <p:menuitem ajax="false"  value="Doctor Arrivals"  action="/channel/channel_attandance?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>-->
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false"></p:menuitem>
-                    <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard?faces-redirect=true" rendered="false"/>
+                    
 
                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
