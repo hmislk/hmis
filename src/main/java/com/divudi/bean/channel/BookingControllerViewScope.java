@@ -841,6 +841,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setToDate(toDate);
         viewScopeDataTransferController.setNeedToFillBillSessions(true);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        setPatient(null);
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -1703,7 +1704,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+
         patientController.save(patient);
+
         printingBill = saveBilledBill(reservedBooking);
 
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
