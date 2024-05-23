@@ -1989,59 +1989,58 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyTableRe() {
-        Date startTime = new Date();
-
-        Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
-        //     m.put("class", PreBill.class);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ret", false);
-        m.put("ins", getSessionController().getInstitution());
+        bills = null;
         String sql;
+        Map temMap = new HashMap();
 
-        sql = "Select b from Bill b where "
-                + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt "
-                + " and b.retired=:ret "
-                + " and b.institution=:ins";
-        //+ " and type(b)=:class ";
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
-            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
-            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             sql += " and  ((b.netTotal) like :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((b.total) like :total )";
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patient.person.phone) like :phone )";
-            m.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+            temMap.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
-
         sql += " order by b.createdAt desc  ";
 //    
-        //     //////System.out.println("sql = " + sql);
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
 
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        
     }
 
     public void listPharmacyIssue() {
@@ -9398,30 +9397,30 @@ public class SearchController implements Serializable {
 
     }
 
-    public void sendSms() {
-        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-    }
+//    public void sendSms() {
+//        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+//    }
 
-    public void sendSmsAll() {
-        if (selectedTelephoneNumbers == null) {
-            JsfUtil.addErrorMessage("Please Select Numbers");
-            return;
-        }
-        if (selectedTelephoneNumbers.size() > 10000) {
-            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
-            return;
-        }
-        if (smsText.equals("") || smsText == null) {
-            JsfUtil.addErrorMessage("Enter Message");
-            return;
-        }
-        for (String stn : selectedTelephoneNumbers) {
-
-            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-            JsfUtil.addSuccessMessage("Done.");
-        }
-
-    }
+//    public void sendSmsAll() {
+//        if (selectedTelephoneNumbers == null) {
+//            JsfUtil.addErrorMessage("Please Select Numbers");
+//            return;
+//        }
+//        if (selectedTelephoneNumbers.size() > 10000) {
+//            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
+//            return;
+//        }
+//        if (smsText.equals("") || smsText == null) {
+//            JsfUtil.addErrorMessage("Enter Message");
+//            return;
+//        }
+//        for (String stn : selectedTelephoneNumbers) {
+//
+//            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+//            JsfUtil.addSuccessMessage("Done.");
+//        }
+//
+//    }
 
     public String navigateToCancelPurchaseOrder() {
         makeNull();

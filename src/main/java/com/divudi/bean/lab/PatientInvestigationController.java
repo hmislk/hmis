@@ -998,13 +998,9 @@ public class PatientInvestigationController implements Serializable {
 
         UserPreference ap = sessionController.getApplicationPreference();
 
-        SmsSentResponse sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
+        Boolean sent = smsManagerEjb.sendSms(s);
 
-        if (sent.isSentSuccefully()) {
-            s.setSentSuccessfully(true);
-            s.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(s);
-
+        if (sent) {
             getCurrent().getBillItem().getBill().setSmsed(true);
             getCurrent().getBillItem().getBill().setSmsedAt(new Date());
             getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
@@ -1013,12 +1009,8 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(getCurrent().getBillItem().getBill());
             JsfUtil.addSuccessMessage("Sms send");
         } else {
-            s.setSentSuccessfully(false);
-            s.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(s);
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
-//        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
 
     public void markAsSampled() {

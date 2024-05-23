@@ -205,7 +205,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     FinancialTransactionController financialTransactionController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
-
     /**
      * Properties
      */
@@ -841,7 +840,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setToDate(toDate);
         viewScopeDataTransferController.setNeedToFillBillSessions(true);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
-        setPatient(null);
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -1704,9 +1702,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
-
         patientController.save(patient);
-
         printingBill = saveBilledBill(reservedBooking);
 
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -1761,11 +1757,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+if (sent) {
+    JsfUtil.addSuccessMessage("SMS Sent");
+} else {
+    JsfUtil.addSuccessMessage("SMS Failed");
+}
+
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -1790,10 +1788,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -1823,10 +1819,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }

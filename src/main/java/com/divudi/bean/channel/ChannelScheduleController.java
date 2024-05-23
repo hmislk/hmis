@@ -187,10 +187,8 @@ public class ChannelScheduleController implements Serializable {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             smsFacade.create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            smsFacade.edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
