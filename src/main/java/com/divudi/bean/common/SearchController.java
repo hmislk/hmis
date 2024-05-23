@@ -9398,30 +9398,30 @@ public class SearchController implements Serializable {
 
     }
 
-    public void sendSms() {
-        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-    }
+//    public void sendSms() {
+//        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+//    }
 
-    public void sendSmsAll() {
-        if (selectedTelephoneNumbers == null) {
-            JsfUtil.addErrorMessage("Please Select Numbers");
-            return;
-        }
-        if (selectedTelephoneNumbers.size() > 10000) {
-            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
-            return;
-        }
-        if (smsText.equals("") || smsText == null) {
-            JsfUtil.addErrorMessage("Enter Message");
-            return;
-        }
-        for (String stn : selectedTelephoneNumbers) {
-
-            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-            JsfUtil.addSuccessMessage("Done.");
-        }
-
-    }
+//    public void sendSmsAll() {
+//        if (selectedTelephoneNumbers == null) {
+//            JsfUtil.addErrorMessage("Please Select Numbers");
+//            return;
+//        }
+//        if (selectedTelephoneNumbers.size() > 10000) {
+//            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
+//            return;
+//        }
+//        if (smsText.equals("") || smsText == null) {
+//            JsfUtil.addErrorMessage("Enter Message");
+//            return;
+//        }
+//        for (String stn : selectedTelephoneNumbers) {
+//
+//            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+//            JsfUtil.addSuccessMessage("Done.");
+//        }
+//
+//    }
 
     public String navigateToCancelPurchaseOrder() {
         makeNull();

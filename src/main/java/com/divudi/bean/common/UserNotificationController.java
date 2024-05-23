@@ -488,10 +488,13 @@ public class UserNotificationController implements Serializable {
         e.setPending(false);
         //e.setSmsType(MessageType.ChannelDoctorArrival);
         smsFacade.create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        smsFacade.edit(e);
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     public String createSmsForUserNotification() {

@@ -436,13 +436,13 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("No Bill Fees");
             return "";
         }
-        
-        if(configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Refunded")){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Refunded")) {
         }
-        
-         if(configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Canceled")){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Canceled")) {
         }
-        
+
         return "/channel/manage_booking_past?faces-redirect=true";
     }
 
@@ -717,11 +717,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        }else{
+            JsfUtil.addSuccessMessage("SMS Failed");            
+        }
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -747,10 +748,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -781,10 +779,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
@@ -1259,23 +1254,23 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         }
 
     }
-    
+
     public void fillSessionInstance() {
-            sessionInstances = new ArrayList<>();
-            System.out.println("getDate() = " + date);
-            String jpql = "select i "
-                    + " from SessionInstance i "
-                    + " where i.originatingSession.staff=:os "
-                    + " and i.retired=:ret"
-                    + " and i.sessionDate=:date ";
+        sessionInstances = new ArrayList<>();
+        System.out.println("getDate() = " + date);
+        String jpql = "select i "
+                + " from SessionInstance i "
+                + " where i.originatingSession.staff=:os "
+                + " and i.retired=:ret"
+                + " and i.sessionDate=:date ";
 
-            Map m = new HashMap();
-            m.put("ret", false);
-            m.put("os", getStaff());
-            m.put("date", getDate());
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("os", getStaff());
+        m.put("date", getDate());
 
-            sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
-            System.out.println("sessionInstances = " + sessionInstances.size());
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
+        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public void generateSessionEvents(List<SessionInstance> sss) {
@@ -1420,8 +1415,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
     }
-
-   
 
     public void markCurrentCompleteAndCallNext() {
         BillSession lastCompletedSession = null;
