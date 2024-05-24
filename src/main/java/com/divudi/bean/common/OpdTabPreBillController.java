@@ -1404,7 +1404,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-        System.out.println("recreateBillItems");
+        //System.out.println("recreateBillItems");
         //billTotal = 0.0;
     }
 
