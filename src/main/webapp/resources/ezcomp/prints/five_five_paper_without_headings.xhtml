@@ -235,7 +235,7 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
 
 
-                            <h:panelGroup >
+                            <h:panelGroup rendered="#{!bip.item.printFeesForBills}">
                                 <tr>
                                     <td  style="overflow: visible;">
                                         <div class="d-flex justify-content-between">

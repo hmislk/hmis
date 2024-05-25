@@ -1421,27 +1421,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         fpFacade.edit(arrivalRecord);
     }
 
-    public void markAsLeft() {
-        if (selectedServiceSession == null) {
-            return;
-        }
-        if (selectedServiceSession.getSessionDate() == null) {
-            return;
-        }
-        if (arrivalRecord == null) {
-            arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
-            arrivalRecord.setCreatedAt(new Date());
-            arrivalRecord.setCreater(sessionController.getLoggedUser());
-            fpFacade.create(arrivalRecord);
-        }
-
-        arrivalRecord.setApproved(true);
-        arrivalRecord.setApprovedAt(new Date());
-        arrivalRecord.setApprover(sessionController.getLoggedUser());
-        fpFacade.edit(arrivalRecord);
-    }
+   
 
     public void markCurrentCompleteAndCallNext() {
         BillSession lastCompletedSession = null;
