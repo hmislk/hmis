@@ -14,6 +14,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.TokenType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -44,6 +45,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.TokenFacade;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,10 +53,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -97,6 +101,8 @@ public class OpdPreSettleController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    TokenFacade tokenFacade;
 /////////////////////////
     Item selectedAlternative;
 
@@ -718,6 +724,18 @@ public class OpdPreSettleController implements Serializable {
         setBill(getBillFacade().find(getSaleBill().getId()));
         //createPaymentsForCashierAcceptpayment(getSaleBill(), getSaleBill().getPaymentMethod());
         billPreview = true;
+        completeTokenAfterAcceptPayment();
+    }
+    
+    public void completeTokenAfterAcceptPayment(){
+        if (token==null) {
+            return;
+        }
+        System.out.println("foundToken = " + token);
+        token.setCompleted(true);
+        token.setCompletedAt(new Date());
+        tokenFacade.edit(token);
+        
     }
 
     public void createPaymentsForCashierAcceptpayment(Bill bill, PaymentMethod pm) {
