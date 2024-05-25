@@ -620,47 +620,53 @@
                     <h:form>
 
                         <div class="row">
-                            <div class="col-md-4">
-                                <h:panelGroup class="d-grid gap-3" >
-                                    <p:commandButton 
-                                        value="Back" 
-                                        icon="fa fa-redo" 
-                                        class="ui-button-success" 
-                                        action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}" 
-                                        ajax="false" />
-                                </h:panelGroup>
+                            <div>
+                                <div class="row w-100">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        <div>
+                                            <p:commandButton 
+                                                value="Print" 
+                                                ajax="false" 
+                                                class="ui-button-info"
+                                                icon="fa fa-print"
+                                                action="#"
+                                                disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully}">
+                                                <p:printer 
+                                                    target="gpBillPreview" >
+                                                </p:printer>
+                                            </p:commandButton>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+
+                                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                            <p:selectOneMenu 
+                                                value="#{bookingControllerViewScope.departmentPreference.channelBillPaperType}" 
+                                                class="m-1" 
+                                                style="width: 13em;">
+                                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                                <f:selectItems value="#{enumController.paperTypes}" />
+                                            </p:selectOneMenu>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="fa fa-sync-alt" 
+                                                class="ui-button m-1" 
+                                                title="Redraw Bill">
+                                            </p:commandButton>
+                                        </div>
+
+                                        <div>
+                                            <p:commandButton 
+                                                value="Back" 
+                                                icon="fa fa-redo" 
+                                                class="ui-button-success" 
+                                                action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}" 
+                                                ajax="false" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-8">
-
-                                <div class="d-flex justify-content-end">
-                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                    <p:selectOneMenu 
-                                        value="#{bookingControllerViewScope.departmentPreference.channelBillPaperType}" 
-                                        class="m-1" 
-                                        style="width: 13em;">
-                                        <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" />
-                                    </p:selectOneMenu>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        icon="fa fa-sync-alt" 
-                                        class="ui-button m-1" 
-                                        title="Redraw Bill">
-                                    </p:commandButton>
-                                </div>
-
                                 <div >
-                                    <p:commandButton 
-                                        value="Print" 
-                                        ajax="false" 
-                                        class="ui-button-info"
-                                        icon="fa fa-print"
-                                        action="#"
-                                        disabled="#{bookingControllerViewScope.printingBill.balance ne 0.0 or !bookingControllerViewScope.settleSucessFully}">
-                                        <p:printer 
-                                            target="gpBillPreview" >
-                                        </p:printer>
-                                    </p:commandButton>
                                     <h:panelGroup id="gpBillPreview">
                                         <ui:repeat value="#{bookingControllerViewScope.departmentPreference.channellingBillCopiesList}" var="copy">
                                             <h:panelGroup rendered="#{bookingControllerViewScope.departmentPreference.channelBillPaperType eq 'PosPaper'}" >
