@@ -18,13 +18,27 @@
 
                         <h:panelGrid columns="2" class="w-100">
                             <h:outputLabel value="From"/>
-                            <p:calendar class="w-100 " inputStyleClass="w-100" id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{billSearch.fromDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
+
                             <h:outputLabel value="To"/>                                
-                            <p:calendar class="w-100 " inputStyleClass="w-100" id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{billSearch.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
+
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{billSearch.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
@@ -44,11 +58,16 @@
                             </p:selectOneMenu>
 
                             <h:outputLabel value="User"/>
-                            <p:autoComplete class="w-100  " inputStyleClass="w-100" id="cmbUser"  placeholder="All Users"
-                                            forceSelection="true" 
-                                            completeMethod="#{webUserController.completeUser}" 
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{billSearch.user}" >
+                            <p:autoComplete 
+                                class="w-100  " 
+                                inputStyleClass="w-100" 
+                                id="cmbUser"  
+                                placeholder="All Users"
+                                forceSelection="true" 
+                                completeMethod="#{webUserController.completeUser}" 
+                                var="w" itemLabel="#{w.webUserPerson.name}" 
+                                itemValue="#{w}"
+                                value="#{billSearch.user}" >
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="3" class="my-2" >
@@ -60,11 +79,13 @@
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 
-                            <p:commandButton  value="Export as Excel" ajax="false" class="ui-button-success mx-1" icon="fas fa-file-excel">
-                                <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Data"
-                                                />
+                            <p:commandButton  
+                                value="Export as Excel" 
+                                ajax="false" 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel">
+                                <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Data"/>
                             </p:commandButton>
-
 
                             <p:commandButton 
                                 value="Clear"
@@ -74,36 +95,50 @@
                                 icon="fas fa-eraser">
                             </p:commandButton>
 
-
                         </h:panelGrid>
 
                         <table class="table table-responsive" >
                             <tr class="table-secondary">
                                 <th>Bill Type</th>
-                                <th>Payment Method</th>
-                                <th>Total</th>
-                                <th>Discount</th>
-                                <th>NetTotal</th>
-                                <th></th>
-<!--                                <th>Tax</th>-->
+                                <th style="width:12em;">Payment Method</th>
+                                <th style="text-align: right">Total</th>
+                                <th style="text-align: right">Discount</th>
+                                <th style="text-align: right">NetTotal</th>
+                                <!--                                <th>Tax</th>--> 
 
                             </tr>
                             <ui:repeat value="#{billSearch.overallSummary.billTypeSummaries}" var="billTypeSummary">
                                 <tr  style="font-weight: bolder">
-                                    <td>#{billTypeSummary.billType.label}</td>
-                                    <td>#{billTypeSummary.billClassType}</td>
+                                    <td class="d-flex gap-2">
+                                        <h:outputLabel value="#{billTypeSummary.billType.label}"/>
+                                        <h:outputLabel value="-" style="width: 20px; text-align: center;"/>
+                                        <h:outputLabel value="#{billTypeSummary.billClassType}"/>
+                                    </td>
                                 </tr>
 
                                 <ui:repeat value="#{billTypeSummary.paymentSummaries}" var="paymentSummary">
 
                                     <tr >
-                                       
+
                                         <td></td>
-                                        <td></td>
-                                        <td>#{paymentSummary.paymentMethod}</td>
-                                        <td style="text-align: right">#{paymentSummary.total}</td>
-                                        <td style="text-align: right">#{paymentSummary.discount}</td>
-                                        <td style="text-align: right">#{paymentSummary.netTotal}</td>
+                                        <td>
+                                            <h:outputLabel value="#{paymentSummary.paymentMethod}"/>
+                                        </td>
+                                        <td style="text-align: right">
+                                            <h:outputLabel value="#{paymentSummary.total}">
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td style="text-align: right">
+                                            <h:outputLabel value="#{paymentSummary.discount}">
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td style="text-align: right">
+                                            <h:outputLabel value="#{paymentSummary.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </td>
 <!--                                        <td>#{paymentSummary.tax}</td>-->
                                     </tr>
                                 </ui:repeat>
@@ -112,15 +147,15 @@
                                     <td></td>
                                     <td></td>
 
-
-                                    <td></td>
-
                                     <td style="font-weight: bolder;text-align: right">RS: </td>
-                                    <td style="font-weight: bolder;text-align: right">#{billTypeSummary.billTypeTotal}</td>
+                                    <td style="font-weight: bolder;text-align: right">
+                                        <h:outputLabel value="#{billTypeSummary.billTypeTotal}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </td>
                                 </tr>
                             </ui:repeat>
                         </table>
-
 
                         <p:panel header="Data" rendered="false" >
                             <p:dataTable id="tblBills" value="#{billSearch.billSummeries}" var="bs" rowKey="#{bs.key}" rowIndexVar="n" >
@@ -177,11 +212,8 @@
                                     </p:outputLabel>
                                 </p:column>
 
-
-
                             </p:dataTable>
                         </p:panel>
-
 
                     </p:panel>
 
@@ -189,9 +221,6 @@
             </ui:define>
 
         </ui:composition>
-
-
-
 
     </h:body>
 </html>
