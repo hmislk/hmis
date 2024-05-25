@@ -285,7 +285,7 @@ public class FinancialReport {
     }
 
     public double getCashTotal() {
-        cashTotal = getNetCashTotal() + getNetCreditTotal() + getNetCreditCardTotal() + getNetOtherNonCreditTotal() + getNetVoucherTotal();
+        cashTotal = getNetCashTotal();
         return cashTotal;
     }
 
@@ -389,7 +389,7 @@ public class FinancialReport {
             billTypesForRefundedCash = new ArrayList<>();
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
-            
+
         }
         return billTypesForRefundedCash;
     }
