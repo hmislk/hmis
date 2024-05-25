@@ -253,6 +253,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         findPreBill(currentToken.getBill());
         opdPreSettleController.setBillPreview(false);
         opdPreSettleController.setToken(currentToken);
+        opdPreSettleController.toSettle(currentToken.getBill());
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
     }
 
@@ -292,7 +293,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-
+        System.out.println("navigateToNewOpdBillForCashierTabView");
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
         opdTabPreBillController.setToken(currentToken);

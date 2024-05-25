@@ -1472,16 +1472,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setSmsType(MessageType.OpdBillSettle);
         getSmsFacade().create(s);
 
-        SmsSentResponse sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
-        if (sent.isSentSuccefully()) {
-            s.setSentSuccessfully(true);
-            s.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(s);
+        Boolean sent = smsManagerEjb.sendSms(s);
+        if (sent) {
             JsfUtil.addSuccessMessage("Sms send");
         } else {
-            s.setSentSuccessfully(false);
-            s.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(s);
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
     }
