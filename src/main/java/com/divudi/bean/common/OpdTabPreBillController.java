@@ -310,12 +310,9 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void departmentChanged() {
-        System.out.println("departmentChanged ");
         if (selectedOpdItemDepartment == null) {
-            System.out.println("selectedOpdItemDepartment = null");
             departmentOpdItems = getOpdItems();
         } else {
-            System.out.println("departmentOpdItems not null");
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }
     }
@@ -336,7 +333,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
-        System.out.println("listItemsByDepartment = " + listItemsByDepartment);
         if (!listItemsByDepartment) {
             return ils;
         }
@@ -346,7 +342,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 continue;
             }
             if (il.getDepartmentId().equals(dept.getId())) {
-                System.out.println("il = " + il.getName());
                 tils.add(il);
             }
         }
@@ -1357,7 +1352,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void clearBillItemValues() {
-        System.out.println("clearBillItemValues");
+        //System.out.println("clearBillItemValues");
         currentBillItem = null;
         recreateBillItems();
         setItemLight(itemLight);
@@ -1404,7 +1399,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-        System.out.println("recreateBillItems");
+        //System.out.println("recreateBillItems");
         //billTotal = 0.0;
     }
 
@@ -1557,7 +1552,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void makeNull() {
-        System.out.println("Make null");
+        //System.out.println("Make null");
         clearBillItemValues();
         clearBillValues();
         paymentMethod = null;

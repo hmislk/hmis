@@ -58,6 +58,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
@@ -111,6 +112,8 @@ public class SearchController implements Serializable {
     PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
+    @EJB
+    TokenFacade tokenFacade;
 
     /**
      * Inject
@@ -244,6 +247,7 @@ public class SearchController implements Serializable {
     private double slipTotal;
     private double totalOfOtherPayments;
     private double billCount;
+    private Token token;
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -333,6 +337,19 @@ public class SearchController implements Serializable {
         hm.put("tid", currentTokenId);
         return getBillFacade().findFirstByJpql(sql, hm);
     }
+    
+    public Token searchTokenFromTokenId(Long currentTokenId) {
+        if (currentTokenId == null) {
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
+        }
+        String sql = "SELECT t FROM Token t "
+                + "WHERE t.retired = false "
+                + "AND t.id = :tid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("tid", currentTokenId);
+        return tokenFacade.findFirstByJpql(sql, hm);
+    }
 
     public Bill searchBillFromBillId(Long currentTokenId) {
         if (currentTokenId == null) {
@@ -354,6 +371,7 @@ public class SearchController implements Serializable {
         System.out.println("currentBill by bill id= " + currentBill);
         if (currentBill == null) {
             currentBill = searchBillFromTokenId(barcodeIdLong);
+            opdPreSettleController.setToken(searchTokenFromTokenId(barcodeIdLong));
             System.out.println("currentBill by token id = " + currentBill);
         }
         String action;
@@ -1425,6 +1443,14 @@ public class SearchController implements Serializable {
         this.billCount = billCount;
     }
 
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -1989,59 +2015,58 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyTableRe() {
-        Date startTime = new Date();
-
-        Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
-        //     m.put("class", PreBill.class);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ret", false);
-        m.put("ins", getSessionController().getInstitution());
+        bills = null;
         String sql;
+        Map temMap = new HashMap();
 
-        sql = "Select b from Bill b where "
-                + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt "
-                + " and b.retired=:ret "
-                + " and b.institution=:ins";
-        //+ " and type(b)=:class ";
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
-            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
-            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             sql += " and  ((b.netTotal) like :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((b.total) like :total )";
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patient.person.phone) like :phone )";
-            m.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+            temMap.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
-
         sql += " order by b.createdAt desc  ";
 //    
-        //     //////System.out.println("sql = " + sql);
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
 
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        
     }
 
     public void listPharmacyIssue() {
