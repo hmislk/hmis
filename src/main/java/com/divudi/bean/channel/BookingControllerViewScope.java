@@ -205,6 +205,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     FinancialTransactionController financialTransactionController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
+  
     /**
      * Properties
      */
@@ -1757,13 +1758,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        Boolean sent = smsManager.sendSms(e);
-if (sent) {
-    JsfUtil.addSuccessMessage("SMS Sent");
-} else {
-    JsfUtil.addSuccessMessage("SMS Failed");
-}
-
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -1788,8 +1787,10 @@ if (sent) {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            Boolean sent = smsManager.sendSms(e);
-
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
+            getSmsFacade().edit(e);
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -1819,8 +1820,10 @@ if (sent) {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            Boolean sent = smsManager.sendSms(e);
-
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
+            getSmsFacade().edit(e);
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
