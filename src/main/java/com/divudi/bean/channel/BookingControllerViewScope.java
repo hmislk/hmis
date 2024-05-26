@@ -10,11 +10,9 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
-import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
-import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ViewScopeDataTransferController;
@@ -74,7 +72,6 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Fee;
@@ -166,8 +163,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     ConfigOptionController configOptionController;
     @Inject
     PriceMatrixController priceMatrixController;
-    @Inject
-    PatientController patientController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -1705,7 +1700,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
-        patientController.save(patient);
+        saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
 
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -1742,7 +1737,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return null;
             }
         }
-        patientController.save(patient);
+        saveSelected(patient);
         return saveBilledBillForPatientPortal();
     }
 
@@ -5651,6 +5646,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.disableRefund = disableRefund;
     }
 
+    @Override
     public void selectQuickOneFromQuickSearchPatient() {
         setPatient(patient);
         setPatientDetailsEditable(false);
