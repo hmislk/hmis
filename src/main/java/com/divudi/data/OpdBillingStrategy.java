@@ -5,7 +5,6 @@
 package com.divudi.data;
 
 /**
- *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 public enum OpdBillingStrategy {
@@ -16,7 +15,7 @@ public enum OpdBillingStrategy {
 
     private final String label;
 
-    private OpdBillingStrategy(String label) {
+    OpdBillingStrategy(String label) {
         this.label = label;
     }
 

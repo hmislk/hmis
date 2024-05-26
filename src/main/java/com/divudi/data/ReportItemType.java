@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum ReportItemType {
+
     Area,
     AutherizedName,
     AutherizedCode,
@@ -70,7 +70,8 @@ public enum ReportItemType {
     SampledTime,
     Speciman,
     Surname,
-    Ward,;
+    Ward,
+    ;
 
     public String getLabel() {
         switch (this) {
@@ -190,5 +191,4 @@ public enum ReportItemType {
                 return this.toString();
         }
     }
-
 }

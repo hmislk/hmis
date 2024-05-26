@@ -153,6 +153,27 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
+        if (comment==null) {
+            JsfUtil.addErrorMessage("Provide Comment To Cancel !");
+            return "";
+        }
+        CancelledBill cb=pharmacyCreateCancelBill();
+        cb.setBillItems(getBill().getBillItems());
+        bill.setCancelled(true);
+        bill.setCancelledBill(cb);
+        billFacade.edit(bill);
+        return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+    }
+    
+    public String cancelInwardPharmacyRequestBillFromInward(){
+        if (bill==null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (comment==null) {
+            JsfUtil.addErrorMessage("Provide Comment To Cancel !");
+            return "";
+        }
         CancelledBill cb=pharmacyCreateCancelBill();
         cb.setBillItems(getBill().getBillItems());
         bill.setCancelled(true);
@@ -167,11 +188,12 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
         CancelledBill cb=pharmacyCreateCancelBill();
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
         cb.setBillItems(getBill().getBillItems());
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
-        return "/pharmacy/pharmacy_search?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
     public void markAsChecked() {
@@ -227,6 +249,11 @@ public class PharmacyBillSearch implements Serializable {
 
         if (checkIssueReturn(getBill())) {
             JsfUtil.addErrorMessage("Issue Bill had been Returned You can't cancell bill ");
+            return;
+        }
+        
+        if (getBill().getComments()==null || getBill().getComments().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Enter Comments ");
             return;
         }
 

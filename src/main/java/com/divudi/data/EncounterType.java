@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddh
  */
 public enum EncounterType {
+
     Opd,
     Admission,
     Etu,
@@ -16,6 +16,5 @@ public enum EncounterType {
     Lab,
     Radiology,
     HomeVisit,
-    SurgicalProcedure,
-    
+    SurgicalProcedure
 }

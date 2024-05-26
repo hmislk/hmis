@@ -8,6 +8,7 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -36,12 +37,11 @@ public class Patient implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
     Long id;
 
     private Long patientPhoneNumber;
     private Long patientMobileNumber;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Person person;
     //personaI dentification Number
     Integer pinNo;
@@ -607,7 +607,7 @@ public class Patient implements Serializable {
                 return;
             }
             this.getPerson().setPhone(phoneNumberStringTransient);
-            this.patientPhoneNumber = commonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
+            this.patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
             this.phoneNumberStringTransient = phoneNumberStringTransient;
         } catch (Exception e) {
         }
@@ -621,7 +621,7 @@ public class Patient implements Serializable {
                 return;
             }
             this.getPerson().setMobile(mobileNumberStringTransient);
-            this.patientMobileNumber = commonFunctions.removeSpecialCharsInPhonenumber(mobileNumberStringTransient);  
+            this.patientMobileNumber = CommonFunctions.removeSpecialCharsInPhonenumber(mobileNumberStringTransient);  
             this.mobileNumberStringTransient = mobileNumberStringTransient;
         } catch (Exception e) {
         }

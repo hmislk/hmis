@@ -52,6 +52,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import com.divudi.entity.Doctor;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -223,6 +224,28 @@ public class BillSearch implements Serializable {
 
     private boolean opdBillCancellationSameDay = false;
     private boolean opdBillRefundAllowedSameDay = false;
+    
+    //Edit Bill details
+    private Doctor referredBy;
+    
+    public void editBillDetails(){
+        Bill editedBill=bill;
+        if (bill==null) {
+            JsfUtil.addErrorMessage("Bill Error !");
+            return;
+        }
+        if(referredBy==null){
+            JsfUtil.addErrorMessage("Pleace Select Reffering Doctor !");
+            return;
+        }
+        editedBill.setReferredBy(referredBy);
+        if (bill.getId()==null) {
+            billFacade.create(editedBill);
+        }
+        billFacade.edit(editedBill);
+        JsfUtil.addSuccessMessage("Saved");
+        referredBy=null;
+    }
 
     public void preparePatientReportByIdForRequests() {
         bill = null;
@@ -457,7 +480,7 @@ public class BillSearch implements Serializable {
 
         Map m = new HashMap();
         String j;
-        j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType, b.creater) "
+        j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billTypeAtomic, b.billType, b.creater) "
                 + " from Bill b "
                 + " where b.retired=false "
                 + " and b.billTime between :fd and :td ";
@@ -479,11 +502,10 @@ public class BillSearch implements Serializable {
         billTypes.add(BillType.PharmacySale);
         billTypes.add(BillType.PharmacySaleWithoutStock);
         billTypes.add(BillType.PharmacyWholeSale);
-
         j += " and b.billType in :bts ";
         m.put("bts", billTypes);
 
-        j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater";
+        j += " group by b.paymentMethod, b.billClassType, b.billType, b.creater, b.billTypeAtomic";
 
         Boolean bf = false;
         if (bf) {
@@ -596,6 +618,12 @@ public class BillSearch implements Serializable {
 
         bts.add(BillType.CollectingCentreBill);
         bts.add(BillType.PaymentBill);
+        
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelProPayment);
+        bts.add(BillType.ChannelAgencyCommission);
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
@@ -1604,6 +1632,7 @@ public class BillSearch implements Serializable {
         }
         Date bd = Calendar.getInstance().getTime();
         rb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
+        rb.setBillType(billType.PaymentBill);
         rb.setBillDate(bd);
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
@@ -3801,6 +3830,14 @@ public class BillSearch implements Serializable {
 
     public void setOpdBillRefundAllowedSameDay(boolean opdBillRefundAllowedSameDay) {
         this.opdBillRefundAllowedSameDay = opdBillRefundAllowedSameDay;
+    }
+
+    public Doctor getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(Doctor referredBy) {
+        this.referredBy = referredBy;
     }
 
     public class PaymentSummary {

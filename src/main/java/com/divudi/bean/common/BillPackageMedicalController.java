@@ -498,7 +498,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getPaymentMethod(), getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), getPaymentMethodData())) {
             return true;
         }
 

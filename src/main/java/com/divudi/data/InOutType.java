@@ -6,10 +6,11 @@
 package com.divudi.data;
 
 /**
- *
  * @author safrin
  */
 public enum InOutType {
 
-    in, out,none;
+    in,
+    out,
+    nones
 }

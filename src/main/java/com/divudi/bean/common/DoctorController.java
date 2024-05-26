@@ -115,11 +115,26 @@ public class DoctorController implements Serializable {
         temSql = "SELECT d FROM Doctor d where d.retired=false ";
         doctors = getFacade().findByJpql(temSql);
 
-        
-
     }
 
     public List<Doctor> getSelectedItems() {
+        if (selectedItems == null) {
+            selectedItems = new ArrayList<>();
+        }
+        return selectedItems;
+    }
+
+    public String navigateToDoctorsIncludingConsultants() {
+        fillDoctorsIncludingConsultants();
+        return "/admin/staff/doctors_including_consultants?faces-redirect=true";
+    }
+    
+    public String navigateToDoctorsExcludingConsultants() {
+        fillDoctorsExcludingConsultants();
+        return "/admin/staff/doctors_excluding_consultants?faces-redirect=true";
+    }
+
+    private void fillDoctorsIncludingConsultants() {
         String j;
         j = "select c "
                 + " from Doctor c "
@@ -128,28 +143,18 @@ public class DoctorController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         selectedItems = getFacade().findByJpql(j, m);
-//        String sql = "";
-//        HashMap hm = new HashMap();
-//        hm.put("class", Consultant.class);
-//        if (selectText.trim().equals("")) {
-//            sql = "select c from Doctor c "
-//                    + " where c.retired=false "
-//                    + " and type(c)!=:class "
-//                    + "order by c.person.name";
-//
-//        } else {
-//            sql = "select c from Doctor c "
-//                    + "where c.retired=false "
-//                    + " and type(c)!=:class "
-//                    + " and (c.person.name) like :q "
-//                    + " order by c.person.name";
-//
-//            hm.put("q", "%" + getSelectText().toUpperCase() + "%");
-//        }
-//
-//        selectedItems = getFacade().findByJpql(sql, hm);
+    }
 
-        return selectedItems;
+    private void fillDoctorsExcludingConsultants() {
+        String j;
+        j = "select c "
+                + "from Doctor c "
+                + "where c.retired = :ret "
+                + "and TYPE(c) != Consultant "
+                + "order by c.person.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        selectedItems = getFacade().findByJpql(j, m);
     }
 
     public void prepareAdd() {
@@ -189,7 +194,7 @@ public class DoctorController implements Serializable {
                 row.createCell(3).setCellValue(doctor.getPerson().getMobile());
                 row.createCell(4).setCellValue(doctor.getPerson().getAddress());
                 row.createCell(5).setCellValue(doctor.getCode());
-                row.createCell(6).setCellValue(doctor.getSpeciality().getDescription());
+                row.createCell(6).setCellValue(doctor.getSpeciality().getName());
                 row.createCell(7).setCellValue(doctor.getRegistration());
                 row.createCell(8).setCellValue(doctor.getQualification());
                 row.createCell(9).setCellValue(doctor.getCharge());
@@ -226,6 +231,7 @@ public class DoctorController implements Serializable {
         //  getItems();
         current = null;
         getCurrent();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectedItems(List<Doctor> selectedItems) {
@@ -305,6 +311,7 @@ public class DoctorController implements Serializable {
         current = new Doctor();
         recreateModel();
         // getItems();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectText(String selectText) {

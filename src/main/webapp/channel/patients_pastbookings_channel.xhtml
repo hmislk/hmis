@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="OPD Payment Search">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Patients Past ChannelBooking" class="mx-4"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            id="fromDate" 
+                                            value="#{patientController.fromDate}" 
+                                            navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            id="toDate" 
+                                            value="#{patientController.toDate}" 
+                                            navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >                                                                              
+                                </p:calendar>
+
+                                <div class="d-grid gap-2 my-2">
+                                    <p:commandButton id="btnSearch" 
+                                                     class="ui-button-warning" 
+                                                     icon="fas fa-search" 
+                                                     ajax="false" 
+                                                     value="Search" 
+                                                     action="#{patientController.fillPatientsPastChannelbookings}" />
+
+                                </div>
+                                <p:defaultCommand target="btnSearch" />
+                                <p:spacer height="10" width="5" ></p:spacer><!-- comment -->
+
+                            </div>
+
+                            <div class="col-md-10">
+                                <p:dataTable rowIndexVar="i" 
+                                             id="tblBills" 
+                                             value="#{patientController.patientsPastChannelBookings}" 
+                                             var="bfp" 
+                                             rows ="10"
+                                             rowStyleClass="#{bill.cancelled?'text-danger':''} "
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,25,50"
+                                             >
+                                    <p:column headerText="No" styleClass="alignTop">
+                                        <h:outputLabel value="#{i+1}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill No" >                                
+                                        <h:outputLabel id="billNo" 
+                                                       value="#{bfp.deptId}" />
+                                    </p:column>    
+
+                                    <p:column headerText="Billed At"  >
+                                        <h:outputLabel value="#{bfp.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </p:column> 
+                                    <p:column headerText="Billed by"  >
+                                        <h:outputLabel value="#{bfp.creater.name}" >
+
+                                        </h:outputLabel>
+                                    </p:column> 
+                                    <p:column headerText="Consultant"  >
+                                        <h:outputLabel value="#{bfp.staff.person.nameWithTitle}" >
+
+                                        </h:outputLabel>
+                                    </p:column> 
+                                    <p:column headerText="Session" filterBy="#{bfp.singleBillSession.sessionInstance.name}" >
+                                        <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.name}" />
+                                        <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.sessionDate}">
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="MM/dd/yyyy" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{bfp.singleBillSession.sessionInstance.sessionAt}">
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm a" />
+                                        </h:outputLabel>
+                                    </p:column> 
+                                    <p:column headerText="Payment Amount for BFP" >
+                                        <h:outputLabel value="#{bfp.total}" >                                      
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Billed Department" >
+                                        <h:outputLabel value="#{bfp.department.name}" >                                      
+                                        </h:outputLabel>
+                                    </p:column> 
+
+                                    <p:column headerText="Patient" >
+                                        <h:outputLabel value="#{bfp.patient.person.nameWithTitle}" >                                      
+                                        </h:outputLabel>
+                                    </p:column>  
+
+                                    <p:column headerText="Action">
+                                        <p:commandButton 
+                                            class="m-2 ui-button-success" 
+                                            value="View Bill" 
+                                            onclick="PF('confirmationDialog').show();"
+                                            />
+
+                                        <p:dialog  minHeight="100" width="800" widgetVar="confirmationDialog" modal="true" >
+                                            <h:panelGroup>
+                                                <div class="p-4">
+                                                    <ez:bms5x5ChannelBill bill="#{bfp}"/>
+                                                </div>
+                                            </h:panelGroup>
+                                        </p:dialog>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </div>
+                        </div>                           
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

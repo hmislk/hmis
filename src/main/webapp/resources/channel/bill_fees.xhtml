@@ -25,13 +25,13 @@
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
-            <p:column headerText="Vat Value" styleClass="numberCol" >
+            <p:column headerText="VAT Value" styleClass="numberCol" >
                 <p:outputLabel value="#{bi.feeVat}" id="col2" >
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
             <p:column headerText="Net Value" styleClass="numberCol" >
-                <p:outputLabel value="#{bi.feeVatPlusValue}" id="col3" > 
+                <p:outputLabel value="#{bi.feeValue + bi.feeVat}" id="col3" >
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>

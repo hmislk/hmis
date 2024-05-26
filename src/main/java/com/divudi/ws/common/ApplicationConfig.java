@@ -10,7 +10,7 @@ import javax.ws.rs.core.Application;
 
 /**
  *
- * @author Archmage-Dushan
+ * @author Archmage-Dushan - Modified 
  */
 @javax.ws.rs.ApplicationPath("api")
 public class ApplicationConfig extends Application {

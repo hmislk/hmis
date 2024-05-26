@@ -83,7 +83,6 @@
                                 </p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-
                         <p:dataTable rowIndexVar="i" id="tbl" 
                                      value="#{searchController.billSummaryRows}" 
                                      reflow="true"
@@ -98,53 +97,112 @@
                             <p:column headerText="Bill Type" styleClass="alignTop" filterBy="#{bill.billTypeAtomic}" filterMatchMode="contains" sortBy="#{bill.billTypeAtomic}">
                                 <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 <f:facet name="footer">
-                                    Total
+                                    <h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
+                                            <h:outputText value="Cash Total" />
+                                            <br/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.cardTotal ne 0.0}">
+                                            <h:outputText value="Card Total"/>
+                                            <br/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{searchController.slipTotal ne 0.0}">
+                                            <h:outputText value="Slip Total" />
+                                            <br/>
+                                        </h:panelGroup>
+                                        <h:panelGroup  rendered="#{searchController.chequeTotal ne 0.0}">
+                                            <h:outputText value="Cheque Total "/>
+                                            <br/>
+                                        </h:panelGroup >
+                                        <h:panelGroup rendered="#{searchController.totalOfOtherPayments ne 0.0}">
+                                            <h:outputText value="Other" />
+                                            <br />
+                                        </h:panelGroup>
+                                        <h:panelGroup >
+                                            <h:outputText value="Total" />
+                                            <br />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </f:facet>
                             </p:column>
-                            
-                            <p:column headerText="Payment Method" styleClass="alignTop" width="4em">
+
+                            <p:column headerText="Payment Method" styleClass="alignTop" width="12em">
                                 <h:outputLabel value="#{bill.paymentMethod}"/>
-                            </p:column>
-
-                            <p:column headerText="Count" width="4em">
-                                <h:outputLabel value="#{bill.billCount}"/>
                                 <f:facet name="footer">
-
+                                    <h:panelGroup rendered="#{searchController.cashTotal ne 0.0}">
+                                        <h:outputText value="#{searchController.cashTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{searchController.cardTotal ne 0.0}">
+                                        <h:outputText value="#{searchController.cardTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{searchController.slipTotal ne 0.0}">
+                                        <h:outputText value="#{searchController.slipTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{searchController.chequeTotal ne 0.0}">
+                                        <h:outputText value="#{searchController.chequeTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{searchController.totalOfOtherPayments ne 0.0}">
+                                        <h:outputText value="#{searchController.totalOfOtherPayments}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <br />
+                                    </h:panelGroup>
+                                    <h:panelGroup>
+                                        <h:outputText value="#{searchController.totalPaying}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </h:panelGroup>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Gross Total" width="8em">
-                                <h:outputLabel value="#{bill.grossTotal}">
+                            <p:column headerText="Payment Count" width="8em">
+                                <p:commandLink 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,bill.paymentMethod,bill.billTypeAtomic)}" 
+                                    ajax="false">
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Paid Value" width="8em">
+                                <h:outputLabel value="#{bill.paidValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.grossTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
+
                             </p:column>
 
-                            <p:column headerText="Discount" width="8em">
-                                <h:outputLabel value="#{bill.discount}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.discount}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Net Value" width="8em">
-                                <h:outputLabel value="#{bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>                         
+                            <!--                            <p:column headerText="Discount" width="8em">
+                                                            <h:outputLabel value="#{bill.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputLabel>
+                                                            <f:facet name="footer">
+                                                                <h:outputText value="#{searchController.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </f:facet>
+                                                        </p:column>
+                            
+                                                        <p:column headerText="Net Value" width="8em">
+                                                            <h:outputLabel value="#{bill.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputLabel>
+                                                            <f:facet name="footer">
+                                                                <h:outputText value="#{searchController.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </f:facet>
+                                                        </p:column>                         -->
                         </p:dataTable>
                     </p:panel>
                 </h:form>

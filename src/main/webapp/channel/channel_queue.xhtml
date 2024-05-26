@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template_without_menu.xhtml"
+                template="/resources/template/template_channeling_tab_view.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -40,7 +40,7 @@
 
         </style>
 
-        <h:form id="form">
+        <h:form>
             <div class="row w-100">
                 <div class="col-12" >
 
@@ -112,6 +112,9 @@
                                     <h:outputText value="#{s.staff.person.nameWithTitle}" style="font-weight: bold; font-size: 10pt;"/><br/>
                                     <h:outputText value="(#{s.staff.speciality.name})" style="font-weight: bold; font-size: 0.5em;"/>
                                 </div>
+                                <div>
+                                    <p:badge class="mx-2" value="Arrived" rendered="#{s.arrived}"/>
+                                </div>
                             </div>
 
                         </div>
@@ -167,9 +170,10 @@
                         </div>
                         <div class="col-2 ">
                             <div class="d-flex justify-content-end align-items-center mt-2">
+                                
                                 <div>
                                     <p:commandButton icon="fas fa-play" iconPos="right"
-                                                     styleClass=" rounded-button ui-button-success " ajax="false"
+                                                     styleClass="rounded-button ui-button-success" ajax="false"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                      rendered="#{s.completed}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
@@ -184,10 +188,10 @@
                                     </p:commandButton>
 
 
-                                    <p:commandButton  icon="fas fa-play" iconPos="right"
-                                                      styleClass="rounded-button ui-button-info " ajax="false"
-                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
-                                                      rendered="#{s.started and not s.completed}">
+                                    <p:commandButton class="mx-2" icon="fas fa-play" iconPos="right"
+                                                     styleClass="rounded-button ui-button-info " ajax="false"
+                                                     action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
+                                                     rendered="#{s.started and not s.completed}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>

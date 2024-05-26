@@ -1629,11 +1629,8 @@ public class PatientReportController implements Serializable {
             e.setPending(false);
             getSmsFacade().create(e);
 
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(),
-                    sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+           Boolean sent = smsManager.sendSms(e);
+
         }
 
         JsfUtil.addSuccessMessage("SMS Sent");

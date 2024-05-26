@@ -79,23 +79,64 @@
                             <p:inputText class="w-100 " value="#{pettyCashBillController.returnAmount}" placeholder="Return Amount" /> 
                         </h:panelGrid>
 
-                        <h:panelGroup id="printPnl" class="m-2" rendered="#{pettyCashBillController.printPriview}">
-                            <f:facet name="header" class="m-2">
-                                <p:commandButton class="my-2" value="Print"/>
-                            </f:facet>
-                            <bi:petty bill="#{pettyCashBillController.currentReturnBill}" />
-                        </h:panelGroup>
-
                         <f:facet name="footer">
                             <h:panelGroup class="mb-2">
-                                <p:commandButton disabled="#{pettyCashBillController.printPriview}" id="btnSettle" process="btnSettle pnlPaymentDetails" update="printPnl" value="Settle"  action="#{pettyCashBillController.settleReturnBill()}"/>
+                                <p:commandButton onclick="PF('returnBill').show()" id="btnSettle"  value="Settle"  action="#{pettyCashBillController.settleReturnBill()}"/>
                                 <p:commandButton class="mx-1" value="cancel" onclick="PF('confirmationDialog').hide()" type="button" />
                             </h:panelGroup>
                         </f:facet>
                     </p:dialog>
-                    <h:panelGroup >
-                        <bi:petty bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
+                    <p:dialog header="Return PettyCash" widgetVar="returnBill" resizable="false" showEffect="fade" hideEffect="fade" width="1000">
+                        <h:panelGroup id="printPnl" class="m-2" >
+                            <p:commandButton class="my-2" value="Print">
+                                <p:printer target="printablePanel" />
+                            </p:commandButton>
+                            <h:panelGroup id="printablePanel">
+                                <bi:petty bill="#{pettyCashBillController.currentReturnBill}" />
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:dialog>
+
+                    <h:panelGroup>
+                        <div class="w-100 row">
+                            <div class="col-6">
+                                <div>
+                                    <p:commandButton value="Print" 
+                                                     class="ui-button-info m-1"
+                                                     icon="fa fa-print"
+                                                     ajax="false">
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton> 
+                                    <h:panelGroup id="gpBillPreview">
+                                        <bi:petty bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mx-5">
+                                    <h:panelGroup>
+                                        <ui:repeat value="#{pettyCashBillController.billList}" var="b">
+                                            <div>
+                                                <p:commandButton value="Print" 
+                                                                 class="ui-button-info m-1"
+                                                                 icon="fa fa-print"
+                                                                 ajax="false">
+                                                    <p:printer target="gpBillPreviewReturn" />
+                                                </p:commandButton> 
+                                                <h:panelGroup id="gpBillPreviewReturn">
+                                                    <bi:petty bill="#{b}" />
+                                                </h:panelGroup>
+                                            </div>
+                                        </ui:repeat>
+
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+
                     </h:panelGroup>
+
+
                 </h:form>
             </ui:define>
         </ui:composition>

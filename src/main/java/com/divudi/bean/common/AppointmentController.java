@@ -285,7 +285,7 @@ public class AppointmentController implements Serializable {
             return true;
         }
         
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 //       

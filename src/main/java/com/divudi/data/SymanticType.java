@@ -159,7 +159,5 @@ public enum SymanticType {
     Employment,
     Blood_Group,
     Civil_status,
-    Relationships,
-    
-    ;
+    Relationships
 }

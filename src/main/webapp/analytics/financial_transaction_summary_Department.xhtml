@@ -33,7 +33,7 @@
                                 showTime="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:datePicker>
-                            
+
                             <h:outputText value="Department" />
                             <p:selectOneMenu 
                                 id="somDept" 
@@ -69,7 +69,7 @@
                                 </p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-                        
+
 
                         <p:dataTable 
                             rowIndexVar="i" id="tbl" 
@@ -87,11 +87,15 @@
                                 <h:outputLabel value="#{bill.billTypeAtomic}">
                                 </h:outputLabel>
                             </p:column>
-                            
-                            <p:column headerText="Count" width="6em">
-                                <h:outputLabel value="#{bill.billCount}"/>
-                                <f:facet name="footer">
 
+                            <p:column headerText="Count" width="6em">
+                                <p:commandLink 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,null,bill.billTypeAtomic)}" 
+                                    ajax="false">
+                                </p:commandLink>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{searchController.totalBillCount}"/>
                                 </f:facet>
                             </p:column>
 

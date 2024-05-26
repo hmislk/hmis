@@ -417,14 +417,17 @@ public class TransferIssueController implements Serializable {
                 continue;
             }
 
+//            System.out.println("//Remove Department Stock = ");
             //Remove Department Stock
             boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
+//            System.out.println("returnFlag = " + returnFlag);
             if (returnFlag) {
 
                 //Addinng Staff
+//                System.out.println("//Addinng Staff = ");
                 Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
@@ -458,15 +461,15 @@ public class TransferIssueController implements Serializable {
 
         getIssuedBill().setNetTotal(calTotal());
 
-        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
+//        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
         notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
-        getRequestedBill().getForwardReferenceBills().add(getIssuedBill());
-        getBillFacade().edit(getRequestedBill());
+//        getRequestedBill().getForwardReferenceBills().add(getIssuedBill());
+//        getBillFacade().edit(getRequestedBill());
 
         Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
@@ -565,6 +568,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setNetTotal(calTotal());
 
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
+        getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
 
         getBillFacade().edit(getIssuedBill());
 
@@ -612,10 +616,6 @@ public class TransferIssueController implements Serializable {
         }
         if (getTmpStock() == null) {
             JsfUtil.addErrorMessage("Item?");
-            return;
-        }
-        if (getTmpStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
-            JsfUtil.addErrorMessage("Please not select Expired Items");
             return;
         }
         if (getQty() == null) {

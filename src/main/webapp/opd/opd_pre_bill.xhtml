@@ -88,6 +88,24 @@
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Add New Items" class="mx-4"></h:outputText>
                                     </f:facet>
+                                    <h:panelGroup  rendered="#{opdPreBillController.opdItemDepartments ne null}" id="departments">
+                                        <div class="row" >
+                                            <div class="col-md-12" >
+                                                <ui:repeat  value="#{opdPreBillController.opdItemDepartments}" var="dept">
+                                                    <p:commandButton 
+                                                        value="#{dept.name}"
+                                                        process="@this"
+                                                        update=":#{p:resolveFirstComponentWithId('acIx',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
+                                                        action="#{opdPreBillController.departmentChanged}"
+                                                        class="m-1 #{dept eq opdPreBillController.selectedOpdItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
+                                                        <f:setPropertyActionListener value="#{dept}" target="#{opdPreBillController.selectedOpdItemDepartment}"></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </ui:repeat>
+
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    
                                     <div class="row">
                                         <p:focus  context="acIx"/>
                                         <div class="col-md-10">
@@ -101,7 +119,7 @@
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
                                                 value="#{opdPreBillController.itemLight}" var="ix" >
-                                                <f:selectItems value="#{opdPreBillController.opdItems}"
+                                                <f:selectItems value="#{opdPreBillController.departmentOpdItems}"
                                                                var="item" 
                                                                itemLabel="#{item.name}"
                                                                itemValue="#{item}" >
@@ -308,7 +326,7 @@
                                                 value="#{opdPreBillController.paymentMethod}"
                                                 >     
                                                 <f:selectItems 
-                                                    value="#{enumController.paymentMethods}"  
+                                                    value="#{enumController.paymentMethodsForOpdBilling}"  
                                                     var="pm"
                                                     itemLabel="#{pm.label}"
                                                     itemValue="#{pm}"/>

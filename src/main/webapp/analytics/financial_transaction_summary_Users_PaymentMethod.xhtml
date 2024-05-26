@@ -12,7 +12,7 @@
                     
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="Financial Transaction Summary - Cashier PaymentMethod"/>                          
+                            <h:outputLabel value="Financial Transaction Summary - Cashier Payment Method"/>                          
                         </f:facet>
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
@@ -108,8 +108,12 @@
                                 </f:facet>
                             </p:column>
                             
-                            <p:column headerText="Count" width="8em">
-                                <h:outputLabel value="#{bill.billCount}"/>
+                            <p:column headerText="Count" width="8em">                   
+                                <p:commandLink 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.fillAllBills(searchController.fromDate, searchController.toDate, searchController.institution, searchController.department,bill.paymentMethod,null)}" 
+                                    ajax="false">
+                                </p:commandLink>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.totalBillCount}">
                                         <f:convertNumber pattern="#,##0"/>

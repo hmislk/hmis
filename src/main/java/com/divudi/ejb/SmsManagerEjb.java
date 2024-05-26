@@ -5,29 +5,18 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.RestAuthenticationType;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.EmailFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.UserPreferenceFacade;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -41,9 +30,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.json.JSONObject;
 
 /**
@@ -60,6 +53,9 @@ public class SmsManagerEjb {
     @EJB
     SmsFacade smsFacade;
 
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+
     @SuppressWarnings("unused")
     @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
 
@@ -67,28 +63,8 @@ public class SmsManagerEjb {
         sendSmsAwaitingToSendInDatabase();
     }
 
-    public UserPreference findApplicationPreference() {
-        String jpql;
-        Map m = new HashMap();
-        jpql = "select p "
-                + " from UserPreference p "
-                + " where p.institution is null "
-                + " and p.department is null "
-                + " and p.webUser is null "
-                + " order by p.id desc";
-        UserPreference currentPreference = userPreferenceFacade.findFirstByJpql(jpql);
-        if (currentPreference == null) {
-            currentPreference = new UserPreference();
-            userPreferenceFacade.create(currentPreference);
-        }
-        currentPreference.setWebUser(null);
-        currentPreference.setDepartment(null);
-        currentPreference.setInstitution(null);
-        return currentPreference;
-    }
-
+   
     private void sendSmsAwaitingToSendInDatabase() {
-        UserPreference pf = findApplicationPreference();
         String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
         Map m = new HashMap();
         Calendar c = Calendar.getInstance();
@@ -99,14 +75,14 @@ public class SmsManagerEjb {
             e.setSentSuccessfully(Boolean.TRUE);
             e.setPending(false);
             getSmsFacade().edit(e);
-            SmsSentResponse sent = sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), pf);
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
+            Boolean sent = sendSms(e);
             e.setSentAt(new Date());
+            e.setPending(false);
             getSmsFacade().edit(e);
         }
-
     }
+    
+    
 
     public String executePost(String targetURL, Map<String, String> parameters) {
         HttpURLConnection connection = null;
@@ -192,157 +168,361 @@ public class SmsManagerEjb {
         }
     }
 
-    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
+   
+//    public String sendSmsByApplicationPreferenceReturnString(String number, String message, UserPreference pf) {
+//        if (null == pf.getSmsAuthenticationType()) {
+//            return "This authentication is NOT supported to send SMS yet.";
+//        } else {
+//            switch (pf.getSmsAuthenticationType()) {
+//                case NONE:
+//                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
+//                case OAUTH2:
+//                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
+//                default:
+//                    return "This authentication is NOT supported to send SMS yet.";
+//            }
+//        }
+//    }
 
-        //System.out.println("number = " + number);
-        //System.out.println("message = " + message);
-        //System.out.println("username = " + username);
+//    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+//    public boolean sendSmsByApplicationPreferenceOauth2(String number, String message, UserPreference pf) {
+//        try {
+//            // Prepare the JSON payload
+//            JSONObject jsonPayload = new JSONObject();
+//            jsonPayload.put("campaignName", "Test campaign");
+//            jsonPayload.put("mask", "Test");
+//            jsonPayload.put("numbers", number);
+//            jsonPayload.put("content", message);
+//
+//            // Prepare the HTTP request
+//            URL url = new URL(pf.getSmsUrl());
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//            conn.setRequestMethod("POST");
+//            conn.setRequestProperty("Content-Type", "application/json");
+//            conn.setRequestProperty("Accept", "*/*");
+//            conn.setRequestProperty("X-API-VERSION", "v1");
+////            conn.setRequestProperty("Authorization", "Bearer " + pf.getAccessToken());
+//
+//            // Send the JSON payload
+//            try ( OutputStream os = conn.getOutputStream()) {
+//                byte[] input = jsonPayload.toString().getBytes("utf-8");
+//                os.write(input, 0, input.length);
+//            }
+//
+//            // Read the response
+//            try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+//                StringBuilder response = new StringBuilder();
+//                String responseLine;
+//                while ((responseLine = br.readLine()) != null) {
+//                    response.append(responseLine.trim());
+//                }
+//                System.out.println(response.toString());
+//            }
+//
+//            return true;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
+//
+//    public SmsSentResponse sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
+//        Map<String, String> m = new HashMap();
+//        SmsSentResponse r = new SmsSentResponse();
+//        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
+//        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
+//        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
+//            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+//        }
+//        m.put(pf.getSmsPhoneNumberParameterName(), number);
+//        m.put(pf.getSmsMessageParameterName(), message);
+//
+//        String res = executePost(pf.getSmsUrl(), m);
+//        System.out.println(res);
+//        if (res == null) {
+//            r.setSentSuccefully(false);
+//            r.setReceivedMessage(res);
+//            return r;
+//        } else if (res.toUpperCase().contains("OK")) {
+//            r.setSentSuccefully(true);
+//            r.setReceivedMessage(res);
+//            return r;
+//        } else {
+//            r.setSentSuccefully(false);
+//            r.setReceivedMessage(res);
+//            return r;
+//        }
+//
+//    }
+//
+//    public String sendSmsByApplicationPreferenceNoAuthenticationReturnString(String number, String message, UserPreference pf) {
+//        Map<String, String> m = new HashMap();
+//        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
+//        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
+//        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
+//            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+//        }
+//        m.put(pf.getSmsPhoneNumberParameterName(), number);
+//        m.put(pf.getSmsMessageParameterName(), message);
+//
+//        String res = executePost(pf.getSmsUrl(), m);
+//        System.out.println(res);
+//        return res;
+//    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public boolean sendSms(Sms sms) {
+        System.out.println("sms Number" + sms.getReceipientNumber());
+        System.out.println("sms Message" + sms.getSendingMessage());
+        boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
+        boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
+        if (sendSmsWithOAuth2) {
+            return sendSmsByOauth2(sms);
+        } else if (sendSmsWithBasicAuthentication) {
+            return sendSmsByBasicAuthentication(sms);
+        }
+        return false;
+    }
+
+    public boolean sendSmsByBasicAuthentication(Sms sms) {
         Map<String, String> m = new HashMap();
-        m.put("userName", username);
-        m.put("password", password);
-        m.put("userAlias", sendingAlias);
-        m.put("number", number);
-        m.put("message", message);
+        SmsSentResponse r = new SmsSentResponse();
+        // Define variables for each parameter name and value from the configuration controller
+        String smsUsernameParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Username parameter");
+        String smsUsername = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Username");
 
-        String res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
+        String smsPasswordParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Password parameter");
+        String smsPassword = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Password");
+
+        String smsUserAliasParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias parameter");
+        String smsUserAlias = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - User Alias");
+
+        String smsPhoneNumberParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Phone Number parameter");
+
+        String smsMessageParameter = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - Message parameter");
+
+        String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Basic Authentication - URL");
+
+// Populate the map with parameter names and values
+        m.put(smsUsernameParameter, smsUsername);
+        m.put(smsPasswordParameter, smsPassword);
+        if (smsUserAliasParameter != null && !smsUserAliasParameter.trim().equals("")) {
+            m.put(smsUserAliasParameter, smsUserAlias);
+        }
+        m.put(smsPhoneNumberParameter, sms.getReceipientNumber());
+        m.put(smsMessageParameter, sms.getSendingMessage());
+
+// Execute the HTTP POST request with the SMS data
+        String res = executePost(smsUrl, m);
+
+        System.out.println(res);
         if (res == null) {
+            sms.setSentSuccessfully(false);
+            sms.setReceivedMessage(res);
+            saveSms(sms);
             return false;
         } else if (res.toUpperCase().contains("OK")) {
+            sms.setSentSuccessfully(true);
+            sms.setReceivedMessage(res);
+            saveSms(sms);
             return true;
         } else {
+            sms.setSentSuccessfully(false);
+            sms.setReceivedMessage(res);
+            saveSms(sms);
             return false;
         }
 
-    }
-
-    public SmsSentResponse sendSmsByApplicationPreference(String number, String message, UserPreference pf) {
-        SmsSentResponse r = new SmsSentResponse();
-        if (null == pf.getSmsAuthenticationType()) {
-            r.setSentSuccefully(false);
-            r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
-            return r;
-        } else {
-            switch (pf.getSmsAuthenticationType()) {
-                case NONE:
-                    return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
-                case OAUTH2:
-                    return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
-                default:
-                    System.out.println("This authentication is NOT supported to send SMS yet.");
-                    r.setSentSuccefully(false);
-                    r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
-                    return r;
-            }
-        }
-    }
-
-    public String sendSmsByApplicationPreferenceReturnString(String number, String message, UserPreference pf) {
-        if (null == pf.getSmsAuthenticationType()) {
-            return "This authentication is NOT supported to send SMS yet.";
-        } else {
-            switch (pf.getSmsAuthenticationType()) {
-                case NONE:
-                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
-                case OAUTH2:
-                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
-                default:
-                    return "This authentication is NOT supported to send SMS yet.";
-            }
-        }
     }
 
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
-    public boolean sendSmsByApplicationPreferenceOauth2(String number, String message, UserPreference pf) {
+    public boolean sendSmsByOauth2(Sms sms) {
+        System.out.println("sms = " + sms);
+        if (sms == null) {
+            System.out.println("SMS is null");
+            return false;
+        }
         try {
             // Prepare the JSON payload
             JSONObject jsonPayload = new JSONObject();
-            jsonPayload.put("campaignName", "Test campaign");
-            jsonPayload.put("mask", "Test");
-            jsonPayload.put("numbers", number);
-            jsonPayload.put("content", message);
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Name", "campaignName"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 1 Value", "Test"));
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Name", "mask"), configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter 2 Value", "Test"));
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Numbers", "numbers"), sms.getReceipientNumber());
+            jsonPayload.put(configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Parameter Name for SMS Text", "content"), sms.getSendingMessage());
 
-            // Prepare the HTTP request
-            URL url = new URL(pf.getSmsUrl());
+            
+            
+            String loginUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Login URL", "https://bsms.hutch.lk/api/login");
+            String refreshTokenUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Refresh Token URL", "https://bsms.hutch.lk/api/login/api/token/accessToken");
+            String smsGatewayUrl = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - URL", "https://bsms.hutch.lk/api/login/api/sendsms");
+            String userName = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Username");
+            String password = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Password");
+            URL url = new URL(smsGatewayUrl);
+            System.out.println("loginUrl = " + loginUrl);
+            System.out.println("refreshTokenUrl = " + refreshTokenUrl);
+            System.out.println("smsGatewayUrl = " + smsGatewayUrl);
+
+            String accessToken = configOptionApplicationController.getShortTextValueByKey("OAuth2 SMS Gateway - Access Token");
+            if (accessToken == null || accessToken.trim().equals("")) {
+                accessToken = getNewAccessToken(userName, password, loginUrl);
+            }
+            System.out.println("accessToken = " + accessToken);
+
+            // Print the JSON payload
+            System.out.println("JSON Payload: " + jsonPayload.toString(4)); // Using 4 for pretty print
+
+            long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
+            System.out.println("Token expires in: " + expiresIn + " seconds");
+            if (expiresIn < 3) { // Example: Check if less than an hour remains
+                System.out.println("Token is about to expire or has already expired.");
+                accessToken = getAccessToken(LOGIN_URL, accessToken, accessToken, loginUrl, refreshTokenUrl);
+                System.out.println("newly created accessToken = " + accessToken);
+                configOptionApplicationController.saveShortTextOption("OAuth2 SMS Gateway - Access Token", accessToken);
+            }
+
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Accept", "*/*");
             conn.setRequestProperty("X-API-VERSION", "v1");
-//            conn.setRequestProperty("Authorization", "Bearer " + pf.getAccessToken());
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setDoOutput(true); // This line enables output to the connection
 
-            // Send the JSON payload
             try ( OutputStream os = conn.getOutputStream()) {
                 byte[] input = jsonPayload.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
 
-            // Read the response
             try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                 StringBuilder response = new StringBuilder();
                 String responseLine;
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-                System.out.println(response.toString());
+                System.out.println("Response: " + response.toString());
+                sms.setReceivedMessage(response.toString());
+            } catch (IOException e) {
+                InputStream errorStream = conn.getErrorStream();
+                if (errorStream != null) {
+                    try ( BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"))) {
+                        StringBuilder response = new StringBuilder();
+                        String responseLine;
+                        while ((responseLine = br.readLine()) != null) {
+                            response.append(responseLine.trim());
+                        }
+                        System.out.println("Error response: " + response.toString());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
-
+            saveSms(sms);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            sms.setReceivedMessage(sms.getReceivedMessage() + e.getMessage());
+            saveSms(sms);
             return false;
         }
     }
-
-    public SmsSentResponse sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
-        Map<String, String> m = new HashMap();
-        SmsSentResponse r = new SmsSentResponse();
-        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
-        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
-        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
-            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+    
+    public void saveSms(Sms savingSms){
+        if(savingSms==null){
+            return;
         }
-        m.put(pf.getSmsPhoneNumberParameterName(), number);
-        m.put(pf.getSmsMessageParameterName(), message);
+        if(savingSms.getId()==null){
+            smsFacade.create(savingSms);
+        }else{
+            smsFacade.edit(savingSms);
+        }
+    }
 
-        String res = executePost(pf.getSmsUrl(), m);
-        System.out.println(res);
-        if (res == null) {
-            r.setSentSuccefully(false);
-            r.setReceivedMessage(res);
-            return r;
-        } else if (res.toUpperCase().contains("OK")) {
-            r.setSentSuccefully(true);
-            r.setReceivedMessage(res);
-            return r;
+    private static final String LOGIN_URL = "https://bsms.hutch.lk/api/login";
+    private static final String REFRESH_TOKEN_URL = "https://bsms.hutch.lk/api/login/api/token/accessToken";
+
+    public static String getAccessToken(String username, String password, String refreshToken, String loginUrl, String refreshTokenUrl) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return getNewAccessToken(username, password, loginUrl);
         } else {
-            r.setSentSuccefully(false);
-            r.setReceivedMessage(res);
-            return r;
+            return refreshAccessToken(refreshToken, refreshTokenUrl);
         }
-
     }
 
-    public String sendSmsByApplicationPreferenceNoAuthenticationReturnString(String number, String message, UserPreference pf) {
-        Map<String, String> m = new HashMap();
-        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
-        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
-        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
-            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+    private static String getNewAccessToken(String username, String password, String loginUrl) {
+        try {
+            URL url = new URL(loginUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "*/*");
+            conn.setRequestProperty("X-API-VERSION", "v1");
+
+            JSONObject credentials = new JSONObject();
+            credentials.put("username", username);
+            credentials.put("password", password);
+
+            conn.setDoOutput(true);
+            try ( OutputStream os = conn.getOutputStream()) {
+                byte[] input = credentials.toString().getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            return extractTokenFromResponse(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        m.put(pf.getSmsPhoneNumberParameterName(), number);
-        m.put(pf.getSmsMessageParameterName(), message);
-
-        String res = executePost(pf.getSmsUrl(), m);
-        System.out.println(res);
-        return res;
     }
 
-    public SmsFacade getSmsFacade() {
-        return smsFacade;
+    private static String refreshAccessToken(String refreshToken, String refreshTokenUrl) {
+        try {
+            URL url = new URL(refreshTokenUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "*/*");
+            conn.setRequestProperty("X-API-VERSION", "v1");
+            conn.setRequestProperty("Authorization", "Bearer " + refreshToken);
+
+            return extractTokenFromResponse(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    public void sendSms(Sms e) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private static String extractTokenFromResponse(HttpURLConnection conn) throws IOException {
+        int responseCode = conn.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                JSONObject responseJson = new JSONObject(response.toString());
+                return responseJson.getString("accessToken");
+            }
+        } else {
+            // Handle HTTP error codes appropriately (e.g., retry or log)
+            System.out.println("HTTP Error Code: " + responseCode);
+            return null;
+        }
+    }
+
+    public static long getExpiryFromJWT(String jwtToken) {
+        try {
+            String[] splitToken = jwtToken.split("\\.");
+            String base64EncodedBody = splitToken[1];
+            String body = new String(Base64.getUrlDecoder().decode(base64EncodedBody));
+            JSONObject jsonBody = new JSONObject(body);
+            return jsonBody.getLong("exp");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Long.MIN_VALUE; // Indicates an error in parsing
+        }
     }
 
 }

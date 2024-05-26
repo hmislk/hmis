@@ -93,8 +93,8 @@
                                 <h:panelGroup id="groupPrint" >
                                     <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                            <ui:repeat value="#{opdBillController.bills}" var="ffb">
-                                                <prints:five_five_paper_with_headings bill="#{ffb}"/>                        
+                                            <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -149,7 +149,7 @@
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}">
                                         <prints:pos_opd_bill_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedBatchPaper'}">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}">
                                         <prints:pos_opd_bill_without_logo_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
@@ -159,19 +159,21 @@
                                 <p:dataTable 
                                     value="#{opdBillController.bills}" 
                                     var="b" 
+                                    resizeMode="expand"
+                                    reflow="true"
                                     class="w-100 m-1" 
                                     rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                     <f:facet name="header" >
                                         <h:outputText value="Individual Bills" ></h:outputText>
                                     </f:facet>
                                     <p:column headerText="ID" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.id}" ></h:outputText>
+                                        <p:inputText value="#{b.id}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Ins No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.insId}" ></h:outputText>
+                                        <p:inputText readonly="true" value="#{b.insId}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.deptId}" ></h:outputText>
+                                        <p:inputText value="#{b.deptId}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Bill Type" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <h:outputText value="#{b.billType.label}" ></h:outputText>

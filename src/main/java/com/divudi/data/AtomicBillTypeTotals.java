@@ -117,6 +117,34 @@ public class AtomicBillTypeTotals {
     }
 
     /**
+     * Calculates the total paid value for a given list of bill types.
+     *
+     * @param billTypes List of BillTypeAtomic for which the total is to be
+     * calculated.
+     * @return The total paid value for the given bill types.
+     */
+    public double getTotal(List<BillTypeAtomic> billTypes) {
+//        System.out.println("getTotal");
+//        System.out.println("atomicBillRecords = " + atomicBillRecords);
+//        System.out.println("billTypes = " + billTypes);
+        double total = 0.0;
+        for (AtomicBillRecord record : atomicBillRecords) {
+//            System.out.println("Checking record: " + record);
+            if (billTypes.contains(record.getBillType())) {
+//                System.out.println("Record is of a valid bill type.");
+                double paidValue = record.getPaidValue();
+//                System.out.println("Paid value of record: " + paidValue);
+                total += paidValue;
+//                System.out.println("Updated total: " + total);
+            } else {
+//                System.out.println("Record skipped, not of valid bill type.");
+            }
+        }
+//        System.out.println("Final total: " + total);
+        return total;
+    }
+
+    /**
      * Calculates the total paid value for a specific bill type and payment
      * method.
      *

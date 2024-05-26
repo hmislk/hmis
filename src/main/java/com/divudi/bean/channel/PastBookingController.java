@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -180,6 +181,8 @@ public class PastBookingController implements Serializable, ControllerWithPatien
     SessionInstanceController sessionInstanceController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -432,6 +435,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         if (selectedBillSession.getBill().getBillFees().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Fees");
             return "";
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Refunded")) {
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Past Booking Can Not Be Canceled")) {
         }
 
         return "/channel/manage_booking_past?faces-redirect=true";
@@ -708,11 +717,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        }else{
+            JsfUtil.addSuccessMessage("SMS Failed");            
+        }
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -738,10 +748,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -772,10 +779,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
@@ -1250,23 +1254,23 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         }
 
     }
-    
+
     public void fillSessionInstance() {
-            sessionInstances = new ArrayList<>();
-            System.out.println("getDate() = " + date);
-            String jpql = "select i "
-                    + " from SessionInstance i "
-                    + " where i.originatingSession.staff=:os "
-                    + " and i.retired=:ret"
-                    + " and i.sessionDate=:date ";
+        sessionInstances = new ArrayList<>();
+        System.out.println("getDate() = " + date);
+        String jpql = "select i "
+                + " from SessionInstance i "
+                + " where i.originatingSession.staff=:os "
+                + " and i.retired=:ret"
+                + " and i.sessionDate=:date ";
 
-            Map m = new HashMap();
-            m.put("ret", false);
-            m.put("os", getStaff());
-            m.put("date", getDate());
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("os", getStaff());
+        m.put("date", getDate());
 
-            sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
-            System.out.println("sessionInstances = " + sessionInstances.size());
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
+        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public void generateSessionEvents(List<SessionInstance> sss) {
@@ -1409,28 +1413,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         }
         arrivalRecord.setRecordTimeStamp(new Date());
         arrivalRecord.setApproved(false);
-        fpFacade.edit(arrivalRecord);
-    }
-
-    public void markAsLeft() {
-        if (selectedServiceSession == null) {
-            return;
-        }
-        if (selectedServiceSession.getSessionDate() == null) {
-            return;
-        }
-        if (arrivalRecord == null) {
-            arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
-            arrivalRecord.setCreatedAt(new Date());
-            arrivalRecord.setCreater(sessionController.getLoggedUser());
-            fpFacade.create(arrivalRecord);
-        }
-
-        arrivalRecord.setApproved(true);
-        arrivalRecord.setApprovedAt(new Date());
-        arrivalRecord.setApprover(sessionController.getLoggedUser());
         fpFacade.edit(arrivalRecord);
     }
 

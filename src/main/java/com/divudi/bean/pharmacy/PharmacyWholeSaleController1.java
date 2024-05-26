@@ -15,6 +15,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -968,7 +969,7 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
 
     private boolean errorCheckForSaleBill() {
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 
@@ -999,6 +1000,8 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
         getPreBill().setToInstitution(toInstitution);
 
         getPreBill().setComments(comment);
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -1030,7 +1033,7 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
         getSaleBill().copyValue(getPreBill());
 
         getSaleBill().setBillType(BillType.PharmacyWholeSale);
-
+        getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE);
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
         getSaleBill().setBillDate(new Date());
@@ -1043,6 +1046,8 @@ public class PharmacyWholeSaleController1 implements Serializable, ControllerWit
         getSaleBill().setDeptId(getPreBill().getDeptId());
         getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
+        getSaleBill().setCashPaid(cashPaid);
+        getSaleBill().setBalance(balance);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
 
