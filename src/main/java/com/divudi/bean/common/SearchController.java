@@ -253,6 +253,7 @@ public class SearchController implements Serializable {
     private Token token;
 
 
+
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {
