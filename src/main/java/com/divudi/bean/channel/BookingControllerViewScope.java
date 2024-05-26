@@ -1768,6 +1768,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
+      
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");
         } else {
