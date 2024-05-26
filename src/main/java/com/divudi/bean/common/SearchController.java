@@ -57,7 +57,10 @@ import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
@@ -625,6 +628,7 @@ public class SearchController implements Serializable {
         billItems = null;
         patientInvestigations = null;
         searchKeyword = null;
+        printPreview=false;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -1450,6 +1454,30 @@ public class SearchController implements Serializable {
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
+        return pharmaceuticalBillItemFacade;
+    }
+
+    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
+        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
     public class billsWithbill {
@@ -5657,11 +5685,43 @@ public class SearchController implements Serializable {
         bills = getBillBean().billsForTheDayNotPaid(BillType.PharmacyWholesalePre, getSessionController().getDepartment());
 
     }
+    
+    @Inject
+    private BillController billController;
+    
+    @EJB
+    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+
+           
+    private boolean printPreview = false;
 
     public void addToStock() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        bill = new Bill();
+        
+        bill.setBillDate(new Date());
+        bill.setBillTime(new Date());
+        bill.setCreatedAt(new Date());
+        
+               
+        bill.setDeptId(billController.getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.PharmacyAddtoStock, BillClassType.BilledBill));
+        bill.setInsId(billController.getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.PharmacyAddtoStock, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        
+        
+        bill.setBillClassType(BillClassType.Bill);
+        bill.setBillType(BillType.PharmacyAddtoStock);
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+   
+        bill.setCreater(getSessionController().getLoggedUser());
+        bill.setDepartment(getSessionController().getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
+
+        getBillFacade().create(bill);
+        
+        List<BillItem> billItems = new ArrayList<>();
 
         for (Bill b : getSelectedBills()) {
             b = getBillFacade().find(b.getId());
@@ -5672,7 +5732,28 @@ public class SearchController implements Serializable {
             if (b.checkActiveCashPreBill()) {
                 continue;
             }
-
+            
+            for (BillItem bi : b.getBillItems()) {
+                BillItem nbi = new BillItem();
+                nbi.copy(bi);
+                nbi.invertValue();
+                nbi.setBill(bill);
+                
+                billItemFacade.create(nbi);
+                
+                PharmaceuticalBillItem npi = new PharmaceuticalBillItem();
+                npi.copy(bi.getPharmaceuticalBillItem());
+                npi.invertValue(npi);
+                npi.setBillItem(nbi);
+                
+                pharmaceuticalBillItemFacade.create(npi);
+                
+                nbi.setPharmaceuticalBillItem(npi);
+                
+                billItemFacade.edit(nbi);
+                billItems.add(nbi);
+            }
+            
             Bill prebill = getPharmacyBean().reAddToStock(b, getSessionController().getLoggedUser(),
                     getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
 
@@ -5682,9 +5763,13 @@ public class SearchController implements Serializable {
                 getBillFacade().edit(b);
             }
         }
+        
+        bill.setBillItems(billItems);
+        getBillFacade().edit(bill);
+        System.out.println("Successfully Created Bill..!");
 
         createPreBillsNotPaid();
-
+        printPreview = true;
     }
 
     public void cancelIssueToUnitBills() {
