@@ -110,6 +110,20 @@
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.endRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </h:outputText>
+                                            
+                                             <p:outputLabel value="Payment Method" />
+                                             <p:selectOneMenu   
+                                                id="pay"
+                                                class="w-100"
+                                                value="#{workingTimeController.paymentMethod}"
+                                                >     
+                                                <f:selectItems 
+                                                    value="#{enumController.paymentMethodsForMakingProfessionalPayments}"  
+                                                    var="pm"
+                                                    itemLabel="#{pm.label}"
+                                                    itemValue="#{pm}"/>
+                                            </p:selectOneMenu>
+                                             
                                         </p:panelGrid>
                                         <p:panelGrid columns="2" >
                                             <p:outputLabel value="Total Value Paying" />
