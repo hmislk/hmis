@@ -1683,45 +1683,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addChannelBooking(boolean reservedBooking) {
-        System.out.println("addChannelBooking");
-        System.out.println("patient = " + patient);
-        System.out.println("patient ID = " + patient.getId());
         errorText = "";
-        System.out.println("1");
-
-//        if (billSessionErrorPresent()) {
-//            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
-//            settleSucessFully = false;
-//            return;
-//        }
-        System.out.println("2");
-
         if (patient == null) {
             System.out.println("patient");
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
-        System.out.println("AAA. patient.getPerson() = " + patient.getPerson());
-        System.out.println("BBB. patient.getId() = " + patient.getId());
-        if (patient.getPerson() == null && patient.getId() != null) {
-            patient = patientFacade.find(patient.getId());
-            System.out.println("From Database Patient = " + patient);
-        }
-        
-        saveSelected(patient);
-
         if (patientErrorPresent(patient)) {
             JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
             return;
         }
-        System.out.println("3");
         if (paymentMethodErrorPresent()) {
             JsfUtil.addErrorMessage("Please Enter Payment Details");
             settleSucessFully = false;
             return;
         }
-        System.out.println("4");
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {
                 JsfUtil.addErrorMessage("This Session Has Been Completed");
@@ -1729,10 +1706,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
-        System.out.println("5");
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
-
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
             createPayment(printingBill, paymentMethod);
         }
