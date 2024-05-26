@@ -245,6 +245,7 @@ public class SearchController implements Serializable {
     private double totalOfOtherPayments;
     private double billCount;
 
+
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {
@@ -1989,59 +1990,58 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyTableRe() {
-        Date startTime = new Date();
-
-        Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
-        //     m.put("class", PreBill.class);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ret", false);
-        m.put("ins", getSessionController().getInstitution());
+        bills = null;
         String sql;
+        Map temMap = new HashMap();
 
-        sql = "Select b from Bill b where "
-                + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt "
-                + " and b.retired=:ret "
-                + " and b.institution=:ins";
-        //+ " and type(b)=:class ";
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
-            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
-            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             sql += " and  ((b.netTotal) like :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((b.total) like :total )";
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patient.person.phone) like :phone )";
-            m.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+            temMap.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
-
         sql += " order by b.createdAt desc  ";
 //    
-        //     //////System.out.println("sql = " + sql);
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
 
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        
     }
 
     public void listPharmacyIssue() {
@@ -6897,7 +6897,7 @@ public class SearchController implements Serializable {
             setDepartments(getDepartmentController().getInstitutionDepatrments(ins));
         }
     }
-
+    
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
         System.out.println("institution = " + institution);
         if (institution == null) {
@@ -6953,17 +6953,22 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
         billSummaryRows = paymentFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
+        
         for (BillSummaryRow bss : billSummaryRows) {
-            if (bss.getPaymentMethod() == PaymentMethod.Cash) {
+            if (bss.getPaymentMethod() == PaymentMethod.Cash){
                 cashTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Card) {
+            }
+            else if (bss.getPaymentMethod() == PaymentMethod.Card){
                 cardTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Cheque) {
+            }
+            else if (bss.getPaymentMethod() == PaymentMethod.Cheque){
                 chequeTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Slip) {
+            } 
+            else if (bss.getPaymentMethod() == PaymentMethod.Slip){
                 slipTotal += bss.getPaidValue();
-            } else {
+            } 
+            else {
+
                 totalOfOtherPayments += bss.getPaidValue();
             }
             totalPaying += bss.getPaidValue();
@@ -7032,6 +7037,7 @@ public class SearchController implements Serializable {
 //        }
 //
 //    }
+
     public void processAllFinancialTransactionalSummarybyUsers() {
         //System.out.println("institution = " + institution);
         //System.out.println("department = " + department);
