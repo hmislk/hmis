@@ -319,19 +319,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return patientMap;
     }
 
-    public Long removeSpecialCharsInPhonenumber(String phonenumber) {
-        try {
-            if (phonenumber == null || phonenumber.trim().equals("")) {
-                return null;
-            }
-            String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
-            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
-            return convertedPhoneNumber;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public void validateMobile(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         String mobileRegex = sessionController.getApplicationPreference().getMobileRegex();
         if (mobileRegex != null && !mobileRegex.isEmpty()) {
@@ -371,7 +358,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 String personId = String.valueOf(person.getId());
                 Patient patient = patientMap.get(personId);
                 if (patient != null && person.getPhone() != null && !person.getPhone().isEmpty()) {
-                    Long personPhone = removeSpecialCharsInPhonenumber(person.getPhone());
+                    Long personPhone = CommonFunctions.removeSpecialCharsInPhonenumber(person.getPhone());
                     patient.setPatientPhoneNumber(personPhone);
                     getFacade().edit(patient);
                 }
@@ -397,12 +384,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 continue;
             }
             if (pt.getPerson().getPhone() != null) {
-                Long personPhone = removeSpecialCharsInPhonenumber(pt.getPerson().getPhone());
+                Long personPhone = CommonFunctions.removeSpecialCharsInPhonenumber(pt.getPerson().getPhone());
                 pt.setPatientPhoneNumber(personPhone);
                 getFacade().edit(pt);
             }
             if (pt.getPerson().getMobile() != null) {
-                Long personPhone = removeSpecialCharsInPhonenumber(pt.getPerson().getMobile());
+                Long personPhone = CommonFunctions.removeSpecialCharsInPhonenumber(pt.getPerson().getMobile());
                 pt.setPatientMobileNumber(personPhone);
                 getFacade().edit(pt);
             }
@@ -1479,7 +1466,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void searchByPatientPhoneNumber() {
-        Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
+        Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
         if (patientPhoneNumber == null) {
             searchedPatients = new ArrayList<>();
             return;
@@ -1496,7 +1483,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
-        Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
+        Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
         m.put("pp", searchedPhoneNumber);
         quickSearchPatientList = getFacade().findByJpql(j, m);
         if (quickSearchPatientList == null) {
@@ -2155,7 +2142,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String searchByPatientPhoneNumberForPatientLookup() {
-        Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
+        Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
         if (patientPhoneNumber == null) {
             searchedPatients = new ArrayList<>();
             return "No Search Number Given";
