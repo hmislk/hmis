@@ -503,6 +503,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         channelBillController.setPrintPreview(false);
         channelBillController.setPrintPreviewC(false);
         channelBillController.setPrintPreviewR(false);
+
         return "/channel/manage_booking?faces-redirect=true";
     }
 

@@ -16,28 +16,44 @@
                                 listener="#{searchController.createPreBillsNotPaid()}" update="@all" />
                         <f:facet name="header" >
 
-                            <h:panelGrid columns="5" style="min-width: 100%;" >
-                                <p:commandButton 
-                                    ajax="false" value="Process" 
-                                    icon="fas fa-arrows-rotate"
-                                    actionListener="#{searchController.createPreBillsNotPaid()}"/>
+                            <div class="d-flex justify-content-between" >
                                 <p:commandButton 
                                     ajax="false" 
-                                    value="Add To Stock" 
-                                    action="#{searchController.addToStock}" 
-                                    icon="fas fa-plus"
-                                    class="ui-button-success"
-                                    disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}"/>
-                            </h:panelGrid>
+                                    value="Process" 
+                                    icon="fas fa-arrows-rotate"
+                                    actionListener="#{searchController.createPreBillsNotPaid()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="To Bill List" 
+                                    icon="fa fa-arrow-left"
+                                    class="ui-button-warning"
+                                    actionListener="#{searchController.makeNull()}"
+                                    action="#{searchController.navigateToAddToStockBillList()}">
+                                </p:commandButton>
+                            </div>
 
                         </f:facet>
 
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton 
+                            ajax="false" 
+                            value="Add To Stock" 
+                            action="#{searchController.addToStock}" 
+                            icon="fas fa-plus" 
+                            class="ui-button-success mb-3"
+                            disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
+                        </p:commandButton>
+                        </div>
+                        
                         <p:dataTable 
                             id="tblBills" value="#{searchController.bills}"                             
                             var="bill" 
                             rowKey="#{bill.id}"
                             selection="#{searchController.selectedBills}"
                             paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
@@ -89,16 +105,16 @@
                     <p:panel header="Pharmacy Pre Bill Add to Stock Bill Preview" rendered="#{searchController.printPreview}">
                         <p:commandButton 
                             ajax="false" 
-                            value="Go to Add To Stock"                             
+                            value="Back Add To Stock"                             
                             action="#{searchController.makeListNull}" 
-                            icon="fas fa-plus"
-                            class="ui-button-success">
+                            icon="fa fa-arrow-left"
+                            class="ui-button-warning">
                         </p:commandButton>
                         <phi:saleBill bill="#{searchController.bill}"></phi:saleBill>
                     </p:panel>
                 </h:form>
             </ui:define>
-            
+
         </ui:composition>
 
     </h:body>

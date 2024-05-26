@@ -99,8 +99,10 @@ public class ChannelBillController implements Serializable {
     private boolean foriegn = false;
     boolean settleSucessFully = false;
     private boolean printPreview;
+
     private boolean printPreviewC;
     private boolean printPreviewR;
+
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
     PaymentMethod cancelPaymentMethod;
@@ -1244,7 +1246,7 @@ public class ChannelBillController implements Serializable {
 
         }
 
-        JsfUtil.addSuccessMessage("Cancelled");
+        JsfUtil.addSuccessMessage("Channel Cancelled");
 
     }
 
@@ -3319,6 +3321,7 @@ public class ChannelBillController implements Serializable {
     public void setPrintPreviewC(boolean printPreviewC) {
         this.printPreviewC = printPreviewC;
     }
+
 
     public boolean isPrintPreviewR() {
         return printPreviewR;
