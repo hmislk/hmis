@@ -256,6 +256,7 @@ public class SearchController implements Serializable {
 
 
 
+
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {
