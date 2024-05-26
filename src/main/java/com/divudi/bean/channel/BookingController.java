@@ -501,6 +501,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return "";
         }
         channelBillController.setPrintPreview(false);
+        channelBillController.setPrintPreviewC(false);
+        channelBillController.setPrintPreviewR(false);
         return "/channel/manage_booking?faces-redirect=true";
     }
 
