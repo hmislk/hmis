@@ -11,6 +11,7 @@
     <cc:interface>
         <cc:attribute name="bill" class="com.divudi.entity.Bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="dup" type="java.lang.Boolean" />
+        <cc:attribute name="ref" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -33,7 +34,8 @@
             <p:spacer height="15"/>
             <div style="font-weight: bold; text-align: center;">
                 <h:outputLabel value="Channel Payment Receipt"   style="text-align: center;"/><br/>
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/>
+                <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.ref eq true}" style="text-align: center;"/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
                 <br></br>
                 <!--                <h:outputLabel value="(Customer Copy)" style="text-align: center;"/> -->
