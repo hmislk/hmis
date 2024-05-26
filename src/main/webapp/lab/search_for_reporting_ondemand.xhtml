@@ -175,44 +175,10 @@
 
                                     >
                                     <p:column  headerText="Order No" style="width:5em;" >
-<!--                                        <h:outputLabel
+                                        <h:outputLabel
                                             rendered="false"
                                             value="#{pi.billItem.bill.deptId}" 
-                                                       ></h:outputLabel>-->
-                                        
-                                        <h:outputLabel id="lblBillNo" 
-                                                       value="#{pi.billItem.bill.insId}" 
-                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
-                                        <p:tooltip for="lblBillNo"  >
-                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Sampled : " />
-                                            <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Received : " />
-                                            <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled : " />
-                                                <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{pi.billItem.refunded}" >
-                                                <h:outputLabel style="color: red;" value="Refunded : " />
-                                                <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
-                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-
-
-                                        </p:tooltip>
+                                            ></h:outputLabel>
                                     </p:column>
 
                                     <p:column  headerText="Dep ID" styleClass="alignTop" rendered="false" >
@@ -257,8 +223,8 @@
                                          <h:panelGroup rendered="#{pi.encounter eq null}" >
                                             <p:outputLabel value="#{pi.encounter.patient.person.nameWithTitle}" ></p:outputLabel>
                                         </h:panelGroup>-->
-                                        
-                                        
+
+
                                         <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient') and pi.billItem.bill.approvedAnyTest}" 
                                                        value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}" 
                                                        action="#{patientController.navigateToOpdPatientEdit()}" 
