@@ -39,6 +39,7 @@
 
                                 <div class="d-flex align-items-center ">
                                     <p:commandButton  
+                                        id="btnSettle"
                                         value="Settle"
                                         ajax="false"
                                         icon="fa fa-check"              
@@ -46,9 +47,9 @@
                                         class="ui-button-success mx-2 w-100"
                                         >
                                     </p:commandButton>
+                                    <p:defaultCommand target="btnSettle" />
                                     <p:commandButton value="Back" action="#{opdTokenController.navigateToOpdQueue()}"/>
                                 </div>
-
                             </div>
                         </f:facet>
 
@@ -131,7 +132,7 @@
                                             process="acIx btnAddIx txtQty panelBillItems"
                                             update="focusIx :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
                                         </p:commandButton>
-                                        <p:defaultCommand target="btnAddIx" />
+                                        
                                     </div>
 
                                     <div>
