@@ -10,11 +10,9 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
-import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
-import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ViewScopeDataTransferController;
@@ -74,7 +72,6 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Fee;
@@ -166,8 +163,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     ConfigOptionController configOptionController;
     @Inject
     PriceMatrixController priceMatrixController;
-    @Inject
-    PatientController patientController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -1598,22 +1593,29 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public boolean patientErrorPresent(Patient p) {
+        System.out.println("patientErrorPresent");
+        System.out.println("p");
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
         }
-
+        System.out.println("p.getPerson() = " + p.getPerson());
+        if (p.getPerson() == null) {
+            p = patientFacade.find(p.getId());
+        }
         if (p.getPerson() == null) {
             JsfUtil.addErrorMessage("No Person. Not Saved");
             return true;
         }
-
+        System.out.println("p.getPerson().getName() = " + p.getPerson().getName());
         if (p.getPerson().getName() == null) {
+            System.out.println("err name mull");
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
 
         if (p.getPerson().getName().trim().equals("")) {
+            System.out.println("err trim");
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
@@ -1624,6 +1626,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean paymentMethodErrorPresent() {
         if (paymentMethod == null) {
             return true;
+        }
+
+        if (paymentMethod == PaymentMethod.OnCall) {
+            if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
+                JsfUtil.addErrorMessage("This session is only available for paid appointments.");
+                return true;
+            }
         }
 
         if (paymentMethod == PaymentMethod.Agent) {
@@ -1682,9 +1691,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
-        if (billSessionErrorPresent()) {
-            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
-            settleSucessFully = false;
+        if (patient == null) {
+            System.out.println("patient");
+            JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
         if (patientErrorPresent(patient)) {
@@ -1697,7 +1706,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             settleSucessFully = false;
             return;
         }
-
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {
                 JsfUtil.addErrorMessage("This Session Has Been Completed");
@@ -1705,9 +1713,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
-        patientController.save(patient);
+        saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
-
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
             createPayment(printingBill, paymentMethod);
         }
@@ -1742,7 +1749,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return null;
             }
         }
-        patientController.save(patient);
+        saveSelected(patient);
         return saveBilledBillForPatientPortal();
     }
 
@@ -1761,6 +1768,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
+      
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");
         } else {
@@ -5650,6 +5658,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.disableRefund = disableRefund;
     }
 
+    @Override
     public void selectQuickOneFromQuickSearchPatient() {
         setPatient(patient);
         setPatientDetailsEditable(false);
@@ -5664,19 +5673,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (patient.getPerson() == null) {
             return;
         }
-        if(patient.getPerson().getId()==null){
+        if (patient.getPerson().getId() == null) {
             patient.getPerson().setCreatedAt(new Date());
             patient.getPerson().setCreater(sessionController.getLoggedUser());
             personFacade.create(patient.getPerson());
-        }else{
+        } else {
             personFacade.edit(patient.getPerson());
         }
-        if(patient.getId()==null){
+        if (patient.getId() == null) {
             patient.setCreatedAt(new Date());
             patient.setCreatedInstitution(sessionController.getInstitution());
             patient.setCreater(sessionController.getLoggedUser());
             patientFacade.create(patient);
-        }else{
+        } else {
             patientFacade.edit(patient);
         }
     }

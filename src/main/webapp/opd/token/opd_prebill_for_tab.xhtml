@@ -26,6 +26,7 @@
                 </style>
 
                 <h:form>
+                    <p:poll listener="#{opdTabPreBillController.reloadCurrentlyWorkingStaff()}" update="sldoctor" delay="60" />
                     <p:panel id='pIxAdd' >
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
@@ -38,6 +39,7 @@
 
                                 <div class="d-flex align-items-center ">
                                     <p:commandButton  
+                                        id="btnSettle"
                                         value="Settle"
                                         ajax="false"
                                         icon="fa fa-check"              
@@ -45,9 +47,9 @@
                                         class="ui-button-success mx-2 w-100"
                                         >
                                     </p:commandButton>
+                                    <p:defaultCommand target="btnSettle" />
                                     <p:commandButton value="Back" action="#{opdTokenController.navigateToOpdQueue()}"/>
                                 </div>
-
                             </div>
                         </f:facet>
 
@@ -130,7 +132,7 @@
                                             process="acIx btnAddIx txtQty panelBillItems"
                                             update="focusIx :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
                                         </p:commandButton>
-                                        <p:defaultCommand target="btnAddIx" />
+                                        
                                     </div>
 
                                     <div>
@@ -165,15 +167,17 @@
                                                 <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                                 <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                             </f:facet>
-                                            <p:selectOneListbox  style="font-size: 10pt" value="#{opdTabPreBillController.selectedCurrentlyWorkingStaff}">
+                                            <p:selectOneListbox id="sldoctor" style="font-size: 10pt" value="#{opdTabPreBillController.selectedCurrentlyWorkingStaff}">
                                                 <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
                                                 <f:selectItems value="#{opdTabPreBillController.currentlyWorkingStaff}" var="s" 
                                                                itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
                                                 <p:ajax process="@this" ></p:ajax>
+
                                             </p:selectOneListbox>
                                         </p:panel>
                                     </div>
                                 </div>
+
                                 <div>
                                     <h:panelGroup id="panelBillItems" >
                                         <p:tabView id="tblBillItem" >

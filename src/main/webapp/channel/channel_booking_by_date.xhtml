@@ -181,7 +181,7 @@
                                                         <br/>
                                                         <span class="text-center mx-1" > 
                                                             <h:panelGroup rendered="#{s.originatingSession.paidAppointmentsOnly}">
-                                                                <p:badge value="Paid Appointments Only" severity=""></p:badge>
+                                                                <p:badge value="Paid Appointments Only" severity="danger"></p:badge>
                                                             </h:panelGroup>
                                                         </span>
                                                     </div>
@@ -220,7 +220,7 @@
                                                                     <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="danger" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
                                                                 <span class="text-center mx-1" > 
-                                                                    <h:outputText style="font-weight: bolder" value="&nbsp;"/><br/>
+                                                                    <h:outputLabel /><br/>
                                                                     <p:commandButton 
                                                                         icon="fas fa-cog"
                                                                         styleClass="rounded-button ui-button-secondary mr-2"
@@ -241,7 +241,6 @@
                                 </div>
                                 <div class="col-5" >
                                     <common:patient_details_view_scope
-                                        editable="true"
                                         controller="#{bookingControllerViewScope}"/>
 
                                     <p:panel class="my-1">
