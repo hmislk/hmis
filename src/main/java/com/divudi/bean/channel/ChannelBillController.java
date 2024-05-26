@@ -309,6 +309,7 @@ public class ChannelBillController implements Serializable {
         printPreview = true;
         creditCompany = null;
         toStaff = null;
+        paymentMethodData = null;
         
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
