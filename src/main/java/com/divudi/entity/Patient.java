@@ -8,6 +8,7 @@ import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -36,12 +37,11 @@ public class Patient implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
     Long id;
 
     private Long patientPhoneNumber;
     private Long patientMobileNumber;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     Person person;
     //personaI dentification Number
     Integer pinNo;
