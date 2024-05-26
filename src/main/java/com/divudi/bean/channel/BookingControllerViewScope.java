@@ -4251,7 +4251,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             patient = new Patient();
             Person p = new Person();
             patientDetailsEditable = true;
-
             patient.setPerson(p);
         }
         return patient;

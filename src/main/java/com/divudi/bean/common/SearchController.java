@@ -58,6 +58,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
@@ -111,6 +112,8 @@ public class SearchController implements Serializable {
     PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
+    @EJB
+    TokenFacade tokenFacade;
 
     /**
      * Inject
@@ -244,6 +247,8 @@ public class SearchController implements Serializable {
     private double slipTotal;
     private double totalOfOtherPayments;
     private double billCount;
+    private Token token;
+
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -333,6 +338,19 @@ public class SearchController implements Serializable {
         hm.put("tid", currentTokenId);
         return getBillFacade().findFirstByJpql(sql, hm);
     }
+    
+    public Token searchTokenFromTokenId(Long currentTokenId) {
+        if (currentTokenId == null) {
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
+        }
+        String sql = "SELECT t FROM Token t "
+                + "WHERE t.retired = false "
+                + "AND t.id = :tid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("tid", currentTokenId);
+        return tokenFacade.findFirstByJpql(sql, hm);
+    }
 
     public Bill searchBillFromBillId(Long currentTokenId) {
         if (currentTokenId == null) {
@@ -354,6 +372,7 @@ public class SearchController implements Serializable {
         System.out.println("currentBill by bill id= " + currentBill);
         if (currentBill == null) {
             currentBill = searchBillFromTokenId(barcodeIdLong);
+            opdPreSettleController.setToken(searchTokenFromTokenId(barcodeIdLong));
             System.out.println("currentBill by token id = " + currentBill);
         }
         String action;
@@ -1423,6 +1442,14 @@ public class SearchController implements Serializable {
 
     public void setBillCount(double billCount) {
         this.billCount = billCount;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
     }
 
     public class billsWithbill {
@@ -6896,7 +6923,7 @@ public class SearchController implements Serializable {
             setDepartments(getDepartmentController().getInstitutionDepatrments(ins));
         }
     }
-
+    
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
         System.out.println("institution = " + institution);
         if (institution == null) {
@@ -6952,17 +6979,22 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
         billSummaryRows = paymentFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
+        
         for (BillSummaryRow bss : billSummaryRows) {
-            if (bss.getPaymentMethod() == PaymentMethod.Cash) {
+            if (bss.getPaymentMethod() == PaymentMethod.Cash){
                 cashTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Card) {
+            }
+            else if (bss.getPaymentMethod() == PaymentMethod.Card){
                 cardTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Cheque) {
+            }
+            else if (bss.getPaymentMethod() == PaymentMethod.Cheque){
                 chequeTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Slip) {
+            } 
+            else if (bss.getPaymentMethod() == PaymentMethod.Slip){
                 slipTotal += bss.getPaidValue();
-            } else {
+            } 
+            else {
+
                 totalOfOtherPayments += bss.getPaidValue();
             }
             totalPaying += bss.getPaidValue();
@@ -7031,6 +7063,7 @@ public class SearchController implements Serializable {
 //        }
 //
 //    }
+
     public void processAllFinancialTransactionalSummarybyUsers() {
         //System.out.println("institution = " + institution);
         //System.out.println("department = " + department);
