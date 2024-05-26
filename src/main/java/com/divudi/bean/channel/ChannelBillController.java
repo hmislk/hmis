@@ -99,7 +99,8 @@ public class ChannelBillController implements Serializable {
     private boolean foriegn = false;
     boolean settleSucessFully = false;
     private boolean printPreview;
-     private boolean printPreviewC;
+    private boolean printPreviewC;
+    private boolean printPreviewR;
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
     PaymentMethod cancelPaymentMethod;
@@ -717,6 +718,7 @@ public class ChannelBillController implements Serializable {
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
+        printPreviewR = true;
     }
 
     public void refundAgentBill() {
@@ -746,6 +748,7 @@ public class ChannelBillController implements Serializable {
 
         refundPaymentMethod = null;
         commentR = null;
+        printPreviewR = true;
     }
 
     public void refundCreditPaidBill() {
@@ -820,6 +823,7 @@ public class ChannelBillController implements Serializable {
         refund1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
+        printPreviewR = true;
         bookingController.fillBillSessions();
     }
 
@@ -3313,6 +3317,14 @@ public class ChannelBillController implements Serializable {
 
     public void setPrintPreviewC(boolean printPreviewC) {
         this.printPreviewC = printPreviewC;
+    }
+
+    public boolean isPrintPreviewR() {
+        return printPreviewR;
+    }
+
+    public void setPrintPreviewR(boolean printPreviewR) {
+        this.printPreviewR = printPreviewR;
     }
 
 }
