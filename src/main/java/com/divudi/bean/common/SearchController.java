@@ -245,6 +245,7 @@ public class SearchController implements Serializable {
     private double totalOfOtherPayments;
     private double billCount;
 
+
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {
@@ -6896,7 +6897,7 @@ public class SearchController implements Serializable {
             setDepartments(getDepartmentController().getInstitutionDepatrments(ins));
         }
     }
-
+    
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
         System.out.println("institution = " + institution);
         if (institution == null) {
@@ -6952,17 +6953,22 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
         billSummaryRows = paymentFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
+        
         for (BillSummaryRow bss : billSummaryRows) {
-            if (bss.getPaymentMethod() == PaymentMethod.Cash) {
+            if (bss.getPaymentMethod() == PaymentMethod.Cash){
                 cashTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Card) {
+            }
+            else if (bss.getPaymentMethod() == PaymentMethod.Card){
                 cardTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Cheque) {
+            }
+            else if (bss.getPaymentMethod() == PaymentMethod.Cheque){
                 chequeTotal += bss.getPaidValue();
-            } else if (bss.getPaymentMethod() == PaymentMethod.Slip) {
+            } 
+            else if (bss.getPaymentMethod() == PaymentMethod.Slip){
                 slipTotal += bss.getPaidValue();
-            } else {
+            } 
+            else {
+
                 totalOfOtherPayments += bss.getPaidValue();
             }
             totalPaying += bss.getPaidValue();
@@ -7031,6 +7037,7 @@ public class SearchController implements Serializable {
 //        }
 //
 //    }
+
     public void processAllFinancialTransactionalSummarybyUsers() {
         //System.out.println("institution = " + institution);
         //System.out.println("department = " + department);
