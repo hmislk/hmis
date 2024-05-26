@@ -251,7 +251,8 @@ public class SearchController implements Serializable {
     private double totalOfOtherPayments;
     private double billCount;
     private Token token;
-
+    
+    private boolean duplicateBillView;
 
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
@@ -1484,6 +1485,14 @@ public class SearchController implements Serializable {
 
     public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
+    }
+
+    public boolean isDuplicateBillView() {
+        return duplicateBillView;
+    }
+
+    public void setDuplicateBillView(boolean duplicateBillView) {
+        this.duplicateBillView = duplicateBillView;
     }
 
     public class billsWithbill {
@@ -5763,6 +5772,7 @@ public class SearchController implements Serializable {
     
     public String navigateToAddToStockBillPrint(){
         printPreview = true;
+        duplicateBillView = true;
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
@@ -5789,7 +5799,7 @@ public class SearchController implements Serializable {
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setInstitution(sessionController.getInstitution());
-
+        
         getBillFacade().create(bill);
         
         List<BillItem> billItems = new ArrayList<>();
@@ -5845,6 +5855,7 @@ public class SearchController implements Serializable {
 
         createPreBillsNotPaid();
         printPreview = true;
+        duplicateBillView = false;
     }
     
     public void cancelIssueToUnitBills() {
