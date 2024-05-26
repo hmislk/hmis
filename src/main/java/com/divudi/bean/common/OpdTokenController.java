@@ -293,7 +293,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-        System.out.println("navigateToNewOpdBillForCashierTabView");
+        //System.out.println("navigateToNewOpdBillForCashierTabView");
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
         opdTabPreBillController.setToken(currentToken);

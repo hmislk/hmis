@@ -841,11 +841,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setPending(false);
         e.setSmsType(MessageType.DoctorPayment);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     public void sendSmsAfterSessionPayment() {
@@ -862,11 +864,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setPending(false);
         e.setSmsType(MessageType.DoctorPayment);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     private String generateDoctorPaymentSms(Bill b) {

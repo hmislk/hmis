@@ -63,28 +63,8 @@ public class SmsManagerEjb {
         sendSmsAwaitingToSendInDatabase();
     }
 
-    public UserPreference findApplicationPreference() {
-        String jpql;
-        Map m = new HashMap();
-        jpql = "select p "
-                + " from UserPreference p "
-                + " where p.institution is null "
-                + " and p.department is null "
-                + " and p.webUser is null "
-                + " order by p.id desc";
-        UserPreference currentPreference = userPreferenceFacade.findFirstByJpql(jpql);
-        if (currentPreference == null) {
-            currentPreference = new UserPreference();
-            userPreferenceFacade.create(currentPreference);
-        }
-        currentPreference.setWebUser(null);
-        currentPreference.setDepartment(null);
-        currentPreference.setInstitution(null);
-        return currentPreference;
-    }
-
+   
     private void sendSmsAwaitingToSendInDatabase() {
-        UserPreference pf = findApplicationPreference();
         String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
         Map m = new HashMap();
         Calendar c = Calendar.getInstance();
@@ -95,14 +75,14 @@ public class SmsManagerEjb {
             e.setSentSuccessfully(Boolean.TRUE);
             e.setPending(false);
             getSmsFacade().edit(e);
-            SmsSentResponse sent = sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), pf);
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
+            Boolean sent = sendSms(e);
             e.setSentAt(new Date());
+            e.setPending(false);
             getSmsFacade().edit(e);
         }
-
     }
+    
+    
 
     public String executePost(String targetURL, Map<String, String> parameters) {
         HttpURLConnection connection = null;
@@ -188,127 +168,107 @@ public class SmsManagerEjb {
         }
     }
 
-    public SmsSentResponse sendSmsByApplicationPreference(String number, String message, UserPreference pf) {
-        SmsSentResponse r = new SmsSentResponse();
-        if (null == pf.getSmsAuthenticationType()) {
-            r.setSentSuccefully(false);
-            r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
-            return r;
-        } else {
-            switch (pf.getSmsAuthenticationType()) {
-                case NONE:
-                    return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
-                case OAUTH2:
-                    return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
-                default:
-                    System.out.println("This authentication is NOT supported to send SMS yet.");
-                    r.setSentSuccefully(false);
-                    r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
-                    return r;
-            }
-        }
-    }
+   
+//    public String sendSmsByApplicationPreferenceReturnString(String number, String message, UserPreference pf) {
+//        if (null == pf.getSmsAuthenticationType()) {
+//            return "This authentication is NOT supported to send SMS yet.";
+//        } else {
+//            switch (pf.getSmsAuthenticationType()) {
+//                case NONE:
+//                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
+//                case OAUTH2:
+//                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
+//                default:
+//                    return "This authentication is NOT supported to send SMS yet.";
+//            }
+//        }
+//    }
 
-    public String sendSmsByApplicationPreferenceReturnString(String number, String message, UserPreference pf) {
-        if (null == pf.getSmsAuthenticationType()) {
-            return "This authentication is NOT supported to send SMS yet.";
-        } else {
-            switch (pf.getSmsAuthenticationType()) {
-                case NONE:
-                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
-                case OAUTH2:
-                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
-                default:
-                    return "This authentication is NOT supported to send SMS yet.";
-            }
-        }
-    }
-
-    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
-    public boolean sendSmsByApplicationPreferenceOauth2(String number, String message, UserPreference pf) {
-        try {
-            // Prepare the JSON payload
-            JSONObject jsonPayload = new JSONObject();
-            jsonPayload.put("campaignName", "Test campaign");
-            jsonPayload.put("mask", "Test");
-            jsonPayload.put("numbers", number);
-            jsonPayload.put("content", message);
-
-            // Prepare the HTTP request
-            URL url = new URL(pf.getSmsUrl());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "*/*");
-            conn.setRequestProperty("X-API-VERSION", "v1");
-//            conn.setRequestProperty("Authorization", "Bearer " + pf.getAccessToken());
-
-            // Send the JSON payload
-            try ( OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonPayload.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            // Read the response
-            try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                System.out.println(response.toString());
-            }
-
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public SmsSentResponse sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
-        Map<String, String> m = new HashMap();
-        SmsSentResponse r = new SmsSentResponse();
-        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
-        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
-        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
-            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
-        }
-        m.put(pf.getSmsPhoneNumberParameterName(), number);
-        m.put(pf.getSmsMessageParameterName(), message);
-
-        String res = executePost(pf.getSmsUrl(), m);
-        System.out.println(res);
-        if (res == null) {
-            r.setSentSuccefully(false);
-            r.setReceivedMessage(res);
-            return r;
-        } else if (res.toUpperCase().contains("OK")) {
-            r.setSentSuccefully(true);
-            r.setReceivedMessage(res);
-            return r;
-        } else {
-            r.setSentSuccefully(false);
-            r.setReceivedMessage(res);
-            return r;
-        }
-
-    }
-
-    public String sendSmsByApplicationPreferenceNoAuthenticationReturnString(String number, String message, UserPreference pf) {
-        Map<String, String> m = new HashMap();
-        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
-        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
-        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
-            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
-        }
-        m.put(pf.getSmsPhoneNumberParameterName(), number);
-        m.put(pf.getSmsMessageParameterName(), message);
-
-        String res = executePost(pf.getSmsUrl(), m);
-        System.out.println(res);
-        return res;
-    }
+//    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+//    public boolean sendSmsByApplicationPreferenceOauth2(String number, String message, UserPreference pf) {
+//        try {
+//            // Prepare the JSON payload
+//            JSONObject jsonPayload = new JSONObject();
+//            jsonPayload.put("campaignName", "Test campaign");
+//            jsonPayload.put("mask", "Test");
+//            jsonPayload.put("numbers", number);
+//            jsonPayload.put("content", message);
+//
+//            // Prepare the HTTP request
+//            URL url = new URL(pf.getSmsUrl());
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//            conn.setRequestMethod("POST");
+//            conn.setRequestProperty("Content-Type", "application/json");
+//            conn.setRequestProperty("Accept", "*/*");
+//            conn.setRequestProperty("X-API-VERSION", "v1");
+////            conn.setRequestProperty("Authorization", "Bearer " + pf.getAccessToken());
+//
+//            // Send the JSON payload
+//            try ( OutputStream os = conn.getOutputStream()) {
+//                byte[] input = jsonPayload.toString().getBytes("utf-8");
+//                os.write(input, 0, input.length);
+//            }
+//
+//            // Read the response
+//            try ( BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+//                StringBuilder response = new StringBuilder();
+//                String responseLine;
+//                while ((responseLine = br.readLine()) != null) {
+//                    response.append(responseLine.trim());
+//                }
+//                System.out.println(response.toString());
+//            }
+//
+//            return true;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
+//
+//    public SmsSentResponse sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
+//        Map<String, String> m = new HashMap();
+//        SmsSentResponse r = new SmsSentResponse();
+//        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
+//        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
+//        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
+//            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+//        }
+//        m.put(pf.getSmsPhoneNumberParameterName(), number);
+//        m.put(pf.getSmsMessageParameterName(), message);
+//
+//        String res = executePost(pf.getSmsUrl(), m);
+//        System.out.println(res);
+//        if (res == null) {
+//            r.setSentSuccefully(false);
+//            r.setReceivedMessage(res);
+//            return r;
+//        } else if (res.toUpperCase().contains("OK")) {
+//            r.setSentSuccefully(true);
+//            r.setReceivedMessage(res);
+//            return r;
+//        } else {
+//            r.setSentSuccefully(false);
+//            r.setReceivedMessage(res);
+//            return r;
+//        }
+//
+//    }
+//
+//    public String sendSmsByApplicationPreferenceNoAuthenticationReturnString(String number, String message, UserPreference pf) {
+//        Map<String, String> m = new HashMap();
+//        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
+//        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
+//        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
+//            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+//        }
+//        m.put(pf.getSmsPhoneNumberParameterName(), number);
+//        m.put(pf.getSmsMessageParameterName(), message);
+//
+//        String res = executePost(pf.getSmsUrl(), m);
+//        System.out.println(res);
+//        return res;
+//    }
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
@@ -362,14 +322,17 @@ public class SmsManagerEjb {
         if (res == null) {
             sms.setSentSuccessfully(false);
             sms.setReceivedMessage(res);
+            saveSms(sms);
             return false;
         } else if (res.toUpperCase().contains("OK")) {
             sms.setSentSuccessfully(true);
             sms.setReceivedMessage(res);
+            saveSms(sms);
             return true;
         } else {
             sms.setSentSuccessfully(false);
             sms.setReceivedMessage(res);
+            saveSms(sms);
             return false;
         }
 
@@ -456,11 +419,23 @@ public class SmsManagerEjb {
                     }
                 }
             }
-
+            saveSms(sms);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            sms.setReceivedMessage(sms.getReceivedMessage() + e.getMessage());
+            saveSms(sms);
             return false;
+        }
+    }
+    
+    public void saveSms(Sms savingSms){
+        if(savingSms==null){
+            return;
+        }
+        if(savingSms.getId()==null){
+            smsFacade.create(savingSms);
+        }else{
+            smsFacade.edit(savingSms);
         }
     }
 

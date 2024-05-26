@@ -29,7 +29,7 @@
                         <h:outputLabel value="RECEIPT"/><h:outputText value=" - " /><h:outputText value="#{cc.attrs.bill.department.name}" />
                     </div>
                 </div>
-                
+
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -189,6 +189,14 @@
                 </table>
             </div>
 
+            <h:panelGroup rendered="false" style="font-weight: bold;text-align: left;font-size: 14pt" >
+                <div >
+                    <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder" class="mt-2">
+                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.staff}" ></h:outputLabel>
+                    </div>
+                </div>
+            </h:panelGroup>
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
@@ -230,12 +238,10 @@
                             <hr/>
                         </td> 
                     </tr>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
 
-
-                            <h:panelGroup rendered="#{!bip.item.printFeesForBills}">
+                            <h:panelGroup rendered="#{bip.item.printFeesForBills}">
                                 <tr>
                                     <td  style="overflow: visible;">
                                         <div class="d-flex justify-content-between">
@@ -262,7 +268,6 @@
                                     </td>
                                 </tr>
                             </h:panelGroup>
-
                             <h:panelGroup rendered="#{bip.item.printFeesForBills}">
                                 <ui:repeat value="#{bip.billFees}" var="bf" >
                                     <tr>
