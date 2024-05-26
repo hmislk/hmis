@@ -1246,7 +1246,7 @@ public class ChannelBillController implements Serializable {
 
         }
 
-        JsfUtil.addSuccessMessage("Cancelled");
+        JsfUtil.addSuccessMessage("Channel Cancelled");
 
     }
 

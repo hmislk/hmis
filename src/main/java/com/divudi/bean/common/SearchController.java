@@ -255,6 +255,7 @@ public class SearchController implements Serializable {
     private boolean duplicateBillView;
 
 
+
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {
@@ -5774,6 +5775,7 @@ public class SearchController implements Serializable {
     public String navigateToAddToStockBillPrint(){
         printPreview = true;
         duplicateBillView = true;
+
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 

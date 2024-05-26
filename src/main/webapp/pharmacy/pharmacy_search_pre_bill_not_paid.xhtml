@@ -46,6 +46,7 @@
                             </p:commandButton>
                         </div>
 
+
                         <p:dataTable 
                             id="tblBills" value="#{searchController.bills}"                             
                             var="bill" 
@@ -103,6 +104,7 @@
                     </p:panel>
 
                     <p:panel header="Pharmacy Pre Bill Add to Stock Bill Preview" rendered="#{searchController.printPreview}">
+
                         <div class="d-flex justify-content-between">
                             <p:commandButton 
                                 ajax="false" 
@@ -143,6 +145,7 @@
                                 <phi:pharmacyAddToStockBill bill="#{searchController.bill}" duplicate="#{searchController.duplicateBillView}"></phi:pharmacyAddToStockBill>
                             </h:panelGroup>
                         </h:panelGroup>
+
 
                     </p:panel>
                 </h:form>
