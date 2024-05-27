@@ -232,7 +232,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     private List<ItemLight> departmentOpdItems;
     private List<Department> opdItemDepartments;
     private Department selectedOpdItemDepartment;
-    
 
     // </editor-fold>
     public double getCashRemain() {
@@ -1272,6 +1271,13 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             getCurrentBillItem().setQty(1.0);
         }
 
+        for (BillEntry bi : lstBillEntries) {
+            if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
+                JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
+                return;
+            }
+        }
+        
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = getCurrentBillItem();
@@ -1545,8 +1551,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         }
     }
 
-    
-     public void removeBillItem() {
+    public void removeBillItem() {
         if (getIndex() != null) {
             BillEntry temp = getLstBillEntries().get(getIndex());
             recreateList(temp);
