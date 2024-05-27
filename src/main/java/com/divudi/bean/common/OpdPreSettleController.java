@@ -761,10 +761,11 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
-
+        System.out.println("calculatRemainForMultiplePaymentTotal");
+        System.out.println("paymentMethod = " + paymentMethod);
         total = getPreBill().getNetTotal();
-
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            System.out.println("PaymentMethod.MultiplePaymentMethods");
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
