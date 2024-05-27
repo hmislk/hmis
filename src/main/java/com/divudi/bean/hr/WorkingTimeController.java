@@ -216,6 +216,10 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void settleStaffPayments() {
+        if(paymentMethod==null){
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
         Bill bill = new BilledBill();
         bill.setBillDate(Calendar.getInstance().getTime());
         bill.setBillTime(Calendar.getInstance().getTime());
