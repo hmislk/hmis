@@ -405,7 +405,7 @@
                 </h:outputLabel>
             </div>
 
-            <ui:repeat value="#{cc.attrs.bill.payments}" var="ps">
+            <ui:repeat value="#{cc.attrs.payments}" var="ps">
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                     <h:outputText 
                         style="font-size: 8pt"  

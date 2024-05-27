@@ -146,6 +146,7 @@ public class OpdPreSettleController implements Serializable {
     private Token token;
     private Staff toStaff;
     private Institution creditCompany;
+    private List<Payment> payments;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -556,6 +557,7 @@ public class OpdPreSettleController implements Serializable {
 
             ps.add(p);
         }
+        payments=ps;
         return ps;
     }
 
@@ -725,7 +727,7 @@ public class OpdPreSettleController implements Serializable {
         }
         getBillFacade().edit(getPreBill());
         setBill(getBillFacade().find(getSaleBill().getId()));
-        //createPaymentsForCashierAcceptpayment(getSaleBill(), getSaleBill().getPaymentMethod());
+       // createPaymentsForCashierAcceptpayment(getSaleBill(), getSaleBill().getPaymentMethod());
         billPreview = true;
         completeTokenAfterAcceptPayment();
     }
@@ -742,7 +744,6 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public void createPaymentsForCashierAcceptpayment(Bill bill, PaymentMethod pm) {
-        System.out.println("createPaymentsForCashierAcceptpayment");
         Payment p = new Payment();
         p.setBill(bill);
         p.setInstitution(getSessionController().getInstitution());
@@ -1568,6 +1569,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setBillsOfBatchBilledBill(List<Bill> billsOfBatchBilledBill) {
         this.billsOfBatchBilledBill = billsOfBatchBilledBill;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }
