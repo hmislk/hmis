@@ -2518,15 +2518,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
-//     //   ////// // System.out.println("calculating totals");
+        System.out.println("calculating totals");
         if (paymentMethod == null) {
             return;
         }
 
-        if (toStaff != null) {
-            paymentScheme = null;
-            creditCompany = null;
-        }
+//        if (toStaff != null) {
+//            paymentScheme = null;
+//            creditCompany = null;
+//        }
 
         double billDiscount = 0.0;
         double billGross = 0.0;
@@ -2800,7 +2800,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         patient = pt;
         return "/opd/opd_bill?faces-redirect=true";
     }
-    
+
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {
         navigateToNewOpdBill();
         patient = pt;
@@ -3815,7 +3815,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Department> getOpdItemDepartments() {
-        if(opdItemDepartments==null){
+        if (opdItemDepartments == null) {
             getOpdItems();
         }
         return opdItemDepartments;
@@ -3839,7 +3839,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<ItemLight> getDepartmentOpdItems() {
-        if(departmentOpdItems==null){
+        if (departmentOpdItems == null) {
             getOpdItems();
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }
