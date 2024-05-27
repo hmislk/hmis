@@ -295,6 +295,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         }
         //System.out.println("navigateToNewOpdBillForCashierTabView");
         opdTabPreBillController.makeNull();
+        opdTabPreBillController.reloadCurrentlyWorkingStaff();
         opdTabPreBillController.setPatient(currentToken.getPatient());
         opdTabPreBillController.setToken(currentToken);
         opdTabPreBillController.setSelectedCurrentlyWorkingStaff(currentToken.getStaff());
