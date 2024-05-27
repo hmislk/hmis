@@ -1628,6 +1628,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
+        if (paymentMethod == PaymentMethod.OnCall) {
+            if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
+                JsfUtil.addErrorMessage("This session is only available for paid appointments.");
+                return true;
+            }
+        }
+
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
                 return true;
@@ -1761,6 +1768,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
+      
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");
         } else {
