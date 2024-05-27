@@ -232,6 +232,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     private List<ItemLight> departmentOpdItems;
     private List<Department> opdItemDepartments;
     private Department selectedOpdItemDepartment;
+    
 
     // </editor-fold>
     public double getCashRemain() {
@@ -1544,9 +1545,11 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         }
     }
 
-    public void removeBillItem(BillEntry bi) {
-        if (bi != null) {
-            getLstBillEntries().remove(bi);
+    
+     public void removeBillItem() {
+        if (getIndex() != null) {
+            BillEntry temp = getLstBillEntries().get(getIndex());
+            recreateList(temp);
             calTotals();
         }
 
