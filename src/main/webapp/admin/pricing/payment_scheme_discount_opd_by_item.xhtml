@@ -24,14 +24,33 @@
                                                 var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
                                 </p:autoComplete>
                                 <h:outputLabel value="Item Name" />
-                                <p:autoComplete value="#{opdMemberShipDiscountController.item}" 
-                                                forceSelection="true"
-                                                completeMethod="#{itemController.completeItem}"
-                                                
-                                                var="cat" 
-                                                itemLabel="#{cat.name}" 
-                                                itemValue="#{cat}">                                   
-                                </p:autoComplete>
+                                <p:autoComplete widgetVar="aIx" id="acIx" 
+                                            forceSelection="true" 
+                                            value="#{opdMemberShipDiscountController.item}"
+                                            completeMethod="#{itemController.completeInwardItems}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
+                                            class="w-100"
+                                            styleClass="w-100">
+                                <p:column headerText="Type" >
+                                    <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Institution" >
+                                    <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Department" >
+                                    <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Total" >
+                                    <p:outputLabel value="#{ix.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+
 
                                 <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}"  >
