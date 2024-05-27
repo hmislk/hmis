@@ -1264,24 +1264,32 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
 
-        getCurrentBillItem().setSessionDate(sessionDate);
+        
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-        lastBillItem = getCurrentBillItem();
+        BillItem bi = new BillItem();
+        bi.copy(getCurrentBillItem());
+        bi.setSessionDate(sessionDate);
+        lastBillItem = bi;
+        if(bi.getQty()==null || bi.getQty()<1){
+            bi.setQty(1.0);
+        }
         BillEntry addingEntry = new BillEntry();
-        addingEntry.setBillItem(getCurrentBillItem());
-        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));
+        addingEntry.setBillItem(bi);
+        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
-        getCurrentBillItem().setRate(getBillBean().billItemRate(addingEntry));
-        getCurrentBillItem().setQty(1.0);
-        getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
+        bi.setRate(getBillBean().billItemRate(addingEntry));
+        bi.setQty(1.0);
+        System.out.println("getCurrentBillItem().getRate() = " + getCurrentBillItem().getRate());
+        System.out.println("bi = " + bi.getRate());
+        bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
         calTotals();
 
-        if (getCurrentBillItem().getNetValue() == 0.0) {
+        if (bi.getNetValue() == 0.0) {
             JsfUtil.addErrorMessage("Please enter the Fees");
             return;
         }

@@ -254,8 +254,6 @@ public class SearchController implements Serializable {
     
     private boolean duplicateBillView;
 
-
-
     public String navigateTobill(Bill bill) {
         String navigateTo = "";
         if (bill == null) {
