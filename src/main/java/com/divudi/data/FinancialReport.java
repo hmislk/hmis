@@ -220,7 +220,7 @@ public class FinancialReport {
     }
 
     public double getNetCashTotal() {
-        netCashTotal = getCollectedCash() - getRefundedCash();
+        netCashTotal = getCollectedCash() - Math.abs(getRefundedCash()) ;
         return netCashTotal;
     }
 
