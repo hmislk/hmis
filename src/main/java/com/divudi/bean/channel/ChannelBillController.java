@@ -1208,7 +1208,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
         cancel1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
-        cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
         printPreviewC = true;
 
@@ -1233,6 +1233,7 @@ public class ChannelBillController implements Serializable {
 
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
+            createPaymentForCancellationsAndRefunds(cb,cb.getPaymentMethod());
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -1251,6 +1252,7 @@ public class ChannelBillController implements Serializable {
 
         } else {
             CancelledBill cb = createCancelBill(bill);
+            createPaymentForCancellationsAndRefunds(cb,bill.getPaidBill().getPaymentMethod());
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
