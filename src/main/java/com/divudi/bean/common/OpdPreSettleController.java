@@ -14,6 +14,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.TokenType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -44,6 +45,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.TokenFacade;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,10 +53,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -97,6 +101,8 @@ public class OpdPreSettleController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    TokenFacade tokenFacade;
 /////////////////////////
     Item selectedAlternative;
 
@@ -105,6 +111,7 @@ public class OpdPreSettleController implements Serializable {
     private Bill billedBill;
     Bill bill;
     private List<Bill> billsOfBatchBillPre;
+    private List<Bill> billsOfBatchBilledBill;
     BillItem billItem;
     BillItem removingBillItem;
     BillItem editingBillItem;
@@ -268,7 +275,7 @@ public class OpdPreSettleController implements Serializable {
 //            return true;
 //        }
 
-       if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
 
@@ -409,19 +416,55 @@ public class OpdPreSettleController implements Serializable {
         getSaleBill().setDeptId(getPreBill().getDeptId());
 
         getSaleBill().setSessionId(billNumberBean.generateDailyBillNumberForOpd(getPreBill().getDepartment()));
-        
-        
+
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         }
         getSaleBill().setPayments(createPayment(getSaleBill(), getSaleBill().getPaymentMethod()));
-
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         } else {
             getBillFacade().edit(getSaleBill());
         }
         updateSettledBatchBill();
+    }
+
+    public Bill createNewBilledBillfromPreBill(Bill inputPreBill) {
+        Bill outputBilledBill = new BilledBill();
+        outputBilledBill.copy(inputPreBill);
+        outputBilledBill.copyValue(inputPreBill);
+        outputBilledBill.setBalance(0.0);
+        outputBilledBill.setBillClassType(BillClassType.BilledBill);
+        outputBilledBill.setBillType(BillType.OpdBill);
+        outputBilledBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        outputBilledBill.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        outputBilledBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getBillBean().setBills(billsOfBatchBillPre);
+
+        outputBilledBill.setBillDate(new Date());
+        outputBilledBill.setBillTime(new Date());
+        outputBilledBill.setCreatedAt(Calendar.getInstance().getTime());
+        outputBilledBill.setCreater(getSessionController().getLoggedUser());
+
+        outputBilledBill.setReferenceBill(inputPreBill);
+
+        outputBilledBill.setInsId(inputPreBill.getInsId());
+        outputBilledBill.setDeptId(inputPreBill.getDeptId());
+
+        if (outputBilledBill.getId() == null) {
+            getBillFacade().create(outputBilledBill);
+        }
+
+        if (outputBilledBill.getId() == null) {
+            getBillFacade().create(outputBilledBill);
+        } else {
+            getBillFacade().edit(outputBilledBill);
+        }
+        inputPreBill.setReferenceBill(outputBilledBill);
+        getBillFacade().edit(inputPreBill);
+        return outputBilledBill;
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
@@ -476,12 +519,13 @@ public class OpdPreSettleController implements Serializable {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setPaymentMethod(pm);
-
+            
             switch (pm) {
                 case Card:
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
                     p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    System.out.println("pCard = " + p);
                     break;
                 case Cheque:
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
@@ -490,6 +534,7 @@ public class OpdPreSettleController implements Serializable {
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    System.out.println("cash = " + p);
                     break;
                 case ewallet:
 
@@ -549,34 +594,34 @@ public class OpdPreSettleController implements Serializable {
 
     private void updateSettledBatchBill() {
         getPreBill().setReferenceBill(getSaleBill());
-
         getBillFacade().edit(getPreBill());
 
     }
 
-    private void saveOpdBatchBillItems() {
-        for (Bill bill : getBillBean().getBills()) {
-            for (BillItem tbi : bill.getBillItems()) {
-                BillItem newBil = new BillItem();
-                newBil.copy(tbi);
-                newBil.setBill(getSaleBill());
-//            newBil.setInwardChargeType(InwardChargeType.Medicine);
-                //      newBil.setBill(getSaleBill());
-                newBil.setCreatedAt(Calendar.getInstance().getTime());
-                newBil.setCreater(getSessionController().getLoggedUser());
-
-                if (newBil.getId() == null) {
-                    getBillItemFacade().create(newBil);
+    private void saveOpdBillsOfBatchBill() {
+        billsOfBatchBilledBill = new ArrayList<>();
+        System.out.println("getBillBean().getBills() = " + getBillBean().getBills().size());
+        for (Bill billsOfBatchBill : billController.billsOfBatchBill(preBill)) {
+            //Bill saleBillOfSaleBatchBill = createBilledBillForPreBill(billsOfBatchBill);
+            for (BillItem tbi : billsOfBatchBill.getBillItems()) {
+                BillItem newBillItem = new BillItem();
+                newBillItem.copy(tbi);
+                newBillItem.setBill(preBill);
+                newBillItem.setCreatedAt(Calendar.getInstance().getTime());
+                newBillItem.setCreater(getSessionController().getLoggedUser());
+                if (newBillItem.getId() == null) {
+                    getBillItemFacade().create(newBillItem);
                 }
                 String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + tbi.getId();
-                List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
-                saveBillFee(tmp, newBil);
-
-                getSaleBill().getBillItems().add(newBil);
+                List<BillFee> preBillItemFees = getBillFeeFacade().findByJpql(sql);
+                List<BillFee> newBillBillItemFees = createNewBillItemFeesForBilledBillFromPreBillItem(preBillItemFees, newBillItem);
+                newBillItem.setBillFees(newBillBillItemFees);
+                preBill.getBillItems().add(newBillItem);
+                preBill.getBillFees().addAll(newBillBillItemFees);
             }
-            getBillFacade().edit(getSaleBill());
+            getBillFacade().edit(preBill);
+            billsOfBatchBilledBill.add(preBill);
         }
-
     }
 
     private void saveOpdIndividualBillItems(Bill individualPreBill, Bill newlyCreatedSettlingIndividualBill) {
@@ -616,6 +661,24 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
+    public List<BillFee> createNewBillItemFeesForBilledBillFromPreBillItem(List<BillFee> preBillFees, BillItem newBilledBillItem) {
+        List<BillFee> nbfs = new ArrayList<>();
+        for (BillFee bfo : preBillFees) {
+            BillFee nbf = new BillFee();
+            nbf.copy(bfo);
+            nbf.setCreatedAt(Calendar.getInstance().getTime());
+            nbf.setCreater(sessionController.getLoggedUser());
+            nbf.setBillItem(newBilledBillItem);
+            nbf.setBill(newBilledBillItem.getBill());
+
+            if (nbf.getId() == null) {
+                getBillFeeFacade().create(nbf);
+            }
+            nbfs.add(nbf);
+        }
+        return nbfs;
+    }
+
     public void settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
@@ -627,7 +690,7 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         saveSettlingBatchBill();
-        saveOpdBatchBillItems();
+        saveOpdBillsOfBatchBill();
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
         getBillFacade().edit(getPreBill());
@@ -651,9 +714,10 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         saveSettlingBatchBill();
-        saveOpdBatchBillItems();
+        saveOpdBillsOfBatchBill();
         List<Bill> individualBillsOfTheBatchBill = billController.validBillsOfBatchBill(getPreBill());
         for (Bill individualBillOfPreBill : individualBillsOfTheBatchBill) {
+            System.out.println("individualBillOfPreBill = " + individualBillOfPreBill);
             Bill newlyCreatedSettlingIndividualBill = saveSettlingIndividualBill(individualBillOfPreBill, getSaleBill());
             saveOpdIndividualBillItems(individualBillOfPreBill, newlyCreatedSettlingIndividualBill);
         }
@@ -661,9 +725,22 @@ public class OpdPreSettleController implements Serializable {
         setBill(getBillFacade().find(getSaleBill().getId()));
         //createPaymentsForCashierAcceptpayment(getSaleBill(), getSaleBill().getPaymentMethod());
         billPreview = true;
+        completeTokenAfterAcceptPayment();
+    }
+    
+    public void completeTokenAfterAcceptPayment(){
+        if (token==null) {
+            return;
+        }
+        System.out.println("foundToken = " + token);
+        token.setCompleted(true);
+        token.setCompletedAt(new Date());
+        tokenFacade.edit(token);
+        
     }
 
     public void createPaymentsForCashierAcceptpayment(Bill bill, PaymentMethod pm) {
+        System.out.println("createPaymentsForCashierAcceptpayment");
         Payment p = new Payment();
         p.setBill(bill);
         p.setInstitution(getSessionController().getInstitution());
@@ -706,8 +783,8 @@ public class OpdPreSettleController implements Serializable {
 //            return;
         }
 
-        saveSettlingBatchBill();
-        saveOpdBatchBillItems();
+       // saveSettlingBatchBill();
+       // saveOpdBillsOfBatchBill();
 
         return (BilledBill) getSaleBill();
     }
@@ -837,13 +914,26 @@ public class OpdPreSettleController implements Serializable {
         if (b != null) {
             JsfUtil.addErrorMessage("Already Paid");
             return "";
-        } else {
-            setPreBill(preBatchBill);
-            billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
-            System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
-            getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
-            return "/opd/opd_bill_pre_settle?faces-redirect=true";
         }
+        setPreBill(preBatchBill);
+        billsOfBatchBillPre = billController.billsOfBatchBill(preBatchBill);
+        for (Bill billOfBatchBillPre : billsOfBatchBillPre) {
+            if (billOfBatchBillPre.getBillItems() == null) {
+                billOfBatchBillPre.setBillItems(billController.billItemsOfBill(billOfBatchBillPre));
+                for (BillItem billItemOfPreBill : billOfBatchBillPre.getBillItems()) {
+                    if (billItemOfPreBill.getBillFees() == null) {
+                        billItemOfPreBill.setBillFees(billController.billFeesOfBillItem(billItemOfPreBill));
+                    }
+                }
+            }
+            if (billOfBatchBillPre.getBillFees() == null) {
+                billOfBatchBillPre.setBillFees(billController.billFeesOfBill(billOfBatchBillPre));
+            }
+        }
+        System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
+        getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
+        return "/opd/opd_bill_pre_settle?faces-redirect=true";
+
     }
 
     public String toSettleBatch(Bill preBatchBill) {
@@ -1091,7 +1181,7 @@ public class OpdPreSettleController implements Serializable {
         p.setPaymentMethod(pm);
         System.out.println("paid value opd bill refund = " + p.getPaidValue());
         if (p.getBill().getBillType() == BillType.PaymentBill) {
-            System.out.println("p.getBill().getNetTotal()" +p.getBill().getNetTotal());
+            System.out.println("p.getBill().getNetTotal()" + p.getBill().getNetTotal());
             p.setPaidValue(p.getBill().getNetTotal());
         } else {
             System.out.println("p.getBill().getCashPaid() = " + p.getBill().getCashPaid());
@@ -1445,6 +1535,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public List<Bill> getBillsOfBatchBilledBill() {
+        return billsOfBatchBilledBill;
+    }
+
+    public void setBillsOfBatchBilledBill(List<Bill> billsOfBatchBilledBill) {
+        this.billsOfBatchBilledBill = billsOfBatchBilledBill;
     }
 
 }

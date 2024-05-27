@@ -86,7 +86,7 @@ import org.primefaces.event.TabChangeEvent;
 public class ChannelBillController implements Serializable {
 
     @EJB
-    PaymentFacade paymentFacade;
+    private PaymentFacade paymentFacade;
 
     private BillSession billSession;
     private String patientTabId = "tabNewPt";
@@ -99,6 +99,10 @@ public class ChannelBillController implements Serializable {
     private boolean foriegn = false;
     boolean settleSucessFully = false;
     private boolean printPreview;
+
+    private boolean printPreviewC;
+    private boolean printPreviewR;
+
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
     PaymentMethod cancelPaymentMethod;
@@ -309,6 +313,7 @@ public class ChannelBillController implements Serializable {
         printPreview = true;
         creditCompany = null;
         toStaff = null;
+        paymentMethodData = null;
         
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
@@ -716,6 +721,7 @@ public class ChannelBillController implements Serializable {
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
+        printPreviewR = true;
     }
 
     public void refundAgentBill() {
@@ -745,6 +751,7 @@ public class ChannelBillController implements Serializable {
 
         refundPaymentMethod = null;
         commentR = null;
+        printPreviewR = true;
     }
 
     public void refundCreditPaidBill() {
@@ -817,9 +824,9 @@ public class ChannelBillController implements Serializable {
         }
 
         refund1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
-        refund1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
+        refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
-        bookingController.fillBillSessions();
+        printPreviewR = true;
     }
 
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
@@ -838,6 +845,8 @@ public class ChannelBillController implements Serializable {
             RefundBill rb = (RefundBill) createCashRefundBill(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
+            Payment p = createPaymentForCancellationsAndRefunds(rb, refundPaymentMethod);
+            System.out.println("p = " + p.getPaidValue());
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -858,6 +867,8 @@ public class ChannelBillController implements Serializable {
             RefundBill rb = (RefundBill) createRefundBill(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
+            Payment p = createPaymentForCancellationsAndRefunds(rb, bill.getPaidBill().getPaymentMethod());
+            System.out.println("p = " + p.getPaidValue());
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -934,10 +945,10 @@ public class ChannelBillController implements Serializable {
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
 
-            RefundBill rpb = (RefundBill) createRefundBill(bill.getPaidBill());
+            RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
-
+           
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
@@ -957,6 +968,32 @@ public class ChannelBillController implements Serializable {
     }
 
     List<BillFee> listBillFees;
+    
+      public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = Math.abs(bill.getNetTotal());
+        System.out.println("valueToSet = " + valueToSet);
+        p.setPaidValue(valueToSet);
+        if(pm == null){
+            pm = bill.getPaymentMethod();
+        }
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+      
+     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        System.out.println("paid value Channeling bill refund = " + p.getPaidValue());
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+        getPaymentFacade().edit(p);
+    }
 
     public void createBillfees(SelectEvent event) {
         BillSession bs = ((BillSession) event.getObject());
@@ -1069,6 +1106,7 @@ public class ChannelBillController implements Serializable {
 
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
+        printPreviewC = true;
     }
 
     public void cancelBookingBill() {
@@ -1086,6 +1124,7 @@ public class ChannelBillController implements Serializable {
         billSessionFacade.edit(billSession);
 
         comment = null;
+        printPreviewC = true;
     }
 
     public void cancelAgentPaidBill() {
@@ -1136,6 +1175,7 @@ public class ChannelBillController implements Serializable {
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         cancelPaymentMethod = null;
         comment = null;
+        printPreviewC = true;
     }
 
     public void cancelCreditPaidBill() {
@@ -1168,8 +1208,9 @@ public class ChannelBillController implements Serializable {
             return;
         }
         cancel1(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
-        cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+        cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
+        printPreviewC = true;
 
     }
 
@@ -1192,6 +1233,7 @@ public class ChannelBillController implements Serializable {
 
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
+            createPaymentForCancellationsAndRefunds(cb,cb.getPaymentMethod());
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -1210,6 +1252,7 @@ public class ChannelBillController implements Serializable {
 
         } else {
             CancelledBill cb = createCancelBill(bill);
+            createPaymentForCancellationsAndRefunds(cb,bill.getPaidBill().getPaymentMethod());
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -1234,7 +1277,7 @@ public class ChannelBillController implements Serializable {
 
         }
 
-        JsfUtil.addSuccessMessage("Cancelled");
+        JsfUtil.addSuccessMessage("Channel Cancelled");
 
     }
 
@@ -3300,6 +3343,31 @@ public class ChannelBillController implements Serializable {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
+    }
+
+    public boolean isPrintPreviewC() {
+        return printPreviewC;
+    }
+
+    public void setPrintPreviewC(boolean printPreviewC) {
+        this.printPreviewC = printPreviewC;
+    }
+
+
+    public boolean isPrintPreviewR() {
+        return printPreviewR;
+    }
+
+    public void setPrintPreviewR(boolean printPreviewR) {
+        this.printPreviewR = printPreviewR;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
     }
 
 }

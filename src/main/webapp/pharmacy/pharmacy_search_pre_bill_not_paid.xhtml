@@ -4,38 +4,62 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Pharmacy Bills Not Paid" >
+                    <p:panel header="Pharmacy Bills Not Paid" rendered="#{!searchController.printPreview}">
                         <p:poll interval="30"   
                                 listener="#{searchController.createPreBillsNotPaid()}" update="@all" />
                         <f:facet name="header" >
 
-                            <h:panelGrid columns="5" style="min-width: 100%;" >
-                                <p:commandButton ajax="false" value="Process" 
-                                                 icon="fas fa-arrows-rotate"
-                                                 actionListener="#{searchController.createPreBillsNotPaid()}"/>
-                                <p:commandButton ajax="false" value="Add To Stock" action="#{searchController.addToStock}" 
-                                                 icon="fas fa-plus"
-                                                 class="ui-button-success"
-                                                 disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}"/>
-                            </h:panelGrid>
+                            <div class="d-flex justify-content-between" >
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Process" 
+                                    icon="fas fa-arrows-rotate"
+                                    actionListener="#{searchController.createPreBillsNotPaid()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="To Bill List" 
+                                    icon="fa fa-arrow-left"
+                                    class="ui-button-warning"
+                                    actionListener="#{searchController.makeNull()}"
+                                    action="#{searchController.navigateToAddToStockBillList()}">
+                                </p:commandButton>
+                            </div>
 
                         </f:facet>
 
-                        <p:dataTable id="tblBills" value="#{searchController.bills}"                             
-                                     var="bill" rowKey="#{bill.id}"
-                                     selection="#{searchController.selectedBills}"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Add To Stock" 
+                                action="#{searchController.addToStock}" 
+                                icon="fas fa-plus" 
+                                class="ui-button-success mb-3"
+                                disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
+                            </p:commandButton>
+                        </div>
 
-                            <p:column selectionMode="multiple" ></p:column>
+
+                        <p:dataTable 
+                            id="tblBills" value="#{searchController.bills}"                             
+                            var="bill" 
+                            rowKey="#{bill.id}"
+                            selection="#{searchController.selectedBills}"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            >
+
+                            <p:column selectionMode="multiple" width="4em"></p:column>
 
 
                             <p:column headerText="Pre Bill No">
@@ -76,16 +100,56 @@
                                     <f:setPropertyActionListener  value="#{bill}" target="#{pharmacyBillSearch.bill}" />
                                 </p:commandButton>
                             </p:column>
-
-
                         </p:dataTable>
+                    </p:panel>
+
+                    <p:panel header="Pharmacy Pre Bill Add to Stock Bill Preview" rendered="#{searchController.printPreview}">
+
+                        <div class="d-flex justify-content-between">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Back Add To Stock"                             
+                                action="#{searchController.makeListNull}" 
+                                icon="fa fa-arrow-left"
+                                class="ui-button-warning m-1">
+                            </p:commandButton>
+                            <div class="d-flex justify-content-end">
+
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu 
+                                    value="#{sessionController.departmentPreference.pharmacyBillPaperType}" 
+                                    class="m-1" 
+                                    style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    icon="fa fa-sync-alt" 
+                                    class="ui-button m-1" 
+                                    title="Redraw Bill">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    class="ui-button-info  m-1"
+                                    icon="fa fa-print"
+                                    action="#"  >
+                                    <p:printer target="gpBillPreviewad1" ></p:printer>
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <h:panelGroup id="gpBillPreviewad1">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}" >
+                                <phi:pharmacyAddToStockBill bill="#{searchController.bill}" duplicate="#{searchController.duplicateBillView}"></phi:pharmacyAddToStockBill>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
 
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
 
         </ui:composition>
 

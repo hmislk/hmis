@@ -94,6 +94,7 @@ public enum BillType {
     PharmacyAdjustmentWholeSaleRate,
     PharmacyAdjustmentPurchaseRate,
     PharmacyAdjustmentExpiryDate,
+    PharmacyAddtoStock,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
     ChannelCash(ChannelCashFlow),

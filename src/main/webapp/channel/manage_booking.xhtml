@@ -298,7 +298,7 @@
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h:outputLabel value="Reprint" />
-                                                <div>
+                                                    <div>
                                                         <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                                         <p:selectOneMenu
                                                             value="#{sessionController.departmentPreference.channelBillPaperType}"
@@ -324,9 +324,9 @@
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
-                                        </f:facet>
+                                            </f:facet>
 
-                                        <div class="col-md-12 mt-2">
+                                            <div class="col-md-12 mt-2">
                                                 <div class="d-flex justify-content-center">
 
                                                     <h:panelGroup id="gpBillPreviewad1">
@@ -452,85 +452,185 @@
                     </p:tab>
 
                     <p:tab title="Cancel" id="cancel"  disabled="#{!webUserController.hasPrivilege('ChannelBookingCancel')}">                                                         
+                        <h:panelGroup rendered="#{!channelBillController.printPreviewC}">
+                            <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
+                                <p:outputLabel value="Re-payment Method"/>
+                                <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">
+                                    <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
-                        <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
-                            <p:outputLabel value="Re-payment Method"/>
-                            <p:selectOneMenu  id="cmbCancellPs" value="#{channelBillController.cancelPaymentMethod}">  
-                                <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>                                                               
-                            </p:selectOneMenu>
+                            <h:panelGroup>
+                                <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
+                            </h:panelGroup>
+
+                            <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}"
+                                             onclick="PF('confirmationDialog').show();"/>
+
                         </h:panelGroup>
+                        <h:panelGroup id="cancelPrint" rendered="#{channelBillController.printPreviewC}" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="" />
 
-                        <h:panelGroup>
-                            <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
-                        </h:panelGroup>
+                                <div class="d-flex  gap-2">
+                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                    <p:selectOneMenu
+                                        value="#{sessionController.departmentPreference.channelBillPaperType}"
 
-                        <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
-                                         disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"
-                                         onclick="PF('confirmationDialog').show();"/>
-                            <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
-                                <p>Are you sure you want to cancel the channel booking?</p>
-                                <p:inputText class="w-100"
-                                             value="#{channelBillController.comment}"
-                                             placeholder="Please provide a comment for the cancel Channel Booking" />
-
-                                <f:facet name="footer">
+                                        style="width: 13em;">
+                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                        <p:ajax event="itemSelect" process="@this" update="gpCancelBillPreview" />
+                                    </p:selectOneMenu>
                                     <p:commandButton
-                                        class="mx-2 ui-button-warning"
+                                        id="btnRefreshC"
+                                        process="@this"
+                                        update="gpCancelBillPreview"
+                                        icon="fa fa-sync-alt"
+                                        class="ui-button"
+                                        title="Redraw Bill">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Print"
                                         ajax="false"
-                                        value="Yes"
-                                        action="#{channelBillController.channelBookingCancel()}"
-                                        onclick="PF('confirmationDialog').hide();" />
-                                    <p:commandButton
-                                        value="No"
-                                        onclick="PF('confirmationDialog').hide();" />
-                                </f:facet>
-                            </p:dialog>
+                                        action="#"
+                                        class="ui-button-info"
+                                        icon="fa fa-print"
+                                        disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                        <p:printer target="gpCancelBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-4">
+                                <h:panelGroup id="gpCancelBillPreview">
+                                    <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                            <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                            <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
+        <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                        <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
+                            <p>Are you sure you want to cancel the channel booking?</p>
+                            <p:inputText class="w-100"
+                                         value="#{channelBillController.comment}"
+                                         placeholder="Please provide a comment for the cancel Channel Booking" />
+
+                            <f:facet name="footer">
+                                <p:commandButton
+                                    class="mx-2 ui-button-warning"
+                                    ajax="false"
+                                    value="Yes"
+                                    action="#{channelBillController.channelBookingCancel()}"
+                                    onclick="PF('confirmationDialog').hide();" />
+                                <p:commandButton
+                                    value="No"
+                                    onclick="PF('confirmationDialog').hide();" />
+                            </f:facet>
+                        </p:dialog>
 
                     </p:tab>
 
 
                     <p:tab title="Refund" id="refund"   disabled="#{!webUserController.hasPrivilege('ChannelBookingRefund')}">                          
 
-                        <h:panelGroup>
-                            <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
+                        <h:panelGroup rendered="#{!channelBillController.printPreviewR}">
+                            <h:panelGroup>
+                                <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
 
-                                <p:outputLabel value="Re-payment Method"/>
-                                <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}" >  
-                                    <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
-                                    <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
-                                </p:selectOneMenu>
+                                    <p:outputLabel value="Re-payment Method"/>
+                                    <p:selectOneMenu  id="cmbRefundPs" value="#{channelBillController.refundPaymentMethod}" >
+                                        <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethodsForChannelAgentSettle}"/>
+                                    </p:selectOneMenu>
 
-                            </h:panelGrid>
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Refundable Total : "/>
-                                <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
-                            </h:panelGrid>
-                            <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
-                                <p:column headerText="Fee Name">
-                                    <p:outputLabel value="#{bi.fee.name}"/>
-                                </p:column>
-                                <p:column headerText="Fee Type">
-                                    <p:outputLabel value="#{bi.fee.feeType}"/>
-                                </p:column>
-                                <p:column headerText="Fee Value">
-                                    <p:outputLabel value="#{bi.feeValue}"/> 
-                                </p:column>
-                                <p:column headerText="Return Value">
-                                    <p:inputText value="#{bi.tmpChangedValue}">
-                                        <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
-                                        <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
-                                    </p:inputText>
+                                </h:panelGrid>
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel value="Refundable Total : "/>
+                                    <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
+                                </h:panelGrid>
+                                <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
+                                    <p:column headerText="Fee Name">
+                                        <p:outputLabel value="#{bi.fee.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Fee Type">
+                                        <p:outputLabel value="#{bi.fee.feeType}"/>
+                                    </p:column>
+                                    <p:column headerText="Fee Value">
+                                        <p:outputLabel value="#{bi.feeValue}"/>
+                                    </p:column>
+                                    <p:column headerText="Return Value">
+                                        <p:inputText value="#{bi.tmpChangedValue}">
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
+                                        </p:inputText>
 
-                                </p:column>
-                            </p:dataTable>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
+
+                            <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true or channelBillController.disableRefund==true}"
+                                             onclick="PF('confirmationRefundDialog').show();"/>
                         </h:panelGroup>
+                        <h:panelGroup id="refundPrint" rendered="#{channelBillController.printPreviewR}" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="" />
 
-                        <p:commandButton value="Refund Booking" class="ui-button-warning my-2" icon="fas fa-reply"
-                                         disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true or channelBillController.disableRefund==true}"
-                                         onclick="PF('confirmationRefundDialog').show();"/>
+                                <div class="d-flex  gap-2">
+                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                    <p:selectOneMenu
+                                        value="#{sessionController.departmentPreference.channelBillPaperType}"
+
+                                        style="width: 13em;">
+                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                        <p:ajax event="itemSelect" process="@this" update="gpRefundBillPreview" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton
+                                        id="btnRefreshR"
+                                        process="@this"
+                                        update="gpRefundBillPreview"
+                                        icon="fa fa-sync-alt"
+                                        class="ui-button"
+                                        title="Redraw Bill">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        action="#"
+                                        class="ui-button-info"
+                                        icon="fa fa-print"
+                                        disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                        <p:printer target="gpRefundBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-4">
+                                <h:panelGroup id="gpRefundBillPreview">
+                                    <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                            <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                            <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+        <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
 
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationRefundDialog" modal="true" resizable="false">
                             <p>Are you sure you want to refund the channel booking?</p>
@@ -550,7 +650,6 @@
                                     onclick="PF('confirmationRefundDialog').hide();" />
                             </f:facet>
                         </p:dialog>
-                        <p:messages ></p:messages>
                     </p:tab>
 
 
@@ -802,8 +901,8 @@
                                                             icon="fa fa-check"
                                                             action="#{channelBillController.settleCredit()}"
                                                             disabled="#{channelBillController.billSession.bill.billType.parent ne 'ChannelCreditFlow'
-                                                         or channelBillController.billSession.bill.cancelled==true
-                                                         or  channelBillController.billSession.bill.paidAmount ne 0}"
+                                                                        or channelBillController.billSession.bill.cancelled==true
+                                                                        or  channelBillController.billSession.bill.paidAmount ne 0}"
                                                             oncomplete="PF('dlgSettleAD').show();"
                                                             class="ui-button-success mx-2 w-100"
                                                             >
@@ -992,49 +1091,49 @@
                                 <div class="d-flex justify-content-between">
                                     <h:outputLabel value="" />
 
-                                        <div class="d-flex  gap-2">
-                                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                            <p:selectOneMenu
-                                                value="#{sessionController.departmentPreference.channelBillPaperType}"
+                                    <div class="d-flex  gap-2">
+                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                        <p:selectOneMenu
+                                            value="#{sessionController.departmentPreference.channelBillPaperType}"
 
-                                                style="width: 13em;">
-                                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                                <f:selectItems value="#{enumController.paperTypes}" />
-                                                <p:ajax event="itemSelect" process="@this" update="gpADSettleBillPreview" />
-                                            </p:selectOneMenu>
-                                            <p:commandButton
-                                                id="btnRefreshAD"
-                                                process="@this"
-                                                update="gpADSettleBillPreview"
-                                                icon="fa fa-sync-alt"
-                                                class="ui-button"
-                                                title="Redraw Bill">
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                value="Print"
-                                                ajax="false"
-                                                action="#"
-                                                class="ui-button-info"
-                                                icon="fa fa-print"
-                                                disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
-                                                <p:printer target="gpADSettleBillPreview" ></p:printer>
-                                            </p:commandButton>
-                                        </div>
+                                            style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                            <p:ajax event="itemSelect" process="@this" update="gpADSettleBillPreview" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton
+                                            id="btnRefreshAD"
+                                            process="@this"
+                                            update="gpADSettleBillPreview"
+                                            icon="fa fa-sync-alt"
+                                            class="ui-button"
+                                            title="Redraw Bill">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Print"
+                                            ajax="false"
+                                            action="#"
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                                            <p:printer target="gpADSettleBillPreview" ></p:printer>
+                                        </p:commandButton>
                                     </div>
+                                </div>
 
-                                    <div class="d-flex justify-content-center mt-4">
-                                        <h:panelGroup id="gpADSettleBillPreview">
-                                            <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                                <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
-                                                    <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
-                                                    <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
-                <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
-                                                </h:panelGroup>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-                                    </div>
+                                <div class="d-flex justify-content-center mt-4">
+                                    <h:panelGroup id="gpADSettleBillPreview">
+                                        <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                                <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
+            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                            </h:panelGroup>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </div>
                             </h:panelGroup>
                         </p:panel>
 
@@ -1098,7 +1197,7 @@
                     <p:tab title="Status" >
                         <p:outputLabel value="Mark As Present / Absent"/>
                         <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{channelBillController.billSession.bill.refunded==true
-                                                     or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
+                                                                                              or channelBillController.billSession.bill.cancelled==true}"  value="#{bookingController.selectedBillSession.absent}" >
                             <p:ajax process="@this" listener="#{bookingController.updateSelectedBillSessionPatient()}" ></p:ajax>
                         </p:selectBooleanButton>
 

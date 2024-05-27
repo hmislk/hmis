@@ -10,10 +10,9 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
-import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
-import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ViewScopeDataTransferController;
@@ -73,7 +72,6 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Fee;
@@ -111,7 +109,7 @@ import org.primefaces.model.ScheduleModel;
  */
 @Named
 @ViewScoped
-public class BookingControllerViewScope implements Serializable, ControllerWithPatient {
+public class BookingControllerViewScope implements Serializable, ControllerWithPatientViewScope {
 
     /**
      * EJBs
@@ -166,8 +164,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @Inject
     PriceMatrixController priceMatrixController;
     @Inject
-    PatientController patientController;
-    @Inject
     private SessionController sessionController;
     @Inject
     private ChannelBillController channelCancelController;
@@ -205,7 +201,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     FinancialTransactionController financialTransactionController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
-  
     /**
      * Properties
      */
@@ -251,6 +246,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private PaymentMethod paymentMethod;
     private PaymentMethodData paymentMethodData;
     private AppointmentActivity appointmentActivity;
+    private String quickSearchPhoneNumber;
 
     private ScheduleModel eventModel;
     boolean patientDetailsEditable;
@@ -273,6 +269,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Institution creditCompany;
     private double refundableTotal = 0;
     private boolean disableRefund;
+    private List<Patient> quickSearchPatientList;
 
     @Deprecated
     private ServiceSession selectedServiceSession;
@@ -1596,22 +1593,29 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public boolean patientErrorPresent(Patient p) {
+        System.out.println("patientErrorPresent");
+        System.out.println("p");
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
         }
-
+        System.out.println("p.getPerson() = " + p.getPerson());
+        if (p.getPerson() == null) {
+            p = patientFacade.find(p.getId());
+        }
         if (p.getPerson() == null) {
             JsfUtil.addErrorMessage("No Person. Not Saved");
             return true;
         }
-
+        System.out.println("p.getPerson().getName() = " + p.getPerson().getName());
         if (p.getPerson().getName() == null) {
+            System.out.println("err name mull");
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
 
         if (p.getPerson().getName().trim().equals("")) {
+            System.out.println("err trim");
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
@@ -1622,6 +1626,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean paymentMethodErrorPresent() {
         if (paymentMethod == null) {
             return true;
+        }
+
+        if (paymentMethod == PaymentMethod.OnCall) {
+            if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
+                JsfUtil.addErrorMessage("This session is only available for paid appointments.");
+                return true;
+            }
         }
 
         if (paymentMethod == PaymentMethod.Agent) {
@@ -1680,9 +1691,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
-        if (billSessionErrorPresent()) {
-            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
-            settleSucessFully = false;
+        if (patient == null) {
+            System.out.println("patient");
+            JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
         if (patientErrorPresent(patient)) {
@@ -1695,7 +1706,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             settleSucessFully = false;
             return;
         }
-
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {
                 JsfUtil.addErrorMessage("This Session Has Been Completed");
@@ -1703,9 +1713,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
-        patientController.save(patient);
+        saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
-
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
             createPayment(printingBill, paymentMethod);
         }
@@ -1740,7 +1749,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return null;
             }
         }
-        patientController.save(patient);
+        saveSelected(patient);
         return saveBilledBillForPatientPortal();
     }
 
@@ -1758,11 +1767,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+      
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -1787,10 +1799,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -1820,10 +1830,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
@@ -4251,7 +4259,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             patient = new Patient();
             Person p = new Person();
             patientDetailsEditable = true;
-
             patient.setPerson(p);
         }
         return patient;
@@ -5649,6 +5656,111 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setDisableRefund(boolean disableRefund) {
         this.disableRefund = disableRefund;
+    }
+
+    @Override
+    public void selectQuickOneFromQuickSearchPatient() {
+        setPatient(patient);
+        setPatientDetailsEditable(false);
+        quickSearchPatientList = null;
+    }
+
+    @Override
+    public void saveSelected(Patient p) {
+        if (patient == null) {
+            return;
+        }
+        if (patient.getPerson() == null) {
+            return;
+        }
+        if (patient.getPerson().getId() == null) {
+            patient.getPerson().setCreatedAt(new Date());
+            patient.getPerson().setCreater(sessionController.getLoggedUser());
+            personFacade.create(patient.getPerson());
+        } else {
+            personFacade.edit(patient.getPerson());
+        }
+        if (patient.getId() == null) {
+            patient.setCreatedAt(new Date());
+            patient.setCreatedInstitution(sessionController.getInstitution());
+            patient.setCreater(sessionController.getLoggedUser());
+            patientFacade.create(patient);
+        } else {
+            patientFacade.edit(patient);
+        }
+    }
+
+    @Override
+    public void saveSelectedPatient() {
+        saveSelected(patient);
+    }
+
+    @Override
+    public String getQuickSearchPhoneNumber() {
+        return quickSearchPhoneNumber;
+    }
+
+    @Override
+    public void setQuickSearchPhoneNumber(String quickSearchPhoneNumber) {
+        this.quickSearchPhoneNumber = quickSearchPhoneNumber;
+    }
+
+    @Override
+    public void quickSearchPatientLongPhoneNumber() {
+        Patient patientSearched = null;
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
+        Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
+        m.put("pp", searchedPhoneNumber);
+        quickSearchPatientList = patientFacade.findByJpql(j, m);
+        if (quickSearchPatientList == null) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            setPatientDetailsEditable(true);
+            setPatient(null);
+            getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+            setPatientDetailsEditable(true);
+            return;
+        } else if (quickSearchPatientList.isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            setPatient(null);
+            getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+            setPatientDetailsEditable(true);
+            return;
+        } else if (quickSearchPatientList.size() == 1) {
+            patientSearched = quickSearchPatientList.get(0);
+            setPatient(patientSearched);
+            setPatientDetailsEditable(false);
+            quickSearchPatientList = null;
+        } else {
+            setPatient(null);
+            patientSearched = null;
+            setPatientDetailsEditable(false);
+            JsfUtil.addErrorMessage("Pleace Select Patient");
+        }
+    }
+
+    @Override
+    public void quickSearchNewPatient() {
+        quickSearchPatientList = null;
+        setPatient(new Patient());
+        setPatientDetailsEditable(true);
+        if (quickSearchPhoneNumber != null) {
+            getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);
+        }
+    }
+
+    @Override
+    public List<Patient> getQuickSearchPatientList() {
+        return quickSearchPatientList;
+    }
+
+    @Override
+    public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
+        this.quickSearchPatientList = quickSearchPatientList;
     }
 
 }

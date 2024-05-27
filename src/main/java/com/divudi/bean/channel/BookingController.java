@@ -501,6 +501,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return "";
         }
         channelBillController.setPrintPreview(false);
+        channelBillController.setPrintPreviewC(false);
+
+        channelBillController.setPrintPreviewR(false);
+
         return "/channel/manage_booking?faces-redirect=true";
     }
 
@@ -898,11 +902,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -927,10 +933,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -960,10 +964,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
@@ -1625,28 +1627,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
         System.out.println("this not arrived");
-    }
-
-    public void markAsLeft() {
-        if (selectedServiceSession == null) {
-            return;
-        }
-        if (selectedServiceSession.getSessionDate() == null) {
-            return;
-        }
-        if (arrivalRecord == null) {
-            arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
-            arrivalRecord.setCreatedAt(new Date());
-            arrivalRecord.setCreater(sessionController.getLoggedUser());
-            fpFacade.create(arrivalRecord);
-        }
-
-        arrivalRecord.setApproved(true);
-        arrivalRecord.setApprovedAt(new Date());
-        arrivalRecord.setApprover(sessionController.getLoggedUser());
-        fpFacade.edit(arrivalRecord);
     }
 
     public void markToCancel() {

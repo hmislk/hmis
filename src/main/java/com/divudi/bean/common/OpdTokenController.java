@@ -253,6 +253,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         findPreBill(currentToken.getBill());
         opdPreSettleController.setBillPreview(false);
         opdPreSettleController.setToken(currentToken);
+        opdPreSettleController.toSettle(currentToken.getBill());
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
     }
 
@@ -292,7 +293,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-
+        //System.out.println("navigateToNewOpdBillForCashierTabView");
         opdTabPreBillController.makeNull();
         opdTabPreBillController.setPatient(currentToken.getPatient());
         opdTabPreBillController.setToken(currentToken);
@@ -378,14 +379,14 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetClassVariables();
-                return "/opd/token/index?faces-redirect=true";
+                return "/opd/token/opd_token?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
             resetClassVariables();
-            return "/opd/token/index?faces-redirect=true";
+            return "/opd/token/opd_token?faces-redirect=true";
         }
     }
 

@@ -310,12 +310,9 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void departmentChanged() {
-        System.out.println("departmentChanged ");
         if (selectedOpdItemDepartment == null) {
-            System.out.println("selectedOpdItemDepartment = null");
             departmentOpdItems = getOpdItems();
         } else {
-            System.out.println("departmentOpdItems not null");
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }
     }
@@ -336,7 +333,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
-        System.out.println("listItemsByDepartment = " + listItemsByDepartment);
         if (!listItemsByDepartment) {
             return ils;
         }
@@ -346,7 +342,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                 continue;
             }
             if (il.getDepartmentId().equals(dept.getId())) {
-                System.out.println("il = " + il.getName());
                 tils.add(il);
             }
         }
@@ -874,20 +869,8 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             }
 
             b.setBillItems(list);
-
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
-
-//            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-//                b.setCashPaid(cashPaid);
-//                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
-//                    b.setBalance(0.0);
-//                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-//                } else {
-//                    b.setBalance(b.getTransSaleBillTotalMinusDiscount() - b.getCashPaid());
-//                    b.setNetTotal(b.getCashPaid());
-//                }
-//            }
             b.setBalance(b.getNetTotal());
             getBillFacade().edit(b);
             getBills().add(b);
@@ -901,11 +884,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 
         saveBatchBill();
         saveBillItemSessions();
-
-//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-//            staffBean.updateStaffCredit(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("User Credit Updated");
-//        }
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
@@ -1002,19 +980,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             dbl += b.getNetTotal();
             dblT += b.getTotal();
             dblD += b.getDiscount();
-
-//            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-//                b.setCashPaid(reminingCashPaid);
-//
-//                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
-//                    b.setBalance(0.0);
-//                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-//                } else {
-//                    b.setBalance(b.getTotal() - b.getCashPaid());
-//                    b.setNetTotal(reminingCashPaid);
-//                }
-//            }
-//            reminingCashPaid = reminingCashPaid - b.getNetTotal();
             b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
             getBillFacade().edit(b);
 
@@ -1025,7 +990,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         tmp.setDiscount(dblD);
         tmp.setTotal(dblT);
         getBillFacade().edit(tmp);
-
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
@@ -1071,7 +1035,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 
     private PreBill saveBill(Department bt, PreBill updatingPreBill) {
         updatingPreBill.setBillType(BillType.OpdPreBill);
-        updatingPreBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        //updatingPreBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         updatingPreBill.setDepartment(getSessionController().getDepartment());
         updatingPreBill.setInstitution(getSessionController().getInstitution());
         updatingPreBill.setToDepartment(bt);
@@ -1209,30 +1173,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             setPaymentMethod(PaymentMethod.Cash);
             return true;
         }
-
-//        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
-//            return true;
-//        }
-//        if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
-//            if (toStaff == null && creditCompany == null) {
-//                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
-//                return true;
-//            }
-//            if (toStaff != null && creditCompany != null) {
-//                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-//                return true;
-//            }
-//            if (toStaff != null) {
-//                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-//                    JsfUtil.addErrorMessage("No enough walfare credit.");
-//                    return true;
-//                }
-//            }
-//        }
-//        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-//            JsfUtil.addErrorMessage("Check Payment method");
-//            return true;
-//        }
         return false;
     }
 
@@ -1353,10 +1293,11 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             return;
         }
         clearBillItemValues();
-        //JsfUtil.addSuccessMessage("Item Added");
+        JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
+        //System.out.println("clearBillItemValues");
         currentBillItem = null;
         recreateBillItems();
         setItemLight(itemLight);
@@ -1403,7 +1344,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
-
+        //System.out.println("recreateBillItems");
         //billTotal = 0.0;
     }
 
@@ -1556,6 +1497,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     public void makeNull() {
+        //System.out.println("Make null");
         clearBillItemValues();
         clearBillValues();
         paymentMethod = null;
