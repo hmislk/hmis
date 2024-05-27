@@ -108,7 +108,7 @@
                                             id="btnCreateDefaultFeeSet"
                                             value="Fees"
                                             title="Create Default Fees"
-                                            
+
                                             class="ui-button-secondary"
                                             icon="fas fa-cog"
                                             action="#{channelScheduleController.createOnCallFeeOldSession()}" />
@@ -396,36 +396,11 @@
                                                         <p:outputLabel value="Item to add"/>
                                                     </p:column>
                                                     <p:column >
-                                                        <p:autoComplete 
-                                                            widgetVar="acAdditionalItem" 
-                                                            id="acAdditionalItem" 
-                                                            forceSelection="true" 
-                                                            inputStyleClass="w-100"
-                                                            class="w-100"
-                                                            value="#{channelScheduleController.additionalItemToAdd}"
-                                                            completeMethod="#{itemController.completeInwardItems}" 
-                                                            var="ix" 
-                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
-                                                            style="width: 400px;">
-                                                            <p:ajax event="itemSelect" process="@this"></p:ajax>
-                                                            <p:column headerText="Type" >
-                                                                <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Name" >
-                                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Institution" >
-                                                                <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Department" >
-                                                                <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Total" >
-                                                                <p:outputLabel value="#{ix.total}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </p:outputLabel>
-                                                            </p:column>
-                                                        </p:autoComplete>
+                                                        <p:selectOneMenu value="#{channelScheduleController.additionalItemToAdd}" id="acAdditionalItem">
+                                                            <f:selectItem itemLabel="Please select a speciality"/>
+                                                            <f:selectItems value="#{itemController.suggestItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
+                                                        </p:selectOneMenu>
+
                                                     </p:column>
                                                     <p:column  >
                                                         <p:commandButton 
