@@ -119,7 +119,7 @@
                                     <p:commandButton ajax="false" value="Update" action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton value="Delete" action="#{opdMemberShipDiscountController.deleteItemPaymentScheme}">
+                                    <p:commandButton value="Delete" ajax="false" action="#{opdMemberShipDiscountController.deleteItemPaymentScheme}">
                                         <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                     </p:commandButton>
                                 </p:column>

@@ -25,8 +25,7 @@
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Select Item" />
 
-                            <p:selectOneMenu value="#{itemFeeManager.item}" id="acIx">
-                                <f:selectItem itemLabel="Please select a speciality"/>
+                            <p:selectOneMenu filter="true" value="#{itemFeeManager.item}" id="acIx">
                                 <f:selectItems value="#{itemController.suggestItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
                                 <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal" listener="#{itemFeeManager.fillFees()}"></p:ajax>
                             </p:selectOneMenu>
