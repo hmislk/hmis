@@ -231,6 +231,10 @@
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Billed By" sortBy="#{bill.fromDepartment.name}" 
+                                              filterBy="#{bill.fromDepartment.name}" filterMatchMode="contains" >                                
+                                        <h:outputLabel id="byDep" value="#{bill.fromDepartment.name}" />
+                                    </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
                                               filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
                                         <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
