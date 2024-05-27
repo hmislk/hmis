@@ -19,6 +19,7 @@ Developed using Java Enterprise Edition, the system offers both a web applicatio
 ## Current Version
 
 
+
 Current Version: 3.0.0.20240527.2 (This line will be automatically updated to reflect the latest version)
 
 
