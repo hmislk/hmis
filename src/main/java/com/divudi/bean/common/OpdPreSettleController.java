@@ -20,6 +20,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -103,6 +104,8 @@ public class OpdPreSettleController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     TokenFacade tokenFacade;
+    @EJB
+    StaffBean staffBean;
 /////////////////////////
     Item selectedAlternative;
 
@@ -306,17 +309,12 @@ public class OpdPreSettleController implements Serializable {
                 return true;
             }
         }
-
-        if (paymentMethod == PaymentMethod.Staff) {
-            if (toStaff == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member.");
-                return true;
-            }
-
-            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
-                JsfUtil.addErrorMessage("No enough Credit.");
-                return true;
-            }
+        System.out.println("toStaff = " + toStaff);
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+            System.out.println("staff" + toStaff);
+            staffBean.updateStaffCredit(toStaff, netTotal);
+            System.out.println("staffBean.updateStaffCredit(toStaff, netTotal);");
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         }
 
         if (paymentMethod == PaymentMethod.Staff_Welfare) {
@@ -519,7 +517,7 @@ public class OpdPreSettleController implements Serializable {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setPaymentMethod(pm);
-            
+
             switch (pm) {
                 case Card:
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
@@ -709,10 +707,14 @@ public class OpdPreSettleController implements Serializable {
         if (errorCheckForSaleBill()) {
             return;
         }
-        if (getCashPaid() < getPreBill().getNetTotal()) {
-            JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
-            return;
+
+        if (getPaymentMethod() == paymentMethod.Cash) {
+            if (getCashPaid() < getPreBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
+                return;
+            }
         }
+
         saveSettlingBatchBill();
         saveOpdBillsOfBatchBill();
         List<Bill> individualBillsOfTheBatchBill = billController.validBillsOfBatchBill(getPreBill());
@@ -727,16 +729,16 @@ public class OpdPreSettleController implements Serializable {
         billPreview = true;
         completeTokenAfterAcceptPayment();
     }
-    
-    public void completeTokenAfterAcceptPayment(){
-        if (token==null) {
+
+    public void completeTokenAfterAcceptPayment() {
+        if (token == null) {
             return;
         }
         System.out.println("foundToken = " + token);
         token.setCompleted(true);
         token.setCompletedAt(new Date());
         tokenFacade.edit(token);
-        
+
     }
 
     public void createPaymentsForCashierAcceptpayment(Bill bill, PaymentMethod pm) {
@@ -783,9 +785,8 @@ public class OpdPreSettleController implements Serializable {
 //            return;
         }
 
-       // saveSettlingBatchBill();
-       // saveOpdBillsOfBatchBill();
-
+        // saveSettlingBatchBill();
+        // saveOpdBillsOfBatchBill();
         return (BilledBill) getSaleBill();
     }
 
@@ -1522,10 +1523,12 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public Staff getToStaff() {
+        System.out.println("toStaff = " + toStaff);
         return toStaff;
     }
 
     public void setToStaff(Staff toStaff) {
+        System.out.println("toStaff = " + toStaff);
         this.toStaff = toStaff;
     }
 
