@@ -1284,8 +1284,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         getLstBillEntries().add(addingEntry);
         bi.setRate(getBillBean().billItemRate(addingEntry));
         bi.setQty(1.0);
-        System.out.println("getCurrentBillItem().getRate() = " + getCurrentBillItem().getRate());
-        System.out.println("bi = " + bi.getRate());
+       
         bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
         calTotals();
 
