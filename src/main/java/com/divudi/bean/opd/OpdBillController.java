@@ -180,6 +180,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private FinancialTransactionController financialTransactionController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    ViewScopeDataTransferController viewScopeDataTransferController;
 
     @Inject
     OpdTokenController opdTokenController;
@@ -2518,16 +2520,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
-//     //   ////// // System.out.println("calculating totals");
+        System.out.println("calculating totals");
         if (paymentMethod == null) {
             return;
         }
 
-        if (toStaff != null) {
-            paymentScheme = null;
-            creditCompany = null;
-        }
-
+//        if (toStaff != null) {
+//            paymentScheme = null;
+//            creditCompany = null;
+//        }
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -2796,11 +2797,29 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToNewOpdBill(Patient pt) {
-        navigateToNewOpdBill();
+        String navigateLink = navigateToNewOpdBill();
         patient = pt;
-        return "/opd/opd_bill?faces-redirect=true";
+        return navigateLink;
     }
-    
+
+    public String navigateToNewOpdBillFromChannelling() {
+        String navigateLink = navigateToNewOpdBill();
+        BillSession bs = viewScopeDataTransferController.getSelectedBillSession();
+        if (bs == null) {
+            return null;
+        }
+        if (bs.getBill().getPatient() == null) {
+            return null;
+        }
+        if (bs.getSessionInstance().getStaff() == null) {
+            return null;
+        }
+        patient = bs.getBill().getPatient();
+        Staff staff = bs.getSessionInstance().getStaff();
+        
+        return navigateLink;
+    }
+
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {
         navigateToNewOpdBill();
         patient = pt;
@@ -3815,7 +3834,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Department> getOpdItemDepartments() {
-        if(opdItemDepartments==null){
+        if (opdItemDepartments == null) {
             getOpdItems();
         }
         return opdItemDepartments;
@@ -3839,7 +3858,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<ItemLight> getDepartmentOpdItems() {
-        if(departmentOpdItems==null){
+        if (departmentOpdItems == null) {
             getOpdItems();
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }

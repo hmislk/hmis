@@ -827,7 +827,6 @@ public class ChannelBillController implements Serializable {
         refund1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
         printPreviewR = true;
-        bookingController.fillBillSessions();
     }
 
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
