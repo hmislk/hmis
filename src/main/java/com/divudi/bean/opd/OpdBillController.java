@@ -3837,6 +3837,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setSelectedOpdItemDepartment(Department selectedOpdItemDepartment) {
         this.selectedOpdItemDepartment = selectedOpdItemDepartment;
     }
+    
+    public void fillDepartmentOpdItems() {
+        departmentOpdItems=null;
+        getDepartmentOpdItems();
+    }
 
     public List<ItemLight> getDepartmentOpdItems() {
         if (departmentOpdItems == null) {
