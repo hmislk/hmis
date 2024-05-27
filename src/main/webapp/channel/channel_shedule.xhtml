@@ -396,8 +396,7 @@
                                                         <p:outputLabel value="Item to add"/>
                                                     </p:column>
                                                     <p:column >
-                                                        <p:selectOneMenu value="#{channelScheduleController.additionalItemToAdd}" id="acAdditionalItem">
-                                                            <f:selectItem itemLabel="Please select a speciality"/>
+                                                        <p:selectOneMenu filter="true" value="#{channelScheduleController.additionalItemToAdd}" id="acAdditionalItem">
                                                             <f:selectItems value="#{itemController.suggestItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
                                                         </p:selectOneMenu>
 
