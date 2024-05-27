@@ -421,7 +421,9 @@ public class EnumController implements Serializable {
             InwardChargeType.HospitalSupportService,
             InwardChargeType.ExtraMedicine,
             InwardChargeType.DialysisTreatment,
-            InwardChargeType.OtherCharges};
+            InwardChargeType.OtherCharges,
+            InwardChargeType.Eye,
+            InwardChargeType.Dental};
 
         return b;
     }
