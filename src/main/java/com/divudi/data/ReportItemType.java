@@ -33,6 +33,7 @@ public enum ReportItemType {
     BilledTime,
     BillItemNo,
     BillNo,
+    DepartmentBillNo,
     Birthday,
     BloodGroup,
     Category,
@@ -106,7 +107,9 @@ public enum ReportItemType {
             case BillItemNo:
                 return "Bill Item No";
             case BillNo:
-                return "Bill No";
+                return "Bill No (Institution Bill No)";
+            case DepartmentBillNo:
+                return "Bill No (Department Bill No)";
             case Birthday:
                 return "Birthday";
             case BloodGroup:
