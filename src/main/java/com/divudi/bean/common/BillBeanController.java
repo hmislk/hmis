@@ -3314,16 +3314,10 @@ public class BillBeanController implements Serializable {
     }
 
     public Double billItemRate(BillEntry billEntry) {
-        System.out.println("billItemRate");
-        System.out.println("billEntry = " + billEntry);
         Double temTot = 0.0;
-        System.out.println("billEntry.getLstBillFees() = " + billEntry.getLstBillFees());
         for (BillFee f : billEntry.getLstBillFees()) {
-            System.out.println("f = " + f);
-            System.out.println("f.getFeeValue() = " + f.getFeeValue());
             temTot += f.getFeeValue();
         }
-        System.out.println("temTot = " + temTot);
         return temTot;
     }
 
@@ -3418,7 +3412,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem) {
-        System.out.println("billFeefromBillItem");
         List<BillFee> t = new ArrayList<>();
         BillFee f;
         String sql;
@@ -3478,10 +3471,8 @@ public class BillBeanController implements Serializable {
             }
         } else {
             sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + billItem.getItem().getId();
-            System.out.println("sql = " + sql);
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
             for (Fee i : itemFee) {
-                System.out.println("i = " + i);
                 f = new BillFee();
                 f.setFee(i);
                 f.setFeeValue(i.getFee() * billItem.getQty());
@@ -3526,7 +3517,6 @@ public class BillBeanController implements Serializable {
                 t.add(f);
             }
         }
-        System.out.println("t = " + t);
         return t;
     }
 
