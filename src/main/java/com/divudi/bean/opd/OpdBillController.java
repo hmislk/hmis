@@ -2816,8 +2816,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         patient = bs.getBill().getPatient();
         Staff channellingDoc = bs.getSessionInstance().getStaff();
+        System.out.println("channellingDoc = " + channellingDoc);
+        System.out.println("getCurrentlyWorkingStaff() = " + getCurrentlyWorkingStaff());
         getCurrentlyWorkingStaff().add(channellingDoc);
+        System.out.println("getCurrentlyWorkingStaff() = " + getCurrentlyWorkingStaff());
+        System.out.println("getSelectedCurrentlyWorkingStaff() = " + getSelectedCurrentlyWorkingStaff());
         setSelectedCurrentlyWorkingStaff(channellingDoc);
+        System.out.println("getSelectedCurrentlyWorkingStaff() = " + getSelectedCurrentlyWorkingStaff());
         if (channellingDoc.getDepartment() != null) {
             setDepartment(channellingDoc.getDepartment());
         }
