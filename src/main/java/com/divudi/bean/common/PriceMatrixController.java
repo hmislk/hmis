@@ -354,6 +354,7 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Department department, Item item) {
+        System.out.println("getPaymentSchemeDiscount");
         PaymentSchemeDiscount paymentSchemeDiscount = null;
         Category category = null;
 
@@ -361,11 +362,11 @@ public class PriceMatrixController implements Serializable {
             category = item.getCategory();
         }
 
-//        System.err.println(paymentMethod);
-//        System.err.println(paymentScheme);
-//        System.err.println(department);
-//        System.err.println(category);
-//        System.err.println(item);
+        System.err.println(paymentMethod);
+        System.err.println(paymentScheme);
+        System.err.println(department);
+        System.err.println(category);
+        System.err.println(item);
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, item);
 
@@ -471,19 +472,22 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Item item) {
-        String sql;
-        HashMap hm = new HashMap();
-        hm.put("p", paymentMethod);
-        hm.put("m", paymentScheme);
-        hm.put("i", item);
-        sql = "Select i from PaymentSchemeDiscount i"
+        System.out.println("fetchPaymentSchemeDiscount");
+        String jpql;
+        HashMap params = new HashMap();
+        params.put("p", paymentMethod);
+        params.put("m", paymentScheme);
+        params.put("i", item);
+        jpql = "Select i from PaymentSchemeDiscount i"
                 + "  where i.retired=false "
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.item=:i ";
-
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
-
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        PaymentSchemeDiscount psd=  (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(jpql, params);
+        System.out.println("psd = " + psd);
+        return psd;
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentMethod paymentMethod, Item item) {

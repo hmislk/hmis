@@ -26,6 +26,12 @@
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
+                                                value="Financial Transactions Summary by cashier" 
+                                                action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
                                                 value="Financial Transactions Summary - Payment Method" 
                                                 action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
                                                 class="w-100">
@@ -42,14 +48,14 @@
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Department" 
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="All Bills" 

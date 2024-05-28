@@ -101,8 +101,6 @@ public class BillFee implements Serializable {
     double transNetValue;
     @ManyToOne
     private PatientRoom referencePatientRoom;
-    
-    
 
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
@@ -357,49 +355,59 @@ public class BillFee implements Serializable {
     }
 
     public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
+        System.out.println("Method called with foriegn: " + foriegn + ", discountPercent: " + discountPercent);
 
         if (tmpChangedValue == null) {
+            System.out.println("tmpChangedValue is null");
             if (getFee().getFeeType() != FeeType.Staff) {
+                System.out.println("FeeType is not Staff");
                 if (foriegn) {
+                    System.out.println("Foriegn fee calculation");
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                 } else {
+                    System.out.println("Local fee calculation");
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 }
 
-                //SETTING DISCOUNT
-                this.feeDiscount = this.feeGrossValue * (discountPercent / 100) ;
+                // SETTING DISCOUNT
+                this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                 this.feeValue = this.feeGrossValue - this.feeDiscount;
-//                this.feeVatPlusValue = this.feeVat + this.feeValue;
+                System.out.println("feeGrossValue: " + this.feeGrossValue + ", feeDiscount: " + this.feeDiscount + ", feeValue: " + this.feeValue);
 
             } else {
+                System.out.println("FeeType is Staff");
                 if (foriegn) {
+                    System.out.println("Foriegn staff fee calculation");
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
+                    System.out.println("Local staff fee calculation");
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFee() * this.getBillItem().getQty();
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
+                System.out.println("feeGrossValue: " + this.feeGrossValue + ", feeValue: " + this.feeValue);
             }
         } else {
+            System.out.println("tmpChangedValue is not null: " + tmpChangedValue);
             if (getFee().getFeeType() != FeeType.Staff) {
+                System.out.println("FeeType is not Staff");
                 this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
                 if (tmpChangedValue != 0) {
+                    System.out.println("tmpChangedValue is not zero");
                     this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                     this.feeValue = this.feeGrossValue - this.feeDiscount;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
+                    System.out.println("tmpChangedValue is zero");
                     this.feeValue = 0;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
+                System.out.println("feeGrossValue: " + this.feeGrossValue + ", feeDiscount: " + this.feeDiscount + ", feeValue: " + this.feeValue);
             } else {
+                System.out.println("FeeType is Staff");
                 this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
                 this.feeValue = tmpChangedValue * this.getBillItem().getQty();
-//                this.feeVatPlusValue = this.feeVat + this.feeValue;
+                System.out.println("feeGrossValue: " + this.feeGrossValue + ", feeValue: " + this.feeValue);
             }
         }
-
     }
 
     public Long getId() {
