@@ -672,7 +672,8 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <p:selectOneListbox value="#{opdBillController.selectedCurrentlyWorkingStaff}">
+                                    <p:commandButton value="reload" action="#" process="@this" update="lstCurrentDocs" ></p:commandButton>
+                                    <p:selectOneListbox id="lstCurrentDocs" value="#{opdBillController.selectedCurrentlyWorkingStaff}">
                                         <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
                                         <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" 
                                                        itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />

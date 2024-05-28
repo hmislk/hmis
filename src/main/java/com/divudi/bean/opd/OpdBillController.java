@@ -2468,7 +2468,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-
+        currentlyWorkingStaff = null;
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
@@ -2815,8 +2815,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return null;
         }
         patient = bs.getBill().getPatient();
-        Staff staff = bs.getSessionInstance().getStaff();
-        
+        Staff channellingDoc = bs.getSessionInstance().getStaff();
+        System.out.println("channellingDoc = " + channellingDoc);
+        System.out.println("getCurrentlyWorkingStaff() = " + getCurrentlyWorkingStaff());
+        getCurrentlyWorkingStaff().add(channellingDoc);
+        System.out.println("getCurrentlyWorkingStaff() = " + getCurrentlyWorkingStaff());
+        System.out.println("getSelectedCurrentlyWorkingStaff() = " + getSelectedCurrentlyWorkingStaff());
+        setSelectedCurrentlyWorkingStaff(channellingDoc);
+        System.out.println("getSelectedCurrentlyWorkingStaff() = " + getSelectedCurrentlyWorkingStaff());
+        if (channellingDoc.getDepartment() != null) {
+            setDepartment(channellingDoc.getDepartment());
+        }
         return navigateLink;
     }
 
@@ -3856,9 +3865,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setSelectedOpdItemDepartment(Department selectedOpdItemDepartment) {
         this.selectedOpdItemDepartment = selectedOpdItemDepartment;
     }
-    
+
     public void fillDepartmentOpdItems() {
-        departmentOpdItems=null;
+        departmentOpdItems = null;
         getDepartmentOpdItems();
     }
 
