@@ -220,7 +220,7 @@ public class FinancialReport {
     }
 
     public double getNetCashTotal() {
-        netCashTotal = getCollectedCash() - getRefundedCash();
+        netCashTotal = getCollectedCash() - Math.abs(getRefundedCash()) ;
         return netCashTotal;
     }
 
@@ -250,7 +250,7 @@ public class FinancialReport {
     }
 
     public double getNetCreditCardTotal() {
-        netCreditCardTotal = getCollectedCreditCard() - getRefundedCreditCard();
+        netCreditCardTotal = getCollectedCreditCard() - Math.abs(getRefundedCreditCard());
         return netCreditCardTotal;
     }
 
@@ -265,7 +265,7 @@ public class FinancialReport {
     }
 
     public double getNetOtherNonCreditTotal() {
-        netOtherNonCreditTotal = getCollectedOtherNonCredit() - getRefundedOtherNonCredit();
+        netOtherNonCreditTotal = getCollectedOtherNonCredit() - Math.abs(getRefundedOtherNonCredit());
         return netOtherNonCreditTotal;
     }
 
@@ -280,7 +280,7 @@ public class FinancialReport {
     }
 
     public double getNetVoucherTotal() {
-        netVoucherTotal = getCollectedVoucher() - getRefundedVoucher();
+        netVoucherTotal = getCollectedVoucher() - Math.abs(getRefundedVoucher());
         return netVoucherTotal;
     }
 
