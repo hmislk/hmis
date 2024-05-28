@@ -111,6 +111,11 @@
                                     <p:column headerText="Actions" style="width: 10px!important;">
                                         <p:commandButton 
                                             ajax="false" 
+                                            value="OPD"
+                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
                                             value="Manage Booking"
                                             action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" >
                                         </p:commandButton>

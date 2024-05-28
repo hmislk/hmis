@@ -26,6 +26,9 @@ public class ViewScopeDataTransferController  implements Serializable {
     private Date toDate;
     private Boolean needToFillBillSessions;
     private Boolean needToFillBillSessionDetails;
+    private Boolean needToCreateOpdBillForChannellingBillSession;
+    
+    
     private String sessionInstanceFilter;
     private BillSession selectedBillSession;
     private SessionInstance selectedSessionInstance;
@@ -129,6 +132,14 @@ public class ViewScopeDataTransferController  implements Serializable {
 
     public void setSelectedSessionInstance(SessionInstance selectedSessionInstance) {
         this.selectedSessionInstance = selectedSessionInstance;
+    }
+
+    public Boolean getNeedToCreateOpdBillForChannellingBillSession() {
+        return needToCreateOpdBillForChannellingBillSession;
+    }
+
+    public void setNeedToCreateOpdBillForChannellingBillSession(Boolean needToCreateOpdBillForChannellingBillSession) {
+        this.needToCreateOpdBillForChannellingBillSession = needToCreateOpdBillForChannellingBillSession;
     }
     
     

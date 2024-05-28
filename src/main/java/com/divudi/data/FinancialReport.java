@@ -389,7 +389,7 @@ public class FinancialReport {
             billTypesForRefundedCash = new ArrayList<>();
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
-
+            billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
         }
         return billTypesForRefundedCash;
     }
