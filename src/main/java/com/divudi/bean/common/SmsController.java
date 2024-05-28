@@ -127,6 +127,16 @@ public class SmsController implements Serializable {
         return smsManager.sendSms(s);
     }
 
+    public void sendSms() {
+        Sms s = new Sms();
+        s.setReceipientNumber(smsNumber);
+        s.setSendingMessage(smsMessage);
+        save(s);
+        boolean b= smsManager.sendSms(s);
+        selectedSms = s;
+    }
+
+    
 //    public Boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
 //        Sms s = new Sms();
 //        s.setReceipientNumber(number);
@@ -401,6 +411,20 @@ public class SmsController implements Serializable {
 
     public void setBool(Boolean bool) {
         this.bool = bool;
+    }
+
+    private void save(Sms s) {
+        if(s==null){
+            JsfUtil.addErrorMessage("no sms");
+            return;
+        }
+        if(s.getId()==null){
+            s.setCreatedAt(new Date());
+            s.setCreater(sessionController.getLoggedUser());
+            smsFacade.create(s);
+        }else{
+            smsFacade.edit(s);
+        }
     }
 
     public class SmsSummeryRow {

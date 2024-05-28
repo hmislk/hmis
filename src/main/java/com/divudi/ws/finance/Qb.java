@@ -3129,7 +3129,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 500;
+        int maxNo = 50;
         Long lastIdOfCurrentdata = 0l;
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, false);
@@ -3314,7 +3314,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 50;
+        int maxNo = 20;
 
         List<Bill> bills1 = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, true);
 

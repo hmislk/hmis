@@ -37,6 +37,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
 import com.divudi.facade.BillFeeFacade;
@@ -106,6 +107,7 @@ public class WorkingTimeController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    private Speciality speciality;
     List<WorkingTime> selectedItems;
     private WorkingTime current;
     private List<WorkingTime> items = null;
@@ -214,6 +216,10 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void settleStaffPayments() {
+        if(paymentMethod==null){
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
         Bill bill = new BilledBill();
         bill.setBillDate(Calendar.getInstance().getTime());
         bill.setBillTime(Calendar.getInstance().getTime());
@@ -824,6 +830,30 @@ public class WorkingTimeController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+    
+     public List<Doctor> getListOfDoctors() {
+        List<Doctor> suggestions;
+        String sql;
+        sql = " select p from Doctor p "
+                + " where p.retired=:ret ";
+        HashMap hm = new HashMap();
+        hm.put("ret", false);
+        if (speciality != null) {
+            sql += "and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        }
+        sql += " order by p.person.name";
+        suggestions = getFacade().findByJpql(sql, hm);
+        return suggestions;
     }
 
     /**

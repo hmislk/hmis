@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 
@@ -98,7 +99,11 @@ public class ChannelScheduleController implements Serializable {
     SessionInstanceController sessionInstanceController;
     @Inject
     BookingController bookingController;
-
+    
+    @Inject
+    ItemController itemController;
+    
+    
     private DoctorSpeciality speciality;
     ServiceSession current;
     private Item additionalItemToAdd;
@@ -132,6 +137,7 @@ public class ChannelScheduleController implements Serializable {
     ItemFeeFacade itemFeeFacade;
 
     public String navigateToChannelSchedule() {
+        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
     }
 

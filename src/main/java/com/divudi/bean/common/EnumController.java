@@ -421,7 +421,9 @@ public class EnumController implements Serializable {
             InwardChargeType.HospitalSupportService,
             InwardChargeType.ExtraMedicine,
             InwardChargeType.DialysisTreatment,
-            InwardChargeType.OtherCharges};
+            InwardChargeType.OtherCharges,
+            InwardChargeType.Eye,
+            InwardChargeType.Dental};
 
         return b;
     }
@@ -635,6 +637,11 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getPaymentMethodsForChannel() {
         PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForMakingProfessionalPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;
     }
 
