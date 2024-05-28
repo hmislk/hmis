@@ -1274,6 +1274,28 @@ public class OpdPreSettleController implements Serializable {
 
         JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
+    
+    public Payment createPaymentForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        System.out.println("valueToSet = " + valueToSet);
+        p.setPaidValue(valueToSet);
+        
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        System.out.println("paid value opd bill cancellation = " + p.getPaidValue());
+        
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+        getPaymentFacade().edit(p);
+        
+        return p;
+    }
 
     public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();

@@ -20,31 +20,58 @@
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
 
                     <h:form class="container-fluid" >
-                        <p:panel >
+                        <p:panel class="text-center">
                             <f:facet name="header" >
                                 <h:outputText value="Pay Staff" >
                                 </h:outputText>
                             </f:facet>
 
-                            <p:panelGrid columns="4" class="w-75" rendered="#{workingTimeController.staff eq null}">
+                            <p:panelGrid columns="2" 
+                                         class="w-75 mx-auto" 
+                                         rendered="#{workingTimeController.staff eq null}">
                                 <f:facet name="header" >
                                     <h:outputText value="Select Doctor" ></h:outputText>
                                 </f:facet>
 
                                 <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
-                                <p:autoComplete value="#{workingTimeController.staff}" 
-                                                completeMethod="#{doctorController.completeDoctor}"
-                                                var="s"
-                                                itemLabel="#{s.person.name}"
-                                                itemValue="#{s}"
-                                                >
-                                    <p:column headerText="Speciality">
-                                        <h:outputText value="#{s.speciality.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Doctor">
-                                        <h:outputText value="#{s.person.nameWithTitle}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
+                                <p:selectOneMenu 
+                                    id="acSpeciality"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{workingTimeController.speciality}"
+                                    class="w-100 fullHeightListbox"
+                                    >
+                                    <p:ajax
+                                        event="change"
+                                        process="@this" 
+                                        update="scStaff"
+                                        listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{doctorSpecialityController.selectedItems}"
+                                        var="spe" 
+                                        itemValue="#{spe}"
+                                        itemLabel="#{spe.name}">
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
+                                <p:selectOneMenu 
+                                    id="scStaff"
+                                    value="#{workingTimeController.staff}" 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    class="w-100"
+                                    >
+                                    <f:selectItems  value="#{workingTimeController.listOfDoctors}"
+                                                    var="s"
+                                                    itemLabel="#{s.person.name}"
+                                                    itemValue="#{s}"></f:selectItems>
+                                </p:selectOneMenu>
+
+
+                                <p:spacer rendered="#{not configOptionApplicationController.getBooleanValueByKey('OPD Doctor Payments can be given without closing the shift.')}"></p:spacer>
+
                                 <p:commandButton 
                                     ajax="false" 
                                     value="Select for Shift Payments"
@@ -53,10 +80,11 @@
                                 <p:commandButton 
                                     ajax="false" 
                                     value="Select for All Payments"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor Payments can be given without closing the shift.')}"
                                     action="#{workingTimeController.selectStaffForOpdPaymentForAll()}" ></p:commandButton>
 
-                           
-                                
+
+
                             </p:panelGrid>
 
 
@@ -82,6 +110,20 @@
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.endRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </h:outputText>
+                                            
+                                             <p:outputLabel value="Payment Method" />
+                                             <p:selectOneMenu   
+                                                id="pay"
+                                                class="w-100"
+                                                value="#{workingTimeController.paymentMethod}"
+                                                >     
+                                                <f:selectItems 
+                                                    value="#{enumController.paymentMethodsForMakingProfessionalPayments}"  
+                                                    var="pm"
+                                                    itemLabel="#{pm.label}"
+                                                    itemValue="#{pm}"/>
+                                            </p:selectOneMenu>
+                                             
                                         </p:panelGrid>
                                         <p:panelGrid columns="2" >
                                             <p:outputLabel value="Total Value Paying" />

@@ -972,7 +972,7 @@ public class ChannelBillController implements Serializable {
       public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        double valueToSet = Math.abs(bill.getNetTotal());
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
         System.out.println("valueToSet = " + valueToSet);
         p.setPaidValue(valueToSet);
         if(pm == null){
