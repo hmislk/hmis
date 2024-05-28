@@ -1627,7 +1627,6 @@ public class ItemController implements Serializable {
             m.put("inv", Investigation.class);
             m.put("ward", InwardService.class);
             m.put("the", TheatreService.class);
-            m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, m, 20);
         }
@@ -1638,7 +1637,6 @@ public class ItemController implements Serializable {
         HashMap m = new HashMap();
         String sql;
         suggestItems = new ArrayList<>();
-
         sql = "select c from Item c "
                 + " where c.retired=false "
                 + " and type(c)!=:pac "
@@ -1653,8 +1651,7 @@ public class ItemController implements Serializable {
         m.put("ward", InwardService.class);
         m.put("the", TheatreService.class);
         //    //////// // System.out.println(sql);
-        suggestItems = getFacade().findByJpql(sql, m, 20);
-
+        suggestItems = getFacade().findByJpql(sql, m);
     }
 
     public void makeAllItemsToAllowDiscounts() {
