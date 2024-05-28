@@ -2107,7 +2107,7 @@ public class BillSearch implements Serializable {
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
 
-        Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cancellationBill, paymentMethod);
+        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
