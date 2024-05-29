@@ -236,16 +236,16 @@
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column rendered="false" headerText="Booked" style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.displayCount}">
+                            <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booked Details on Channel Booking')}" headerText="Booked" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.bookedPatientCount}" rendered="#{s.bookedPatientCount ne null}">
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
                                 <h:outputText value="&nbsp;"></h:outputText>
-                                <h:outputText value="(" class="text-danger"></h:outputText>
-                                <h:outputText value="#{s.transCreditBillCount}"  class="text-danger">
+                                <h:outputText value="(" class="text-success" rendered="#{s.bookedPatientCount ne null}"></h:outputText>
+                                <h:outputText value="#{s.paidPatientCount}"  class="text-success" rendered="#{s.bookedPatientCount ne null}">
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
-                                <h:outputText value=")"  class="text-danger"></h:outputText>
+                                <h:outputText value=")"  class="text-success" rendered="#{s.bookedPatientCount ne null}"></h:outputText>
                             </p:column>
                             <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
                                 <h:outputText value="#{s.originatingSession.total}">
