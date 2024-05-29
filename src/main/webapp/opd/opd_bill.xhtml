@@ -10,11 +10,6 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
 
-            <f:metadata>
-                <f:event type="preRenderView" 
-                         listener="#{opdBillController.reloadCurrentlyWorkingStaff}"/>
-            </f:metadata>
-
             <ui:define name="content">
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
                     You are NOT authorized

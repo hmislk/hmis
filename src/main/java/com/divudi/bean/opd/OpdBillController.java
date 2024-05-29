@@ -3794,11 +3794,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public Staff getSelectedCurrentlyWorkingStaff() {
+        System.out.println("getSelectedCurrentlyWorkingStaff");
+        System.out.println("selectedCurrentlyWorkingStaff = " + selectedCurrentlyWorkingStaff);
         return selectedCurrentlyWorkingStaff;
     }
 
     public void setSelectedCurrentlyWorkingStaff(Staff selectedCurrentlyWorkingStaff) {
+        System.out.println("setSelectedCurrentlyWorkingStaff ");
+        System.out.println("selectedCurrentlyWorkingStaff = " + selectedCurrentlyWorkingStaff);
         this.selectedCurrentlyWorkingStaff = selectedCurrentlyWorkingStaff;
+        System.out.println("this.selectedCurrentlyWorkingStaff = " + this.selectedCurrentlyWorkingStaff);
     }
 
     public boolean isDuplicatePrint() {
