@@ -99,7 +99,7 @@
                                          rowKey="#{im.id}"
                                          selection="#{itemMappingController.selectedItemMappings}"
                                          var="im"
-                                         paginator="true" paginatorPosition="both"
+                                         paginator="true" paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                          rowsPerPageTemplate="5,10,{ShowAll|'All'}"
@@ -113,23 +113,23 @@
                                         action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
                                 </f:facet>
                                 <p:column selectionMode="multiple" width="15"></p:column>
-                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{im.item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.name}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Item Department"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                <p:column headerText="Item Department"  sortBy="#{im.item.department.name}" filterBy="#{im.item.department.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.department.name}" ></h:outputText>
                                 </p:column>
                                 <p:column 
                                     headerText="Mapped Institution" 
-                                    sortBy="#{im.institution.name}" 
-                                    filterBy="#{im.institution.name}" 
+                                    sortBy="#{im.institution.name}"
+                                    filterBy="#{im.institution.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
+                                    <h:outputText value="#{im.institution.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
                                     headerText="Mapped Department"  
-                                    sortBy="#{pasindu.department.name}" 
-                                    filterBy="#{pasindu.department.name}" 
+                                    sortBy="#{im.department.name}"
+                                    filterBy="#{im.department.name}"
                                     filterMatchMode="contains">
                                     <h:outputText value="#{im.department.name}" ></h:outputText>
                                 </p:column>
