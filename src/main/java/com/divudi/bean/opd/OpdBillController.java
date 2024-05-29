@@ -2411,14 +2411,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-            if (bf.getFee().getStaff() == null) {
-                if (bf.getFee().getFeeType() == FeeType.Staff) {
-                    if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                        bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                    } else if (bf.getFee().getSpeciality() != null) {
-                        for (Staff s : currentlyWorkingStaff) {
-                            if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                                bf.setStaff(s);
+
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                if (bf.getFee().getStaff() == null) {
+                    if (bf.getFee().getSpeciality() != null) {
+                        if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
+                            bf.setStaff(getSelectedCurrentlyWorkingStaff());
+                        } else {
+                            for (Staff s : currentlyWorkingStaff) {
+                                if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
+                                    bf.setStaff(s);
+                                }
                             }
                         }
                     } else {
@@ -2426,6 +2429,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                     }
                 }
             }
+
+            
         }
     }
 

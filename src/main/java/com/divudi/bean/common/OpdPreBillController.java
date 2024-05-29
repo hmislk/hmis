@@ -1506,7 +1506,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         paymentMethodData = null;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
-        currentlyWorkingStaff=null;
+        currentlyWorkingStaff = null;
     }
 
     public void makeNull() {
@@ -1535,18 +1535,16 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-            if (bf.getFee().getSpeciality() == null) {
-                bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                continue;
-            }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
                 if (bf.getFee().getStaff() == null) {
-                    if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                        bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                    } else if (bf.getFee().getSpeciality() != null) {
-                        for (Staff s : currentlyWorkingStaff) {
-                            if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                                bf.setStaff(s);
+                    if (bf.getFee().getSpeciality() != null) {
+                        if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
+                            bf.setStaff(getSelectedCurrentlyWorkingStaff());
+                        } else {
+                            for (Staff s : currentlyWorkingStaff) {
+                                if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
+                                    bf.setStaff(s);
+                                }
                             }
                         }
                     } else {
