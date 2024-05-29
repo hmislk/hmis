@@ -198,7 +198,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToItemFees() {
-        itemController.fillItemsForInward();
+//        itemController.fillItemsForInward();
         return "/admin/pricing/manage_item_fees?faces-redirect=true";
     }
 
@@ -290,12 +290,12 @@ public class ItemFeeManager implements Serializable {
             }
         }
 
-        if (itemFee.getFeeType() == FeeType.Staff) {
-            if (itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")) {
-                JsfUtil.addErrorMessage("Please Select Staff");
-                return;
-            }
-        }
+//        if (itemFee.getFeeType() == FeeType.Staff) {
+//            if (itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")) {
+//                JsfUtil.addErrorMessage("Please Select Staff");
+//                return;
+//            }
+//        }
         if (itemFee.getFee() == 0.00) {
             JsfUtil.addErrorMessage("Please Enter Local Fee Value");
             return;
