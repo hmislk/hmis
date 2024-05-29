@@ -45,6 +45,7 @@ import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DoctorSpecialityFacade;
+import com.divudi.facade.ItemForItemFacade;
 import com.divudi.facade.ServiceSessionInstanceFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
@@ -99,6 +100,8 @@ public class ChannelScheduleController implements Serializable {
     private SmsManagerEjb smsManager;
     @EJB
     private ChannelBean channelBean;
+    @EJB
+    private ItemForItemFacade itemForItemFacade;
 
     @Inject
     private SessionController sessionController;
@@ -489,10 +492,10 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("No Items List");
             return;
         }
-//        additionalItemToRemove.setRetired(true);
-//        additionalItemToRemove.setRetiredAt(new Date());
-//        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
-//        itemForItemController.saveSelected();
+        additionalItemToRemove.setRetired(true);
+        additionalItemToRemove.setRetiredAt(new Date());
+        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
+        itemForItemFacade.edit(additionalItemToRemove);
         getAdditionalItemsAddedForCurrentSession().remove(additionalItemToRemove);
         additionalItemToRemove = null;
         JsfUtil.addSuccessMessage("Removed");
