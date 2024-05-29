@@ -24,12 +24,33 @@
                         </f:facet>
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Select Item" />
-
-                            <p:selectOneMenu filter="true" value="#{itemFeeManager.item}" id="acIx">
-                                <f:selectItems value="#{itemController.suggestItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
+                            <p:autoComplete widgetVar="aIx" id="acIx" 
+                                            forceSelection="true" 
+                                            value="#{itemFeeManager.item}"
+                                            completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
+                                            style="width: 400px;">
                                 <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal" listener="#{itemFeeManager.fillFees()}"></p:ajax>
-                            </p:selectOneMenu>
-                            
+                                <p:column headerText="Type" >
+                                    <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Institution" >
+                                    <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Department" >
+                                    <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Total" >
+                                    <p:outputLabel value="#{ix.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+
                             <h:outputLabel value="Total Fee" />
                             <h:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

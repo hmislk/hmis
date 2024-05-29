@@ -1632,6 +1632,33 @@ public class ItemController implements Serializable {
         }
         return suggestions;
     }
+    
+    public List<Item> completeAllServicesAndInvestigations(String query) {
+        List<Item> suggestions;
+        HashMap m = new HashMap();
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Item c "
+                    + " where c.retired=false "
+                    + " and type(c)!=:pac "
+                    + " and (type(c)=:ser "
+                    + " or type(c)=:inv"
+                    + " or type(c)=:ward "
+                    + " or type(c)=:the)  "
+                    + " and (c.name) like :q"
+                    + " order by c.name";
+            m.put("pac", Packege.class);
+            m.put("ser", Service.class);
+            m.put("inv", Investigation.class);
+            m.put("ward", InwardService.class);
+            m.put("the", TheatreService.class);
+            //    //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql, m, 20);
+        }
+        return suggestions;
+    }
 
     public void fillItemsForInward() {
         HashMap m = new HashMap();
