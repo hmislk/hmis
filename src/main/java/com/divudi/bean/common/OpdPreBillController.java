@@ -1506,6 +1506,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         paymentMethodData = null;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
+        currentlyWorkingStaff=null;
     }
 
     public void makeNull() {
