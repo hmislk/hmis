@@ -159,11 +159,11 @@ public class FeeController implements Serializable {
     }
 
     public String navigateToAdminFee() {
-        return "/admin/pricing/index";
+        return "/admin/pricing/index?faces-redirect=true";
     }
 
     public String navigateToAdminDiscounts() {
-        return "/admin/pricing/admin_discounts";
+        return "/admin/pricing/admin_discounts?faces-redirect=true";
     }
 
     /**

@@ -1627,6 +1627,7 @@ public class ItemController implements Serializable {
             m.put("inv", Investigation.class);
             m.put("ward", InwardService.class);
             m.put("the", TheatreService.class);
+            m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, m, 20);
         }
@@ -1654,6 +1655,7 @@ public class ItemController implements Serializable {
             m.put("inv", Investigation.class);
             m.put("ward", InwardService.class);
             m.put("the", TheatreService.class);
+            m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, m, 20);
         }
