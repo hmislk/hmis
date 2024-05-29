@@ -103,7 +103,11 @@
                                 </p:inputText>
 
                                 <p:outputLabel value="Fee Type" ></p:outputLabel>
-                                <p:selectOneMenu value="#{itemFeeManager.itemFee.feeType}"   class="w-100">
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{itemFeeManager.itemFee.feeType}" 
+                                    class="w-100">
                                     <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
                                     <f:selectItems value="#{enumController.feeTypes}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
                                     <p:ajax process="@this" update="gpDetail" ></p:ajax>
