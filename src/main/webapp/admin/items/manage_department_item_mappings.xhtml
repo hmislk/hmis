@@ -36,11 +36,15 @@
                                 <p:commandButton 
                                     value="Fill Items Added For Department" 
                                     ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fas fa-spinner"
                                     action="#{itemMappingController.fillItemMappingsForSelectedDepartment()}">
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Add Items to Department" 
                                     ajax="false"
+                                    class="ui-button-success"
+                                    icon="fas fa-plus"
                                     action="#{itemMappingController.addAllSelectedItemsToDepartment()}">
                                 </p:commandButton>
                             </p:panelGrid>
@@ -110,6 +114,8 @@
                                         style="float: right;"
                                         value="Remove Selected" 
                                         ajax="false"
+                                        class="ui-button-danger"
+                                        icon="fas fa-trash"
                                         action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
                                 </f:facet>
                                 <p:column selectionMode="multiple" width="15"></p:column>
