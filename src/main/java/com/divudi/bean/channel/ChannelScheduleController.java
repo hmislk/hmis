@@ -489,10 +489,10 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("No Items List");
             return;
         }
-        additionalItemToRemove.setRetired(true);
-        additionalItemToRemove.setRetiredAt(new Date());
-        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
-        itemForItemController.saveSelected();
+//        additionalItemToRemove.setRetired(true);
+//        additionalItemToRemove.setRetiredAt(new Date());
+//        additionalItemToRemove.setRetirer(sessionController.getLoggedUser());
+//        itemForItemController.saveSelected();
         getAdditionalItemsAddedForCurrentSession().remove(additionalItemToRemove);
         additionalItemToRemove = null;
         JsfUtil.addSuccessMessage("Removed");
