@@ -538,7 +538,17 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForCollectedDebitCard() {
         if (paymentMethodsForCollectedDebitCard == null) {
             paymentMethodsForCollectedDebitCard = new ArrayList<>();
-            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Credit); // Assuming 'Card' also covers debit card collections
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Credit);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Agent);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Cheque);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.MultiplePaymentMethods); 
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.OnlineSettlement);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.PatientDeposit);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Slip);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Staff);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.IOU);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.ewallet);
+            // Assuming 'Card' also covers debit card collections
             // If your application differentiates between credit and debit cards, you may need a specific entry for debit cards
         }
         return paymentMethodsForCollectedDebitCard;
@@ -547,6 +557,8 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForCollectedDebitCard() {
         if (billTypesForCollectedDebitCard == null) {
             billTypesForCollectedDebitCard = new ArrayList<>();
+            billTypesForCollectedDebitCard.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+            billTypesForCollectedDebitCard.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_IN));
             // Add BillTypeAtomic entries that represent debit card collections
             // Assuming specific services like CHANNEL_BOOKING_WITH_PAYMENT are paid for with debit cards
             //billTypesForCollectedDebitCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
@@ -558,7 +570,17 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForRefundedDebitCard() {
         if (paymentMethodsForRefundedDebitCard == null) {
             paymentMethodsForRefundedDebitCard = new ArrayList<>();
-            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Card); // Assuming 'Card' also covers debit card refunds
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Credit);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Agent);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Cheque);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.MultiplePaymentMethods); 
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.OnlineSettlement);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.PatientDeposit);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Slip);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Staff);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.IOU);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.ewallet);
+            // Assuming 'Card' also covers debit card refunds
             // Again, if your application distinguishes between credit and debit cards for refunds, adjust accordingly
         }
         return paymentMethodsForRefundedDebitCard;
@@ -570,6 +592,9 @@ public class FinancialReport {
             // Add BillTypeAtomic entries related to debit card refunds
             // Assuming CHANNEL_REFUND might be refunded to a debit card
             billTypesForRefundedDebitCard.add(BillTypeAtomic.CHANNEL_REFUND);
+            billTypesForRefundedDebitCard.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+            billTypesForRefundedDebitCard.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
+            billTypesForRefundedDebitCard.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
             // Include any other applicable BillTypeAtomic entries for debit card refunds
         }
         return billTypesForRefundedDebitCard;
