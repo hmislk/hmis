@@ -4,6 +4,9 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -30,6 +33,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
 import com.divudi.data.SmsSentResponse;
+import com.divudi.data.channel.ChannelScheduleEvent;
+import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.DoctorSpeciality;
@@ -58,6 +63,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.Session;
 import javax.persistence.TemporalType;
+import org.primefaces.model.DefaultScheduleModel;
+import org.primefaces.model.ScheduleModel;
 
 /**
  *
@@ -79,31 +86,37 @@ public class ChannelScheduleController implements Serializable {
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @EJB
-    ServiceSessionFacade serviceSessionFacade;
+    private ServiceSessionFacade serviceSessionFacade;
     @EJB
-    DoctorSpecialityFacade doctorSpecialityFacade;
+    private DoctorSpecialityFacade doctorSpecialityFacade;
     @EJB
-    SessionInstanceFacade sessionInstanceFacade;
+    private SessionInstanceFacade sessionInstanceFacade;
     @EJB
-    BillSessionFacade billSessionFacade;
+    private BillSessionFacade billSessionFacade;
     @EJB
-    SmsFacade smsFacade;
+    private SmsFacade smsFacade;
     @EJB
-    SmsManagerEjb smsManager;
+    private SmsManagerEjb smsManager;
+    @EJB
+    private ChannelBean channelBean;
 
     @Inject
     private SessionController sessionController;
     @Inject
-    ItemForItemController itemForItemController;
+    private ItemForItemController itemForItemController;
     @Inject
-    SessionInstanceController sessionInstanceController;
+    private SessionInstanceController sessionInstanceController;
     @Inject
-    BookingController bookingController;
-    
+    private BookingController bookingController;
     @Inject
-    ItemController itemController;
-    
-    
+    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ItemController itemController;
+    @Inject
+    private DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ChannelScheduleController channelScheduleController;
+
     private DoctorSpeciality speciality;
     ServiceSession current;
     private Item additionalItemToAdd;
@@ -120,7 +133,84 @@ public class ChannelScheduleController implements Serializable {
     boolean feeChangeStaff;
     private List<SessionInstance> sessionInstances;
     private SessionInstance currentSessionInstance;
-    List<BillSession> billSessions;
+    private List<BillSession> billSessions;
+    private Date sessionStartingDate;
+    private ScheduleModel eventModel;
+    List<Staff> listConsultant;
+
+    public void channelSheduleForAllDoctor(Staff stf) {
+        if (stf == null) {
+            getSelectedConsultants();
+            for (Staff st : listConsultant) {
+                generateSessions(st);
+            }
+        }
+        generateSessions(stf);
+
+    }
+
+    public void generateSessions(Staff st) {
+        sessionInstances = new ArrayList<>();
+        String jpql;
+        Map params = new HashMap();
+        params.put("staff", st);
+        params.put("class", ServiceSession.class);
+        if (st != null) {
+            jpql = "Select s From ServiceSession s "
+                    + " where s.retired=false "
+                    + " and s.staff=:staff "
+                    + " and s.originatingSession is null"
+                    + " and type(s)=:class ";
+            boolean listChannelSessionsForLoggedDepartmentOnly = configOptionApplicationController.getBooleanValueByKey("List Channel Sessions For Logged Department Only", false);
+            boolean listChannelSessionsForLoggedInstitutionOnly = configOptionApplicationController.getBooleanValueByKey("List Channel Sessions For Logged Institution Only", false);
+            if (listChannelSessionsForLoggedDepartmentOnly) {
+                jpql += " and s.department=:dept ";
+                params.put("dept", sessionController.getDepartment());
+            }
+            if (listChannelSessionsForLoggedInstitutionOnly) {
+                jpql += " and s.institution=:ins ";
+                params.put("ins", sessionController.getInstitution());
+            }
+            jpql += " order by s.sessionWeekday,s.startingTime ";
+            List<ServiceSession> selectedDoctorsServiceSessions = serviceSessionFacade.findByJpql(jpql, params);
+            System.out.println("selectedDoctorsServiceSessions = " + selectedDoctorsServiceSessions.size());
+            try {
+                sessionInstances = channelBean.generateSesionInstancesFromServiceSessions(selectedDoctorsServiceSessions, sessionStartingDate);
+            } catch (Exception e) {
+            }
+            generateSessionEvents(sessionInstances);
+        } else {
+            sessionInstances = new ArrayList<>();
+        }
+
+    }
+
+    public void generateSessionEvents(List<SessionInstance> sss) {
+        eventModel = new DefaultScheduleModel();
+        for (SessionInstance s : sss) {
+            ChannelScheduleEvent e = new ChannelScheduleEvent();
+            e.setSessionInstance(s);
+            e.setTitle(s.getName());
+            e.setStartDate(CommonFunctions.convertDateToLocalDateTime(s.getTransStartTime()));
+            e.setEndDate(CommonFunctions.convertDateToLocalDateTime(s.getTransEndTime()));
+            eventModel.addEvent(e);
+        }
+    }
+
+    public List<Staff> getSelectedConsultants() {
+        String sql;
+        Map m = new HashMap();
+        sql = " select s "
+                + " from Staff s "
+                + " where s.retired=:ret "
+                + " and s.speciality in :sps "
+                + " order by s.person.name ";
+        m.put("ret", false);
+        m.put("sps", doctorSpecialityController.getSelectedItems());
+        listConsultant = getStaffFacade().findByJpql(sql, m);
+
+        return listConsultant;
+    }
 
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
@@ -134,7 +224,7 @@ public class ChannelScheduleController implements Serializable {
     }
 
     @EJB
-    ItemFeeFacade itemFeeFacade;
+    private ItemFeeFacade itemFeeFacade;
 
     public String navigateToChannelSchedule() {
         itemController.fillItemsForInward();
@@ -468,7 +558,7 @@ public class ChannelScheduleController implements Serializable {
     }
 
     @EJB
-    DepartmentFacade departmentFacade;
+    private DepartmentFacade departmentFacade;
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
@@ -720,19 +810,19 @@ public class ChannelScheduleController implements Serializable {
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
+            channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         saveFees(getCurrent());
-
         getCurrent().setTotal(calTot());
         getCurrent().setTotalForForeigner(calFTot());
-
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
         prepareAdd();
@@ -1099,6 +1189,161 @@ public class ChannelScheduleController implements Serializable {
 
     public void setCurrentSessionInstance(SessionInstance currentSessionInstance) {
         this.currentSessionInstance = currentSessionInstance;
+    }
+
+    public List<Staff> getListConsultant() {
+        return listConsultant;
+    }
+
+    public void setListConsultant(List<Staff> listConsultant) {
+        this.listConsultant = listConsultant;
+    }
+
+    public ScheduleModel getEventModel() {
+        return eventModel;
+    }
+
+    public void setEventModel(ScheduleModel eventModel) {
+        this.eventModel = eventModel;
+    }
+
+    public Date getSessionStartingDate() {
+        if (sessionStartingDate == null) {
+            sessionStartingDate = new Date();
+        }
+        return sessionStartingDate;
+    }
+
+    public void setSessionStartingDate(Date sessionStartingDate) {
+        this.sessionStartingDate = sessionStartingDate;
+    }
+
+    public ServiceSessionFacade getServiceSessionFacade() {
+        return serviceSessionFacade;
+    }
+
+    public void setServiceSessionFacade(ServiceSessionFacade serviceSessionFacade) {
+        this.serviceSessionFacade = serviceSessionFacade;
+    }
+
+    public DoctorSpecialityFacade getDoctorSpecialityFacade() {
+        return doctorSpecialityFacade;
+    }
+
+    public void setDoctorSpecialityFacade(DoctorSpecialityFacade doctorSpecialityFacade) {
+        this.doctorSpecialityFacade = doctorSpecialityFacade;
+    }
+
+    public SessionInstanceFacade getSessionInstanceFacade() {
+        return sessionInstanceFacade;
+    }
+
+    public void setSessionInstanceFacade(SessionInstanceFacade sessionInstanceFacade) {
+        this.sessionInstanceFacade = sessionInstanceFacade;
+    }
+
+    public BillSessionFacade getBillSessionFacade() {
+        return billSessionFacade;
+    }
+
+    public void setBillSessionFacade(BillSessionFacade billSessionFacade) {
+        this.billSessionFacade = billSessionFacade;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
+    }
+
+    public SmsManagerEjb getSmsManager() {
+        return smsManager;
+    }
+
+    public void setSmsManager(SmsManagerEjb smsManager) {
+        this.smsManager = smsManager;
+    }
+
+    public ChannelBean getChannelBean() {
+        return channelBean;
+    }
+
+    public void setChannelBean(ChannelBean channelBean) {
+        this.channelBean = channelBean;
+    }
+
+    public ItemForItemController getItemForItemController() {
+        return itemForItemController;
+    }
+
+    public void setItemForItemController(ItemForItemController itemForItemController) {
+        this.itemForItemController = itemForItemController;
+    }
+
+    public SessionInstanceController getSessionInstanceController() {
+        return sessionInstanceController;
+    }
+
+    public void setSessionInstanceController(SessionInstanceController sessionInstanceController) {
+        this.sessionInstanceController = sessionInstanceController;
+    }
+
+    public BookingController getBookingController() {
+        return bookingController;
+    }
+
+    public void setBookingController(BookingController bookingController) {
+        this.bookingController = bookingController;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
+    }
+
+    public ItemController getItemController() {
+        return itemController;
+    }
+
+    public void setItemController(ItemController itemController) {
+        this.itemController = itemController;
+    }
+
+    public DoctorSpecialityController getDoctorSpecialityController() {
+        return doctorSpecialityController;
+    }
+
+    public void setDoctorSpecialityController(DoctorSpecialityController doctorSpecialityController) {
+        this.doctorSpecialityController = doctorSpecialityController;
+    }
+
+    public List<BillSession> getBillSessions() {
+        return billSessions;
+    }
+
+    public void setBillSessions(List<BillSession> billSessions) {
+        this.billSessions = billSessions;
+    }
+
+    public ItemFeeFacade getItemFeeFacade() {
+        return itemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
     }
 
 }
