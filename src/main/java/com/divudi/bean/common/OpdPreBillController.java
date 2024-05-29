@@ -1539,15 +1539,17 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 continue;
             }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
-                if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                    if (bf.getFee().getStaff() == null) {
+                if (bf.getFee().getStaff() == null) {
+                    if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                    }
-                } else {
-                    for (Staff s : currentlyWorkingStaff) {
-                        if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                            bf.setStaff(s);
+                    } else if (bf.getFee().getSpeciality() != null) {
+                        for (Staff s : currentlyWorkingStaff) {
+                            if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
+                                bf.setStaff(s);
+                            }
                         }
+                    } else {
+                        bf.setStaff(selectedCurrentlyWorkingStaff);
                     }
                 }
             }
