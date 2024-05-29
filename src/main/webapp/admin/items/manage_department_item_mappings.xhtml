@@ -109,14 +109,20 @@
                                          rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                          >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Items Mapped" ></p:outputLabel>
-                                    <p:commandButton 
-                                        style="float: right;"
-                                        value="Remove Selected" 
-                                        ajax="false"
-                                        class="ui-button-danger"
-                                        icon="fas fa-trash"
-                                        action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p:outputLabel value="Items Mapped" ></p:outputLabel>
+                                        </div>
+                                        <div>
+                                            <p:commandButton
+                                                style="float: right;"
+                                                value="Remove Selected"
+                                                ajax="false"
+                                                class="ui-button-danger"
+                                                icon="fas fa-trash"
+                                                action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
+                                        </div>
+                                    </div>
                                 </f:facet>
                                 <p:column selectionMode="multiple" width="15"></p:column>
                                 <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{im.item.name}" filterMatchMode="contains">
