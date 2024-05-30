@@ -347,6 +347,7 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         itemFees.add(itemFee);
         itemFee=null;
+        fillFees();
        
         JsfUtil.addSuccessMessage("New Fee Added");
     }
