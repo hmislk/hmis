@@ -204,6 +204,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     ViewScopeDataTransferController viewScopeDataTransferController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    ChannelScheduleController channelScheduleController;
     /**
      * Properties
      */
@@ -355,7 +357,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setEditedAt(new Date());
         selectedSessionInstance.setEditer(sessionController.getLoggedUser());
         sessionInstanceFacade.edit(selectedSessionInstance);
-        JsfUtil.addErrorMessage("Updated");
+        JsfUtil.addSuccessMessage("Updated");
     }
 
     public void addSingleDateToToDate() {
@@ -4868,6 +4870,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     refundCreditPaidBill();
                 }
             }
+            setPrintPreview(true);
         } else {
             JsfUtil.addErrorMessage("Nothing to Refund");
         }

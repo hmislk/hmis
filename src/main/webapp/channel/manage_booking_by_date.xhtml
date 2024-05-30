@@ -1010,16 +1010,30 @@
                             <f:facet name="footer">
                                 <p:commandButton
                                     class="mx-2 ui-button-warning"
-                                    ajax="false"
                                     value="Yes"
                                     action="#{bookingControllerViewScope.channelBookingRefund()}"
-                                    onclick="PF('confirmationRefundDialog').hide();" />
+                                    ajax="false"
+                                    onclick="PF('refundBillPrintDialog').show();PF('confirmationRefundDialog').hide();" />
                                 <p:commandButton
                                     value="No"
                                     onclick="PF('confirmationRefundDialog').hide();" />
                             </f:facet>
                         </p:dialog>
-                        <p:messages ></p:messages>
+
+                        <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.refundedBill ne null}">
+
+                            <p:commandButton
+                                class="mx-2 ui-button-warning"
+                                ajax="false"
+                                value="Print">
+                                <p:printer target="gpSettleRefundBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <h:panelGroup id="gpSettleRefundBillPreview">
+                                <ez:five_five_paper_without_headings_channel_RefundBill bill="#{bookingControllerViewScope.selectedBillSession.bill}"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                     </p:tab>
 
                     <p:tab 

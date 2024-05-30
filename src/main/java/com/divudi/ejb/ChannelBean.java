@@ -728,7 +728,7 @@ public class ChannelBean {
 
     public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending, Boolean cancelled) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
-        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret");
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret");
 
         // Initializing the parameters map
         Map<String, Object> params = new HashMap<>();

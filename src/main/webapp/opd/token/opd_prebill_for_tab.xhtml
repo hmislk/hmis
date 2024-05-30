@@ -207,8 +207,8 @@
                                                             id="btnRemove"
                                                             value="X"
                                                             ajax="false"
-                                                            action="#{opdTabPreBillController.removeBillItem(bi)}">
-
+                                                            action="#{opdTabPreBillController.removeBillItem}">
+                                                            <f:setPropertyActionListener target="#{opdTabPreBillController.index}" value="#{rowIndex}"/>
                                                         </p:commandButton>
                                                     </p:column>
                                                 </p:dataTable>

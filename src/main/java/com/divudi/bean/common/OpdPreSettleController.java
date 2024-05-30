@@ -20,6 +20,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -103,6 +104,8 @@ public class OpdPreSettleController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     TokenFacade tokenFacade;
+    @EJB
+    StaffBean staffBean;
 /////////////////////////
     Item selectedAlternative;
 
@@ -143,6 +146,7 @@ public class OpdPreSettleController implements Serializable {
     private Token token;
     private Staff toStaff;
     private Institution creditCompany;
+    private List<Payment> payments;
 
     public void makeNull() {
         selectedAlternative = null;
@@ -306,17 +310,12 @@ public class OpdPreSettleController implements Serializable {
                 return true;
             }
         }
-
-        if (paymentMethod == PaymentMethod.Staff) {
-            if (toStaff == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member.");
-                return true;
-            }
-
-            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
-                JsfUtil.addErrorMessage("No enough Credit.");
-                return true;
-            }
+        System.out.println("toStaff = " + toStaff);
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+            System.out.println("staff" + toStaff);
+            staffBean.updateStaffCredit(toStaff, netTotal);
+            System.out.println("staffBean.updateStaffCredit(toStaff, netTotal);");
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         }
 
         if (paymentMethod == PaymentMethod.Staff_Welfare) {
@@ -519,7 +518,7 @@ public class OpdPreSettleController implements Serializable {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setPaymentMethod(pm);
-            
+
             switch (pm) {
                 case Card:
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
@@ -558,6 +557,7 @@ public class OpdPreSettleController implements Serializable {
 
             ps.add(p);
         }
+        payments=ps;
         return ps;
     }
 
@@ -709,10 +709,14 @@ public class OpdPreSettleController implements Serializable {
         if (errorCheckForSaleBill()) {
             return;
         }
-        if (getCashPaid() < getPreBill().getNetTotal()) {
-            JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
-            return;
+
+        if (getPaymentMethod() == paymentMethod.Cash) {
+            if (getCashPaid() < getPreBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
+                return;
+            }
         }
+
         saveSettlingBatchBill();
         saveOpdBillsOfBatchBill();
         List<Bill> individualBillsOfTheBatchBill = billController.validBillsOfBatchBill(getPreBill());
@@ -723,24 +727,23 @@ public class OpdPreSettleController implements Serializable {
         }
         getBillFacade().edit(getPreBill());
         setBill(getBillFacade().find(getSaleBill().getId()));
-        //createPaymentsForCashierAcceptpayment(getSaleBill(), getSaleBill().getPaymentMethod());
+       // createPaymentsForCashierAcceptpayment(getSaleBill(), getSaleBill().getPaymentMethod());
         billPreview = true;
         completeTokenAfterAcceptPayment();
     }
-    
-    public void completeTokenAfterAcceptPayment(){
-        if (token==null) {
+
+    public void completeTokenAfterAcceptPayment() {
+        if (token == null) {
             return;
         }
         System.out.println("foundToken = " + token);
         token.setCompleted(true);
         token.setCompletedAt(new Date());
         tokenFacade.edit(token);
-        
+
     }
 
     public void createPaymentsForCashierAcceptpayment(Bill bill, PaymentMethod pm) {
-        System.out.println("createPaymentsForCashierAcceptpayment");
         Payment p = new Payment();
         p.setBill(bill);
         p.setInstitution(getSessionController().getInstitution());
@@ -758,10 +761,11 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
-
+        System.out.println("calculatRemainForMultiplePaymentTotal");
+        System.out.println("paymentMethod = " + paymentMethod);
         total = getPreBill().getNetTotal();
-
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            System.out.println("PaymentMethod.MultiplePaymentMethods");
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
@@ -783,9 +787,8 @@ public class OpdPreSettleController implements Serializable {
 //            return;
         }
 
-       // saveSettlingBatchBill();
-       // saveOpdBillsOfBatchBill();
-
+        // saveSettlingBatchBill();
+        // saveOpdBillsOfBatchBill();
         return (BilledBill) getSaleBill();
     }
 
@@ -1544,10 +1547,12 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public Staff getToStaff() {
+        System.out.println("toStaff = " + toStaff);
         return toStaff;
     }
 
     public void setToStaff(Staff toStaff) {
+        System.out.println("toStaff = " + toStaff);
         this.toStaff = toStaff;
     }
 
@@ -1565,6 +1570,14 @@ public class OpdPreSettleController implements Serializable {
 
     public void setBillsOfBatchBilledBill(List<Bill> billsOfBatchBilledBill) {
         this.billsOfBatchBilledBill = billsOfBatchBilledBill;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }

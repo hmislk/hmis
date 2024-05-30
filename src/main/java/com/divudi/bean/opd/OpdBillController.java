@@ -2396,36 +2396,57 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private void addStaffToBillFees(List<BillFee> tmpBfs) {
         if (tmpBfs == null) {
+            System.out.println("Debug: tmpBfs is null.");
             return;
         }
         if (tmpBfs.isEmpty()) {
+            System.out.println("Debug: tmpBfs is empty.");
             return;
         }
         if (getCurrentlyWorkingStaff().isEmpty()) {
+            System.out.println("Debug: No currently working staff.");
             return;
         }
+
+        System.out.println("Debug: Starting to process tmpBfs list of size " + tmpBfs.size());
+
         for (BillFee bf : tmpBfs) {
             if (bf.getFee() == null) {
+                System.out.println("Debug: Skipping BillFee as it has no associated Fee.");
                 continue;
             }
             if (bf.getFee().getFeeType() == null) {
+                System.out.println("Debug: Skipping BillFee as its Fee has no FeeType.");
                 continue;
             }
-//            if (bf.getFee().getSpeciality() == null) {
-//                bf.setStaff(getSelectedCurrentlyWorkingStaff());
-//                continue;
-//            }
+
+            System.out.println("Debug: Processing BillFee with FeeType: " + bf.getFee().getFeeType());
+
             if (bf.getFee().getFeeType() == FeeType.Staff) {
-                if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                    if (bf.getFee().getStaff() == null) {
+                if (bf.getFee().getStaff() == null) {
+                    System.out.println("Debug: FeeType is Staff but Staff is not set.");
+                    if (bf.getFee().getSpeciality() != null) {
+                        boolean staffSet = false;
+                        for (Staff s : currentlyWorkingStaff) {
+                            if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
+                                bf.setStaff(s);
+                                System.out.println("Debug: Staff with matching speciality set.");
+                                staffSet = true;
+                                break;
+                            }
+                        }
+                        if (!staffSet) {
+                            System.out.println("Debug: No staff with matching speciality found.");
+                        }
+                    } else {
+                        System.out.println("bf.getStaff() = " + bf.getStaff());
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
+                        System.out.println("getSelectedCurrentlyWorkingStaff() = " + getSelectedCurrentlyWorkingStaff());
+                        System.out.println("Debug: No speciality specified. Default staff set.");
+                        System.out.println("bf.getStaff() = " + bf.getStaff());
                     }
                 } else {
-                    for (Staff s : currentlyWorkingStaff) {
-                        if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                            bf.setStaff(s);
-                        }
-                    }
+                    System.out.println("Debug: Staff already set for this BillFee.");
                 }
             }
         }
@@ -2468,7 +2489,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-
+        currentlyWorkingStaff = null;
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
@@ -2815,8 +2836,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return null;
         }
         patient = bs.getBill().getPatient();
-        Staff staff = bs.getSessionInstance().getStaff();
-        
+        Staff channellingDoc = bs.getSessionInstance().getStaff();
+        getCurrentlyWorkingStaff().add(channellingDoc);
+        setSelectedCurrentlyWorkingStaff(channellingDoc);
+        if (channellingDoc.getDepartment() != null) {
+            setSelectedOpdItemDepartment(channellingDoc.getDepartment());
+            departmentChanged();
+        }
         return navigateLink;
     }
 
@@ -3855,6 +3881,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public void setSelectedOpdItemDepartment(Department selectedOpdItemDepartment) {
         this.selectedOpdItemDepartment = selectedOpdItemDepartment;
+    }
+
+    public void fillDepartmentOpdItems() {
+        departmentOpdItems = null;
+        getDepartmentOpdItems();
     }
 
     public List<ItemLight> getDepartmentOpdItems() {
