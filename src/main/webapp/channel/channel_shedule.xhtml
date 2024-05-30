@@ -53,6 +53,7 @@
                                             value="#{channelScheduleController.currentStaff}" 
                                             id="scStaff" 
                                             > 
+                                            <f:selectItem itemLabel="Please Select"/>
                                             <f:selectItems 
                                                 value="#{channelScheduleController.specialityStaff}" 
                                                 var="mys" 
@@ -346,7 +347,6 @@
 
                                                     <p:outputLabel value="Session Value for Foreigners - "/>
                                                     <p:outputLabel value="#{channelScheduleController.current.totalForForeigner}"/>
-                                                    <p:spacer ></p:spacer>
                                                 </p:panelGrid>
 
                                                 <h:panelGroup class="w-100" >
@@ -366,7 +366,7 @@
                                                                 value="Save" 
                                                                              action="#{channelScheduleController.addNewFee()}" 
                                                                              style="margin-left: 30px;" 
-                                                                             update="tblFees gpTotals"
+                                                                             update="tblFees :#{p:resolveFirstComponentWithId('gpTotals',view).clientId}"
                                                                              process="gpDetail btnFeeSave"
                                                                              oncomplete="PF('dlg').hide();">
                                                             </p:commandButton>
@@ -451,10 +451,10 @@
                                                             </h:panelGroup>
 
                                                             <p:outputLabel value="Fee" ></p:outputLabel>
-                                                            <p:inputText value="#{channelScheduleController.itemFee.fee}"   class="w-100"></p:inputText>
+                                                            <p:inputText value="#{channelScheduleController.itemFee.fee}"  onfocus="this.select()"   class="w-100"></p:inputText>
 
                                                             <p:outputLabel value="Foreigner Fee" ></p:outputLabel>
-                                                            <p:inputText value="#{channelScheduleController.itemFee.ffee}"  class="w-100"></p:inputText>
+                                                            <p:inputText value="#{channelScheduleController.itemFee.ffee}"  onfocus="this.select()"  class="w-100"></p:inputText>
 
 
 
@@ -509,7 +509,7 @@
                                                             id="btnRemoveFee"
                                                             value="Remove" 
                                                             process="tblFees btnRemoveFee" 
-                                                            update="tblFees gpTotals" 
+                                                            update="tblFees :#{p:resolveFirstComponentWithId('gpTotals',view).clientId}" 
                                                             action="#{channelScheduleController.removeFee(i)}" ></p:commandButton>
                                                     </p:column>
                                                 </p:dataTable>
