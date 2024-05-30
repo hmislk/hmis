@@ -501,9 +501,9 @@
                                         <div class="d-flex justify-content-between ">
                                             <div>
                                                 <p:selectOneMenu style="width: 15em;" class="mx-2 my-1" id="pay" value="#{pharmacySaleController3.paymentMethod}">    
-                                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                                    <f:selectItems value="#{enumController.PaymentMethodsForPharmacyRetailSale()}"/>
                                                     <p:ajax process="@this cmbPs " 
-                                                            update="pBillDetails creditCard cheque slip" 
+                                                            update="pBillDetails creditCard cheque slip credit" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController3.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -512,7 +512,7 @@
                                                     <f:selectItem itemLabel="Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay " 
-                                                            update="pBillDetails creditCard cheque slip" 
+                                                            update="pBillDetails creditCard cheque slip credit" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController3.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -531,6 +531,82 @@
 
                                             <h:panelGroup id="slip" style="display: #{pharmacySaleController3.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                                 <pa:slip paymentMethodData="#{pharmacySaleController3.paymentMethodData}"/>
+                                            </h:panelGroup
+                                            
+                                            <h:panelGroup id="credit" style="display: #{pharmacySaleController3.paymentMethod ne 'Credit' ? 'none' : 'block'} ;" >
+                                                <div class="row" >
+                                                    <div class="col-2">
+                                                        <p:outputLabel value="Credit Company" class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <p:autoComplete 
+                                                            class="w-100 mx-4" 
+                                                            forceSelection="true" 
+                                                            value="#{pharmacySaleController3.toInstitution}" 
+                                                            id="scCreditCompany"
+                                                            inputStyleClass="form-control"
+                                                            completeMethod="#{institutionController.completeCreditCompany}" 
+                                                            var="myi" 
+                                                            maxResults="15"
+                                                            itemLabel="#{myi.name}" 
+                                                            itemValue="#{myi}">
+                                                            
+                                                            <p:column headerText="Name" style="padding: 6px;">
+                                                                <h:outputLabel value="#{myi.name}" ></h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Code" style="padding: 6px;">
+                                                                <h:outputLabel value="#{myi.code}" ></h:outputLabel>
+                                                            </p:column>
+
+                                                            <p:ajax 
+                                                                process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
+                                                                event="itemSelect"  
+                                                                listener="#{pharmacySaleController3.paymentSchemeChanged}" />
+
+                                                        </p:autoComplete>
+                                                        <p:watermark for="scCreditCompany" value="Type at least 2 charactors of Company." ></p:watermark>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mt-1">
+                                                    <div class="col-2">
+                                                        <p:outputLabel value="Staff Member" class="mt-2"></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <p:autoComplete  
+                                                            forceSelection="true" 
+                                                            value="#{pharmacySaleController3.toStaff}" 
+                                                            id="scStaff"
+                                                            inputStyleClass="form-control"
+                                                            completeMethod="#{staffController.completeStaff}" 
+                                                            var="mys" 
+                                                            maxResults="15"
+                                                            itemLabel="#{mys.person.nameWithTitle}" 
+                                                            itemValue="#{mys}"
+                                                            class="w-100 mx-4"
+                                                            >
+                                                            <p:column headerText="Name" style="padding: 6px;">
+                                                                <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Annual Entitlement" style="padding: 6px;">
+                                                                <h:outputLabel value="#{mys.annualWelfareQualified}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column  headerText="Annual Utilized Value" style="padding: 6px;">
+                                                                <h:outputLabel value="#{mys.annualWelfareUtilized}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputLabel>
+                                                            </p:column>
+
+                                                            <p:ajax process="scStaff" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
+                                                                    event="itemSelect"  listener="#{pharmacySaleController3.paymentSchemeChanged}" />
+
+                                                        </p:autoComplete>
+                                                        <p:watermark for="scStaff" value="Type at least 2 charactors of Staff member." ></p:watermark>
+                                                    </div>
+                                                </div>
+
                                             </h:panelGroup>
 
                                         </div>
