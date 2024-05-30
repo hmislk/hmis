@@ -705,7 +705,14 @@ public class BillBhtController implements Serializable {
         if (errorCheckForPatientRoomDepartment()) {
             return;
         }
-
+                
+        for (BillEntry bi : lstBillEntries) {
+            if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
+                JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
+                return;
+            }
+        }
+        
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
