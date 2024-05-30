@@ -140,6 +140,9 @@ public class ChannelScheduleController implements Serializable {
     private Date sessionStartingDate;
     private ScheduleModel eventModel;
     List<Staff> listConsultant;
+    ItemFee itemFee;
+    List<Department> departments;
+    private List<Staff> staffs;
 
     public void channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
@@ -292,6 +295,63 @@ public class ChannelScheduleController implements Serializable {
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
 
+    public void addNewFee() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select Session ?");
+            return;
+        }
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("Select Item Fee");
+            return;
+        }
+        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please Fill Fee Name");
+            return;
+        }
+
+        if (itemFee.getFeeType() == null) {
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if (itemFee.getDepartment() == null) {
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
+
+//        if (itemFee.getFeeType() == FeeType.Staff) {
+//            if (itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")) {
+//                JsfUtil.addErrorMessage("Please Select Staff");
+//                return;
+//            }
+//        }
+        if (itemFee.getFee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
+            return;
+        }
+
+        if (itemFee.getFfee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
+            return;
+        }
+        getItemFee().setCreatedAt(new Date());
+        getItemFee().setCreater(sessionController.getLoggedUser());
+        itemFeeFacade.create(itemFee);
+
+        getItemFee().setItem(current);
+        itemFeeFacade.edit(itemFee);
+
+        itemFee = new ItemFee();
+        itemFees = null;
+        itemFees.add(itemFee);
+        itemFee=null;
+       
+        JsfUtil.addSuccessMessage("New Fee Added");
+    }
+
+    
     public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
         List<DoctorSpeciality> lst;
         String jpql = "Select d "
@@ -928,7 +988,31 @@ public class ChannelScheduleController implements Serializable {
         }
 
     }
+    
+     public void fillStaff() {
+        ////// // System.out.println("fill staff");
+        String jpql;
+        Map m = new HashMap();
+        m.put("ins", getItemFee().getSpeciality());
+        jpql = "select d from Staff d where d.retired=false and d.speciality=:ins order by d.person.name";
+        ////// // System.out.println("m = " + m);
+        ////// // System.out.println("jpql = " + jpql);
+        staffs = staffFacade.findByJpql(jpql, m);
+    }
 
+     
+
+    public void fillDepartments() {
+        ////// // System.out.println("fill dept");
+        String jpql;
+        Map m = new HashMap();
+        m.put("ins", getItemFee().getInstitution());
+        jpql = "select d from Department d where d.retired=false and d.institution=:ins order by d.name";
+        ////// // System.out.println("m = " + m);
+        ////// // System.out.println("jpql = " + jpql);
+        departments = departmentFacade.findByJpql(jpql, m);
+    }
+    
     private double calTot() {
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
@@ -1337,6 +1421,16 @@ public class ChannelScheduleController implements Serializable {
         return itemFeeFacade;
     }
 
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
+    }
+    
+    
+
     public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
         this.itemFeeFacade = itemFeeFacade;
     }
@@ -1349,4 +1443,25 @@ public class ChannelScheduleController implements Serializable {
         this.departmentFacade = departmentFacade;
     }
 
+    public ItemFee getItemFee() {
+        if (itemFee == null) {
+            itemFee = new ItemFee();
+        }
+        return itemFee;
+    }
+
+    public void setItemFee(ItemFee itemFee) {
+        this.itemFee = itemFee;
+    }
+
+    public List<Staff> getStaffs() {
+        return staffs;
+    }
+
+    public void setStaffs(List<Staff> staffs) {
+        this.staffs = staffs;
+    }
+
+    
+    
 }
