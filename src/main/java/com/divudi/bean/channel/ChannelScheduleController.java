@@ -295,6 +295,19 @@ public class ChannelScheduleController implements Serializable {
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
 
+    public void removeFee(ItemFee ifr) {
+        if (ifr == null) {
+            JsfUtil.addErrorMessage("Nothing to remove");
+            return;
+        }
+        ifr.setRetired(true);
+        ifr.setRetiredAt(new Date());
+        ifr.setRetirer(sessionController.getLoggedUser());
+        itemFeeFacade.edit(ifr);
+        fillFees();
+        JsfUtil.addSuccessMessage("Fee Removed");
+    }
+
     public void addNewFee() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select Session ?");
@@ -308,30 +321,20 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Please Fill Fee Name");
             return;
         }
-
         if (itemFee.getFeeType() == null) {
             JsfUtil.addErrorMessage("Please Fill Fee Type");
             return;
         }
-
         if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
             if (itemFee.getDepartment() == null) {
                 JsfUtil.addErrorMessage("Please Select Department");
                 return;
             }
         }
-
-//        if (itemFee.getFeeType() == FeeType.Staff) {
-//            if (itemFee.getStaff() == null || itemFee.getStaff().getPerson().getName().trim().equals("")) {
-//                JsfUtil.addErrorMessage("Please Select Staff");
-//                return;
-//            }
-//        }
         if (itemFee.getFee() == 0.00) {
             JsfUtil.addErrorMessage("Please Enter Local Fee Value");
             return;
         }
-
         if (itemFee.getFfee() == 0.00) {
             JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
             return;
@@ -341,18 +344,15 @@ public class ChannelScheduleController implements Serializable {
         itemFeeFacade.create(itemFee);
 
         getItemFee().setItem(current);
+        getItemFee().setServiceSession(current);
         itemFeeFacade.edit(itemFee);
 
         itemFee = new ItemFee();
         itemFees = null;
-        itemFees.add(itemFee);
-        itemFee=null;
         fillFees();
-       
         JsfUtil.addSuccessMessage("New Fee Added");
     }
 
-    
     public List<DoctorSpeciality> completeDOctorSpeciality(String qry) {
         List<DoctorSpeciality> lst;
         String jpql = "Select d "
@@ -989,8 +989,8 @@ public class ChannelScheduleController implements Serializable {
         }
 
     }
-    
-     public void fillStaff() {
+
+    public void fillStaff() {
         ////// // System.out.println("fill staff");
         String jpql;
         Map m = new HashMap();
@@ -1000,8 +1000,6 @@ public class ChannelScheduleController implements Serializable {
         ////// // System.out.println("jpql = " + jpql);
         staffs = staffFacade.findByJpql(jpql, m);
     }
-
-     
 
     public void fillDepartments() {
         ////// // System.out.println("fill dept");
@@ -1013,7 +1011,7 @@ public class ChannelScheduleController implements Serializable {
         ////// // System.out.println("jpql = " + jpql);
         departments = departmentFacade.findByJpql(jpql, m);
     }
-    
+
     private double calTot() {
         double tot = 0.0;
         for (ItemFee i : getItemFees()) {
@@ -1429,8 +1427,6 @@ public class ChannelScheduleController implements Serializable {
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
     }
-    
-    
 
     public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
         this.itemFeeFacade = itemFeeFacade;
@@ -1463,6 +1459,4 @@ public class ChannelScheduleController implements Serializable {
         this.staffs = staffs;
     }
 
-    
-    
 }
