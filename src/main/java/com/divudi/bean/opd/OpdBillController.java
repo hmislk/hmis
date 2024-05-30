@@ -180,6 +180,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private FinancialTransactionController financialTransactionController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    ViewScopeDataTransferController viewScopeDataTransferController;
 
     @Inject
     OpdTokenController opdTokenController;
@@ -2796,9 +2798,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToNewOpdBill(Patient pt) {
-        navigateToNewOpdBill();
+        String navigateLink = navigateToNewOpdBill();
         patient = pt;
-        return "/opd/opd_bill?faces-redirect=true";
+        return navigateLink;
+    }
+
+    public String navigateToNewOpdBillFromChannelling() {
+        String navigateLink = navigateToNewOpdBill();
+        BillSession bs = viewScopeDataTransferController.getSelectedBillSession();
+        if (bs == null) {
+            return null;
+        }
+        if (bs.getBill().getPatient() == null) {
+            return null;
+        }
+        if (bs.getSessionInstance().getStaff() == null) {
+            return null;
+        }
+        patient = bs.getBill().getPatient();
+        Staff staff = bs.getSessionInstance().getStaff();
+        
+        return navigateLink;
     }
 
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {

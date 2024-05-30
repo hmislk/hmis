@@ -69,6 +69,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
@@ -201,6 +202,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     FinancialTransactionController financialTransactionController;
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
+    @Inject
+    OpdBillController opdBillController;
     /**
      * Properties
      */
@@ -779,6 +782,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
+    
+    public String navigateToOpdBilling(BillSession bs) {
+        selectedBillSession = bs;
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setNeedToCreateOpdBillForChannellingBillSession(true);
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        return opdBillController.navigateToNewOpdBillFromChannelling();
+    }
+
+    
     public void fillBillSessionDetails() {
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Selected Bill Session is Null");

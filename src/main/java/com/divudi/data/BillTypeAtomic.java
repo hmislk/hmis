@@ -106,6 +106,8 @@ public enum BillTypeAtomic {
     OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT),
     OPD_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT),
     OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_OUT),
+    @Deprecated
+    OPD_BILL_WITH_PAYMENT_UNDER_BATCH_BILL("OPD Bill with payment under batch bill", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
     //Packages
     PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Package Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS),
     PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Package Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN),
@@ -146,7 +148,6 @@ public enum BillTypeAtomic {
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN),
     IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT),
     IOU_CASH_RETURN("Iou Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN);
-
 
     private final String label;
     private final BillCategory billCategory;

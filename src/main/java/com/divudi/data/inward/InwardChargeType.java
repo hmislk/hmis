@@ -59,6 +59,8 @@ public enum InwardChargeType {
     HospitalSupportService("Hospital Support Service"),
     ExtraMedicine("Extra Medicine"),
     DialysisTreatment("Dialysis Treatment Charges"),
+    Dental("Dental"),
+    Eye("Eye"),
     @Deprecated
     Investigations("Investigations"),
     @Deprecated

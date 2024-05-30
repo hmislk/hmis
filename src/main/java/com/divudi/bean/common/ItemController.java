@@ -136,7 +136,7 @@ public class ItemController implements Serializable {
     private DepartmentItemCount departmentItemCount;
     private List<InstitutionItemCount> institutionItemCounts;
     private InstitutionItemCount institutionItemCount;
-
+    private List<Item> suggestItems;
     boolean masterItem;
 
     ReportKeyWord reportKeyWord;
@@ -607,7 +607,7 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
+
     public Item findAndCreateItemByName(String name, Department dept) {
         try {
             String jpql;
@@ -621,7 +621,7 @@ public class ItemController implements Serializable {
             m.put("name", name);
             m.put("dept", dept);
             Item item = getFacade().findFirstByJpql(jpql, m);
-            if(item == null){
+            if (item == null) {
                 item = new Item();
                 item.setName(name);
                 getFacade().create(item);
@@ -1497,13 +1497,13 @@ public class ItemController implements Serializable {
         List<Item> suggestions;
         String sql;
         sql = "select c from Item c where c.retired=false"
-                    + " and (c.inactive=false or c.inactive is null) "
-                    + " and type(c)=Packege "
-                    + " order by c.name";
-            //////// // System.out.println(sql);
-            packaes = getFacade().findByJpql(sql);
-            //System.out.println("packaes = " + packaes);
-            return packaes;
+                + " and (c.inactive=false or c.inactive is null) "
+                + " and type(c)=Packege "
+                + " order by c.name";
+        //////// // System.out.println(sql);
+        packaes = getFacade().findByJpql(sql);
+        //System.out.println("packaes = " + packaes);
+        return packaes;
     }
 
     public List<Item> completePackage(String query) {
@@ -1635,6 +1635,37 @@ public class ItemController implements Serializable {
     }
     
     
+    public void makeAllItemsToAllowDiscounts() {
+        for (Item pi : getItems()) {
+            pi.setDiscountAllowed(true);
+            itemFacade.edit(pi);
+        }
+        JsfUtil.addSuccessMessage("All Servies and Investigations were made to allow discounts.");
+    }
+
+    public void fillItemsForInward() {
+        HashMap m = new HashMap();
+        String sql;
+        suggestItems = new ArrayList<>();
+
+        sql = "select c from Item c "
+                + " where c.retired=false "
+                + " and type(c)!=:pac "
+                + " and (type(c)=:ser "
+                + " or type(c)=:inv"
+                + " or type(c)=:ward "
+                + " or type(c)=:the)  "
+                + " order by c.name";
+        m.put("pac", Packege.class);
+        m.put("ser", Service.class);
+        m.put("inv", Investigation.class);
+        m.put("ward", InwardService.class);
+        m.put("the", TheatreService.class);
+        //    //////// // System.out.println(sql);
+        suggestItems = getFacade().findByJpql(sql, m, 20);
+
+    }
+
     public void makeAllItemsToAllowDiscounts() {
         for (Item pi : getItems()) {
             pi.setDiscountAllowed(true);
@@ -2730,7 +2761,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> getPackaes() {
-        if(packaes==null){
+        if (packaes == null) {
             packaes = fillpackages();
         }
         // System.out.println("getPackaes = " + packaes);   
@@ -2739,6 +2770,14 @@ public class ItemController implements Serializable {
 
     public void setPackaes(List<Item> packaes) {
         this.packaes = packaes;
+    }
+
+    public List<Item> getSuggestItems() {
+        return suggestItems;
+    }
+
+    public void setSuggestItems(List<Item> suggestItems) {
+        this.suggestItems = suggestItems;
     }
 
     @FacesConverter("itemLightConverter")
