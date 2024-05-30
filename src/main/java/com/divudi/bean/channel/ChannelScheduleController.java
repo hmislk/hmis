@@ -143,6 +143,7 @@ public class ChannelScheduleController implements Serializable {
     ItemFee itemFee;
     List<Department> departments;
     private List<Staff> staffs;
+    int tabIndex;
 
     public void channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
@@ -381,6 +382,21 @@ public class ChannelScheduleController implements Serializable {
         itemFees = itemFeeFacade.findByJpql(jpql, params);
         System.out.println("itemFees = " + itemFees);
         additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
+        
+        double tot = 0.0;
+        double totf = 0.0;
+        for (ItemFee i : getItemFees()) {
+            tot += i.getFee();
+            totf += i.getFfee();
+        }
+        
+        current.setTotal(tot);
+        current.setTotalForForeigner(totf);
+        current.setTotalFee(tot);
+        current.setTotalFfee(totf);
+        
+        getFacade().edit(current);
+        
     }
 
     public ItemFee createStaffFee() {
@@ -605,6 +621,16 @@ public class ChannelScheduleController implements Serializable {
     public ChannelScheduleController() {
     }
 
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
+    }
+
+    
+    
     public DoctorSpeciality getSpeciality() {
         return speciality;
     }
