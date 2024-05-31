@@ -16,7 +16,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <div class="posbill" style="text-align: left!important; page-break-after: always; width: 400px;" >
+        <div class="posbill" style="text-align: left!important; page-break-after: always;" >
             <div style="position: absolute; padding-left: 165px;">
                 <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
             </div>
@@ -390,7 +390,7 @@
 
             <div style="margin-left: 6%">
                 <div style="font-size: 8pt">
-                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" >
+                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputLabel>
                 </div>
