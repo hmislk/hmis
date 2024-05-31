@@ -382,21 +382,21 @@ public class ChannelScheduleController implements Serializable {
         itemFees = itemFeeFacade.findByJpql(jpql, params);
         System.out.println("itemFees = " + itemFees);
         additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
-        
+
         double tot = 0.0;
         double totf = 0.0;
         for (ItemFee i : getItemFees()) {
             tot += i.getFee();
             totf += i.getFfee();
         }
-        
+
         current.setTotal(tot);
         current.setTotalForForeigner(totf);
         current.setTotalFee(tot);
         current.setTotalFfee(totf);
-        
+
         getFacade().edit(current);
-        
+
     }
 
     public ItemFee createStaffFee() {
@@ -629,8 +629,6 @@ public class ChannelScheduleController implements Serializable {
         this.tabIndex = tabIndex;
     }
 
-    
-    
     public DoctorSpeciality getSpeciality() {
         return speciality;
     }
@@ -899,12 +897,20 @@ public class ChannelScheduleController implements Serializable {
 
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
+                JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
+                return;
+            }
             getFacade().edit(getCurrent());
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
+            if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
+                JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
+                return;
+            }
             getFacade().create(getCurrent());
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Saved Successfully");

@@ -354,9 +354,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No Session Instance is Selected");
             return;
         }
+        if (selectedSessionInstance.getEndingTime().equals(selectedSessionInstance.getStartingTime()) || selectedSessionInstance.getEndingTime().before(selectedSessionInstance.getStartingTime())) {
+            JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
+            return;
+        }
         selectedSessionInstance.setEditedAt(new Date());
         selectedSessionInstance.setEditer(sessionController.getLoggedUser());
         sessionInstanceFacade.edit(selectedSessionInstance);
+
         JsfUtil.addSuccessMessage("Updated");
     }
 
@@ -784,7 +789,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
-    
     public String navigateToOpdBilling(BillSession bs) {
         selectedBillSession = bs;
         if (selectedBillSession == null) {
@@ -799,7 +803,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return opdBillController.navigateToNewOpdBillFromChannelling();
     }
 
-    
     public void fillBillSessionDetails() {
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Selected Bill Session is Null");
@@ -1789,7 +1792,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
-      
+
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");
         } else {
@@ -2126,9 +2129,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             return dbl;
+
         }
 
-        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class
+        );
 //        System.err.println("Fetch Fee Values " + dbl);
         return dbl;
     }
@@ -2315,7 +2320,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         String jpql;
         Map params = new HashMap();
         params.put("staff", getStaff());
-        params.put("class", ServiceSession.class);
+        params
+                .put("class", ServiceSession.class
+                );
         if (staff != null) {
             jpql = "Select s From ServiceSession s "
                     + " where s.retired=false "
@@ -2990,7 +2997,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
-        hh.put("class", BilledBill.class);
+        hh
+                .put("class", BilledBill.class
+                );
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -3153,7 +3162,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
         hh.put("bt", bts);
-        hh.put("class", BilledBill.class);
+        hh
+                .put("class", BilledBill.class
+                );
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
