@@ -285,7 +285,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private BillSession managingBillSession;
     private String strTenderedValue;
     private double cashPaid;
-    private double cashBalance=0.0;
+    private double cashBalance = 0.0;
+
     public double calculatRemainForMultiplePaymentTotal() {
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1795,6 +1796,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+
+        System.out.println("selectedSessionInstance.getMaxNo() = " + selectedSessionInstance.getMaxNo());
+        if (selectedSessionInstance.getMaxNo() != 0) {
+            if (selectedSessionInstance.getBookedPatientCount() != null) {
+                int maxNo = selectedSessionInstance.getMaxNo();
+                long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
+                if (maxNo <= bookedPatientCount) {
+                    JsfUtil.addErrorMessage("Error: The maximum number (" + maxNo + ") is less than the booked patient count (" + bookedPatientCount + ").");
+                    return;
+
+                }
+            }
+        }
+
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -3541,7 +3556,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             ps.add(p);
         }
-        payments=ps;
+        payments = ps;
         return ps;
     }
 
@@ -5891,8 +5906,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public double getCashBalance() {
-        if (feeTotalForSelectedBill!=null) {
-            cashBalance=feeTotalForSelectedBill-cashPaid;
+        if (feeTotalForSelectedBill != null) {
+            cashBalance = feeTotalForSelectedBill - cashPaid;
         }
         return cashBalance;
     }
