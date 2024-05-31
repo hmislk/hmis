@@ -242,7 +242,7 @@
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-5" > 
-                                    <div class="sticky-top shadow " style="max-height: 100vh; overflow-y: auto;">
+                                    <div class="sticky-top shadow " style="max-height: 100vh; overflow-y: auto;z-index: 100;">
                                         <common:patient_details_view_scope
                                             controller="#{bookingControllerViewScope}"/>
 
@@ -563,10 +563,10 @@
                                         <p:panel>
                                             <p:row >
                                                 <p:column >
-                                                    <p:outputLabel value="Item" ></p:outputLabel>
+                                                    <p:outputLabel  value="Item" ></p:outputLabel>
                                                 </p:column>
                                                 <p:column >
-                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                    <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
                                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                                         <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
                                                         <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
@@ -577,13 +577,28 @@
                                                         id="btnAddItem"
                                                         process="lstItems btnAddItem"
                                                         value="Add Item" 
+                                                        icon="fas fa-plus"
+                                                        class="ui-button-success"
                                                         action="#{bookingControllerViewScope.addItemToBooking}"
-                                                        update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} lstItems"
+                                                        update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems"
                                                         ></p:commandButton>
                                                 </p:column>
                                             </p:row>
                                         </p:panel>
-                                        <p:panelGrid id="panelBookingDetails" class="w-100">
+                                        <p:panel id="lstAddedItems" rendered="#{bookingControllerViewScope.itemsAddedToBooking.size() ne 0}">
+                                            <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item">
+                                                <div class="row">
+                                                    <div class="d-flex justify-content-between align-items-center m-1">
+                                                        <h6>#{item.name}</h6>
+                                                        <h6>#{item.itemFee.fee}</h6>
+                                                        <p:commandButton id="btnRemoveAdditem" icon="fas fa-trash" class="ui-button-danger" action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" process="btnRemoveAdditem" update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId}"/>
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+
+                                        </p:panel>
+
+                                        <p:panelGrid id="panelBookingDetails" class="w-100 mt-1">
                                             <f:facet name="header">
                                                 <p:row>
                                                     <p:column colspan="2" class="w-100" style="text-align: left" >

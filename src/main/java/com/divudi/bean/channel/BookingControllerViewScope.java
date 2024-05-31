@@ -259,6 +259,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private Item itemToAddToBooking;
     private List<Item> itemsAvailableToAddToBooking;
+    private List<Item> itemsAddedToBooking;
     private Institution institution;
     private String agentRefNo;
     private List<BillFee> listBillFees;
@@ -286,6 +287,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private String strTenderedValue;
     private double cashPaid;
     private double cashBalance = 0.0;
+    private List<BillItem> additionalBillItems;
+    
+    public void removeAddedAditionalItems(Item item){
+        itemsAddedToBooking.remove(item);
+    }
 
     public double calculatRemainForMultiplePaymentTotal() {
 
@@ -650,11 +656,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         sessionFees = itemFeeFacade.findByJpql(sql, m);
         m = new HashMap();
-        sql = "Select f from ItemFee f "
+        sql = "Select f "
+                + " from ItemFee f "
                 + " where f.retired=false "
-                + " and f.item=:item "
+                + " and f.item in :items "
                 + " order by f.id";
-        m.put("item", itemToAddToBooking);
+        m.put("items", getItemsAddedToBooking());
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
@@ -1507,6 +1514,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.getSelectedBillSession = getSelectedBillSession;
     }
 
+    public void addItemToBooking() {
+        if (itemToAddToBooking == null) {
+            JsfUtil.addErrorMessage("Item to add to booking");
+            return;
+        }
+        getItemsAddedToBooking().add(itemToAddToBooking);
+        itemToAddToBooking = null;
+        fillFees();
+    }
+
     public boolean errorCheckForSerial() {
         if (selectedBillSession == null || billSessions == null) {
             // Handle the case when selectedBillSession or billSessions is null
@@ -2020,6 +2037,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionStartingDate = null;
         itemsAvailableToAddToBooking = new ArrayList<>();
         itemToAddToBooking = null;
+        itemsAddedToBooking = null;
         patient = new Patient();
     }
 
@@ -2029,6 +2047,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billSessions = null;
         sessionStartingDate = null;
         itemToAddToBooking = null;
+        itemsAddedToBooking = null;
         itemsAvailableToAddToBooking = new ArrayList<>();
         patient = new Patient();
     }
@@ -2038,12 +2057,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billSessions = null;
         sessionStartingDate = null;
         itemToAddToBooking = null;
+        itemsAddedToBooking = null;
         patient = new Patient();
     }
 
     public void resetToStartFromSameSessionInstance() {
         patient = new Patient();
         itemToAddToBooking = null;
+        itemsAddedToBooking = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -2205,8 +2226,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class
-        );
+        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
 //        System.err.println("Fetch Fee Values " + dbl);
         return dbl;
     }
@@ -3070,9 +3090,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
-        hh
-                .put("class", BilledBill.class
-                );
+        hh.put("class", BilledBill.class);
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -3289,7 +3307,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Bill saveBilledBill(boolean forReservedNumbers) {
         Bill savingBill = createBill();
         BillItem savingBillItem = createSessionItem(savingBill);
-        BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
+//        BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
+
+        List<BillItem> additionalBillItems = new ArrayList<>();
+        if (!getItemsAddedToBooking().isEmpty()) {
+            for (Item ai : itemsAddedToBooking) {
+                BillItem aBillItem = createAdditionalItem(savingBill, ai);
+                additionalBillItems.add(aBillItem);
+            }
+        }
         BillSession savingBillSession;
 
         savingBillSession = createBillSession(savingBill, savingBillItem, forReservedNumbers);
@@ -3297,13 +3323,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<BillFee> savingBillFees = new ArrayList<>();
 
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItem, false);
-        List<BillFee> savingBillFeesFromAdditionalItem = createBillFeeForSessions(savingBill, additionalBillItem, true);
 
+        List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
+        if (!additionalBillItems.isEmpty()) {
+            for (BillItem abi : additionalBillItems) {
+                createBillFeeForSessions(savingBill, abi, true);
+            }
+        }
+        
         if (savingBillFeesFromSession != null) {
             savingBillFees.addAll(savingBillFeesFromSession);
         }
-        if (savingBillFeesFromAdditionalItem != null) {
-            savingBillFees.addAll(savingBillFeesFromAdditionalItem);
+        if (!savingBillFeesFromAdditionalItems.isEmpty()) {
+            savingBillFees.addAll(savingBillFeesFromAdditionalItems);
         }
 
         List<BillItem> savingBillItems = new ArrayList<>();
@@ -5888,6 +5920,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return strTenderedValue;
     }
 
+     public List<Item> getItemsAddedToBooking() {
+        if (itemsAddedToBooking == null) {
+            itemsAddedToBooking = new ArrayList<>();
+        }
+        return itemsAddedToBooking;
+    }
+
+    public void setItemsAddedToBooking(List<Item> itemsAddedToBooking) {
+        this.itemsAddedToBooking = itemsAddedToBooking;
+    }
     public void setStrTenderedValue(String strTenderedValue) {
 
         this.strTenderedValue = strTenderedValue;
@@ -5922,6 +5964,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
+    }
+
+    public List<BillItem> getAdditionalBillItems() {
+        return additionalBillItems;
+    }
+
+    public void setAdditionalBillItems(List<BillItem> additionalBillItems) {
+        this.additionalBillItems = additionalBillItems;
     }
 
 }
