@@ -139,7 +139,7 @@
 
                                                         <div>
                                                             <h:outputText value="#{s.sessionDate}"  >
-                                                                <f:convertDateTime pattern="hh:mm a"/>
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                             </h:outputText>
 
                                                             <h:outputText class="mx-2" value="#{s.startingTime}">
