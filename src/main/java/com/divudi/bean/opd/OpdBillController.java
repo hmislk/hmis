@@ -2550,6 +2550,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 //            paymentScheme = null;
 //            creditCompany = null;
 //        }
+
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
