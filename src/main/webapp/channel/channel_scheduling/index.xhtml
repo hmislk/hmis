@@ -23,23 +23,30 @@
                                     <p:commandButton  
                                         ajax="false" 
                                         value="Channel Schedule Management" 
-                                        action="#{channelScheduleController.navigateToChannelSchedule}"/>
+                                        action="#{channelScheduleController.navigateToChannelSchedule}"
+                                        icon="fa fa-calendar-alt"
+                                        styleClass="ui-button-success" />
                                     <p:commandButton  
                                         ajax="false" 
                                         value="Channel Session Management" 
-                                        action="#{channelScheduleController.navigateToChannelScheduleManagement}"/>
+                                        action="#{channelScheduleController.navigateToChannelScheduleManagement}"
+                                        icon="fa fa-users"
+                                        styleClass="ui-button-info" />
                                     <p:commandButton 
                                         ajax="false" 
                                         value="Channel Activity Management" 
-                                        action="#{appointmentActivityController.navigateToManageAppointmentActivities()}" />
+                                        action="#{appointmentActivityController.navigateToManageAppointmentActivities()}"
+                                        icon="fa fa-tasks"
+                                        styleClass="ui-button-warning" />
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Channel Sheduling for All Doctors" 
-                                        action="#{channelScheduleController.channelSheduleForAllDoctor(null)}" />
-
-
+                                        value="Channel Scheduling for All Doctors" 
+                                        action="#{channelScheduleController.channelSheduleForAllDoctor(null)}"
+                                        icon="fa fa-user-md"
+                                        styleClass="ui-button-primary" />
                                 </div>
                             </h:form>
+
                         </div>
                         <div class="col-10">
                             <ui:insert name="subcontent">
