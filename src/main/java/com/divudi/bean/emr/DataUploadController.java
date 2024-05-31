@@ -1167,7 +1167,7 @@ public class DataUploadController implements Serializable {
         itemFeesToSave = new ArrayList<>();
 
         Item item;
-        Speciality speciality;
+        Speciality speciality=null;
         Staff staff;
 
         // Assuming the first row contains headers, skip it
@@ -1203,11 +1203,11 @@ public class DataUploadController implements Serializable {
                 specialityName = specialityCell.getStringCellValue();
             }
 
-            if (specialityName == null || specialityName.trim().equals("")) {
-                continue;
+            if (specialityName != null && !specialityName.trim().equals("")) {
+                speciality = specialityController.findSpeciality(specialityName, false);
             }
 
-            speciality = specialityController.findSpeciality(specialityName, false);
+            
 
             Cell fullNameCell = row.getCell(2);
             if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
