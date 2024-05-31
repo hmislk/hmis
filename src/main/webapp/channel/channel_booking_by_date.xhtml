@@ -740,7 +740,7 @@
                                                 <ez:bmsChannelBill  bill="#{bookingControllerViewScope.printingBill}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{bookingControllerViewScope.departmentPreference.channelBillPaperType eq 'FiveFivePaper'}" >
-                                                <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.printingBill}"/> 
+                                                <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.printingBill}" payments="#{bookingControllerViewScope.payments}"/> 
             <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                             </h:panelGroup>
                                         </ui:repeat>

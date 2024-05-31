@@ -277,6 +277,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean disableRefund;
     private List<Patient> quickSearchPatientList;
     private double total;
+    private List<Payment> payments;
 
     @Deprecated
     private ServiceSession selectedServiceSession;
@@ -3540,6 +3541,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             ps.add(p);
         }
+        payments=ps;
         return ps;
     }
 
@@ -5897,6 +5899,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setCashBalance(double cashBalance) {
         this.cashBalance = cashBalance;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }

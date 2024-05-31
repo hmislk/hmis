@@ -12,6 +12,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
     </cc:interface>
 
@@ -389,7 +390,6 @@
                             <h:outputLabel value="-" />
                             <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod}" />
                         </div>
-                        
                     </h:panelGroup>
                 </div>
 
@@ -405,7 +405,17 @@
                     </h:outputText>
                     <h:outputText 
                         style="font-size: 8pt"  
-                        value="(Card Last 4 Digits:#{cc.attrs.bill.creditCardRefNo})"/>
+                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethoddata.creditCardRefNo})"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
+                    <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
+                    <ui:repeat value="#{cc.attrs.payments}" var="p">
+                        <div class="d-flex align-items-center m-1">
+                            <div>#{p.paymentMethod}</div>
+                            <div class="mx-2">#{p.paidValue}</div>
+                        </div>
+                    </ui:repeat>
                 </h:panelGroup>
             </div>
         </div>
