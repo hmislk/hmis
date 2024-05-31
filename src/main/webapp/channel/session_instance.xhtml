@@ -69,23 +69,23 @@
                                              selectionMode="single"
                                              styleClass="w-100 fullHeightListbox">
 
-
-
-                                    <p:column headerText="Serial No" style="width: 5px!important;">
+                                    <p:column headerText="Serial No" width="3em">
                                         <h:outputText value="#{bs.serialNo}" />
                                     </p:column>
 
-                                    <p:column headerText="Name" style="width: 50px!important;">
+                                    <p:column headerText="Name" >
                                         <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
                                     </p:column>
 
-                                    <p:column rendered="false" headerText="Status" style="width: 20px!important;">
+                                    <p:column rendered="true" headerText="Status">
                                         <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
-                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
-                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{bs.nextInLine}"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="default" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="Next" rendered="#{bs.nextInLine}"/>
+                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Absent" rendered="#{bs.absent}"/>
                                     </p:column>
-
-                                    <p:column headerText="Payment Status" style="width: 20px!important;">
+                                    <p:column headerText="Payment" >
                                         <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
                                         <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
                                         <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
@@ -95,37 +95,34 @@
                                         <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
                                     </p:column>
 
-                                    <p:column headerText="Additional Status" style="width: 10px!important;">
-                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
-                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
-                                    </p:column>
 
-                                    <p:column headerText="Institution Code" style="width: 5px!important;">
+                                    <p:column headerText="Institution Code" >
                                         <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                                     </p:column>
-
-                                    <p:column headerText="Absent" style="width: 10px!important;">
-                                        <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Actions" style="width: 10px!important;">
+                                    <p:column headerText="Actions">
                                         <p:commandButton 
+                                            icon="pi pi-user-plus" 
+                                            title="OPD" 
                                             ajax="false" 
-                                            value="OPD"
-                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" >
+                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
+                                            class="ui-button-text-icon-left mx-1">
                                         </p:commandButton>
                                         <p:commandButton 
+                                            icon="pi pi-cog" 
+                                            title="Manage Booking" 
                                             ajax="false" 
-                                            value="Manage Booking"
-                                            action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" >
+                                            action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                            class="ui-button-text-icon-left mx-1">
                                         </p:commandButton>
                                         <h:panelGroup rendered="#{bs.markedToCancel}">
-                                            <i class="fas fa-ban text-danger"></i>
+                                            <i class="fas fa-ban text-danger" title="Cancel"></i>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bs.markedToRefund}">
-                                            <i class="fas fa-undo-alt  text-danger"></i>
+                                            <i class="fas fa-undo-alt text-danger" title="Refund"></i>
                                         </h:panelGroup>
                                     </p:column>
+
+
                                 </p:dataTable>
 
 
@@ -213,6 +210,9 @@
 
                                                 <p:outputLabel value="Refundable"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.refundable}"/>
+
+                                                <p:outputLabel value="Paid Appointment Only"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.paidAppointmentsOnly}"/>
 
 
                                             </h:panelGrid>
@@ -354,7 +354,7 @@
                                                             inputStyleClass="w-100"
                                                             class="w-100"
                                                             value="#{channelScheduleController.additionalItemToAdd}"
-                                                            completeMethod="#{itemController.completeInwardItems}" 
+                                                            completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
                                                             var="ix" 
                                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
                                                             style="width: 400px;">
@@ -427,9 +427,9 @@
 
 
                                                 <p:outputLabel value="Created by"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.creater.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.creater.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="created At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.createdAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.createdAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                 <p:outputLabel value="Last Editor"></p:outputLabel>

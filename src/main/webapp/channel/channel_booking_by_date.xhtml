@@ -139,14 +139,14 @@
 
                                                         <div>
                                                             <h:outputText value="#{s.sessionDate}"  >
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
 
                                                             <h:outputText class="mx-2" value="#{s.startingTime}">
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                                <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
                                                             <h:outputText class="mx-2" value="#{s.endingTime}">
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                                <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
 
                                                             <!-- Conditional message for delayed start time -->
@@ -155,7 +155,7 @@
                                                                 <h:outputText class="mr-2 text-danger" value="Delayed. Original starting time is ">
                                                                 </h:outputText>
                                                                 <h:outputText class="mr-2 text-danger" value="#{s.originatingSession.startingTime}">
-                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                                    <f:convertDateTime pattern="hh:mm a"/>
                                                                 </h:outputText>
                                                             </h:panelGroup>
 
@@ -165,7 +165,7 @@
                                                                 <h:outputText class="mr-2 text-warning" value="Early. Original starting time is ">
                                                                 </h:outputText>
                                                                 <h:outputText class="mr-2 text-warning" value="#{s.originatingSession.startingTime}">
-                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                                    <f:convertDateTime pattern="hh:mm a"/>
                                                                 </h:outputText>
                                                             </h:panelGroup>
                                                         </div>
@@ -192,11 +192,11 @@
                                                     <div class="d-flex align-items-center">
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="M"/><br/>
-                                                            <p:badge value="#{s.originatingSession.maxNo}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{s.maxNo}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                         <div class="text-center mx-4">
                                                             <h:outputLabel style="font-weight: bolder" value="A"/><br/>
-                                                            <p:badge value="#{s.originatingSession.maxNo - s.bookedPatientCount}" size="large" styleClass="mr-2"></p:badge>
+                                                            <p:badge value="#{s.maxNo - s.bookedPatientCount}" size="large" styleClass="mr-2"></p:badge>
                                                         </div>
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
@@ -219,7 +219,7 @@
                                                                     <h:outputText style="font-weight: bolder" value="C"/><br/>
                                                                     <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="danger" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
-                                                                <span class="text-center mx-1" > 
+                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
                                                                         icon="fas fa-cog"
@@ -280,16 +280,7 @@
 
 
 
-                                            <p:column >
-                                                <p:outputLabel value="Item" ></p:outputLabel>
-                                            </p:column>
-                                            <p:column >
-                                                <p:selectOneMenu class="w-75" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
-                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                    <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
-                                                </p:selectOneMenu>
-                                            </p:column>
+
 
                                             <p:outputLabel value="Amount"/>
 
@@ -300,7 +291,7 @@
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </p:outputLabel>
                                                 <p:outputLabel
-                                                    value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"
+                                                    value="#{bookingControllerViewScope.feeTotalForSelectedBill}"
                                                     rendered="#{!bookingControllerViewScope.foriegn}">
 
                                                 </p:outputLabel>
@@ -511,75 +502,168 @@
 
 
 
-
+                                            <p:row >
+                                                <p:column >
+                                                    <p:outputLabel value="Item" ></p:outputLabel>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:selectOneMenu class="w-75" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                        <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                                        <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:commandButton 
+                                                        id="btnAddItem"
+                                                        process="lstItems btnAddItem"
+                                                        value="Add Item" 
+                                                        action="#{bookingControllerViewScope.addItemToBooking}"
+                                                        update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} lstItems"
+                                                        ></p:commandButton>
+                                                </p:column>
+                                            </p:row>
 
 
                                         </h:panelGrid>
                                     </p:panel>
 
-                                    <p:panelGrid id="panelBookingDetails" class="w-100">
+                                    <p:panel id="panelBookingDetails" styleClass="w-100">
                                         <f:facet name="header">
-                                            <p:row>
-                                                <p:column colspan="2" class="w-100" style="text-align: left" >
-                                                    <h:outputText styleClass="fa-solid fa-calendar-plus"/>
-                                                    <h:outputText class="mx-4" value="Booking Details"/>
-                                                </p:column>
-                                            </p:row>
-
+                                            <div class="w-100" style="text-align: left; font-size: 16pt;">
+                                                <i class="fa-solid fa-calendar-plus" style="margin-right: 4px;"></i>
+                                                Booking Details
+                                            </div>
                                         </f:facet>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Speciality" /></p:column>
-                                            <p:column><p:outputLabel value="#{bookingControllerViewScope.speciality.name}" /></p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Consultant" /></p:column>
-                                            <p:column><p:outputLabel value="#{bookingControllerViewScope.staff.person.nameWithTitle}" /></p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Session" /></p:column>
-                                            <p:column><p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.name}" /></p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Date" /></p:column>
-                                            <p:column>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </p:outputLabel>
-                                            </p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Time" /></p:column>
-                                            <p:column>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                                </p:outputLabel>
-                                            </p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Reserved Numbers" /></p:column>
-                                            <p:column>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.reserveNumbers}">
-                                                </p:outputLabel>
-                                            </p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column><p:outputLabel value="Total Fee" /></p:column>
-                                            <p:column >
-                                                <h:panelGroup id="gpFeeTotal">
-                                                    <p:outputLabel  rendered="#{!bookingControllerViewScope.foriegn}"
-                                                                    value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </p:outputLabel>
-                                                    <p:outputLabel rendered="#{bookingControllerViewScope.foriegn}"
-                                                                   value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </p:outputLabel>
-                                                </h:panelGroup>
-                                            </p:column>
-                                        </p:row>
-                                        <p:row>
-                                            <p:column colspan="2">
-                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
+
+
+
+
+                                        <div class="d-flex align-items-center w-100">
+                                            <div>
+                                                <i class="fa-solid fa-user-doctor" style="font-size: 26pt;margin-right: 28px"></i>
+                                            </div>
+                                            <div>
+                                                <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" style="font-weight: bolder" /><br/>
+                                                <h:outputText value="(#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name})" />
+                                                <br/>
+
+                                                <div>
+                                                    <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}"  >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+
+                                                    <h:outputText class="mx-2" value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                    </h:outputText>
+                                                    <h:outputText class="mx-2" value="#{bookingControllerViewScope.selectedSessionInstance.endingTime}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                    </h:outputText>
+
+                                                    <!-- Conditional message for delayed start time -->
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.startingTime gt bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                        <br/>
+                                                        <h:outputText class="mr-2 text-danger" value="Delayed. Original starting time is ">
+                                                        </h:outputText>
+                                                        <h:outputText class="mr-2 text-danger" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </h:panelGroup>
+
+                                                    <!-- Conditional message for early start time -->
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.startingTime lt bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                        <br/>
+                                                        <h:outputText class="mr-2 text-warning" value="Early. Original starting time is ">
+                                                        </h:outputText>
+                                                        <h:outputText class="mr-2 text-warning" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <h:outputText rendered="true" value="#{bookingControllerViewScope.selectedSessionInstance.name}" style="font-weight: bolder;font-size: 10pt" />
+                                                    <br/>
+                                                    <p:badge class="d-flex justify-content-end m-2" rendered="#{!bookingControllerViewScope.selectedSessionInstance.started and !bookingControllerViewScope.selectedSessionInstance.cancelled}" value="Room: #{bookingControllerViewScope.selectedSessionInstance.roomNo}"  severity="primary" ></p:badge>
+                                                    <p:badge rendered="#{bookingControllerViewScope.selectedSessionInstance.started}" value="Room: #{bookingControllerViewScope.selectedSessionInstance.roomNo}"  severity="success" styleClass="mr-2"></p:badge>
+                                                    <p:badge rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}" value="Room: #{bookingControllerViewScope.selectedSessionInstance.roomNo}"  severity="warning" styleClass="mr-2"></p:badge>
+                                                    <p:badge rendered="#{bookingControllerViewScope.selectedSessionInstance.cancelled}" value="Room: #{bookingControllerViewScope.selectedSessionInstance.roomNo}"  severity="danger" styleClass="mr-2"></p:badge>
+                                                </div>
+
+                                                <br/>
+                                                <span class="text-center mx-1" > 
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.paidAppointmentsOnly}">
+                                                        <p:badge value="Paid Appointments Only" severity="danger"></p:badge>
+                                                    </h:panelGroup>
+                                                </span>
+                                            </div>
+                                        </div>
+
+
+
+
+
+
+
+
+
+                                        <div class="d-flex flex-column">
+                                            <!-- Speciality and Consultant in one row -->
+                                            <div class="d-flex justify-content-between w-100">
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Speciality:</label>
+                                                    <div style="font-size: 12pt;">#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}</div>
+                                                </div>
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Consultant:</label>
+                                                    <div style="font-size: 12pt;">#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}</div>
+                                                </div>
+                                            </div>
+                                            <!-- Session, Date, and Time -->
+                                            <div class="d-flex justify-content-between w-100">
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Session:</label>
+                                                    <div style="font-size: 12pt;">#{bookingControllerViewScope.selectedSessionInstance.name}</div>
+                                                </div>
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Date:</label>
+                                                    <div style="font-size: 12pt;">
+                                                        <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        </h:outputText>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Time:</label>
+                                                    <div style="font-size: 12pt;">
+                                                        <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.startingTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                                        </h:outputText>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Reserved Numbers and Total Fee -->
+                                            <div class="d-flex justify-content-between w-100">
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Reserved Numbers:</label>
+                                                    <div style="font-size: 12pt;">#{bookingControllerViewScope.selectedSessionInstance.originatingSession.reserveNumbers}</div>
+                                                </div>
+                                                <div>
+                                                    <label style="font-weight: bolder; font-size: 14pt;">Total Fee:</label>
+                                                    <div style="font-size: 12pt;">
+                                                        <h:panelGroup id="gpFeeTotal">
+                                                            <h:outputText rendered="#{!bookingControllerViewScope.foriegn}" value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                            <h:outputText rendered="#{bookingControllerViewScope.foriegn}" value="#{bookingControllerViewScope.feeTotalForSelectedBill}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- DataTable for Fee Details -->
+                                            <div class="p-col-12">
+                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" style="width:100%;">
                                                     <p:column headerText="Name">
                                                         <h:outputLabel value="#{i.name}"/> 
                                                     </p:column>
@@ -588,28 +672,26 @@
                                                     </p:column>
                                                     <p:column headerText="Fee for">
                                                         <h:outputLabel rendered="#{i.speciality.name ne null}" value="#{i.speciality.name} - "></h:outputLabel>
-
-                                                        <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
-
-                                                        <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name} - "></h:outputLabel>
-
-                                                        <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                                        <h:outputLabel rendered="#{i.staff.person.name ne null}" value=" #{i.staff.person.name}"></h:outputLabel>
+                                                        <h:outputLabel rendered="#{i.institution.name ne null}" value="#{i.institution.name} - "></h:outputLabel>
+                                                        <h:outputLabel rendered="#{i.department.name ne null}" value=" #{i.department.name}"></h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="Local Fee" rendered="#{!bookingControllerViewScope.foriegn}">
                                                         <h:outputText value="#{i.fee}" >
                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                         </h:outputText>
                                                     </p:column>
-                                                    <p:column headerText="Foriegn Fee" rendered="#{bookingControllerViewScope.foriegn}">
+                                                    <p:column headerText="Foreign Fee" rendered="#{bookingControllerViewScope.foriegn}">
                                                         <h:outputText value="#{i.ffee}" >
                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                         </h:outputText>
                                                     </p:column>
                                                 </p:dataTable>
-                                            </p:column>
+                                            </div>
+                                        </div>
+                                    </p:panel>
 
-                                        </p:row>
-                                    </p:panelGrid>
+
 
                                 </div>
                             </div>

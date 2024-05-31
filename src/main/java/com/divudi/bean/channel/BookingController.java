@@ -839,6 +839,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
             settleSucessFully = false;
             return;
         }
+        
+        if(paymentMethod == PaymentMethod.OnCall){
+            if(selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true){
+                JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
+                settleSucessFully = false;
+                return;
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {

@@ -646,6 +646,12 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckForSettle() {
+        
+        
+        if (settlePaymentMethod == PaymentMethod.OnCall ) {
+            JsfUtil.addErrorMessage("You Can't Settle On-Call Bill with OnCall Payment");
+            return true;
+        }
 
         if (getBillSession().getBill().getPaymentMethod() == PaymentMethod.Credit) {
             if (getBillSession().getBill().getFromInstitution() != null

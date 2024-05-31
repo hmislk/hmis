@@ -266,6 +266,10 @@
                                                             <f:facet name="header">Item Name</f:facet>
                                                             <h:outputLabel value="#{bif.billItem.item.name}" />
                                                         </p:column>
+                                                         <p:column>
+                                                            <f:facet name="header">Type</f:facet>
+                                                            <h:outputLabel value="#{bif.fee.feeType}" />
+                                                        </p:column>
                                                         <p:column>
                                                             <f:facet name="header">Fee</f:facet>
                                                             <h:inputText autocomplete="off"  
@@ -293,7 +297,8 @@
                                                         </p:column>
 
                                                         <p:column>
-                                                            <f:facet name="header">Payee</f:facet>                                                
+                                                            <f:facet name="header">Payee</f:facet>          
+                                                            <h:outputLabel value="#{bif.staff.person.nameWithTitle}" rendered="#{bif.fee.speciality eq null}" ></h:outputLabel>
                                                             <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
                                                                 <f:selectItem itemLabel="Select Staff" />
                                                                 <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />

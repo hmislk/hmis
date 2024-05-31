@@ -311,6 +311,43 @@
                             <p:panel header="Report Details"  >
 
                                 <p:panelGrid columns="2" >
+                                    <p:outputLabel for="refIns" value="Referring Institution" ></p:outputLabel>
+                                    <p:autoComplete 
+                                        id="refIns" 
+                                        forceSelection="true" 
+                                        value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ri" 
+                                        itemLabel="#{ri.name}" 
+                                        itemValue="#{ri}"
+                                        scrollHeight="500"
+                                        maxResults="15"
+                                        inputStyleClass="form-control"
+                                        class="w-100">
+                                        <p:column headerText="Referring Institution Name" style="padding: 2px; width: 400px;">#{ri.name} </p:column>
+                                        <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
+                                    </p:autoComplete>
+
+                                    <p:outputLabel for="cmbDoc" value="Referring Doctor" ></p:outputLabel> 
+                                    <p:autoComplete 
+                                        forceSelection="true" 
+                                        id="cmbDoc" 
+                                        value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
+                                        completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                        itemLabel="#{ix.person.name}" 
+                                        itemValue="#{ix}" 
+                                        inputStyleClass="form-control"
+                                        maxResults="15"
+                                        class="w-100" 
+                                        scrollHeight="500">
+                                        <p:column headerText="Name" style="padding: 2px;  width: 400px;">
+                                            <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Code" style="padding: 2px;">
+                                            <h:outputText value="#{ix.code}" ></h:outputText>
+                                        </p:column>
+                                    </p:autoComplete>
+
                                     <p:outputLabel value="Ordered Time" ></p:outputLabel>
                                     <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
