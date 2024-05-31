@@ -11,20 +11,27 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete   forceSelection="true" id="staff"
-                          value="#{cc.attrs.value}" 
-                          completeMethod="#{staffController.completeStaffCodeChannelWithOutResignOrRetierd}" 
-                          var="mys" 
-                          itemLabel="#{mys.person.nameWithTitle}" 
-                          itemValue="#{mys}"
-                           styleClass="mediuminput">   
+        <p:autoComplete 
+            forceSelection="true" 
+            id="staff"
+            minQueryLength="2" 
+            value="#{cc.attrs.value}" 
+            completeMethod="#{staffController.completeStaffCodeChannelWithOutResignOrRetierd}" 
+            var="mys" 
+            itemLabel="#{mys.person.nameWithTitle}" 
+            itemValue="#{mys}"
+            styleClass="mediuminput">   
             <p:column headerText="Name">
                 #{mys.person.name}
             </p:column>
             <p:column headerText="Code">
                 #{mys.code}
             </p:column>
-        </p:autoComplete> 
+            <p:column headerText="EPF No">
+                #{mys.epfNo}
+            </p:column>
+        </p:autoComplete>
+
         <p:watermark for="staff" value="Staff"/>
     </cc:implementation>
 </html>
