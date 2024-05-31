@@ -283,7 +283,7 @@
 
 
 
-                                                <p:outputLabel value="Amount"/>
+                                                <p:outputLabel value="Amount" class="py-2"/>
 
                                                 <h:panelGroup class="mx-2 my-2" id="lblSessionTotal" style="font-weight: bolder">
                                                     <p:outputLabel
@@ -597,6 +597,95 @@
                                             </ui:repeat>
 
                                         </p:panel>
+                                        <p:panel id="panelBillReferrals" class="my-1" >
+                                            <f:facet name="header" >
+                                                <h:outputText styleClass="fa fa-stethoscope" /> 
+                                                <h:outputText value="Referral Details" class="mx-4"></h:outputText>
+                                            </f:facet>
+
+                                            <h:panelGrid 
+                                                columns="2" 
+                                                class="w-100">
+                                                <p:outputLabel for="refIns" value="Institution" ></p:outputLabel>
+                                                <p:autoComplete id="refIns" 
+                                                                forceSelection="true" 
+                                                                value="#{bookingControllerViewScope.referredByInstitution}"
+                                                                completeMethod="#{institutionController.completeIns}"
+                                                                var="ri" 
+                                                                itemLabel="#{ri.name}" 
+                                                                itemValue="#{ri}"
+                                                                scrollHeight="500"
+                                                                inputStyleClass="form-control"
+                                                                class="w-100">
+                                                    <f:ajax  event="itemSelect" execute="creditCom"  />
+                                                    <p:column headerText="Referring Institution Name" style="padding: 2px;">#{ri.name}</p:column>
+                                                    <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
+                                                </p:autoComplete>
+
+
+                                                <h:panelGroup class="w-100">
+                                                    <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>
+                                                    <p:commandLink id="btnAddNewDoc" 
+                                                                   type="button"  
+                                                                   value="&nbsp;(+)" 
+                                                                   oncomplete="PF('dlg').show();" 
+                                                                   actionListener="#{doctorController.prepareAdd}" 
+                                                                   process="btnAddNewDoc" 
+                                                                   update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+
+                                                </h:panelGroup>
+
+
+                                                <p:autoComplete forceSelection="true" 
+                                                                id="cmbDoc" 
+                                                                value="#{bookingControllerViewScope.referredBy}" 
+                                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                                itemLabel="#{ix.person.name}" 
+                                                                itemValue="#{ix}" 
+                                                                inputStyleClass="form-control"
+                                                                class="w-100" 
+                                                                scrollHeight="500">
+                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Code" style="padding: 2px;">
+                                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                                    </p:column>
+                                                </p:autoComplete>
+
+                                                <h:panelGroup class="w-100">
+                                                    <p:outputLabel value="Centre" />
+                                                    <p:commandLink 
+                                                        id="btnAddNewCc" 
+                                                        value="&nbsp;(+)"  
+                                                        ajax="false" 
+                                                        action="#{navigationController.navigateToCollectingCenter()}"
+                                                        actionListener="#{collectingCentreController.prepareAdd()}"  />  
+                                                </h:panelGroup>
+                                                <p:autoComplete id="creditCom" 
+                                                                forceSelection="true" 
+                                                                class="w-100"
+                                                                value="#{bookingControllerViewScope.collectingCentre}"  
+                                                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                                                var="ix" 
+                                                                placeholder="Type at least 4 letters to search"
+                                                                inputStyleClass="form-control"
+                                                                minQueryLength="4"
+                                                                itemLabel="#{ix.name}" 
+                                                                itemValue="#{ix}" 
+                                                                scrollHeight="500" >
+                                                    <f:ajax  event="itemSelect" execute="creditCom"  />
+                                                    <p:column headerText="Collecting Centre Name" style="padding: 2px;">
+                                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Code" style="padding: 2px;">
+                                                        <h:outputText value="#{ix.institutionCode}" ></h:outputText>
+                                                    </p:column>
+
+                                                </p:autoComplete>
+
+                                            </h:panelGrid>
+                                        </p:panel>
 
                                         <p:panelGrid id="panelBookingDetails" class="w-100 mt-1">
                                             <f:facet name="header">
@@ -694,6 +783,39 @@
 
 
                                     </div>
+                                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
+                                        <h:panelGrid columns="2" >  
+                                            <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
+                                            <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></p:inputText>
+                                            <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></p:inputText>
+                                            <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></p:inputText>
+                                            <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></p:inputText>
+                                            <p:outputLabel value="Code"></p:outputLabel>   
+                                            <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></p:inputText>
+                                            <p:outputLabel value="Speciality" ></p:outputLabel>
+                                            <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" >
+                                                <f:selectItem itemLabel="Please select a speciality"/>
+                                                <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </p:selectOneMenu>
+                                            <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></p:inputText>                 
+                                            <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></p:inputText>   
+
+                                            <p:commandButton 
+                                                id="btnDocSave" 
+                                                value="Add New" 
+                                                ajax="false"
+                                                process="btnDocSave panDoc" 
+                                                update="msg panDoc cmbDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                            </p:commandButton>
+                                        </h:panelGrid>  
+                                    </p:dialog> 
                                 </div>
                             </div>
                         </div>  

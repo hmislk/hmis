@@ -76,6 +76,7 @@ import com.divudi.data.OptionScope;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.UserPreference;
@@ -288,8 +289,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private double cashPaid;
     private double cashBalance = 0.0;
     private List<BillItem> additionalBillItems;
-    
-    public void removeAddedAditionalItems(Item item){
+
+    private Institution referredByInstitution;
+    private Doctor referredBy;
+    private Institution collectingCentre;
+
+    public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
     }
 
@@ -3330,7 +3335,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 createBillFeeForSessions(savingBill, abi, true);
             }
         }
-        
+
         if (savingBillFeesFromSession != null) {
             savingBillFees.addAll(savingBillFeesFromSession);
         }
@@ -3368,7 +3373,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         savingBill.setSingleBillItem(savingBillItem);
         savingBill.setSingleBillSession(savingBillSession);
-
+        if (referredBy != null) {
+            savingBill.setReferredBy(referredBy);
+        }
+        if (referredByInstitution!=null) {
+            savingBill.setReferenceInstitution(referredByInstitution);
+        }
+        if (collectingCentre != null) {
+            savingBill.setCollectingCentre(collectingCentre);
+        }
         calculateBillTotalsFromBillFees(savingBill, savingBillFees);
 
         getBillFacade().edit(savingBill);
@@ -5920,7 +5933,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return strTenderedValue;
     }
 
-     public List<Item> getItemsAddedToBooking() {
+    public List<Item> getItemsAddedToBooking() {
         if (itemsAddedToBooking == null) {
             itemsAddedToBooking = new ArrayList<>();
         }
@@ -5930,6 +5943,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setItemsAddedToBooking(List<Item> itemsAddedToBooking) {
         this.itemsAddedToBooking = itemsAddedToBooking;
     }
+
     public void setStrTenderedValue(String strTenderedValue) {
 
         this.strTenderedValue = strTenderedValue;
@@ -5972,6 +5986,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setAdditionalBillItems(List<BillItem> additionalBillItems) {
         this.additionalBillItems = additionalBillItems;
+    }
+
+    public Institution getReferredByInstitution() {
+        return referredByInstitution;
+    }
+
+    public void setReferredByInstitution(Institution referredByInstitution) {
+        this.referredByInstitution = referredByInstitution;
+    }
+
+    public Doctor getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(Doctor referredBy) {
+        this.referredBy = referredBy;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 
 }
