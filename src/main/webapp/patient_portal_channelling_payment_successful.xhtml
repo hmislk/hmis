@@ -55,7 +55,7 @@
                             <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.sessionDate}</p>
                         </div>
                     </div>
-                    <h3 class="my-4">Payment Information</h3>
+                    <h3 class="my-4">Appointment Information</h3>
                     <div class="d-flex justify-content-between">
                         <p>Appointment no: </p>
                         <p style="font-weight: bolder">#{patientPortalController.channelSettlingBillSession.serialNo}</p>
@@ -64,10 +64,28 @@
 
                     <h3 class="my-4">Payment Information</h3>
                     <div class="d-flex justify-content-between">
+                        <p>Card Number: </p>
+                        <p style="font-weight: bolder">#{paymentGatewayController.cardNumber}</p>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <p>Card Type: </p>
+                        <p style="font-weight: bolder">#{paymentGatewayController.cardType}</p>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <p>Transaction ID: </p>
+                        <p style="font-weight: bolder">#{paymentGatewayController.transactionId}</p>
+                    </div>
+                    <div class="d-flex justify-content-between">
                         <p>Total Amount: </p>
                         <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.originatingSession.total}</p>
                     </div>
-                    <p:commandButton value="go back" class="w-100 ui btn-success" 
+                    <p:commandButton value="Download" class="w-100 ui-button-danger"
+                                     icon="fas fa-file-pdf"
+                                     ajax="false"/>
+                    <p:commandButton value="Print" class="w-100 mt-2 ui btn-info"
+                                     icon="fas fa-print"
+                                     ajax="false"/>
+                    <p:commandButton value="Go Back" class="w-100 mt-2  ui btn-success"
                                      style="background-color: green; border-color: green;" 
                                      action="#{patientPortalController.navigateBookingMenue()}" ajax="false"/>
 

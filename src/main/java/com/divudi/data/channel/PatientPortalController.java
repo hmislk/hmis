@@ -143,29 +143,35 @@ public class PatientPortalController implements Serializable {
     public String navigateBookingMenue() {
         return commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
     }
-
-    public String booking() {
+    
+    public String navigateToPayBooking(){
         if (selectedSessionInstance != null) {
-
-            bookingController.setPatient(patient);
-            bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
-            bookingController.setStaff(selectedConsultant);
-            bookingController.setSelectedSessionInstance(selectedSessionInstance);
-            bookingController.setSelectedServiceSession(selectedChannelSession);
-            channelBookingBillSession = bookingController.addChannelBookingForOnlinePayment();
-            bookingCompleted = false;
-
-            double amount = selectedSessionInstance.getOriginatingSession().getTotal();
-            System.out.println("amount = " + amount);
-            paymentGatewayController.setOrderAmount(String.valueOf(amount));
-            paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
-            paymentGatewayController.setPatient(patient);
-            paymentGatewayController.generateTemplateForOrderDescription();
-            System.out.println("selectedSessionInstance = " + selectedSessionInstance);
-            paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
-            return paymentGatewayController.createCheckoutSession();
+        
+        bookingController.setPatient(patient);
+        bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
+        bookingController.setStaff(selectedConsultant);
+        bookingController.setSelectedSessionInstance(selectedSessionInstance);
+        bookingController.setSelectedServiceSession(selectedChannelSession);
+        
+        double amount = selectedSessionInstance.getOriginatingSession().getTotal();
+        System.out.println("amount = " + amount);
+        paymentGatewayController.setOrderAmount(String.valueOf(amount));
+        paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
+        paymentGatewayController.setPatient(patient);
+        paymentGatewayController.generateTemplateForOrderDescription();
+        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
+        paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
+        return paymentGatewayController.createCheckoutSession();
         }
         return null;
+        
+    }
+
+    public void booking() {
+        if (selectedSessionInstance != null) {
+            channelBookingBillSession = bookingController.addChannelBookingForOnlinePayment();
+            bookingCompleted = false;
+        }     
     }
 
     public List<BillSession> fillPastBookings() {

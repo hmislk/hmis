@@ -45,6 +45,9 @@ public class PaymentGatewayController implements Serializable {
     private String paymentUrl;
     private String orderAmount;
     private String orderId;
+    private String cardType;
+    private String cardNumber;
+    private String transactionId;
     private String successUrl;
     private String templateForOrderDescription;
     private SessionInstance selectedSessioninstance;
@@ -151,8 +154,11 @@ public class PaymentGatewayController implements Serializable {
             if (response.getStatusLine().getStatusCode() == 200) {
                 System.out.println("status = " + extractStatusCode(responseString));
                 orderStatus = extractStatusCode(responseString);
-                System.out.println("orderStatus = " + orderStatus);
+                cardNumber = extractCardNo(responseString);
+                cardType = extractCardType(responseString);
+                transactionId = extractTransactionId(responseString);
                 if (orderStatus.equalsIgnoreCase("success")) {
+                    patientPortalController.booking();
                     patientPortalController.completeBooking();
                     try {
                         patientPortalController.setCurrentPaymentGatewayTransaction(newPaymentGatewayTransaction);
@@ -186,6 +192,21 @@ public class PaymentGatewayController implements Serializable {
     private String extractSessionId(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("session.id");
+    }
+    
+    private String extractTransactionId(String response) {
+        Map<String, String> responseMap = parseUrlEncodedResponse(response);
+        return responseMap.get("authentication.3ds.transactionId");
+    }
+    
+    private String extractCardNo(String response) {
+        Map<String, String> responseMap = parseUrlEncodedResponse(response);
+        return responseMap.get("sourceOfFunds.provided.card.number");
+    }
+    
+    private String extractCardType(String response) {
+        Map<String, String> responseMap = parseUrlEncodedResponse(response);
+        return responseMap.get("sourceOfFunds.provided.card.brand");
     }
 
     private Map<String, String> parseUrlEncodedResponse(String response) {
@@ -297,6 +318,30 @@ public class PaymentGatewayController implements Serializable {
 
     public void setNewPaymentGatewayTransaction(PaymentGatewayTransaction newPaymentGatewayTransaction) {
         this.newPaymentGatewayTransaction = newPaymentGatewayTransaction;
+    }
+
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String CardNumber) {
+        this.cardNumber = CardNumber;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
 }
