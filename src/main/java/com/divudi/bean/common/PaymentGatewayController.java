@@ -157,10 +157,6 @@ public class PaymentGatewayController implements Serializable {
                 cardNumber = extractCardNo(responseString);
                 cardType = extractCardType(responseString);
                 transactionId = extractTransactionId(responseString);
-                System.out.println("orderStatus = " + orderStatus);
-                System.out.println("cardNumber = " + cardNumber);
-                System.out.println("cardType = " + cardType);
-                System.out.println("transactionId = " + transactionId);
                 if (orderStatus.equalsIgnoreCase("success")) {
                     patientPortalController.booking();
                     patientPortalController.completeBooking();
