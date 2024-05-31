@@ -2416,31 +2416,31 @@ public class BookingController implements Serializable, ControllerWithPatient {
         BillSession savingBillSession;
         savingBillSession = createBillSession(savingBill, savingBillItem, false);
 
-        BillSession bs = new BillSession();
-        bs.setAbsent(false);
-        bs.setBill(savingBill);
-        bs.setBillItem(savingBillItem);
-        bs.setCreatedAt(new Date());
-        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
-        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
-        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
-        bs.setSessionInstance(getSelectedSessionInstance());
-        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
-        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
-        bs.setStaff(getSelectedSessionInstance().getStaff());
-
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
-
-        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
-        }
-
-        getBillSessionFacade().create(bs);
+//        BillSession bs = new BillSession();
+//        bs.setAbsent(false);
+//        bs.setBill(savingBill);
+//        bs.setBillItem(savingBillItem);
+//        bs.setCreatedAt(new Date());
+//        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
+//        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
+//        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
+//        bs.setSessionInstance(getSelectedSessionInstance());
+//        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
+//        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
+//        bs.setStaff(getSelectedSessionInstance().getStaff());
+//
+//        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+//        Integer count;
+//
+//        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+//
+//        if (count != null) {
+//            bs.setSerialNo(count);
+//        } else {
+//            bs.setSerialNo(1);
+//        }
+//
+//        getBillSessionFacade().create(bs);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
