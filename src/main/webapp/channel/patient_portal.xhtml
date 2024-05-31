@@ -315,7 +315,7 @@
                                             <h:outputText value="#{s.staff.name}">
                                             </h:outputText></h5>
                                         <p class="card-text">
-                                            <h:outputText value="#{s.staff.speciality.name}"> </h:outputText>
+                                            <h:outputText value="#{s.staff.speciality.name}"> </h:outputText>   <h:outputText class="mx-3" value="#{s.name}"/>
                                         </p>
                                         <p class="card-text " style="font-weight: bolder">
                                             <h:outputText value="#{s.startingTime}"> 
@@ -353,7 +353,7 @@
                                         <p:commandButton 
                                             value="Add Booking" 
                                             class="ui-button-success" 
-                                            action="#{patientPortalController.booking()}">
+                                            action="#{patientPortalController.navigateToPayBooking()}">
                                             <f:setPropertyActionListener target="#{patientPortalController.selectedSessionInstance}" value="#{s}"/>
                                         </p:commandButton>
 
