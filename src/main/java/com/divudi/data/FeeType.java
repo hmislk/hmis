@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum FeeType {
+
     Staff,
     Member,
     Outpatient,
@@ -42,6 +42,5 @@ public enum FeeType {
             default:
                 return this.toString();
         }
-
     }
 }

@@ -5,11 +5,11 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddh
  */
 public enum MeasurementType {
-    Discrete ,
+
+    Discrete,
     Continuous,
-    notApplicable;
+    notApplicable
 }

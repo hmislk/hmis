@@ -7,14 +7,14 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddhika
  */
 public enum BillClassType {
+
     Bill,
     BilledBill,
     CancelledBill,
     RefundBill,
     PreBill,
-    OtherBill,
+    OtherBill
 }

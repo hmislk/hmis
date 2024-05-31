@@ -679,8 +679,6 @@ public class ChannelBean {
         return listTodaysSessionInstances(null, null, null);
     }
 
-    
-
     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
@@ -721,6 +719,72 @@ public class ChannelBean {
                 }
             }
         });
+        return sessionInstances;
+    }
+
+    public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
+        return listSessionInstances(fromDate, toDate, ongoing, completed, pending, null);
+    }
+
+    public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending, Boolean cancelled) {
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret");
+
+        // Initializing the parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+
+        // Adding date conditions
+        if (fromDate != null && toDate != null) {
+            jpql.append(" and i.sessionDate between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        } else if (fromDate != null) {
+            jpql.append(" and i.sessionDate >= :fromDate");
+            params.put("fromDate", fromDate);
+        } else if (toDate != null) {
+            jpql.append(" and i.sessionDate <= :toDate");
+            params.put("toDate", toDate);
+        } else {
+            jpql.append(" and i.sessionDate = :sd");
+            params.put("sd", new Date());
+        }
+
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (ongoing != null && ongoing) {
+            conditions.add("(i.started = true and i.completed = false)");
+        }
+        if (completed != null && completed) {
+            conditions.add("i.completed = true");
+        }
+        if (pending != null && pending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+        if (cancelled != null && cancelled) {
+            conditions.add("i.cancelled = true");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+
+        // Sorting logic remains unchanged
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                } else {
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                }
+            }
+        });
+
         return sessionInstances;
     }
 

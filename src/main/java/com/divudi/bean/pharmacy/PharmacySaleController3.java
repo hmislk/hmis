@@ -1315,7 +1315,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     private boolean errorCheckForSaleBill() {
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 
@@ -1576,9 +1576,12 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                ////System.out.println("bi.getQty() = " + bi.getQty());
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+                    setZeroToQty(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    return;
+                }
                 if (bi.getQty() <= 0.0) {
-                    ////System.out.println("bi.getQty() = " + bi.getQty());
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     return;
                 }
@@ -1608,7 +1611,8 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         }
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt);
+        //savePreBillFinally(pt);
+        savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -1634,10 +1638,232 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         t.setCompleted(false);
         tokenController.save(t);
     }
+    
+    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        }
+        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getPreBill().setCreater(getSessionController().getLoggedUser());
+
+        getPreBill().setPatient(pt);
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+        getPreBill().setToStaff(toStaff);
+        getPreBill().setToInstitution(toInstitution);
+
+        getPreBill().setComments(comment);
+
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
+
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setPaymentMethod(getPaymentMethod());
+        getPreBill().setPaymentScheme(getPaymentScheme());
+
+        getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setInsId(insId);
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setDeptId(deptId);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
+
+    }
 
     @EJB
     private CashTransactionBean cashTransactionBean;
 
+    public boolean errorCheckOnPaymentMethod(){
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
+            return true;
+        }
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (!getPatient().getHasAnAccount()) {
+                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                return true;
+            }
+            double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+            double runningBalance;
+            if (getPatient().getRunningBalance() != null) {
+                runningBalance = getPatient().getRunningBalance();
+            } else {
+                runningBalance = 0.0;
+            }
+            double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+            if (netTotal > availableForPurchase) {
+                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                return true;
+            }
+
+        }
+
+//        if (paymentMethod == PaymentMethod.Credit) {
+//            if (creditCompany == null && collectingCentre == null) {
+//                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+//                return true;
+//            }
+//        }
+
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member.");
+                return true;
+            }
+
+            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
+                JsfUtil.addErrorMessage("No enough Credit.");
+                return true;
+            }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                return true;
+            }
+            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + netTotal > toStaff.getAnnualWelfareQualified()) {
+                JsfUtil.addErrorMessage("No enough credit.");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            if (getPaymentMethodData() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+                return true;
+            }
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                //TODO - filter only relavant value
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+            }
+            double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
+            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
+            if (differenceOfBillTotalAndPaymentValue > 1.0) {
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+                return true;
+            }
+            if (cashPaid == 0.0) {
+                setCashPaid(multiplePaymentMethodTotalValue);
+            }
+
+        }
+        return false;
+    }
+
+    public List<Payment> createPaymentsForBill(Bill b) {
+        return createMultiplePayments(b, b.getPaymentMethod());
+    }
+    
+    public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    break;
+                case Cash:
+                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
+            ps.add(p);
+        }
+        return ps;
+    }
+    
     public void settleBillWithPay() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1690,92 +1916,96 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         if (errorCheckForSaleBill()) {
             return;
         }
-        if (getPaymentMethod() == PaymentMethod.Credit) {
-            if (toStaff == null && toInstitution == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
-                return;
-            }
-            if (toStaff == null && toInstitution == null) {
-                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-                return;
-            }
-            if (toStaff != null) {
-                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    JsfUtil.addErrorMessage("No enough walfare credit.");
-                    return;
-                }
-            }
-        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            if (pt == null) {
-                JsfUtil.addErrorMessage("Need a Patient");
-                return;
-            }
-
-            if (pt.getHasAnAccount() == false) {
-                JsfUtil.addErrorMessage("Peation have not account");
-                return;
-            }
-
-            double runningBalance;
-            double creditLimit;
-            double availableValue;
-
-            if (pt.getRunningBalance() != null) {
-                runningBalance = pt.getRunningBalance();
-            } else {
-                runningBalance = 0;
-            }
-
-            if (pt.getCreditLimit() != null) {
-                creditLimit = pt.getCreditLimit();
-            } else {
-                creditLimit = 0;
-            }
-
-            availableValue = runningBalance + creditLimit;
-
-            if (availableValue < netTotal) {
-                JsfUtil.addErrorMessage("No sufficient balance");
-                return;
-            }
-        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            if (getPaymentMethodData() == null) {
-                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-                return;
-            }
-            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
-                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-                return;
-            }
-            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
-                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-                return;
-            }
-            double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-            }
-            double differenceOfBillTotalAndPaymentValue = getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
-            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
-                return;
-            }
-            if (cashPaid == 0.0) {
-                setCashPaid(multiplePaymentMethodTotalValue);
-            }
-
+        if (errorCheckOnPaymentMethod()) {
+            return;
         }
+//        if (getPaymentMethod() == PaymentMethod.Credit) {
+//            if (toStaff == null && toInstitution == null) {
+//                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
+//                return;
+//            }
+//            if (toStaff == null && toInstitution == null) {
+//                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+//                return;
+//            }
+//            if (toStaff != null) {
+//                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
+//                    JsfUtil.addErrorMessage("No enough walfare credit.");
+//                    return;
+//                }
+//            }
+//        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+//            if (pt == null) {
+//                JsfUtil.addErrorMessage("Need a Patient");
+//                return;
+//            }
+//
+//            if (pt.getHasAnAccount() == false) {
+//                JsfUtil.addErrorMessage("Peation have not account");
+//                return;
+//            }
+//
+//            double runningBalance;
+//            double creditLimit;
+//            double availableValue;
+//
+//            if (pt.getRunningBalance() != null) {
+//                runningBalance = pt.getRunningBalance();
+//            } else {
+//                runningBalance = 0;
+//            }
+//
+//            if (pt.getCreditLimit() != null) {
+//                creditLimit = pt.getCreditLimit();
+//            } else {
+//                creditLimit = 0;
+//            }
+//
+//            availableValue = runningBalance + creditLimit;
+//
+//            if (availableValue < netTotal) {
+//                JsfUtil.addErrorMessage("No sufficient balance");
+//                return;
+//            }
+//        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+//            if (getPaymentMethodData() == null) {
+//                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+//                return;
+//            }
+//            if (getPaymentMethodData().getPaymentMethodMultiple() == null) {
+//                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+//                return;
+//            }
+//            if (getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+//                JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+//                return;
+//            }
+//            double multiplePaymentMethodTotalValue = 0.0;
+//            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+//                //TODO - filter only relavant value
+//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+//                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+//            }
+//            double differenceOfBillTotalAndPaymentValue = getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
+//            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
+//            if (differenceOfBillTotalAndPaymentValue > 1.0) {
+//                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+//                return;
+//            }
+//            if (cashPaid == 0.0) {
+//                setCashPaid(multiplePaymentMethodTotalValue);
+//            }
+//
+//        }
 
 //        if (checkAllBillItem()) {
 //            return;
 //        }
+        
         calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
@@ -1783,19 +2013,17 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
-        savePreBillFinally(pt);
+        savePreBillFinallyForRetailSale(pt);
         savePreBillItemsFinally(tmpBillItems);
 
         saveSaleBill();
-        Payment p = createPayment(getSaleBill(), paymentMethod);
-        saveSaleBillItems(tmpBillItems, p);
+        createPaymentsForBill(getSaleBill());
+        saveSaleBillItems(tmpBillItems);
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
-
-        getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
@@ -1817,6 +2045,44 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         resetAll();
 
         billPreview = true;
+
+    }
+    
+    private void savePreBillFinallyForRetailSale(Patient pt) {
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        }
+        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getPreBill().setCreater(getSessionController().getLoggedUser());
+
+        getPreBill().setPatient(pt);
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+        getPreBill().setToStaff(toStaff);
+        getPreBill().setToInstitution(toInstitution);
+
+        getPreBill().setComments(comment);
+
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
+
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setPaymentMethod(getPaymentMethod());
+        getPreBill().setPaymentScheme(getPaymentScheme());
+
+        getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
+
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setInsId(insId);
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setDeptId(deptId);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
     }
 
@@ -2031,6 +2297,9 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     }
 
     public void changeListener() {
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+        }
         calculateAllRates();
     }
 
@@ -2235,6 +2504,9 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         stock = null;
         editingQty = null;
         errorMessage = "";
+        paymentMethod = PaymentMethod.Cash;
+        paymentMethodData = null;
+        setCashPaid(0.0);
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {

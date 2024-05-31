@@ -9,6 +9,8 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.FeeController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.OpdPreBillController;
@@ -35,6 +37,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
 import com.divudi.facade.BillFeeFacade;
@@ -101,7 +104,10 @@ public class WorkingTimeController implements Serializable {
     ItemController itemController;
     @Inject
     FeeController feeController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
+    private Speciality speciality;
     List<WorkingTime> selectedItems;
     private WorkingTime current;
     private List<WorkingTime> items = null;
@@ -130,21 +136,52 @@ public class WorkingTimeController implements Serializable {
         return selectedItems;
     }
 
-    public String selectStaffForOpdPayment() {
+    public String selectStaffForOpdPaymentForShifts() {
+        System.out.println("selectStaffForOpdPayment");
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
             return "";
         }
         workingTimeForPayment = findLastWorkingTime(staff);
+        System.out.println("workingTimeForPayment = " + workingTimeForPayment);
         if (workingTimeForPayment == null) {
+            System.out.println("no work time record");
             JsfUtil.addErrorMessage("No Work Time Recorded");
             return "";
         }
         if (workingTimeForPayment.getProfessinoalPaymentBill() != null) {
+            System.out.println("workingTimeForPayment.getProfessinoalPaymentBill()");
             return toViewOpdPaymentsDone();
         }
         staffAdmissionsForPayments = admissionController.findAdmissions(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
-        staffBillFeesForPayment = billController.findBillFees(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
+        boolean payDoctorAfterMarkingOut = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking Out", false);
+        boolean payDoctorAfterMarkingIn = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking In", false);
+        Date startTime =null;
+        Date endTime = null;
+        
+        if(payDoctorAfterMarkingIn){
+            startTime = workingTimeForPayment.getStartRecord().getRecordTimeStamp();
+        }
+        if(payDoctorAfterMarkingOut){
+            endTime = workingTimeForPayment.getEndRecord().getRecordTimeStamp();
+        }
+        System.out.println("before");
+        staffBillFeesForPayment = billController.findBillFees(staff, startTime, endTime);
+        System.out.println("staffBillFeesForPayment = " + staffBillFeesForPayment);
+        
+        calculateStaffPayments();
+        return "/opd/pay_doctor?faces-redirect=true";
+    }
+    
+    public String selectStaffForOpdPaymentForAll() {
+        System.out.println("selectStaffForOpdPayment");
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Select staff");
+            return "";
+        }
+        System.out.println("before");
+        staffBillFeesForPayment = billController.findBillFees(staff, null, null);
+        System.out.println("staffBillFeesForPayment = " + staffBillFeesForPayment);
         calculateStaffPayments();
         return "/opd/pay_doctor?faces-redirect=true";
     }
@@ -179,6 +216,10 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void settleStaffPayments() {
+        if(paymentMethod==null){
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
         Bill bill = new BilledBill();
         bill.setBillDate(Calendar.getInstance().getTime());
         bill.setBillTime(Calendar.getInstance().getTime());
@@ -251,7 +292,6 @@ public class WorkingTimeController implements Serializable {
         }
 
         //System.out.println("admissionRate = " + admissionRate);
-
         BillItem admiddionFeeItem = new BillItem();
         admiddionFeeItem.setBill(b);
         admiddionFeeItem.setQty((double) admissionCount);
@@ -314,7 +354,6 @@ public class WorkingTimeController implements Serializable {
         b.getBillFees().add(otherFee);
 
         //System.out.println("b.getBillItems() = " + b.getBillItems());
-
         billController.save(b);
 
     }
@@ -791,6 +830,30 @@ public class WorkingTimeController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+    
+     public List<Doctor> getListOfDoctors() {
+        List<Doctor> suggestions;
+        String sql;
+        sql = " select p from Doctor p "
+                + " where p.retired=:ret ";
+        HashMap hm = new HashMap();
+        hm.put("ret", false);
+        if (speciality != null) {
+            sql += "and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        }
+        sql += " order by p.person.name";
+        suggestions = getFacade().findByJpql(sql, hm);
+        return suggestions;
     }
 
     /**

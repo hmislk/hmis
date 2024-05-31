@@ -5,12 +5,16 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
+
+            <f:metadata>
+                <f:event type="preRenderView" 
+                         listener="#{opdBillController.reloadCurrentlyWorkingStaff}"/>
+            </f:metadata>
+
             <ui:define name="content">
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
                     You are NOT authorized
@@ -48,13 +52,34 @@
                                     id="ccPatientDetails"
                                     editable="true"
                                     controller="#{opdBillController}"/>
+
                                 <p:panel 
                                     id='pIxAdd' 
                                     class="w-100 form">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
-                                        <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                        <h:outputText value="Add New Item" class="mx-4"></h:outputText>
                                     </f:facet>
+
+                                    <h:panelGroup  rendered="#{opdBillController.opdItemDepartments ne null}" id="departments">
+                                        <div class="row" >
+                                            <div class="col-md-12" >
+                                                <ui:repeat  value="#{opdBillController.opdItemDepartments}" var="dept">
+                                                    <p:commandButton 
+                                                        value="#{dept.name}"
+                                                        process="@this"
+                                                        update=":#{p:resolveFirstComponentWithId('acIx',view).clientId} :#{p:resolveFirstComponentWithId('departments',view).clientId}"
+                                                        action="#{opdBillController.departmentChanged}"
+                                                        class="m-1 #{dept eq opdBillController.selectedOpdItemDepartment ? 'ui-button-success' : 'ui-button-primary'}">
+                                                        <f:setPropertyActionListener value="#{dept}" target="#{opdBillController.selectedOpdItemDepartment}"></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </ui:repeat>
+
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+
                                     <div class="row" >
 
                                         <div class="col-md-10" >
@@ -72,8 +97,8 @@
                                                 hideNoSelectionOption="true"
                                                 >
                                                 <f:selectItems 
-                                                    value="#{opdBillController.opdItems}"
-                                                    var="item" 
+                                                    value="#{opdBillController.departmentOpdItems}"
+                                                    var="item"
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
                                                 </f:selectItems>
@@ -81,20 +106,25 @@
                                                     listener="#{opdBillController.fillBillSessions}" 
                                                     process="acIx" 
                                                     update="tblSs txtQty" ></p:ajax>
-                                                <p:column  headerText="Name">
+                                                <p:column headerText="Name" style="padding: 0px; margin: 0px;">
                                                     <f:facet name="header" >
                                                         Name
                                                     </f:facet>
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column style="text-align: right;" headerText="Value">
-                                                    <h:outputText value="#{ix.total}"></h:outputText>
+                                                <p:column  width="7em" style="text-align: right; margin: 0px; padding: 0px;" headerText="Value">
+                                                    <h:outputText value="#{ix.total}">
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
                                                 </p:column>
-                                                <p:column  headerText="Dept">
+                                                <p:column  headerText="Dept"  rendered="#{opdBillController.opdItemDepartments eq null}" style="padding: 0px; margin: 0px; width: 3rem;">
                                                     <h:outputText value="#{ix.departmentName}"></h:outputText>
                                                 </p:column>
-                                                <p:column  headerText="Code">
+                                                <p:column  headerText="Code" rendered="false" style="padding: 0px; margin: 0px;">
                                                     <h:outputText value="#{ix.code}"></h:outputText>
+                                                </p:column>
+                                                <p:column  headerText="ID" rendered="false" style="padding: 0px; margin: 0px;">
+                                                    <h:outputText value="ID is #{ix.departmentId}"></h:outputText>
                                                 </p:column>
 
                                             </p:selectOneListbox>
@@ -117,6 +147,15 @@
                                                 update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
+                                            <p:commandButton
+                                                id="btnRefreshItemLight"
+                                                value="Refresh"
+                                                icon="fas fa-refresh"
+                                                class="w-100 mx-1 mt-5 ui-button-warning"
+                                                action="#{opdBillController.fillOpdItems()}"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                ajax="false"
+                                                />
                                         </div>
                                     </div>
                                     <div class="row" >
@@ -316,7 +355,7 @@
                                                 value="#{opdBillController.paymentMethod}"
                                                 >     
                                                 <f:selectItems 
-                                                    value="#{enumController.allPaymentMethods}"  
+                                                    value="#{enumController.paymentMethodsForOpdBilling}"  
                                                     var="pm"
                                                     itemLabel="#{pm.label}"
                                                     itemValue="#{pm}"/>
@@ -364,7 +403,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="" >
+                                    <div>
                                         <h:panelGroup id="paymentDetails"  >
                                             <h:panelGroup
                                                 class="row"
@@ -403,9 +442,14 @@
                                                                 actionListener="#{creditCompanyController.prepareAdd()}" />  
                                                         </div>
                                                     </div>
-
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"  
+                                                rendered="#{opdBillController.paymentMethod eq 'Staff'}" >
+                                                <div class="my-1" id="staffCredit">
                                                     <div class="row mt-1">
-
                                                         <div class="col-12">
                                                             <p:autoComplete  
                                                                 minQueryLength="4"
@@ -417,34 +461,79 @@
                                                                 class="w-100"
                                                                 placeholder="Staff (Type at least 4 letters to search)"
                                                                 inputStyleClass="form-control"
-                                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                                itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
                                                                 size="10">
-                                                                <p:column headerText="Name" >
+                                                                <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="Annual Entitlement">
-                                                                    <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                <p:column headerText="EPF" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.creditLimitQualified}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-                                                                <p:column  headerText="Annual Utilized Value">
-                                                                    <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.currentCreditValue}" >
                                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                     </h:outputText>
                                                                 </p:column>
-
                                                                 <p:ajax process="@this" 
-                                                                        update="creditCompany :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
                                                                         event="itemSelect"  
                                                                         listener="#{opdBillController.calTotals()}" />
-
                                                             </p:autoComplete>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
-
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"  
+                                                rendered="#{opdBillController.paymentMethod eq 'Staff_Welfare'}" >
+                                                <div class="my-1" id="credit">
+                                                    <div class="row mt-1">
+                                                        <div class="col-12">
+                                                            <p:autoComplete  
+                                                                minQueryLength="3"
+                                                                forceSelection="true" 
+                                                                value="#{opdBillController.toStaff}" 
+                                                                id="welfareStaff"
+                                                                completeMethod="#{staffController.completeStaff}" 
+                                                                var="mys" 
+                                                                class="w-100"
+                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                inputStyleClass="form-control"
+                                                                itemLabel="#{mys.person.name}" 
+                                                                itemValue="#{mys}"
+                                                                size="10">
+                                                                <p:column headerText="Name" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>
+                                                                <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>
+                                                                <p:ajax process="@this" 
+                                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                        event="itemSelect"  
+                                                                        listener="#{opdBillController.calTotals()}" />
+                                                            </p:autoComplete>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
                                                 layout="block"  
@@ -483,6 +572,7 @@
                                                 <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" controller="#{opdBillController}" class="w-100"/>
 
                                             </h:panelGroup>
+
                                         </h:panelGroup>
                                     </div>
 
@@ -498,14 +588,11 @@
                                                     value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                     var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                                 <p:ajax process="@this" 
-                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                         event="change" 
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
                                         </div>
-
-
-
 
                                     </div>
                                     <div class="row my-1">
@@ -524,14 +611,14 @@
                                                                  action="#{opdBillController.markAsForeigner}" 
                                                                  rendered="#{!opdBillController.foreigner}" 
                                                                  process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                                  ></p:commandButton>
                                                 <p:commandButton value="Mark Local" 
                                                                  class="mx-2"
                                                                  action="#{opdBillController.markAsLocal}" 
                                                                  rendered="#{opdBillController.foreigner}" 
                                                                  process="@this" 
-                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
+                                                                 update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                                  ></p:commandButton>
                                                 <!--                                                <p:commandButton value="Print Last Bill" 
                                                                                                                  class="btn m-1"
@@ -589,7 +676,7 @@
                                         <f:selectItem itemLabel="No Doctor" itemValue="#{null}" />
                                         <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" 
                                                        itemLabel="#{s.name.concat(' - ').concat(s.speciality.name)}" itemValue="#{s}" />
-                                        <p:ajax process="@this" ></p:ajax>
+                                        <p:ajax process="@this" update="tblBillItem" ></p:ajax>
                                     </p:selectOneListbox>
                                 </p:panel>
 

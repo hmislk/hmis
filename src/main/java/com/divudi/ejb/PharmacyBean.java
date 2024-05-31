@@ -1554,12 +1554,10 @@ public class PharmacyBean {
         String sql;
         sql = "Select bi.pharmaceuticalBillItem.itemBatch from BillItem bi where "
                 + " bi.retired=false and bi.bill.cancelled=false "
-                + " and bi.bill.department=:d "
                 + " and bi.pharmaceuticalBillItem.itemBatch.item=:i "
                 + " and (bi.bill.billType=:t or bi.bill.billType=:t1) "
                 + " order by bi.id desc";
         m.put("i", item);
-        m.put("d", dept);
         m.put("t", BillType.PharmacyGrnBill);
         m.put("t1", BillType.PharmacyPurchaseBill);
         ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);

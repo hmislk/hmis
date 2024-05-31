@@ -12,6 +12,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="ref" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -46,7 +47,8 @@
             <div style="font-size: 14px; text-align: center;font-weight: bold;">
                 <h:outputLabel value="Channel Payment Receipt"   /><br/>    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}"/> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}"/>
+                <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.ref eq true}" />
             </div>
 
             <div class="d-flex justify-content-center" style="margin-top: -1mm;">
@@ -309,7 +311,7 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.insId}"></h:outputLabel>
                     </td>
                 </tr>
 

@@ -170,31 +170,21 @@
                                     id="tblBills" 
                                     value="#{searchController.patientInvestigations}" 
                                     var="pi" 
-                                    rowKey="#{pi.id}"
                                     rowIndexVar="i" 
                                     class="tbl table-condensed"
+
                                     >
-
-                                    <p:column 
-                                        headerText="Dept ID" 
-                                        style="width:5em;" >
-                                        <h:outputText
-                                            id="lblDeptIdNo" 
-                                            value="#{pi.billItem.bill.deptId}" ></h:outputText>
-                                    </p:column>
-
-                                    <p:column 
-                                        rendered="false"
-                                        headerText="Ins ID" 
-                                        style="width:5em;" >
+                                    <p:column  headerText="Order No" style="width:5em;" >
                                         <h:outputLabel
-                                            id="lblBillNo" 
-                                            value="#{pi.billItem.bill.insId}" ></h:outputLabel>
+                                            id="lblDeptId"
+                                            value="#{pi.billItem.bill.deptId}" 
+                                            ></h:outputLabel>
 
-                                        <!--                                        <h:outputLabel id="lblBillNo" 
-                                                                                               value="#{pi.billItem.bill.insId}" 
-                                                                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>-->
-                                        <p:tooltip for="lblBillNo"  >
+                                        <h:outputLabel id="lblBillNo" 
+                                                       rendered="false"
+                                                       value="#{pi.billItem.bill.insId}" 
+                                                       styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                                        <p:tooltip for="lblDeptId"  >
                                             <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
@@ -226,12 +216,7 @@
                                         </p:tooltip>
                                     </p:column>
 
-                                    <p:column 
-                                        sortBy="#{pi.billItem.bill.insId}"
-                                        filterMatchMode="contains"
-                                        filterBy="#{pi.billItem.bill.insId}"
-
-                                        headerText="Dep ID" styleClass="alignTop" rendered="false" >
+                                    <p:column  headerText="Dep ID" styleClass="alignTop" rendered="false" >
                                         <h:outputLabel id="lblInvNo" 
                                                        value="#{pi.billItem.bill.deptId}" 
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
@@ -266,12 +251,7 @@
                                     </p:column>
 
 
-                                    <p:column
-                                        sortBy="#{pi.billItem.bill.insId}"
-                                        filterMatchMode="contains"
-                                        filterBy="#{pi.billItem.bill.insId}"
-
-                                        headerText="Patient" styleClass="alignTop" style="width:14em;">
+                                    <p:column  headerText="Patient" styleClass="alignTop" style="width:14em;">
 <!--                                        <h:panelGroup rendered="#{pi.encounter ne null}" >
                                             <p:outputLabel value="#{pi.encounter.patient.person.nameWithTitle}" ></p:outputLabel>
                                         </h:panelGroup>

@@ -24,17 +24,18 @@
             <div  class="container-fluid" >
                 <div>
 
-                    <h:panelGroup rendered="#{not empty sessionController.departmentPreference.inpatientFinalBillPrintHeader}">
+                    <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
                             <div class="col-12">
-                                <h:outputText value="#{inwardSearch.fillDataForInpatientsForFinalBill(sessionController.departmentPreference.inpatientFinalBillPrintHeader,cc.attrs.bill )}" 
+                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}" 
                                               escape="false"
                                               >
                                 </h:outputText>
                             </div>
                         </div>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{empty sessionController.departmentPreference.inpatientFinalBillPrintHeader}">
+                    
+                    <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
                         <div>
                             <div class="col-12 text-center">
                                 <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
@@ -74,7 +75,7 @@
                                             <div class="row">
                                                 <div class="col-5"><h:outputLabel value="Bill NO" /></div>
                                                 <div class="col-1"><h:outputLabel value=":" /></div>
-                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></div>
+                                                <div class="col-6"><h:outputLabel value="#{cc.attrs.bill.insId}" /></div>
                                             </div>
                                         </div>
                                         <div class="col-6">

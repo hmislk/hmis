@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author Buddhika
  */
 public enum BillType {
@@ -67,7 +66,7 @@ public enum BillType {
     StoreBhtIssue,
     StoreBhtPre,
     StoreIssue,
-    //    @Deprecated Piumi requested issue 60 
+    //    @Deprecated Piumi requested issue 60
     StoreTransferIssue,
     StoreTransferReceive,
     StoreTransferRequest,
@@ -95,6 +94,7 @@ public enum BillType {
     PharmacyAdjustmentWholeSaleRate,
     PharmacyAdjustmentPurchaseRate,
     PharmacyAdjustmentExpiryDate,
+    PharmacyAddtoStock,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
     ChannelCash(ChannelCashFlow),
@@ -185,6 +185,8 @@ public enum BillType {
                 return "Good Receive Note";
             case PharmacyGrnReturn:
                 return "Good Receive Note Return";
+            case PharmacyReturnWithoutTraising:
+                return "Pharmacy Return Without Traising";
             case PharmacyPurchaseBill:
                 return "Pharmacy Direct Purchase";
             case PurchaseReturn:
@@ -297,14 +299,14 @@ public enum BillType {
         this.parent = parent;
     }
 
-    private BillType(BillType parent) {
+    BillType(BillType parent) {
         this.parent = parent;
         if (this.parent != null) {
             this.parent.addChild(this);
         }
     }
 
-    private BillType() {
+    BillType() {
     }
 
     private final List<BillType> children = new ArrayList<>();
@@ -342,5 +344,4 @@ public enum BillType {
         }
         return false;
     }
-
 }

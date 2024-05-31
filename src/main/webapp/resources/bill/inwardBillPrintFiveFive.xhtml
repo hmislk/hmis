@@ -106,7 +106,7 @@
                 <!-- Bill No -->
                 <h:outputLabel value="Bill No" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value=":" />
-                <h:outputLabel value="#{cc.attrs.bill.deptId}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value="#{cc.attrs.bill.insId}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
 
                 <!-- Phone -->
                 <h:outputLabel value="Phone" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
@@ -230,7 +230,7 @@
                                         </div>
                                         <div  class="w-100 text-left">
 
-                                            <h:outputLabel value="#{cc.attrs.bill.deptId}" 
+                                            <h:outputLabel value="#{cc.attrs.bill.insId}" 
                                                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and
                                                                        cc.attrs.bill.cancelledBill.insId eq null}"
                                                            style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/> 

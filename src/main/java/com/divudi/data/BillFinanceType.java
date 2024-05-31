@@ -7,9 +7,12 @@ package com.divudi.data;
  * @author Dr M H B Ariyaratne
  */
 public enum BillFinanceType {
+
     NO_FINANCE_TRANSACTIONS("No Finance Transactions"),
     CASH_IN("Cash In"),
     CASH_OUT("Cash Out"),
+    ONLINE_PAYMENT_IN("Online Payment In"),
+    ONLINE_PAYMENT_OUT("Online Payment Out"),
     CREDIT_IN("Credit In"),
     CREDIT_OUT("Credit Out"),
     CREDIT_SETTLEMENT("Credit Settlement"),
@@ -19,7 +22,7 @@ public enum BillFinanceType {
     FLOAT_STARTING_BALANCE("Float Starting Balance"),
     FLOAT_CLOSING_BALANCE("Float Closing Balance"),
     FLOAT_INCREASE("Float Increase"),
-    FLOAT_DECREASE("Float Decrease"),;
+    FLOAT_DECREASE("Float Decrease");
 
     private final String label;
 

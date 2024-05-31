@@ -16,35 +16,39 @@
                     <p:panel header="Payment Reprint">
                         <f:facet name="header">
                             <div class="d-flex align-items-center justify-content-between">
-                            
+
                                 <div>
                                     <h:outputLabel value="Payment Reprint" />
                                 </div>
-                            <div>
-                                <p:commandButton ajax="false" value="Cancel"
-                                                 icon="fa fa-cancel"
-                                                 class="ui-button-danger mx-1"
-                                                 action="inward_cancel_bill_professional"  
-                                                 disabled="#{inwardSearch.bill.cancelled}"  >                           
-                                </p:commandButton>
-                                <p:commandButton ajax="false" value="Mark As Checked"
-                                                action="#{inwardSearch.markAsChecked()}"
-                                                class="ui-button-success mx-1"
-                                                icon="fa fa-check-square"
-                                                 rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                                <p:commandButton ajax="false" value="Mark As Unchecked"
-                                                action="#{inwardSearch.markAsUnChecked()}"
-                                                class="ui-button-warning mx-1" 
-                                                icon="fa fa-square"
-                                                 rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                                <p:commandButton ajax="false" value="Back To Interim"
-                                                 action="/inward/inward_bill_intrim"
-                                                 class="mx-1 ui-button-info"
-                                                 icon="fa fa-backward"
-                                                actionListener="#{bhtSummeryController.createTables()}"
-                                                  />
-                         </div>
+                                <div>
+                                    <p:commandButton 
+                                        ajax="false" value="To Cancel"
+                                        icon="fa fa-cancel"
+                                        class="ui-button-danger mx-1"
+                                        action="inward_cancel_bill_professional"  
+                                        disabled="#{inwardSearch.bill.cancelled}"  >                           
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" value="Mark As Checked"
+                                        action="#{inwardSearch.markAsChecked()}"
+                                        class="ui-button-success mx-1"
+                                        icon="fa fa-check-square"
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                                    <p:commandButton 
+                                        ajax="false" value="Mark As Unchecked"
+                                        action="#{inwardSearch.markAsUnChecked()}"
+                                        class="ui-button-warning mx-1" 
+                                        icon="fa fa-square"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                                    <p:commandButton 
+                                        ajax="false" value="Back To Interim"
+                                        action="/inward/inward_bill_intrim"
+                                        class="mx-1 ui-button-info"
+                                        icon="fa fa-backward"
+                                        actionListener="#{bhtSummeryController.createTables()}"
+                                        />
                                 </div>
+                            </div>
                         </f:facet>       
                         <div class="row">
                             <div class="col-md-6">
@@ -115,7 +119,7 @@
                                 <p:column headerText="Speciality">
                                     <h:outputLabel value="#{bip.staff.speciality.name}"/>
                                 </p:column> 
-                                 <p:column headerText="Payee">
+                                <p:column headerText="Payee">
                                     <p:cellEditor>  
                                         <f:facet name="output"> 
                                             <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
@@ -126,7 +130,7 @@
                                                             completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                             var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" 
                                                             forceSelection="true"/>
-                                           
+
                                         </f:facet>  
                                     </p:cellEditor>  
 

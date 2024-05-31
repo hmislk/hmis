@@ -575,6 +575,7 @@ public class FinancialTransactionController implements Serializable {
             if (p.getBill().getBillTypeAtomic() == null) {
                 System.err.println("NO ATOMIC BILL TYPE in p.getBill().getBillType() = " + p.getBill().getBillType());
             } else {
+                System.out.println("p.getPaidValue() = " + p.getPaidValue());
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
                 System.out.println("p.getBill().getBillTypeAtomic() = " + p.getBill().getBillTypeAtomic());
             }
@@ -698,16 +699,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        totalBillCancelledValue = totalOpdBillCanceledValue
-                + totalCcBillCanceledValue
-                + totalPharmecyBillCanceledValue;
-        totalOpdBillValue = totalOpdBillValue;
-        totalPharmecyBillValue = totalPharmecyBillValue;
-        totalCcBillValue = totalCcBillValue;
-        double totalBillValues = totalBilledBillValue + totalTransferRecive;
-
-        additions = totalBillValues + totalShiftStartValue;
-        Deductions = totalBalanceTransfer + totalDeposits + totalBillRefundValue + totalBillCancelledValue;
+        additions = financialReportByPayments.getCashTotal()+financialReportByPayments.getNetCreditCardTotal()+financialReportByPayments.getCollectedVoucher()+financialReportByPayments.getNetOtherNonCreditTotal()+financialReportByPayments.getBankWithdrawals();
+        Deductions = financialReportByPayments.getRefundedCash()+financialReportByPayments.getRefundedCreditCard()+financialReportByPayments.getRefundedVoucher()+financialReportByPayments.getRefundedOtherNonCredit()+financialReportByPayments.getFloatHandover()+financialReportByPayments.getBankDeposits();
+        System.out.println("Deductions = " + Deductions);
         totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
 
@@ -802,17 +796,19 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         billController.save(currentBill);
-        currentBill.setTotal(shiftEndTotalValue);
-        currentBill.setNetTotal(shiftEndTotalValue);
+        currentBill.setTotal(financialReportByPayments.getTotal());
+        currentBill.setNetTotal(financialReportByPayments.getTotal());
+        System.out.println("currentBill.setNetTotal = " + currentBill.getNetTotal());
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-
+        calculateTotalFundsFromShiftStartToNow();
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
+        
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 

@@ -7,14 +7,12 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -40,16 +38,12 @@ import org.joda.time.PeriodType;
 @Entity
 public class Person implements Serializable {
 
-    @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
-    private WebUser webUser;
-
-    @Transient
-    boolean ageCalculated = false;
-
-    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
+    static final long serialVersionUID = 1L;
+
     String name;
     String description;
     String nic;
@@ -63,6 +57,12 @@ public class Person implements Serializable {
     String fullName;
     @Column(name = "SNAME")
     String nameWithInitials;
+
+    @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
+    private WebUser webUser;
+
+    @Transient
+    boolean ageCalculated = false;
 
     String initials;
     String surName;
@@ -514,7 +514,7 @@ public class Person implements Serializable {
                 break;
             default:
         }
-        
+
     }
 
     public Date getDob() {
@@ -602,7 +602,6 @@ public class Person implements Serializable {
         this.religion = religion;
     }
 
-    @Transient
     public String getSmsNumber() {
         if (StringUtils.isNotBlank(mobile)) {
             return mobile;

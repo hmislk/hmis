@@ -5,10 +5,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum InvestigationItemValueType {
+
     Varchar,
     Memo,
     Double,
@@ -24,6 +24,5 @@ public enum InvestigationItemValueType {
     Person,
     Institution,
     Bundle,
-    Other,
-    
+    Other
 }

@@ -6,10 +6,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Sniper619
  */
 public enum FeeChangeType {
+
     Channel,
-    OPD,
+    OPD
 }

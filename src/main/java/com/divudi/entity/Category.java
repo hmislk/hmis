@@ -6,7 +6,6 @@ package com.divudi.entity;
 
 import com.divudi.data.SymanticHyrachi;
 import com.divudi.java.CommonFunctions;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -22,8 +21,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -37,7 +34,6 @@ public class Category implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
     Long id;
     //Main Properties
     String name;
@@ -45,48 +41,51 @@ public class Category implements Serializable {
     int orderNo;
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+    
     WebUser creater;
-    @JsonIgnore
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    @JsonIgnore
+    
     private boolean retired;
     @ManyToOne
-    @JsonIgnore
+    
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
+    
     Date retiredAt;
-    @JsonIgnore
+    
     String retireComments;
-    @JsonIgnore
+    
     Double dblValue;
-    @JsonIgnore
+    
     Long longValue;
-    @JsonIgnore
+    
     @ManyToOne
     Category parentCategory;
-    @JsonIgnore
+    
     Double saleMargin = 0.0;
-    @JsonIgnore
+    
     Double wholeSaleMargin = 0.0;
+
+    private Double pointesForThousand;
+    
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    @JsonIgnore
     List<Item> items;
     String code;
     @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-    @JsonIgnore
     List<Category> childCategories;
     @Enumerated
     SymanticHyrachi symanticType;
+
     @Transient
-    @JsonIgnore
     private String entityClass;
-    @JsonIgnore
+    
     boolean filled;
     private double profitMargin;
+    @ManyToOne
+    private PaymentScheme paymentScheme;
 
     @ManyToOne
     private Institution institution;
@@ -116,7 +115,6 @@ public class Category implements Serializable {
         this.symanticType = symanticType;
     }
 
-    @XmlTransient
     public List<Category> getChildCategories() {
         return childCategories;
     }
@@ -275,7 +273,6 @@ public class Category implements Serializable {
         return name;
     }
 
-    @XmlTransient
     public List<Item> getItems() {
         return items;
     }
@@ -317,4 +314,22 @@ public class Category implements Serializable {
         this.profitMargin = profitMargin;
     }
 
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public Double getPointesForThousand() {
+        return pointesForThousand;
+    }
+
+    public void setPointesForThousand(Double pointesForThousand) {
+        this.pointesForThousand = pointesForThousand;
+    }
+
+    
+    
 }

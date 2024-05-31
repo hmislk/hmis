@@ -108,6 +108,8 @@ public class DoctorController implements Serializable {
         return suggestions;
     }
 
+   
+
     public void listDoctors() {
         Date startTime = new Date();
 
@@ -128,7 +130,7 @@ public class DoctorController implements Serializable {
         fillDoctorsIncludingConsultants();
         return "/admin/staff/doctors_including_consultants?faces-redirect=true";
     }
-    
+
     public String navigateToDoctorsExcludingConsultants() {
         fillDoctorsExcludingConsultants();
         return "/admin/staff/doctors_excluding_consultants?faces-redirect=true";
@@ -231,6 +233,7 @@ public class DoctorController implements Serializable {
         //  getItems();
         current = null;
         getCurrent();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectedItems(List<Doctor> selectedItems) {
@@ -310,6 +313,7 @@ public class DoctorController implements Serializable {
         current = new Doctor();
         recreateModel();
         // getItems();
+        fillDoctorsExcludingConsultants();
     }
 
     public void setSelectText(String selectText) {

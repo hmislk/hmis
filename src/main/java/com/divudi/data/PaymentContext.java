@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 public enum PaymentContext {
+    
     PURCHASES("Purchases"),
     ACCEPTING_PAYMENTS("Accepting Payments"),
     ACCEPTING_PAYMENTS_FOR_CHANNELLING("Accepting Payments for Channelling"),

@@ -1632,6 +1632,7 @@ public class BillSearch implements Serializable {
         }
         Date bd = Calendar.getInstance().getTime();
         rb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
+        rb.setBillType(billType.PaymentBill);
         rb.setBillDate(bd);
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
@@ -2106,7 +2107,7 @@ public class BillSearch implements Serializable {
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
 
-        Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cancellationBill, paymentMethod);
+        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);

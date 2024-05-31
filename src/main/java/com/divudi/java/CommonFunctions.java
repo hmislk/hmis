@@ -45,6 +45,20 @@ public class CommonFunctions {
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
     private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
 
+    
+    public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        try {
+            if (phonenumber == null || phonenumber.trim().equals("")) {
+                return null;
+            }
+            String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+            return convertedPhoneNumber;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
     public static List<Integer> convertStringToIntegerList(String text) {
         List<Integer> numbers = new ArrayList<>();
 
@@ -128,14 +142,7 @@ public class CommonFunctions {
         }
     }
 
-    public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
-        if (phonenumber == null) {
-            return null;
-        }
-        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
-        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
-        return convertedPhoneNumber;
-    }
+   
 
     public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());

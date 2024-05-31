@@ -4,6 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
 
@@ -52,6 +53,16 @@
                                 </div>
                                 <div class="col-6">
                                     <p:panel header="Add Family Members" >
+
+                                        <common:patient_details
+                                            id="ccPatientDetails"
+                                            editable="true"
+                                            controller="#{patientController}"/>
+
+
+
+
+
                                         <h:panelGrid columns="2" class="w-100">
 
                                             <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
@@ -130,31 +141,31 @@
                                         <p:outputLabel value="#{fm.patient.person.membershipScheme.name}" ></p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billing">
-                                      
-                                            <p:commandButton ajax="false" action="/opd/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
-                                                             value="OPD" disabled="#{!webUserController.hasPrivilege('OpdBilling')}" icon="fa fa-fw fa-notes-medical" >
-                                                <f:setPropertyActionListener value="#{fm.patient}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                            <p:commandButton ajax="false" action="/channel/channel_booking" 
-                                                             icon="fa fa-fw fa-calendar-check" 
-                                                             class="mx-1"
-                                                             actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
-                                                             value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
-                                                <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                            <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
-                                                             actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
-                                                             icon="fa-solid fa-prescription-bottle-medical" 
-                                                             class="my-1"
-                                                             value="Phamacy" disabled="#{!webUserController.hasPrivilege('PharmacySale')}" >
-                                                <f:setPropertyActionListener value="#{fm.patient}" target="#{pharmacySaleController.searchedPatient}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                            <p:commandButton ajax="false" action="#{admissionController.toAdmitAMember()}" 
-                                                             icon="fa-solid fa-bed" 
-                                                             value="Admit" disabled="#{!webUserController.hasPrivilege('InwardAdmissionsAdmission')}" >
-                                                <f:setPropertyActionListener value="#{fm.patient}" target="#{admissionController.current.patient}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                
+
+                                        <p:commandButton ajax="false" action="/opd/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
+                                                         value="OPD" disabled="#{!webUserController.hasPrivilege('OpdBilling')}" icon="fa fa-fw fa-notes-medical" >
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" action="/channel/channel_booking" 
+                                                         icon="fa fa-fw fa-calendar-check" 
+                                                         class="mx-1"
+                                                         actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
+                                                         value="Channelling" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
+                                                         actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
+                                                         icon="fa-solid fa-prescription-bottle-medical" 
+                                                         class="my-1"
+                                                         value="Phamacy" disabled="#{!webUserController.hasPrivilege('PharmacySale')}" >
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{pharmacySaleController.searchedPatient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" action="#{admissionController.toAdmitAMember()}" 
+                                                         icon="fa-solid fa-bed" 
+                                                         value="Admit" disabled="#{!webUserController.hasPrivilege('InwardAdmissionsAdmission')}" >
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{admissionController.current.patient}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+
                                     </p:column>
                                     <p:column headerText="Actions" >
                                         <p:commandButton ajax="false" value="Edit" action="patient"   class="ui-button-warning mx-1" icon="fa-solid fa-pen">

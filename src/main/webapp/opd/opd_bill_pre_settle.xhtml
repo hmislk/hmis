@@ -29,37 +29,18 @@
                             <p:defaultCommand target="settle"/>
                         </f:facet>
 
-                        <div class="d-flex justify-content-end mb-2">
-                            <h:outputLabel value="Payment Method" class="mt-2"/>
-                            <h:outputLabel value="" style="min-width: 20px;" />
-                            <p:selectOneMenu   
-                                id="cmbPs" 
-                                value="#{opdPreSettleController.preBill.paymentMethod}"  
-                                disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet MultiplePaymentMethods" event="change" />
-                            </p:selectOneMenu>
-
-                            <h:panelGroup id="creditCard" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="eWallet" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
-                            </h:panelGroup>
-
+                        <div class=" d-flex justify-content-end my-2">
+                            <div>
+                                <h:outputLabel value="Payment Method" class="mt-2"/>
+                                <h:outputLabel value="" style="min-width: 20px;" />
+                                <p:selectOneMenu   
+                                    id="cmbPs" 
+                                    value="#{opdPreSettleController.preBill.paymentMethod}"  
+                                    disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
+                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}" />
+                                    <p:ajax process="cmbPs" update="creditCard cheque slip eWallet MultiplePaymentMethods credit creditStaff welfareStaff" event="change" />
+                                </p:selectOneMenu>
+                            </div>
                             <p:commandButton 
                                 ajax= "false"  
                                 value="Accept Payment &amp; Settle"
@@ -68,6 +49,158 @@
                                 icon="fa fa-check"
                                 id="settle"
                                 action="#{opdPreSettleController.settleOpdBatchBill}" />
+                        </div>
+
+
+                        <div class="d-flex justify-content-end">
+                            <p:panel class="w-100 my-1">
+                                <div class="d-flex justify-content-end mb-2">
+                                    <h:panelGroup
+                                        class="row"
+                                        layout="block"  
+                                        id="creditStaff"
+                                        style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff' ? 'none' : 'block'} ; " >
+                                        <div class="my-1" >
+                                            <div class="row mt-1">
+                                                <div class="col-12">
+                                                    <p:autoComplete  
+                                                        minQueryLength="4"
+                                                        forceSelection="true" 
+                                                        value="#{opdPreSettleController.toStaff}" 
+                                                        completeMethod="#{staffController.completeStaff}" 
+                                                        var="mys" 
+                                                        class="w-100"
+                                                        placeholder="Staff (Type at least 4 letters to search)"
+                                                        inputStyleClass="w-100"
+                                                        itemLabel="#{mys.person.name}" 
+                                                        itemValue="#{mys}"
+                                                        >
+                                                        <p:column headerText="Name" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="EPF" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.creditLimitQualified}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.currentCreditValue}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup
+                                        class="row"
+                                        layout="block"  
+                                        id="welfareStaff"
+                                        style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff_Welfare' ? 'none' : 'block'} ; " >
+                                        <div class="my-1">
+                                            <div class="row mt-1">
+                                                <div class="col-12">
+                                                    <p:autoComplete  
+                                                        minQueryLength="3"
+                                                        forceSelection="true" 
+                                                        value="#{opdPreSettleController.toStaff}" 
+                                                        completeMethod="#{staffController.completeStaff}" 
+                                                        var="mys" 
+                                                        class="w-100"
+                                                        placeholder="Staff (Type at least 4 letters to search)"
+                                                        inputStyleClass="form-control"
+                                                        itemLabel="#{mys.person.name}" 
+                                                        itemValue="#{mys}"
+                                                        size="10">
+                                                        <p:column headerText="Name" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="EPF" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                            <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </h:outputText>
+                                                        </p:column>
+
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup
+                                        class="row mx-2"
+                                        layout="block"
+                                        id="credit"
+                                        style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
+                                        >
+                                        <div class="my-1">
+                                            <div class="row">
+                                                <div class="col-12 d-flex ">
+                                                    <p:autoComplete 
+                                                        id="creditCompany" 
+                                                        class="w-100 -mx-2"
+                                                        styleClass="w-100"
+                                                        forceSelection="true"
+                                                        value="#{opdPreSettleController.creditCompany}"  
+                                                        completeMethod="#{creditCompanyController.completeCredit}" 
+                                                        var="ix"
+                                                        minQueryLength="4"
+                                                        placeholder="Company (Type at least 4 letters to search)"
+                                                        itemLabel="#{ix.name}" 
+                                                        itemValue="#{ix}" 
+                                                        >
+
+                                                    </p:autoComplete> 
+                                                    <p:commandLink 
+                                                        id="btnAddNewCreditCom" 
+                                                        value="(+)"
+                                                        class="mx-3 mt-1"
+                                                        title="Add New Credit Company"
+                                                        ajax="false" 
+                                                        action="#{navigationController.navigateToCreditCompany()}"
+                                                        actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="creditCard" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                        <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="cheque" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                        <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="slip" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                        <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="eWallet" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                        <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup class="w-50" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
+                                        <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
+                                    </h:panelGroup>
+
+
+                                </div>
+                            </p:panel>
                         </div>
 
                         <div class="row">
@@ -231,24 +364,37 @@
 
                         <h:panelGroup id="gpBillPreview" >
 
+
                             <h:panelGroup id="groupPrint" >
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                    <prints:five_five_paper_with_headings bill="#{opdPreSettleController.saleBill}"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:five_five_paper_with_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >                              
-                                    <prints:five_five_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >  
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:five_five_paper_without_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
-                                    <prints:posOpdBillWithoutLogo bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:posOpdBillWithoutLogo bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                    <prints:posOpdBill bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:posOpdBill bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
-                                    <prints:A4_paper_with_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:A4_paper_with_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                    <prints:A4_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                    <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
+                                        <prints:A4_paper_without_headings bill="#{pb}"/> 
+                                    </ui:repeat>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>

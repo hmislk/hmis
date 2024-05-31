@@ -36,7 +36,7 @@
                     </div>
                     <div class="receiptnoPrintingRuhunu"
                          style="font-size: 14px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.dup eq false}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"/>
                         
 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
@@ -47,7 +47,7 @@
                                        rendered="#{cc.attrs.bill.refundedBill.insId ne null 
                                                    and cc.attrs.bill.refunded eq true}"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.deptId} **Duplicate" 
+                        <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and
                                                    cc.attrs.bill.cancelledBill.insId eq null 
                                                    and cc.attrs.dup eq true}"/>

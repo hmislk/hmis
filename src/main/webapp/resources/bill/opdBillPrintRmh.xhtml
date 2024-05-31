@@ -38,7 +38,7 @@
 
                     <div style="font-size: 18px!important;">
 
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.dup eq false}"
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"
                                        styleClass="opdRefNo"/>
 
 
@@ -52,7 +52,7 @@
                                                    and cc.attrs.bill.refunded eq true}"
                                        styleClass="opdBillHeading"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.deptId} **Duplicate" 
+                        <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and
                                                    cc.attrs.bill.cancelledBill.insId eq null 
                                                    and cc.attrs.dup eq true}"

@@ -105,6 +105,15 @@
                                     </p:inputText>
                                 </p:column>
                                 <p:column style="text-align: left;" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Buffer Stocks" >
+                                        </p:outputLabel>
+                                    </f:facet>
+                                    <p:inputText id="txtBs" value="#{ro.bufferStocks}"> 
+                                        <p:ajax event="blur" process="txtBs" update="txtBs" listener="#{reorderController.updateReorder(ro)}" ></p:ajax>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column style="text-align: left;" >
                                     <p:commandButton id="rem" process="rem" update="@this" action="#{reorderController.removeReOrder(ro)}"  icon="fas fa-trash" class="ui-button-danger" />
                                 </p:column>
                             </p:dataTable>

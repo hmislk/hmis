@@ -24,17 +24,18 @@
 
                 <div class="a4bill"  >
 
-                    <h:panelGroup rendered="#{not empty sessionController.departmentPreference.inpatientFinalBillPrintHeader}">
+                    <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
                             <div class="col-12">
-                                <h:outputText value="#{inwardSearch.fillDataForInpatientsForFinalBill(sessionController.departmentPreference.inpatientFinalBillPrintHeader,cc.attrs.bill )}" 
+                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}" 
                                               escape="false"
                                               >
                                 </h:outputText>
                             </div>
                         </div>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{empty sessionController.departmentPreference.inpatientFinalBillPrintHeader}">
+                    
+                    <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
                         <div>
                             <div class="col-12 text-center">
                                 <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
@@ -110,7 +111,7 @@
                                     <h:outputLabel value=":" />
                                 </div>
                                 <div class="text-right w-100">
-                                    <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                                    <h:outputLabel value="#{cc.attrs.bill.insId}" />
                                 </div>
                             </div>
                         </div>
@@ -150,7 +151,7 @@
                                                                         <h:outputLabel value=" : " />
                                                                     </td>
                                                                     <td >
-                                                                        <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                                                                        <h:outputLabel value="#{cc.attrs.bill.insId}" />
                                                                     </td>                           
                                                                 </tr>
                                                                 <tr>
@@ -240,7 +241,7 @@
                                                     <h:outputLabel value=":" />
                                                 </div>
                                                 <div class="col-10">
-                                                    <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                                                    <h:outputLabel value="#{cc.attrs.bill.insId}" />
                                                 </div>
                                             </div>
                                         </div>-->

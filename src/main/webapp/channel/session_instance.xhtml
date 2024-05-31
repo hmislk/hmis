@@ -1,0 +1,460 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      template="/resources/template/template.xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml" >
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:growl id="msg" ></p:growl>
+
+                    <div class="d-flex justify-content-between align-items-center bg-light">
+                        <div class="my-2 mx-1" style="font-weight: bolder">
+                            <div class="d-flex align-items-center">
+                                <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
+                                (<h:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.staff.speciality.name}" ></h:outputLabel>)
+                            </div>
+                            <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.name}" ></h:outputLabel>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <!-- Cancel Session Button with BS colors, FA icon, and JavaScript confirmation -->
+                            <p:commandButton action="#{bookingControllerViewScope.cancelSession}" 
+                                             value="Cancel Session"
+                                             ajax="false"
+                                             class="ui-button-Danger mx-1" 
+                                             icon="fa fa-times" 
+                                             onclick="return confirm('Are you sure you want to cancel?');" />
+
+                            <!-- Reopen Session Button -->
+                            <p:commandButton action="#{bookingControllerViewScope.reopenSession}" 
+                                             value="Reopen Session"
+                                             disabled="#{!bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             ajax="false"
+                                             styleClass="ui-button-success mx-1" 
+                                             icon="fa fa-check" 
+                                             onclick="return confirm('Are you sure you want to reopen?');" />
+
+                            <!-- Complete Session Button -->
+                            <p:commandButton action="#{bookingControllerViewScope.completeSession()}" 
+                                             value="Complete Session"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             ajax="false"
+                                             styleClass="ui-button-success mx-1" 
+                                             icon="fa fa-check" 
+                                             onclick="return confirm('Are you sure you want to complete this session?');" />
+
+
+                            <p:commandButton action="#{bookingControllerViewScope.navigateBackToBookingsFromSessionInstance()}" 
+                                             value="Back to Booking"
+                                             ajax="false" 
+                                             ></p:commandButton>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-7">
+                            <p:panel class="my-2">
+                                <p:watermark for="acBookings" value="Select Bookings" ></p:watermark>
+                                <h:outputText id="test" value="#{bookingControllerViewScope.selectedBillSession}" rendered="false"></h:outputText>
+                                <p:dataTable id="acBookings" 
+                                             rowKey="#{bs.id}"
+                                             value="#{bookingControllerViewScope.billSessions}" 
+                                             var="bs" 
+                                             selection="#{bookingControllerViewScope.selectedBillSession}" 
+                                             selectionMode="single"
+                                             styleClass="w-100 fullHeightListbox">
+
+
+
+                                    <p:column headerText="Serial No" style="width: 5px!important;">
+                                        <h:outputText value="#{bs.serialNo}" />
+                                    </p:column>
+
+                                    <p:column headerText="Name" style="width: 50px!important;">
+                                        <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                                    </p:column>
+
+                                    <p:column rendered="false" headerText="Status" style="width: 20px!important;">
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
+                                        <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{bs.nextInLine}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Status" style="width: 20px!important;">
+                                        <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
+                                        <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
+                                        <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                                        <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
+                                        <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
+                                        <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
+                                        <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Additional Status" style="width: 10px!important;">
+                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="danger" value="Cancelled" rendered="#{bs.bill.cancelled==true}" rounded="true"/>
+                                        <p:tag class="mr-2" style="font-size: 1.03rem" severity="warning" value="Refunded" rendered="#{bs.bill.refunded==true}" rounded="true"/>
+                                    </p:column>
+
+                                    <p:column headerText="Institution Code" style="width: 5px!important;">
+                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Absent" style="width: 10px!important;">
+                                        <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" style="width: 10px!important;">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="OPD"
+                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Manage Booking"
+                                            action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" >
+                                        </p:commandButton>
+                                        <h:panelGroup rendered="#{bs.markedToCancel}">
+                                            <i class="fas fa-ban text-danger"></i>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bs.markedToRefund}">
+                                            <i class="fas fa-undo-alt  text-danger"></i>
+                                        </h:panelGroup>
+                                    </p:column>
+                                </p:dataTable>
+
+
+                            </p:panel>
+                        </div>
+                        <div class="col-5">
+                            <div class="row">
+                                <p:panel id="gpDetail" class="w-100" >  
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-calendar-week"/>
+                                        <h:outputText class="mx-4" value="Session Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="d-flex justify-content-end my-1">
+                                        <p:commandButton ajax="false" id="btnSave" value="Save"  
+                                                         action="#{bookingControllerViewScope.saveSessionInstanceDetails()}"
+                                                         class="ui-button-warning" icon="fas fa-save" >
+                                        </p:commandButton>
+                                    </h:panelGrid>
+                                    <p:tabView style="width: 100%!important;">
+                                        <p:tab title="Details">
+                                            <h:panelGrid id="gpDetails" columns="2" cellpadding="10">
+
+
+                                                <p:outputLabel value="Session Name"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.name}" disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
+
+
+                                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.id ne null}" >
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate eq null}" >
+                                                        <p:outputLabel value="Weekday"></p:outputLabel>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup 
+                                                        rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate ne null}" >
+                                                        <p:outputLabel value="Session Date"></p:outputLabel>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.id ne null}" >
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate eq null}" >
+                                                        <p:inputText class="w-100" disabled="true" value="Sunday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 1 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Monday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 2 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Tuesday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 3 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Wednesday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 4 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Thursday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 5 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Friday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 6 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                        <p:inputText class="w-100" disabled="true"  value="Saturday" rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday eq 7 and bookingControllerViewScope.selectedSessionInstance.sessionWeekday ne null}"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedSessionInstance.sessionDate ne null}" >
+                                                        <p:datePicker value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}"/>
+
+                                                    </h:panelGroup>
+
+                                                </h:panelGroup>
+
+
+                                                <p:outputLabel value="Start Time"/>                        
+                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}" 
+                                                              pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
+                                                              timeZone="Asia/Colombo">                            
+                                                </p:datePicker>
+
+
+                                                <p:outputLabel value="End Time"/>                        
+                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{bookingControllerViewScope.selectedSessionInstance.endingTime}"
+                                                              pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                              timeOnly="true"
+                                                              timeZone="Asia/Colombo">                            
+                                                </p:datePicker>
+
+                                                <p:outputLabel value="Max Number"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.maxNo}"/>
+
+                                                <p:outputLabel value="Duration in Minutes"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.duration}"/>
+
+                                                <p:outputLabel value="Room Number"/>
+                                                <p:inputText class="w-100" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.roomNo}" disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
+
+
+                                                <p:outputLabel value="After Session" rendered="false"/>
+                                                <p:autoComplete class="w-100" inputStyleClass="w-100"   rendered="false" forceSelection="true" value="#{bookingControllerViewScope.selectedSessionInstance.afterSession}" 
+                                                                completeMethod="#{channelScheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                                converter="sscon">   
+                                                </p:autoComplete>
+
+                                                <p:outputLabel value="Refundable"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.refundable}"/>
+
+
+                                            </h:panelGrid>
+
+                                        </p:tab>
+                                        <p:tab title="Date Details">
+                                            <p:panelGrid columns="1" styleClass="w-100">
+                                                <p:tabView>
+                                                    <p:tab title="WeekDay">
+                                                        <h:panelGroup rendered="#{not webUserController.hasPrivilege('ChannellingChannelSheduling')}">
+                                                            <h:outputLabel value="You are NOT Authorized to manage Routine Channel Scheduling" />
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}">
+                                                            <p:selectOneMenu 
+                                                                class="w-100" 
+                                                                id="wdate" 
+                                                                value="#{bookingControllerViewScope.selectedSessionInstance.sessionWeekday}" 
+                                                                disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null}">
+                                                                <f:selectItem itemLabel="Select Week Day"/>
+                                                                <f:selectItem itemValue="1" itemLabel="Sunday"/>
+                                                                <f:selectItem itemValue="2" itemLabel="Monday"/>
+                                                                <f:selectItem itemValue="3" itemLabel="Tuesday"/>
+                                                                <f:selectItem itemValue="4" itemLabel="Wednesday"/>
+                                                                <f:selectItem itemValue="5" itemLabel="Thursday"/>
+                                                                <f:selectItem itemValue="6" itemLabel="Friday"/>
+                                                                <f:selectItem itemValue="7" itemLabel="Saturday"/>
+                                                            </p:selectOneMenu>
+                                                        </h:panelGroup>
+                                                    </p:tab>
+                                                    <p:tab title="Other Day">
+                                                        <h:panelGroup rendered="#{not webUserController.hasPrivilege('ChannellingSpecialChannelSheduling')}">
+                                                            <h:outputLabel value="You are NOT Authorized to manage Special Channel Scheduling" />
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannellingSpecialChannelSheduling')}">
+                                                            <p:calendar class="w-100" inputStyleClass="w-100"  id="odate" value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{bookingControllerViewScope.selectedSessionInstance.id ne null}" />                              
+                                                        </h:panelGroup>
+                                                    </p:tab>
+                                                </p:tabView>
+                                            </p:panelGrid>
+
+                                        </p:tab>
+
+
+                                        <p:tab title="Number Details">
+                                            <h:panelGrid columns="2" class="w-100">
+                                                <p:outputLabel value="Reserved Numbers (Ex. 5,10,15,20)"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.reserveNumbers}"/>
+
+                                                <p:outputLabel value="Displaying Count"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.displayCount}"/>
+                                                <p:outputLabel value="Displaying Percent"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.displayPercent}"/>
+                                                <p:outputLabel value="Session Number"></p:outputLabel>
+
+                                                <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100"  forceSelection="true" value="#{bookingControllerViewScope.selectedSessionInstance.sessionNumberGenerator}" 
+                                                                completeMethod="#{sessionNumberGenerateController.completeSessionNumberGenerator}" 
+                                                                var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                                >                            
+                                                </p:autoComplete>
+
+                                                <p:outputLabel value="Credit Numbers"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.creditNumbers}"/>
+                                                <p:outputLabel value="Cash Numbers"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.cashNumbers}"/>
+                                                <p:outputLabel value="Agent Numbers"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.agencyNumbers}"/>
+                                                <p:outputLabel value="Reserved Name"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{bookingControllerViewScope.selectedSessionInstance.reserveName}"/>
+                                            </h:panelGrid>
+
+                                        </p:tab>
+
+                                        <p:tab title="Fee Details">
+                                            <p:panelGrid columns="2" >
+                                                <f:facet name="header" >
+                                                    <h:outputLabel value="Base Fee" ></h:outputLabel>
+                                                </f:facet>
+                                                <p:outputLabel value="Session Value - "/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.total}"/>
+
+                                                <p:outputLabel value="Session Value for Foreigners - "/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.totalForForeigner}"/>
+
+                                            </p:panelGrid>
+
+
+
+
+                                            <h:panelGrid columns="1">
+                                                <p:dataTable value="#{channelScheduleController.itemFees}" var="i" >
+                                                    <p:column headerText="Name">
+                                                        <h:outputLabel value="#{i.name}"/> 
+                                                    </p:column>
+                                                    <p:column headerText="Fee Type">
+                                                        #{i.feeType.label}
+                                                    </p:column>
+                                                    <p:column headerText="For for">
+                                                        <h:outputLabel rendered="#{i.speciality.name ne null}" value="#{i.speciality.name} - "></h:outputLabel>
+
+                                                        <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
+
+                                                        <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name} - "></h:outputLabel>
+
+                                                        <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Discountable" >
+                                                        Allowed
+                                                        <p:selectBooleanCheckbox value="#{i.discountAllowed}" label="Allowed" ></p:selectBooleanCheckbox>
+                                                    </p:column>
+                                                    <p:column headerText="Local Fee">
+                                                        <p:inputText value="#{i.fee}" style="width: 100px!important;"/>
+                                                    </p:column>
+                                                    <p:column headerText="Foriegn Fee">
+                                                        <p:inputText value="#{i.ffee}" style="width: 100px!important;"/>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </h:panelGrid>
+
+                                            <p:outputLabel value="Total Professional Fee - "/>
+                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.professionalFee}"/>
+
+                                        </p:tab>
+
+                                        <p:tab title="Additional Items">
+                                            <p:panelGrid  >
+                                                <f:facet name="header" >
+                                                    <h:outputLabel value="Additional Items" ></h:outputLabel>
+                                                </f:facet>
+
+                                                <p:row >
+                                                    <p:column >
+                                                        <p:outputLabel value="Item to add"/>
+                                                    </p:column>
+                                                    <p:column >
+                                                        <p:autoComplete 
+                                                            widgetVar="acAdditionalItem" 
+                                                            id="acAdditionalItem" 
+                                                            forceSelection="true" 
+                                                            inputStyleClass="w-100"
+                                                            class="w-100"
+                                                            value="#{channelScheduleController.additionalItemToAdd}"
+                                                            completeMethod="#{itemController.completeInwardItems}" 
+                                                            var="ix" 
+                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
+                                                            style="width: 400px;">
+                                                            <p:ajax event="itemSelect" process="@this"></p:ajax>
+                                                            <p:column headerText="Type" >
+                                                                <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Name" >
+                                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Institution" >
+                                                                <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Department" >
+                                                                <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Total" >
+                                                                <p:outputLabel value="#{ix.total}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                        </p:autoComplete>
+                                                    </p:column>
+                                                    <p:column  >
+                                                        <p:commandButton 
+                                                            id="btnAddAdditionalItem"
+                                                            value="Add Item to Session" 
+                                                            process="btnAddAdditionalItem acAdditionalItem"
+                                                            update=":form:msg acAdditionalItem tblAdditionalItems"
+                                                            action="#{channelScheduleController.addAdditionalItems()}" >
+                                                        </p:commandButton>
+
+                                                    </p:column>
+                                                </p:row>
+
+                                                <p:row>
+                                                    <p:column colspan="3" >
+                                                        <p:dataTable 
+                                                            id="tblAdditionalItems"
+                                                            value="#{channelScheduleController.additionalItemsAddedForCurrentSession}" 
+                                                            var="ii" 
+                                                            rowKey="#{ii.id}">
+                                                            <p:column headerText="Item">
+                                                                <h:outputText value="#{ii.childItem.name}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="Actions">
+                                                                <p:commandButton 
+                                                                    id="btnRemoveAdditionalItem" 
+                                                                    value="Remove" 
+                                                                    process="btnRemoveAdditionalItem" 
+                                                                    update="tblAdditionalItems"
+                                                                    action="#{channelScheduleController.removeAdditionalItems()}" >
+                                                                    <f:setPropertyActionListener value="#{ii}" target="#{channelScheduleController.additionalItemToRemove}" ></f:setPropertyActionListener>
+                                                                </p:commandButton>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:column>
+                                                </p:row>
+
+                                            </p:panelGrid>
+
+
+                                        </p:tab>
+
+
+                                        <p:tab title="Log">
+                                            <h:panelGrid columns="2">
+                                                <p:outputLabel value="Id" rendered="#{bookingControllerViewScope.selectedSessionInstance ne null}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.id}" rendered="#{channelScheduleController.current ne null}"/>
+
+
+                                                <p:outputLabel value="Created by"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.creater.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="created At"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.createdAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                                </p:outputLabel>
+                                                <p:outputLabel value="Last Editor"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.editer.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="Last Edited At"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.editedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                                </p:outputLabel>
+                                            </h:panelGrid>
+                                        </p:tab>
+
+                                    </p:tabView>
+
+                                </p:panel>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

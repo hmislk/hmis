@@ -58,7 +58,10 @@ public class PaymentScheme implements Serializable {
     boolean validForPharmacy;
     boolean validForBilledBills;
     boolean validForCrBills;
+    private boolean validForInpatientBills;
     boolean validForChanneling;
+    private boolean staffMemberRequired;
+    private boolean membershipRequired;
     
 //    @ManyToOne
 //    MembershipScheme membershipScheme;
@@ -233,6 +236,7 @@ public class PaymentScheme implements Serializable {
     }
     
     
+    
 
 //    public double getDiscountPercent() {
 //        return discountPercent;
@@ -257,4 +261,31 @@ public class PaymentScheme implements Serializable {
     public void setValidForChanneling(boolean validForChanneling) {
         this.validForChanneling = validForChanneling;
     }
+
+    public boolean isValidForInpatientBills() {
+        return validForInpatientBills;
+    }
+
+    public void setValidForInpatientBills(boolean validForInpatientBills) {
+        this.validForInpatientBills = validForInpatientBills;
+    }
+
+    public boolean isStaffMemberRequired() {
+        return staffMemberRequired;
+    }
+
+    public void setStaffMemberRequired(boolean staffMemberRequired) {
+        this.staffMemberRequired = staffMemberRequired;
+    }
+
+    public boolean isMembershipRequired() {
+        return membershipRequired;
+    }
+
+    public void setMembershipRequired(boolean membershipRequired) {
+        this.membershipRequired = membershipRequired;
+    }
+    
+    
+    
 }

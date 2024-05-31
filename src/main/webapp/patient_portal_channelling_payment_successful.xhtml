@@ -1,0 +1,80 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                template="/resources/template/template_for_patient_portal.xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="paymentForm">
+            <div class="row">
+                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <a class="navbar-brand ml-4 mx-2 p-4"><h3>#{sessionController.institution.name}</h3></a>
+                        <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
+                    </div>
+                </nav>
+            </div>
+
+
+            <div class="d-flex justify-content-center align-items-center mt-5">
+                <div style="max-width: 800px"  class="card w-100 shadow p-4">
+                    <h3 class="my-4 text-center" style="color: green; border-color: green;" >PAYMENT SUCCESS</h3>
+                    <h3 class="my-4">Patient</h3>
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="d-flex justify-content-between">
+                            <p>Name: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.nameWithTitle}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Address: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.address}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Phone Number: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.bill.patient.person.phone}</p>
+                        </div>
+                    </div>
+
+                    <h3 class="my-4">Doctor and Session Details</h3>
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <p>Doctor: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.person.nameWithTitle}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Speciality: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.speciality.name}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Session: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.channelBookingBillSession.sessionInstance.name}</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Session Date: </p>
+                            <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.sessionDate}</p>
+                        </div>
+                    </div>
+                    <h3 class="my-4">Payment Information</h3>
+                    <div class="d-flex justify-content-between">
+                        <p>Appointment no: </p>
+                        <p style="font-weight: bolder">#{patientPortalController.channelSettlingBillSession.serialNo}</p>
+                    </div>
+                    <!-- Add more session details as needed -->
+
+                    <h3 class="my-4">Payment Information</h3>
+                    <div class="d-flex justify-content-between">
+                        <p>Total Amount: </p>
+                        <p style="font-weight: bolder">#{patientPortalController.selectedSessionInstance.originatingSession.total}</p>
+                    </div>
+                    <p:commandButton value="go back" class="w-100 ui btn-success" 
+                                     style="background-color: green; border-color: green;" 
+                                     action="#{patientPortalController.navigateBookingMenue()}" ajax="false"/>
+
+                </div>
+            </div>
+        </h:form>
+
+
+    </ui:define>
+</ui:composition>
