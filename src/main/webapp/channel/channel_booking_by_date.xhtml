@@ -219,7 +219,7 @@
                                                                     <h:outputText style="font-weight: bolder" value="C"/><br/>
                                                                     <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="danger" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
-                                                                 <span class="text-center mx-1" > 
+                                                                <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
                                                                         icon="fas fa-cog"
@@ -475,7 +475,38 @@
                                                 <p:column><p:outputLabel id="staff" value="Staff" /></p:column>
                                                 <p:column>
                                                     <h:panelGroup id="autoStaff" style="display: #{bookingControllerViewScope.paymentMethod eq 'Staff' ? 'block' : 'none'};">
-                                                        <au:completeStaffChannel  value="#{bookingControllerViewScope.toStaff}" />
+
+                                                        <p:autoComplete  
+                                                            minQueryLength="2"
+                                                            forceSelection="true" 
+                                                            value="#{bookingControllerViewScope.toStaff}" 
+                                                            id="creditStaff"
+                                                            completeMethod="#{staffController.completeStaff}" 
+                                                            var="mys" 
+                                                            class="w-100"
+                                                            placeholder="Staff (Type at least 4 letters to search)"
+                                                            inputStyleClass="form-control"
+                                                            itemLabel="#{mys.person.name}" 
+                                                            itemValue="#{mys}"
+                                                            size="10">
+                                                            <p:column headerText="Name" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="EPF" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                            </p:column>
+                                                            <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.creditLimitQualified}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                            <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                                <h:outputText value="#{mys.currentCreditValue}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </h:outputText>
+                                                            </p:column>
+
+                                                        </p:autoComplete>
                                                     </h:panelGroup>
                                                 </p:column>
                                             </p:row>
