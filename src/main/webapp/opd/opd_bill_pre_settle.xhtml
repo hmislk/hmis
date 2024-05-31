@@ -373,7 +373,7 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >  
                                     <ui:repeat value="#{opdPreSettleController.billsOfBatchBilledBill}" var="pb" >
-                                        <prints:five_five_paper_without_headings bill="#{pb}"/> 
+                                        <prints:five_five_paper_without_headings bill="#{pb}" payments="#{opdPreSettleController.payments}"/> 
                                     </ui:repeat>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >

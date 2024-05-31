@@ -87,6 +87,37 @@
                                                     <f:selectItem itemLabel="Please select a speciality"/>
                                                     <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                 </p:selectOneMenu>
+                                                
+                                                <h:outputText value="Institution" />
+                                                <p:autoComplete 
+                                                    forceSelection="true"
+                                                    value="#{consultantController.current.institution}"
+                                                    completeMethod="#{institutionController.completeIns}" id="ins2"
+                                                    var="ix" 
+                                                    itemLabel="#{ix.name}" 
+                                                    itemValue="#{ix}" 
+                                                    class="w-100" 
+                                                    inputStyleClass="w-100"
+                                                    style="width: 500px;">
+                                                    <p:ajax event="itemSelect" process="@this" update="somDept" />
+                                                </p:autoComplete>
+
+                                                <h:outputText value="Department" />
+                                                <p:selectOneMenu 
+                                                    id="somDept" 
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    value="#{consultantController.current.department}"
+                                                    class="w-100">
+                                                    <f:selectItem  itemLabel="Please select a Department"/>
+                                                    <f:selectItems 
+                                                        value="#{departmentController.getInsDepartments(consultantController.current.institution)}" 
+                                                        var="d" 
+                                                        itemLabel="#{d.name}" itemValue="#{d}" 
+                                                        />
+                                                </p:selectOneMenu>
+
+
                                                 <h:outputText value="Registration" />
                                                 <p:inputText autocomplete="off" value="#{consultantController.current.registration}" class="w-100" />
                                                 <h:outputText value="Qualification" />
