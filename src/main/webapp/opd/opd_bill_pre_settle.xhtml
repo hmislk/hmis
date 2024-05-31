@@ -200,6 +200,41 @@
 
 
                                 </div>
+                                <h:panelGroup id="gpLocalForeign"  class="col-md-6" >
+                                    <p:commandButton value="Mark Foreigner" 
+                                                     class="mx-2"
+                                                     action="#{opdPreSettleController.markAsForeigner}" 
+                                                     rendered="#{!opdPreSettleController.foreigner}" 
+                                                     process="@this" 
+                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
+                                                     ></p:commandButton>
+                                    <p:commandButton value="Mark Local" 
+                                                     class="mx-2"
+                                                     action="#{opdPreSettleController.markAsLocal}" 
+                                                     rendered="#{opdPreSettleController.foreigner}" 
+                                                     process="@this" 
+                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
+                                                     ></p:commandButton>
+                                </h:panelGroup>
+                                <div class="row my-1" >
+                                    <div class="col-4" >
+                                        <p:selectOneMenu   
+                                            id="dsc" 
+                                            value="#{opdPreSettleController.paymentScheme}"
+                                            class="w-100">     
+                                            <f:selectItem 
+                                                itemLabel="Select Discount Scheme"/>
+                                            <f:selectItems 
+                                                value="#{paymentSchemeController.paymentSchemesForOPD}" 
+                                                var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                            <p:ajax process="@this" 
+                                                    update="pBillDetails" 
+                                                    event="change" 
+                                                    listener="#{opdPreSettleController.calculateDiscount}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+
+                                </div>
                             </p:panel>
                         </div>
 
@@ -215,7 +250,7 @@
                             </div>
 
                             <div class="col-6">
-                                <p:panel id="pBillDetails"  >
+                                <h:panelGroup id="pBillDetails"  >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Batch Bill Details" class="mx-2"></h:outputLabel>
@@ -249,7 +284,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </h:panelGrid>
-                                </p:panel>
+                                </h:panelGroup>
                             </div>
                         </div>
 
