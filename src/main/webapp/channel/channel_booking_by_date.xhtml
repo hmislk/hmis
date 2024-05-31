@@ -253,33 +253,6 @@
                                                     </p:column>
                                                 </p:row>
                                             </f:facet>
-                                            <f:facet name="footer">
-                                                <p:row>
-                                                    <p:column colspan="2" >
-                                                        <p:commandButton
-                                                            id="btnAdd"
-                                                            value="Add Normal Booking"
-                                                            ajax="false"
-                                                            update="gpThisBookingDetails"
-                                                            class="ui-button-info "
-                                                            icon="pi pi-check"
-                                                            action="#{bookingControllerViewScope.addNormalChannelBooking}" >
-                                                        </p:commandButton>
-                                                        <p:commandButton
-                                                            id="btnAddReserved"
-                                                            value="Add Reserved Booking"
-                                                            ajax="false"
-                                                            update="gpThisBookingDetails"
-                                                            class="ui-button-warning m-2"
-                                                            icon="pi pi-bookmark"
-                                                            action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
-                                                        </p:commandButton>
-                                                    </p:column>
-                                                </p:row>
-                                            </f:facet>
-
-
-
                                             <p:column >
                                                 <p:outputLabel value="Item" ></p:outputLabel>
                                             </p:column>
@@ -305,6 +278,20 @@
 
                                                 </p:outputLabel>
                                             </h:panelGroup>
+                                            <p:outputLabel value="Tenderd Amount"/>
+
+                                            <h:panelGroup class="w-100 my-2" style="font-weight: bolder">
+                                                <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
+                                                    <p:ajax event="keyup" process=" paid" update="balance"/>
+                                                </p:inputText>
+                                            </h:panelGroup>
+                                            
+                                            <p:outputLabel value="Balance"/>
+
+                                            <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder">
+                                                <p:outputLabel value="#{bookingControllerViewScope.cashBalance}"/>
+                                            </h:panelGroup>
+
                                             <h:outputLabel value="Foriegner"/>
                                             <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}">
                                                 <f:ajax event="change" execute="@this" render="lblSessionTotal panelBookingDetails"/>
@@ -317,8 +304,8 @@
                                             <h:panelGroup>
                                                 <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs" value="#{bookingControllerViewScope.paymentMethod}">
                                                     <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                                    <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
-                                                    <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
+                                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
+                                                    <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} paymentDetails" event="change" listener="#{bookingControllerViewScope.generateSessions}" />
                                                 </p:selectOneMenu>
                                                 <h:outputScript>
                                                     $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
@@ -333,7 +320,6 @@
                                                 </h:outputScript>
                                             </h:panelGroup>
 
-
                                             <p:outputLabel value="Discount Scheme"/>
 
                                             <p:selectOneMenu class="w-75" autoWidth="false" id="cmbPs2" value="#{bookingControllerViewScope.paymentScheme}">
@@ -345,6 +331,9 @@
                                                         event="change"
                                                         listener="#{bookingControllerViewScope.changeListener()}"/>
                                             </p:selectOneMenu>
+                                        </h:panelGrid>
+
+                                        <p:panel id="paymentDetails" class="my-2">
 
                                             <p:row rendered="#{bookingControllerViewScope.paymentMethod eq 'Agent'}">
                                                 <p:column colspan="2" >
@@ -540,12 +529,36 @@
                                                 </p:column>
                                             </p:row>
 
+                                            <p:row
+                                                class="row my-1 w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                >
+                                                <pa:multiple_payment_methods paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" controller="#{bookingControllerViewScope}" class="w-100"/>
 
+                                            </p:row>
 
-
-
-
-                                        </h:panelGrid>
+                                        </p:panel>
+                                        <p:row>
+                                            <p:column colspan="2" >
+                                                <p:commandButton
+                                                    id="btnAdd"
+                                                    value="Add Normal Booking"
+                                                    ajax="false"
+                                                    update="gpThisBookingDetails"
+                                                    class="ui-button-info "
+                                                    icon="pi pi-check"
+                                                    action="#{bookingControllerViewScope.addNormalChannelBooking}" >
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    id="btnAddReserved"
+                                                    value="Add Reserved Booking"
+                                                    ajax="false"
+                                                    update="gpThisBookingDetails"
+                                                    class="ui-button-warning m-2"
+                                                    icon="pi pi-bookmark"
+                                                    action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:row>
                                     </p:panel>
 
                                     <p:panelGrid id="panelBookingDetails" class="w-100">
