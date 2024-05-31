@@ -211,6 +211,9 @@
                                                 <p:outputLabel value="Refundable"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.refundable}"/>
 
+                                                <p:outputLabel value="Paid Appointment Only"/>
+                                                <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.paidAppointmentsOnly}"/>
+
 
                                             </h:panelGrid>
 
@@ -424,9 +427,9 @@
 
 
                                                 <p:outputLabel value="Created by"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.creater.webUserPerson.name}"></p:outputLabel>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.creater.webUserPerson.name}"></p:outputLabel>
                                                 <p:outputLabel value="created At"></p:outputLabel>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.createdAt}">
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.createdAt}">
                                                     <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                                 </p:outputLabel>
                                                 <p:outputLabel value="Last Editor"></p:outputLabel>
