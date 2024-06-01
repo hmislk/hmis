@@ -30,13 +30,13 @@
                                             itemValue="#{apt2}" size="30"  class="mx-2"
                                             >
                                 <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
-                                <p:column >
+                                <p:column headerText="BHT No" style="padding: 8px;">
                                     <h:outputLabel value="#{apt2.bhtNo}"/> 
                                 </p:column>
-                                <p:column >
+                                <p:column headerText="Name" style="padding: 8px;">
                                     <h:outputLabel value="#{apt2.patient.person.name}"/> 
                                 </p:column>
-                                <p:column>
+                                <p:column headerText="Room No" style="padding: 8px;">
                                     <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                 </p:column>
                             </p:autoComplete> 
@@ -44,9 +44,7 @@
                             <p:commandButton value="Select" ajax="false" ></p:commandButton>
 
                         </p:panel>
-
                     </h:panelGroup>
-
                 </div>
 
                 <br/><br/>
@@ -479,7 +477,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{billBhtController.printPreview}" >
-                                <div class="d-flex justify-content-end gap-2">
+                                <div class="d-flex justify-content-end gap-2 mb-2">
                                     <h:panelGrid columns="3">
                                         <p:outputLabel value="Paper Type" class="fa-1x m-2"></p:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" class="mx-2" style="width: 13em;">
