@@ -145,8 +145,7 @@ public class PatientPortalController implements Serializable {
         selectedConsultant = null;
         selectedSpeciality = null;
         selectedSessionInstance = null;
-        String ID = commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
-        System.out.println("id = " + ID);
+        String oldURLMethord = commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
         return "/channel/patient_portal.xhtml";
     }
     
