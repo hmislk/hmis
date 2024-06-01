@@ -405,6 +405,10 @@ public class ItemController implements Serializable {
         allItems = null;
         return "/item/reports/item_list";
     }
+    
+    public String navigateToEditFeaturesOfMultipleItems() {
+        return "/admin/items/multiple_item_edit";
+    }
 
     public String navigateToListFilteredItems() {
         filteredItems = null;
@@ -902,6 +906,54 @@ public class ItemController implements Serializable {
             }
         }
     }
+    
+    public void markSelectedItemsFeesChangableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setUserChangable(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
+    }
+    
+    public void markSelectedItemsAsDiscountableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setDiscountAllowed(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
+    }
+    
+    public void unmarkSelectedItemsFeesChangableAtBilling() {
+    if (selectedList == null || selectedList.isEmpty()) {
+        JsfUtil.addErrorMessage("Nothing is selected");
+        return;
+    }
+    for (Item i : selectedList) {
+        i.setUserChangable(false);
+        itemFacade.edit(i);
+    }
+    JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
+}
+
+public void unmarkSelectedItemsAsDiscountableAtBilling() {
+    if (selectedList == null || selectedList.isEmpty()) {
+        JsfUtil.addErrorMessage("Nothing is selected");
+        return;
+    }
+    for (Item i : selectedList) {
+        i.setDiscountAllowed(false);
+        itemFacade.edit(i);
+    }
+    JsfUtil.addSuccessMessage("All Unmarked as Discountable at Billing");
+}
 
     public void updateSelectedItemFees() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1605,6 +1657,34 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
+    
+    public List<Item> completeAllServicesAndInvestigations(String query) {
+        List<Item> suggestions;
+        HashMap m = new HashMap();
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Item c "
+                    + " where c.retired=false "
+                    + " and type(c)!=:pac "
+                    + " and (type(c)=:ser "
+                    + " or type(c)=:inv"
+                    + " or type(c)=:ward "
+                    + " or type(c)=:the)  "
+                    + " and (c.name) like :q"
+                    + " order by c.name";
+            m.put("pac", Packege.class);
+            m.put("ser", Service.class);
+            m.put("inv", Investigation.class);
+            m.put("ward", InwardService.class);
+            m.put("the", TheatreService.class);
+            m.put("q", "%" + query.toUpperCase() + "%");
+            //    //////// // System.out.println(sql);
+            suggestions = getFacade().findByJpql(sql, m, 20);
+        }
+        return suggestions;
+    }
 
     public List<Item> completeInwardItems(String query) {
         List<Item> suggestions;
@@ -1633,12 +1713,13 @@ public class ItemController implements Serializable {
         }
         return suggestions;
     }
+    
+    
 
     public void fillItemsForInward() {
         HashMap m = new HashMap();
         String sql;
         suggestItems = new ArrayList<>();
-
         sql = "select c from Item c "
                 + " where c.retired=false "
                 + " and type(c)!=:pac "
@@ -1653,8 +1734,7 @@ public class ItemController implements Serializable {
         m.put("ward", InwardService.class);
         m.put("the", TheatreService.class);
         //    //////// // System.out.println(sql);
-        suggestItems = getFacade().findByJpql(sql, m, 20);
-
+        suggestItems = getFacade().findByJpql(sql, m);
     }
 
     public void makeAllItemsToAllowDiscounts() {
