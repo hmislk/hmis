@@ -2218,48 +2218,36 @@ public class BillBeanController implements Serializable {
     }
 
     public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, PaymentScheme paymentScheme, Institution institution, PriceMatrix priceMatrix) {
-        System.out.println("Method called with foreign: " + foreign + ", paymentMethod: " + paymentMethod
-                + ", paymentScheme: " + paymentScheme + ", institution: " + institution
-                + ", priceMatrix: " + priceMatrix);
 
         boolean discountAllowed = false;
 
         if (bf == null) {
-            System.out.println("BillFee is null, returning");
             return;
         }
 
         if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
             discountAllowed = bf.getBillItem().getItem().isDiscountAllowed();
-            System.out.println("Discount allowed: " + discountAllowed);
         } else {
-            System.out.println("BillItem or Item is null");
         }
 
         double discount = 0;
 
         if (priceMatrix != null) {
             discount = priceMatrix.getDiscountPercent();
-            System.out.println("Discount from PriceMatrix: " + discount);
         } else {
-            System.out.println("PriceMatrix is null");
         }
 
         if (!discountAllowed) {
-            System.out.println("Discount not allowed");
             bf.setFeeValueBoolean(foreign);
         } else if (discountAllowed
                 && institution != null
                 && institution.getLabBillDiscount() > 0.0) {
-            System.out.println("Discount allowed and institution has lab bill discount");
             bf.setFeeValueForCreditCompany(foreign, institution.getLabBillDiscount());
         } else {
-            System.out.println("Setting fee value with foreign and discount");
             bf.setFeeValueForeignAndDiscount(foreign, discount);
             bf.setPriceMatrix(priceMatrix);
         }
 
-        System.out.println("BillFee set: " + bf);
     }
 
     public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, MembershipScheme membershipScheme, Item item, PriceMatrix priceMatrix) {

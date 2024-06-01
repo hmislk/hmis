@@ -200,13 +200,10 @@ public class FinancialReport {
         System.out.println("Total after adding Float Handover: " + total);
 
         total -= shiftEndFunds;
-        System.out.println("Total after deducting Collection Handover: " + total);
 
         // Adjust bank transactions
         total += bankWithdrawals - bankDeposits;
-        System.out.println("Total after adjusting Bank Withdrawals and Deposits: " + total);
 
-        System.out.println("Final Total: " + total);
     }
 
     public double getCollectedCash() {

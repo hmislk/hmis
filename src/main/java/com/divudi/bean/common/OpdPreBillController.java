@@ -927,7 +927,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         System.out.println("Start accumulating totals");
 
         for (Bill b : bills) {
-            System.out.println("Before adding Bill ID: " + b.getId() + " - Gross Total: " + tmpBatchBillTotalOfGrossTotals + ", Discount: " + tmpBatchBillTotalOfDiscounts + ", Net Total: " + tmpBatchBillTotalOfNetTotals);
 
             double preGrossTotal = tmpBatchBillTotalOfGrossTotals;
             double preDiscountTotal = tmpBatchBillTotalOfDiscounts;
@@ -937,17 +936,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             tmpBatchBillTotalOfDiscounts += b.getDiscount();
             tmpBatchBillTotalOfNetTotals += b.getNetTotal();
 
-            System.out.println("Adding bill ID: " + b.getId() + " - Gross: " + b.getTotal() + ", Discount: " + b.getDiscount() + ", Net: " + b.getNetTotal());
-            System.out.println("After adding Bill ID: " + b.getId() + " - Gross Total: " + tmpBatchBillTotalOfGrossTotals + ", Discount: " + tmpBatchBillTotalOfDiscounts + ", Net Total: " + tmpBatchBillTotalOfNetTotals);
 
             b.setBackwardReferenceBill(newlyCreatingBatchBillPre);
             getBillFacade().edit(b);
             newlyCreatingBatchBillPre.getForwardReferenceBills().add(b);
         }
 
-        System.out.println("Final Gross Total: " + tmpBatchBillTotalOfGrossTotals);
-        System.out.println("Final Discount Total: " + tmpBatchBillTotalOfDiscounts);
-        System.out.println("Final Net Total: " + tmpBatchBillTotalOfNetTotals);
 
         newlyCreatingBatchBillPre.setNetTotal(tmpBatchBillTotalOfNetTotals);
         newlyCreatingBatchBillPre.setDiscount(tmpBatchBillTotalOfDiscounts);

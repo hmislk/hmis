@@ -275,8 +275,6 @@ public class SmsManagerEjb {
     }
 
     public boolean sendSms(Sms sms) {
-        System.out.println("sms Number" + sms.getReceipientNumber());
-        System.out.println("sms Message" + sms.getSendingMessage());
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
         if (sendSmsWithOAuth2) {
@@ -318,7 +316,6 @@ public class SmsManagerEjb {
 // Execute the HTTP POST request with the SMS data
         String res = executePost(smsUrl, m);
 
-        System.out.println(res);
         if (res == null) {
             sms.setSentSuccessfully(false);
             sms.setReceivedMessage(res);
@@ -340,9 +337,7 @@ public class SmsManagerEjb {
 
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public boolean sendSmsByOauth2(Sms sms) {
-        System.out.println("sms = " + sms);
         if (sms == null) {
-            System.out.println("SMS is null");
             return false;
         }
         try {
@@ -369,17 +364,15 @@ public class SmsManagerEjb {
             if (accessToken == null || accessToken.trim().equals("")) {
                 accessToken = getNewAccessToken(userName, password, loginUrl);
             }
-            System.out.println("accessToken = " + accessToken);
-
             // Print the JSON payload
-            System.out.println("JSON Payload: " + jsonPayload.toString(4)); // Using 4 for pretty print
+            // Using 4 for pretty print
+            // Print the JSON payload
+            // Using 4 for pretty print
 
             long expiresIn = getExpiryFromJWT(accessToken) - Instant.now().getEpochSecond();
-            System.out.println("Token expires in: " + expiresIn + " seconds");
             if (expiresIn < 3) { // Example: Check if less than an hour remains
-                System.out.println("Token is about to expire or has already expired.");
-                accessToken = getAccessToken(LOGIN_URL, accessToken, accessToken, loginUrl, refreshTokenUrl);
-                System.out.println("newly created accessToken = " + accessToken);
+                // Example: Check if less than an hour remains
+                                accessToken = getAccessToken(LOGIN_URL, accessToken, accessToken, loginUrl, refreshTokenUrl);
                 configOptionApplicationController.saveShortTextOption("OAuth2 SMS Gateway - Access Token", accessToken);
             }
 
@@ -402,7 +395,6 @@ public class SmsManagerEjb {
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-                System.out.println("Response: " + response.toString());
                 sms.setReceivedMessage(response.toString());
             } catch (IOException e) {
                 InputStream errorStream = conn.getErrorStream();
@@ -413,7 +405,6 @@ public class SmsManagerEjb {
                         while ((responseLine = br.readLine()) != null) {
                             response.append(responseLine.trim());
                         }
-                        System.out.println("Error response: " + response.toString());
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -506,9 +497,8 @@ public class SmsManagerEjb {
                 return responseJson.getString("accessToken");
             }
         } else {
-            // Handle HTTP error codes appropriately (e.g., retry or log)
-            System.out.println("HTTP Error Code: " + responseCode);
-            return null;
+// Handle HTTP error codes appropriately (e.g., retry or log)
+                        return null;
         }
     }
 
