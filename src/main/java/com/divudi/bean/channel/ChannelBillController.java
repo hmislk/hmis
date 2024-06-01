@@ -458,20 +458,22 @@ public class ChannelBillController implements Serializable {
         newlyCreatedSettlingBillSession.setBill(newSettleBill);
         newlyCreatedSettlingBillSession.setBillItem(newSettleBillItem);
         newlyCreatedSettlingBillSession.setCreatedAt(new Date());
-        getBillSessionFacade().create(newlyCreatedSettlingBillSession);
+        //getBillSessionFacade().create(newlyCreatedSettlingBillSession);
 
-        bookingBillSession.setPaidBillSession(newlyCreatedSettlingBillSession);
-        getBillSessionFacade().edit(newlyCreatedSettlingBillSession);
-        getBillSessionFacade().edit(bookingBillSession);
+//        bookingBillSession.setPaidBillSession(newlyCreatedSettlingBillSession);
+//        getBillSessionFacade().edit(newlyCreatedSettlingBillSession);
+//        getBillSessionFacade().edit(bookingBillSession);
 
         bookingBillSession.getBill().setPaidAmount(newSettleBill.getPaidAmount());
         bookingBillSession.getBill().setBalance(0.0);
         bookingBillSession.getBill().setPaidBill(newSettleBill);
+        bookingBillSession.setPaidBillSession(newlyCreatedSettlingBillSession);
         getBillFacade().edit(bookingBillSession.getBill());
 
         newSettleBill.setSingleBillItem(newSettleBillItem);
         newSettleBill.setSingleBillSession(newlyCreatedSettlingBillSession);
         getBillFacade().edit(newSettleBill);
+        getBillSessionFacade().edit(bookingBillSession);
 
         createPaymentForOnlinePortal(newSettleBill, settlePaymentMethod);
 
