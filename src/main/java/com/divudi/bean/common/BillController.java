@@ -1644,16 +1644,12 @@ public class BillController implements Serializable {
         m.put("ret", false);
         m.put("ft", FeeType.Staff);
 
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
 
         tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmpFees = " + tmpFees);
 
         List<BillFee> removingBillFees = new ArrayList<>();
         for (BillFee bf : tmpFees) {
-            System.out.println("bf = " + bf);
             m = new HashMap<>();
             jpql = "SELECT bi FROM BillItem bi where "
                     + " bi.retired=false"
@@ -1663,7 +1659,6 @@ public class BillController implements Serializable {
             m.put("class", RefundBill.class);
             m.put("rbi", bf.getBillItem());
             BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
-            System.out.println("rbi = " + rbi);
             if (rbi != null) {
                 removingBillFees.add(bf);
             }

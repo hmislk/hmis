@@ -91,13 +91,10 @@ public class ItemForItemController implements Serializable {
         Map params = new HashMap();
         params.put("it", i);
         jpql = "select c.childItem from ItemForItem c where c.retired=false and c.parentItem=:it order by c.childItem.name ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<Item> cis = getItemFacade().findByJpql(jpql, params);
         if(cis==null){
             cis =new ArrayList<>();
         }
-        System.out.println("cis = " + cis);
         return cis;
     }
 
