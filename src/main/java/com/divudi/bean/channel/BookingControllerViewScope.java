@@ -80,8 +80,10 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.UserPreference;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.entity.channel.SessionInstanceActivity;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
@@ -159,6 +161,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private SmsFacade smsFacade;
     @EJB
     StaffBean staffBean;
+    @EJB
+    AgentReferenceBookFacade agentReferenceBookFacade;
     /**
      * Controllers
      */
@@ -218,7 +222,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private PaymentScheme paymentScheme;
     private boolean settleSucessFully;
     private Bill printingBill;
-
+    boolean activeCreditLimitPannel = false;
     private Date channelDay;
 
     private SessionInstance selectedSessionInstance;
@@ -1190,6 +1194,91 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cancel1(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
 
+    }
+
+    public void fetchRecentChannelBooks(Institution ins) {
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a "
+                + " where a.retired=false "
+                + " and a.institution=:ins"
+                + " and a.deactivate=false "
+                + " order by a.id desc ";
+
+        m.put("ins", ins);
+
+        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 5);
+        if (agentReferenceBooks.size() > 0) {
+            ins.setAgentReferenceBooks(agentReferenceBooks);
+        }
+    }
+    
+    private boolean errorCheckAgentValidate() {
+        if (getSelectedSessionInstance() == null) {
+            errorText = "Please Select Specility and Doctor.";
+            JsfUtil.addErrorMessage("Please Select Specility and Doctor.");
+            return true;
+        }
+
+        if (getSelectedSessionInstance().isDeactivated()) {
+            errorText = "******** Doctor Leave day Can't Channel ********";
+            JsfUtil.addErrorMessage("Doctor Leave day Can't Channel.");
+            return true;
+        }
+
+        if (getSelectedSessionInstance().getOriginatingSession() == null) {
+            errorText = "Please Select Session.";
+            JsfUtil.addErrorMessage("Please Select Session");
+            return true;
+        }
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution == null) {
+                errorText = "Please select Agency";
+                JsfUtil.addErrorMessage("Please select Agency");
+                return true;
+            }
+
+            //To Do
+            
+//            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+//                errorText = "Agency Balance is Not Enough";
+//                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
+//                return true;
+//            }
+
+        }
+
+        ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        return false;
+    }
+
+    public void validateAgentBalance() {
+        fetchRecentChannelBooks(institution);
+        activeCreditLimitPannel = false;
+
+        if (errorCheckAgentValidate()) {
+            activeCreditLimitPannel = true;
+            return;
+        }
+
+        if (isForiegn()) {
+            if (getSelectedSessionInstance().getOriginatingSession().getTotalFfee() > (institution.getBallance() + institution.getAllowedCredit())) {
+                JsfUtil.addErrorMessage("Please Increase Credit Limit or Balance");
+                activeCreditLimitPannel = true;
+                return;
+            }
+        }
+
+        if (!isForiegn()) {
+            if (getSelectedSessionInstance().getOriginatingSession().getTotalFee() > (institution.getBallance() + institution.getAllowedCredit())) {
+                JsfUtil.addErrorMessage("Please Increase Credit Limit or Balance");
+                activeCreditLimitPannel = true;
+                return;
+            }
+        }
+        setAgentRefNo("");
     }
 
     public void cancel(Bill bill, BillItem billItem, BillSession selectedBillSession) {
@@ -3376,7 +3465,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (referredBy != null) {
             savingBill.setReferredBy(referredBy);
         }
-        if (referredByInstitution!=null) {
+        if (referredByInstitution != null) {
             savingBill.setReferenceInstitution(referredByInstitution);
         }
         if (collectingCentre != null) {
@@ -6011,5 +6100,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
     }
+
+    public boolean isActiveCreditLimitPannel() {
+        return activeCreditLimitPannel;
+    }
+
+    public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
+        this.activeCreditLimitPannel = activeCreditLimitPannel;
+    }
+    
+    
 
 }
