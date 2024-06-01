@@ -300,6 +300,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
+        fillFees();
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
@@ -527,6 +528,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         System.out.println("2 = " + (new Date().getTime()));
         fillItemAvailableToAdd();
+        System.out.println("itemsAvailableToAddToBooking = " + itemsAvailableToAddToBooking);
         System.out.println("3 = " + (new Date().getTime()));
         fillFees();
         System.out.println("4 = " + (new Date().getTime()));
@@ -649,35 +651,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
         addedItemFees = new ArrayList<>();
-        if (selectedSessionInstance == null) {
-            return;
-        }
-        if (selectedSessionInstance.getOriginatingSession() == null) {
+        if (selectedSessionInstance == null || selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
         String sql;
-        Map m = new HashMap();
-        sql = "Select f from ItemFee f "
-                + " where f.retired=false "
-                + " and f.serviceSession=:ses "
-                + " order by f.id";
+        Map<String, Object> m = new HashMap<>();
+        sql = "Select f from ItemFee f where f.retired=false and f.serviceSession=:ses order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
-
         sessionFees = itemFeeFacade.findByJpql(sql, m);
-        m = new HashMap();
-        sql = "Select f "
-                + " from ItemFee f "
-                + " where f.retired=false "
-                + " and f.item in :items "
-                + " order by f.id";
-        m.put("items", getItemsAddedToBooking());
-        addedItemFees = itemFeeFacade.findByJpql(sql, m);
+
+        List<Item> itemsAddedToBooking = getItemsAddedToBooking();
+        if (itemsAddedToBooking != null && !itemsAddedToBooking.isEmpty()) {
+            m = new HashMap<>();
+            sql = "Select f from ItemFee f where f.retired=false and f.item in :items order by f.id";
+            m.put("items", itemsAddedToBooking);
+            addedItemFees = itemFeeFacade.findByJpql(sql, m);
+        }
+
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
         }
         if (addedItemFees != null) {
             selectedItemFees.addAll(addedItemFees);
         }
+
         feeTotalForSelectedBill = 0.0;
         for (ItemFee tbf : selectedItemFees) {
             if (foriegn) {
@@ -1213,7 +1210,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             ins.setAgentReferenceBooks(agentReferenceBooks);
         }
     }
-    
+
     private boolean errorCheckAgentValidate() {
         if (getSelectedSessionInstance() == null) {
             errorText = "Please Select Specility and Doctor.";
@@ -1241,13 +1238,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
             //To Do
-            
 //            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
 //                errorText = "Agency Balance is Not Enough";
 //                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
 //                return true;
 //            }
-
         }
 
         ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
@@ -5745,6 +5740,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private void fillItemAvailableToAdd() {
         itemsAvailableToAddToBooking = itemForItemController.getItemsForParentItem(selectedSessionInstance.getOriginatingSession());
+        System.out.println("itemsAvailableToAddToBooking = " + itemsAvailableToAddToBooking);
     }
 
     public List<ItemFee> getSessionFees() {
@@ -6108,7 +6104,5 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
         this.activeCreditLimitPannel = activeCreditLimitPannel;
     }
-    
-    
 
 }
