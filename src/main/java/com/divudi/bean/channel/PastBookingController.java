@@ -332,9 +332,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
                 + " order by f.id";
         m.put("item", itemToAddToBooking);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         addedItemFees = itemFeeFacade.findByJpql(sql, m);
-        System.out.println("addedItemFees = " + addedItemFees);
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
         }
@@ -349,7 +347,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
                 feeTotalForSelectedBill += tbf.getFee();
             }
         }
-        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
     }
 
     public String navigateToPastChannelBookingFromMenu() {
@@ -731,7 +728,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         }
         for (BillSession bs : billSessions) {
             if (bs.getBill() == null) {
-                System.err.println("No Billl for Bill Session");
                 continue;
             }
             if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
@@ -759,7 +755,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         }
         for (BillSession bs : billSessions) {
             if (bs.getBill() == null) {
-                System.err.println("No Billl for Bill Session");
                 continue;
             }
             if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
@@ -803,19 +798,15 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
     public String createSmsForChannelBooking(Bill b, String template) {
         if (b == null) {
-            System.err.println("No Bill");
             return "";
         }
         if (b.getSingleBillSession() == null) {
-            System.err.println("No Bill Session");
             return "";
         }
         if (b.getSingleBillSession().getSessionInstance() == null) {
-            System.err.println("No Session Instances");
             return "";
         }
         if (b.getSingleBillSession().getSessionInstance().getOriginatingSession() == null) {
-            System.err.println("No Bill Session");
             return "";
         }
         SessionInstance si = b.getSingleBillSession().getSessionInstance();
@@ -1257,7 +1248,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
     public void fillSessionInstance() {
         sessionInstances = new ArrayList<>();
-        System.out.println("getDate() = " + date);
         String jpql = "select i "
                 + " from SessionInstance i "
                 + " where i.originatingSession.staff=:os "
@@ -1270,7 +1260,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         m.put("date", getDate());
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
-        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public void generateSessionEvents(List<SessionInstance> sss) {
@@ -2036,7 +2025,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
                 + " order by f.id";
         m.put("ses", ss);
         List<ItemFee> tfs = itemFeeFacade.findByJpql(sql, m);
-        System.out.println("tfs = " + tfs);
         return tfs;
     }
 
@@ -2181,14 +2169,10 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         double calculatingNetBillTotal = 0.0;
 
         for (BillFee iteratingBillFee : billfeesAvailable) {
-            System.out.println("iteratingBillFee = " + iteratingBillFee);
             Fee currentItemFee;
             if (iteratingBillFee.getFee() == null) {
-                System.err.println("No Fee for Bill Fee");
                 continue;
             }
-            System.out.println("iteratingBillFee.getFeeGrossValue() = " + iteratingBillFee.getFeeGrossValue());
-            System.out.println("iteratingBillFee.getFeeValue() = " + iteratingBillFee.getFeeValue());
 
             calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
             calculatingNetBillTotal += iteratingBillFee.getFeeValue();
@@ -2201,7 +2185,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
     }
 
     private Bill createBill() {
-        System.out.println("create bill started = " + new Date());
         Bill bill = new BilledBill();
         bill.setStaff(getSelectedSessionInstance().getOriginatingSession().getStaff());
         bill.setToStaff(toStaff);
@@ -2266,15 +2249,36 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 //            return null;
 //        }
 //        bill.setInsId(insId);
-        System.out.println("generate insId started = " + new Date());
 //        String insId = generateBillNumberInsId(bill);
 //
 //        if (insId.equals("")) {
 //            return null;
 //        }
 //        bill.setInsId(insId);
-
-        System.out.println("generate deptId started = " + new Date());
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
+//        String insId = generateBillNumberInsId(bill);
+//
+//        if (insId.equals("")) {
+//            return null;
+//        }
+//        bill.setInsId(insId);
         String deptId = generateBillNumberDeptId(bill);
 
         if (deptId.equals("")) {

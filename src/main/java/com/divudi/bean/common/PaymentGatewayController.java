@@ -106,9 +106,7 @@ public class PaymentGatewayController implements Serializable {
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("responseString = " + responseString);
                 sessionId = extractSessionId(responseString);
-                System.out.println("sessionId = " + sessionId);
                 if (sessionId != null) {
                     return "/patient_portal_pay?faces-redirect=true";
                 }
@@ -134,9 +132,7 @@ public class PaymentGatewayController implements Serializable {
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("status = " + extractStatusCode(responseString));
                 orderStatus = extractStatusCode(responseString);
-                System.out.println("orderStatus = " + orderStatus);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,7 +155,6 @@ public class PaymentGatewayController implements Serializable {
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("status = " + extractStatusCode(responseString));
                 orderStatus = extractStatusCode(responseString);
                 cardNumber = extractCardNo(responseString);
                 cardType = extractCardType(responseString);
@@ -173,13 +168,11 @@ public class PaymentGatewayController implements Serializable {
                         patientPortalController.setCurrentPaymentGatewayTransaction(newPaymentGatewayTransaction);
                         FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
                     } catch (IOException e) {
-                        System.out.println("e = " + e);
                     }
                 }else{
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
                     } catch (IOException e) {
-                        System.out.println("e = " + e);
                     }
                 }
             }

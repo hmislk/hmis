@@ -160,12 +160,10 @@ public class PatientPortalController implements Serializable {
         bookingController.setSelectedServiceSession(selectedChannelSession);
         
         double amount = selectedSessionInstance.getOriginatingSession().getTotal();
-        System.out.println("amount = " + amount);
         paymentGatewayController.setOrderAmount(String.valueOf(amount));
         paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
         paymentGatewayController.setPatient(patient);
         paymentGatewayController.generateTemplateForOrderDescription();
-        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
         return paymentGatewayController.createCheckoutSession();
         }
@@ -266,13 +264,11 @@ public class PatientPortalController implements Serializable {
 
         if (selectedConsultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");
-            System.out.println("selectedConsultant = " + selectedConsultant);
             m.put("os", selectedConsultant);
         }
 
         if (selectedSpeciality != null) {
             List<Staff> staffListBySelectedSpeciality = staffController.getSpecialityStaff(selectedSpeciality);
-            System.out.println("staffListBySelectedSpeciality = " + staffListBySelectedSpeciality.size());
             jpql.append(" and i.originatingSession.staff in :staffs");
             m.put("staffs", staffListBySelectedSpeciality);
         }
@@ -282,7 +278,6 @@ public class PatientPortalController implements Serializable {
         m.put("nextTwoDays", calendar.getTime());
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
-        System.out.println("sessionInstances = " + sessionInstances.size());
     }
 
     public void otpCodeConverter() {
@@ -296,7 +291,6 @@ public class PatientPortalController implements Serializable {
             otpBuilder.append(numbers.charAt(index));
         }
         otp = otpBuilder.toString();
-        System.out.println("otpBuilder = " + otp);
     }
 
     public void sendOtp() {

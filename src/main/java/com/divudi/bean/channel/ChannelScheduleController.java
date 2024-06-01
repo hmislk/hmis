@@ -180,7 +180,6 @@ public class ChannelScheduleController implements Serializable {
             }
             jpql += " order by s.sessionWeekday,s.startingTime ";
             List<ServiceSession> selectedDoctorsServiceSessions = serviceSessionFacade.findByJpql(jpql, params);
-            System.out.println("selectedDoctorsServiceSessions = " + selectedDoctorsServiceSessions.size());
             try {
                 sessionInstances = channelBean.generateSesionInstancesFromServiceSessions(selectedDoctorsServiceSessions, sessionStartingDate);
             } catch (Exception e) {
@@ -377,10 +376,7 @@ public class ChannelScheduleController implements Serializable {
                 + " and (f.serviceSession=:ses or f.item=:ses )"
                 + " order by f.id";
         params.put("ses", current);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         itemFees = itemFeeFacade.findByJpql(jpql, params);
-        System.out.println("itemFees = " + itemFees);
         additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
 
         double tot = 0.0;
@@ -501,7 +497,6 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public List<Staff> getSpecialityStaff() {
-        System.out.println("getSpecialityStaff");
         List<Staff> suggestions = new ArrayList<>();
         if (getSpeciality() == null) {
             return suggestions;
@@ -514,8 +509,6 @@ public class ChannelScheduleController implements Serializable {
                 + " and p.speciality =:sp "
                 + " order by p.person.name";
         params.put("sp", speciality);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         suggestions = getStaffFacade().findByJpql(jpql, params);
         return suggestions;
     }

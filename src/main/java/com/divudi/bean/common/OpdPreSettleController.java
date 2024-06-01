@@ -199,32 +199,39 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public void calculateDiscount() {
-
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPreBill().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
-        for (Bill b : billsOfBatchBillPre) {
+        System.out.println("Starting discount calculation for batch bills");
 
+        for (Bill b : billsOfBatchBillPre) {
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
+            
+            List<BillFee> billFeesOfSingleBillOfBatchBillPre ;
+            
+            
+            if(b.getBillFees()==null || b.getBillFees().isEmpty()){
+                billFeesOfSingleBillOfBatchBillPre = billController.billFeesOfBill(b);
+                b.setBillFees(billFeesOfSingleBillOfBatchBillPre);
+            }
+            
 
             for (BillFee bff : b.getBillFees()) {
-                Department department = null;
-                Item item = null;
-                PriceMatrix priceMatrix;
+                
+                
+                
+                Department department = bff.getBillItem().getItem().getDepartment();
+                Item item = bff.getBillItem().getItem();
                 Category category = null;
-                BillItem bi = bff.getBillItem();
-
-                department = bff.getBillItem().getItem().getDepartment();
-                item = bff.getBillItem().getItem();
+                PriceMatrix priceMatrix;
 
                 if (membershipScheme != null) {
                     priceMatrix = priceMatrixController.getOpdMemberDisCount(getPreBill().getPaymentMethod(), membershipScheme, department, category);
                     getBillBean().setBillFees(bff, isForeigner(), getPreBill().getPaymentMethod(), membershipScheme, bff.getBillItem().getItem(), priceMatrix);
-
                 } else {
                     priceMatrix = priceMatrixController.getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), paymentScheme, department, item);
                     getBillBean().setBillFees(bff, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
@@ -235,21 +242,25 @@ public class OpdPreSettleController implements Serializable {
                 entryNet += bff.getFeeValue();
                 entryDis += bff.getFeeDiscount();
 
+                BillItem bi = bff.getBillItem();
                 billGross += bi.getGrossValue();
                 billNet += bi.getNetValue();
                 billDiscount += bi.getDiscount();
 
+                System.out.println("Processed BillItem ID: " + bi.getId() + " - Gross: " + bi.getGrossValue() + ", Discount: " + bi.getDiscount() + ", Net: " + bi.getNetValue());
+
                 bi.setDiscount(entryDis);
                 bi.setGrossValue(entryGross);
                 bi.setNetValue(entryNet);
-
             }
-
+            System.out.println("Accumulated totals - Bill ID: " + b.getId() + " - Gross Total: " + billGross + ", Discount Total: " + billDiscount + ", Net Total: " + billNet);
         }
+
         getPreBill().setDiscount(billDiscount);
         getPreBill().setTotal(billGross);
         getPreBill().setNetTotal(billNet);
 
+        System.out.println("Final totals - Gross: " + billGross + ", Discount: " + billDiscount + ", Net: " + billNet);
     }
 
     private double roundOff(double d) {
@@ -1407,9 +1418,7 @@ public class OpdPreSettleController implements Serializable {
     public void setPreBill(Bill preBill) {
         makeNull();
         this.preBill = preBill;
-        //System.err.println("Setting Bill " + preBill);
         billPreview = false;
-
     }
 
     public Bill getSaleBill() {

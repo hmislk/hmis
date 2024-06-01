@@ -10,10 +10,13 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -82,7 +85,7 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setWebUser(null);
             option.setValueType(OptionValueType.SHORT_TEXT);
             option.setOptionValue(value);
-            optionFacade.create(option); 
+            optionFacade.create(option);
             loadApplicationOptions();
         }
     }
@@ -139,7 +142,7 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setWebUser(null);
             option.setValueType(OptionValueType.DOUBLE);
             optionFacade.create(option);
-            
+
             loadApplicationOptions();
         }
         try {
@@ -260,6 +263,21 @@ public class ConfigOptionApplicationController implements Serializable {
 // Log or handle the case where the value cannot be parsed into a Long
             return null;
         }
+    }
+
+    public List<String> getListOfCustomOptions(String optionName) {
+        // Fetch the string that contains options separated by line breaks
+        String listOfOptionSeperatedByLineBreaks = getLongTextValueByKey("Custom option values for " + optionName);
+        // Check if the string is not null or empty before processing
+        if (listOfOptionSeperatedByLineBreaks == null || listOfOptionSeperatedByLineBreaks.isEmpty()) {
+            return Collections.emptyList(); // Return an empty list if there's nothing to process
+        }
+        // Split the string by any standard line break sequence and convert to a list
+        List<String> listOfCustomOptions = Arrays.stream(listOfOptionSeperatedByLineBreaks.split("\\r?\\n|\\r"))
+                .map(String::trim) // Trim leading and trailing whitespaces
+                .filter(s -> !s.isEmpty()) // Filter out any empty strings
+                .collect(Collectors.toList());
+        return listOfCustomOptions;
     }
 
     public Boolean getBooleanValueByKey(String key) {
