@@ -22,17 +22,17 @@
                             <h:outputLabel value="From Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
-                         
-                     
+
+
 
                             <h:outputLabel value="To Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
-                         
+
 
                             <h:outputLabel value="Institution"/>
                             <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeIns}" 
-                                             var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{searchController.institution}" ></p:autoComplete>
+                                            var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{searchController.institution}" ></p:autoComplete>
 
                             <h:outputLabel value="Department" />
                             <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.department}" 
@@ -55,17 +55,172 @@
                             </p:commandButton>
                         </h:panelGrid>
 
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblsBills" 
+                            value="#{searchController.bills}" 
+                            var="bill" 
+                            class="w-100"
 
+                            rows="20"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="100%">
+                            
+                            
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" 
+                            <p:column headerText="ID" width="60" style="text-align: right;">
+                                <p:outputLabel value="#{bill.id}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" width="100">
+                                <p:outputLabel value="#{bill.billType}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type Atomic" width="200">
+                                <p:outputLabel value="#{bill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Class" width="80">
+                                <p:outputLabel value="#{bill.billClassType}" />
+                            </p:column>
+
+                            <p:column headerText="Ins ID" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.insId}" />
+                            </p:column>
+
+                            <p:column headerText="Dept ID" width="100" style="text-align: right;">
+                                <p:outputLabel value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Client" 
+                                sortBy="#{bill.patient.person.name}"
+                                filterBy="#{bill.patient.person.name}"
+                                filterMatchMode="contains"
+                                width="200"
+                                style="text-align: right;">
+                                <p:outputLabel value="#{bill.patient.person.name}" />
+                            </p:column>
+
+                            <p:column headerText="Phone No" width="100">                              
+                                <h:outputLabel value="#{bill.patient.person.phone}" />
+                            </p:column>
+
+                            <p:column headerText="Institution" width="250">
+                                <p:outputLabel value="#{bill.institution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department" width="100">
+                                <p:outputLabel value="#{bill.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Billed At" width="200">
+                                <p:outputLabel value="#{bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed By" width="100">
+                                <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                            </p:column>
+
+                            <p:column headerText="Status" width="400">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
+                                </f:facet>
+                                <div class="d-flex justify-content-center">
+                                    <h:panelGroup rendered="#{bill.cancelled}" class="d-flex gap-2">
+                                        <p:badge value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                        <h:outputLabel value="By " />
+                                        <h:outputLabel 
+                                            style="color: red;"
+                                                       value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                        <h:outputLabel value="At " />
+                                        <h:outputLabel 
+                                            style="color: red;"
+                                            value="#{bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bill.refunded}" class="d-flex gap-2">
+                                        <p:badge value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                        <h:outputLabel value="By " />
+                                        <h:outputLabel 
+                                            style="color: orange;"
+                                            value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="At " />
+                                        <h:outputLabel 
+                                            style="color: orange;"
+                                            value="#{bill.refundedBill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Payment Method" width="130">
+                                <p:outputLabel value="#{bill.paymentMethod}" />
+                            </p:column>
+
+                            <p:column headerText="Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Gross Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.grantTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill Total" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.billTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Net Value" width="120" style="text-align: right;">
+                                <p:outputLabel value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Comments" width="300">
+                                <h:outputLabel  value="#{bill.comments}" >
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable rowIndexVar="i" 
+                                     id="tblBills" 
+                                     value="#{searchController.bills}" 
                                      var="bill"  
-                                     style="min-width: 100%; display: none"  
+                                     style="min-width: 100%; display: none;"  
                                      paginator="true"
                                      paginatorPosition="bottom"
                                      rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
-                                     
+
                                      >
                             <p:column headerText="No" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{i+1}"/>
@@ -211,8 +366,8 @@
                     </h:form>
 
                     <div class="printBlock">
-                        <p:dataTable rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
-                                     var="bill1" paginator="false">
+                        <p:dataTable style="display: none;" rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
+                                      var="bill1" paginator="false">
                             <p:column headerText="No" >
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
