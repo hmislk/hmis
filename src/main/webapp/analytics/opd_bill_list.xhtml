@@ -51,17 +51,16 @@
                             <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
                                              action="#{searchController.searchOpdBills}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
+                                <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
                         <p:dataTable 
                             rowIndexVar="i" 
-                            id="tblsBills" 
+                            id="tblBills" 
                             value="#{searchController.bills}" 
                             var="bill" 
                             class="w-100"
-
                             rows="20"
                             paginator="true" 
                             paginatorPosition="bottom"
@@ -90,11 +89,15 @@
                             </p:column>
 
                             <p:column headerText="Ins ID" width="120" style="text-align: right;">
-                                <p:outputLabel value="#{bill.insId}" />
+                                <p:commandLink id="insNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Dept ID" width="100" style="text-align: right;">
-                                <p:outputLabel value="#{bill.deptId}" />
+                                <p:commandLink id="deptNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
+                                </p:commandLink>
                             </p:column>
 
                             <p:column 
@@ -104,7 +107,7 @@
                                 filterMatchMode="contains"
                                 width="200"
                                 style="text-align: right;">
-                                <p:outputLabel value="#{bill.patient.person.name}" />
+                                <h:outputLabel value="#{bill.patient.person.name}" />
                             </p:column>
 
                             <p:column headerText="Phone No" width="100">                              
@@ -211,7 +214,7 @@
                         </p:dataTable>
 
                         <p:dataTable rowIndexVar="i" 
-                                     id="tblBills" 
+                                     id="tblBills0" 
                                      value="#{searchController.bills}" 
                                      var="bill"  
                                      style="min-width: 100%; display: none;"  
