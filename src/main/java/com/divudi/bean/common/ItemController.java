@@ -1633,15 +1633,6 @@ public class ItemController implements Serializable {
         }
         return suggestions;
     }
-    
-    
-    public void makeAllItemsToAllowDiscounts() {
-        for (Item pi : getItems()) {
-            pi.setDiscountAllowed(true);
-            itemFacade.edit(pi);
-        }
-        JsfUtil.addSuccessMessage("All Servies and Investigations were made to allow discounts.");
-    }
 
     public void fillItemsForInward() {
         HashMap m = new HashMap();
