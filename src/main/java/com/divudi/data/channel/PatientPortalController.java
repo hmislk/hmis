@@ -141,7 +141,13 @@ public class PatientPortalController implements Serializable {
     private ChannelBean channelBean;
 
     public String navigateBookingMenue() {
-        return commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
+        sessionInstances = null;
+        selectedConsultant = null;
+        selectedSpeciality = null;
+        selectedSessionInstance = null;
+        String ID = commonController.getBaseUrl() + "faces/channel/patient_portal.xhtml";
+        System.out.println("id = " + ID);
+        return "/channel/patient_portal.xhtml";
     }
     
     public String navigateToPayBooking(){
