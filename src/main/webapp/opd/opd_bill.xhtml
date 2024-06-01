@@ -741,7 +741,16 @@
                                                            process="btnAddNewDoc" 
                                                            update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
-                                                <h:panelGrid columns="2" >  
+                                                <h:panelGrid columns="2" > 
+                                                    <p:outputLabel id="lblTitleD" value="Title" ></p:outputLabel>
+                                                    <p:selectOneMenu 
+                                                        id="cmbTitle"
+                                                        class="form-control w-100"
+                                                        value="#{doctorController.current.person.title}">
+                                                        <f:selectItem itemLabel="Select Title" />
+                                                        <f:selectItems value="#{opdBillController.title}" var="i"
+                                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    </p:selectOneMenu>
                                                     <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
                                                     <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
                                                     <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
