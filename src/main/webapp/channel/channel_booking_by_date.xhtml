@@ -269,13 +269,23 @@
                                                     </p:column>
                                                 </p:row>
                                             </p:panelGrid>
-                                            <p:panel id="lstAddedItems" rendered="#{bookingControllerViewScope.itemsAddedToBooking.size() ne 0}">
-                                                <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item">
+                                            <p:panel
+                                                id="lstAddedItems" 
+                                                >
+                                                <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" 
+                                                            rendered="#{bookingControllerViewScope.itemsAddedToBooking ne null and not empty bookingControllerViewScope.itemsAddedToBooking}" 
+                                                            var="item">
                                                     <div class="row">
                                                         <div class="d-flex justify-content-between align-items-center m-1">
                                                             <h6>#{item.name}</h6>
                                                             <h6>#{item.itemFee.fee}</h6>
-                                                            <p:commandButton id="btnRemoveAdditem" icon="fas fa-trash" class="ui-button-danger" action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" process="btnRemoveAdditem" update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId}"/>
+                                                            <p:commandButton
+                                                                id="btnRemoveAdditem" 
+                                                                icon="fas fa-trash" 
+                                                                class="ui-button-danger"
+                                                                action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" 
+                                                                process="btnRemoveAdditem"
+                                                                update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('tblSelectedItemFees',view).clientId}"/>
                                                         </div>
                                                     </div>
                                                 </ui:repeat>
@@ -824,6 +834,8 @@
                                                 value="#{bookingControllerViewScope.selectedItemFees}" 
                                                 var="i" >
                                                 <p:column headerText="Name">
+                                                    <h:outputLabel value="#{i.item.name}"/> 
+                                                    <h:outputLabel value=" - "/> 
                                                     <h:outputLabel value="#{i.name}"/> 
                                                 </p:column>
                                                 <p:column headerText="Fee for">
