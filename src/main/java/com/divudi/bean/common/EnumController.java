@@ -126,7 +126,6 @@ public class EnumController implements Serializable {
                         .collect(Collectors.toList());
             }
         } catch (ClassNotFoundException e) {
-            System.out.println("Enum class not found: " + e.getMessage());
             return new ArrayList<>();
         }
         return new ArrayList<>();

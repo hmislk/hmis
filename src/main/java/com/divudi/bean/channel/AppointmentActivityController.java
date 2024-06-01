@@ -184,14 +184,11 @@ public class AppointmentActivityController implements Serializable {
     }
 
     public List<AppointmentActivity> findActivitiesByCodesOrNames(String input) {
-        System.out.println("findActivitiesByCodesOrNames");
-        System.out.println("input = " + input);
         List<AppointmentActivity> activities = new ArrayList<>();
         if (input == null || input.trim().equals("")) {
             return activities;
         }
         String[] lines = input.split("\\r?\\n"); // Split input into lines, supporting both UNIX and Windows line endings
-        System.out.println("lines = " + lines);
         for (String line : lines) {
             System.out.println("input = " + input);
             if (line.trim().isEmpty()) {
@@ -202,10 +199,7 @@ public class AppointmentActivityController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("ret", false);
             params.put("searchTerm", "%" + searchTerm + "%");
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
             List<AppointmentActivity> results = getFacade().findByJpql(jpql, params);
-            System.out.println("results = " + results);
             activities.addAll(results);
         }
         return activities;

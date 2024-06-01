@@ -1325,7 +1325,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Vtm
                 cell = sheet.getCell(vtmCol, i);
                 strGenericName = cell.getContents();
-                System.out.println("strGenericName = " + strGenericName);
                 if (!strGenericName.equals("")) {
                     vtm = getPharmacyBean().getVtmByName(strGenericName);
                 } else {
@@ -1340,12 +1339,10 @@ public class PharmacyItemExcelManager implements Serializable {
                     vmp.setCategory(phType);
                     getVmpFacade().edit(vmp);
                 }
-                System.out.println("vmp = " + vmp.getName());
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                System.out.println("strCode = " + strCode);
 
                 //Code
                 cell = sheet.getCell(barcodeCol, i);

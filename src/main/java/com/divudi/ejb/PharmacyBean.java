@@ -701,7 +701,6 @@ public class PharmacyBean {
     }
 
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
-        System.out.println("Inside Deduct From stock =");
         if (stock == null) {
             return false;
         }
@@ -715,7 +714,6 @@ public class PharmacyBean {
         }
         stock = getStockFacade().find(stock.getId());
         stock.setStock(stock.getStock() - qty);
-        System.out.println("stock.getStock() = " + stock.getStock());
         getStockFacade().edit(stock);
         addToStockHistory(pbi, stock, d);
         return true;
@@ -787,7 +785,6 @@ public class PharmacyBean {
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
-        System.out.println("fetchedStock []= " + fetchedStock);
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
         } else {

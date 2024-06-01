@@ -111,7 +111,6 @@ public class IouBillController implements Serializable {
         m.put("ret", false);
         m.put("cb", getCurrent());
         billList=getBillFacade().findByJpql(sql,m);
-        System.out.println("billList = " + billList.size());
     }
 
     private boolean errorCheck() {
