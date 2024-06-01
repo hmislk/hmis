@@ -743,14 +743,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public void setPrintigBill() {
-        ////// // System.out.println("In Print");
         billPrint = bill;
         billsPrint = bills;
         lstBillComponentsPrint = lstBillComponents;
         lstBillEntriesPrint = lstBillEntries;
         lstBillFeesPrint = lstBillFees;
         lstBillItemsPrint = lstBillItems;
-        ////// // System.out.println("Out Print");
     }
 
     private Patient savePatient(Patient p) {
@@ -804,16 +802,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 
-//            if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-//                b.setCashPaid(cashPaid);
-//                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
-//                    b.setBalance(0.0);
-//                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-//                } else {
-//                    b.setBalance(b.getTransSaleBillTotalMinusDiscount() - b.getCashPaid());
-//                    b.setNetTotal(b.getCashPaid());
-//                }
-//            }
             b.setBalance(b.getNetTotal());
             getBillFacade().edit(b);
             getBills().add(b);
@@ -834,10 +822,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         saveBatchBill();
         saveBillItemSessions();
 
-//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-//            staffBean.updateStaffCredit(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("User Credit Updated");
-//        }
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
