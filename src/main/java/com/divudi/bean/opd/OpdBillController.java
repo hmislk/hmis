@@ -2603,6 +2603,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
+                System.out.println("entryDis = " + entryDis);
                 entryVat += bf.getFeeVat();
                 entryVatPlusNet += bf.getFeeVatPlusValue();
 
