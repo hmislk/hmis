@@ -121,7 +121,6 @@ public class PettyCashBillController implements Serializable {
         m.put("ret", false);
         m.put("cb", getCurrent());
         billList=getBillFacade().findByJpql(sql,m);
-        System.out.println("billList = " + billList.size());
     }
 
     private boolean errorCheck() {
@@ -331,7 +330,6 @@ public class PettyCashBillController implements Serializable {
             getBillFacade().edit(getCurrent());
             savePettyCashReturnBill(rb);
             printPriview=true;
-            System.out.println("p = Success");
         }
     }
 

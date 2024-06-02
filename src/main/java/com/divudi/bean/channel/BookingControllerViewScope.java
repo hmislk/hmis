@@ -253,6 +253,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private String selectTextSession = "";
     private ArrivalRecord arrivalRecord;
     private String errorText;
+    private Integer selectedReserverdBookingNumber;
+    private List<Integer> reservedBookingNumbers;
     private Patient patient;
     private PaymentMethod paymentMethod;
     private PaymentMethodData paymentMethodData;
@@ -300,6 +302,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
+        fillFees();
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
@@ -447,8 +450,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void filterSessionInstances() {
-        System.out.println("filterSessionInstances");
-        System.out.println("sessionInstances = " + sessionInstances);
         if (sessionInstanceFilter == null || sessionInstanceFilter.trim().isEmpty()) {
             if (sessionInstances != null) {
                 sessionInstancesFiltered = new ArrayList<>(sessionInstances);
@@ -460,7 +461,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (!sessionInstancesFiltered.isEmpty()) {
                 selectedSessionInstance = sessionInstancesFiltered.get(0);
             }
-            System.out.println("sessionInstancesFiltered = " + sessionInstancesFiltered);
             return;
         }
 
@@ -518,20 +518,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("1 = " + (new Date().getTime()));
         System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
-            System.out.println("r1");
             return;
         }
         if (selectedSessionInstance.getOriginatingSession() == null) {
-            System.out.println("r2");
             return;
         }
         System.out.println("2 = " + (new Date().getTime()));
         fillItemAvailableToAdd();
-        System.out.println("3 = " + (new Date().getTime()));
         fillFees();
-        System.out.println("4 = " + (new Date().getTime()));
+        fillReservedNumbers();
         printPreview = false;
         paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
+    }
+
+    public void fillReservedNumbers() {
+        reservedBookingNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
     }
 
     public boolean chackNull(String template) {
@@ -649,35 +650,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
         addedItemFees = new ArrayList<>();
-        if (selectedSessionInstance == null) {
-            return;
-        }
-        if (selectedSessionInstance.getOriginatingSession() == null) {
+        if (selectedSessionInstance == null || selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
         String sql;
-        Map m = new HashMap();
-        sql = "Select f from ItemFee f "
-                + " where f.retired=false "
-                + " and f.serviceSession=:ses "
-                + " order by f.id";
+        Map<String, Object> m = new HashMap<>();
+        sql = "Select f from ItemFee f where f.retired=false and f.serviceSession=:ses order by f.id";
         m.put("ses", selectedSessionInstance.getOriginatingSession());
-
         sessionFees = itemFeeFacade.findByJpql(sql, m);
-        m = new HashMap();
-        sql = "Select f "
-                + " from ItemFee f "
-                + " where f.retired=false "
-                + " and f.item in :items "
-                + " order by f.id";
-        m.put("items", getItemsAddedToBooking());
-        addedItemFees = itemFeeFacade.findByJpql(sql, m);
+
+        List<Item> itemsAddedToBooking = getItemsAddedToBooking();
+        if (itemsAddedToBooking != null && !itemsAddedToBooking.isEmpty()) {
+            m = new HashMap<>();
+            sql = "Select f from ItemFee f where f.retired=false and f.item in :items order by f.id";
+            m.put("items", itemsAddedToBooking);
+            addedItemFees = itemFeeFacade.findByJpql(sql, m);
+        }
+
         if (sessionFees != null) {
             selectedItemFees.addAll(sessionFees);
         }
         if (addedItemFees != null) {
             selectedItemFees.addAll(addedItemFees);
         }
+
         feeTotalForSelectedBill = 0.0;
         for (ItemFee tbf : selectedItemFees) {
             if (foriegn) {
@@ -705,7 +701,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         listAllSesionInstances();
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
         needToFillBillSessions = viewScopeDataTransferController.getNeedToFillBillSessions();
-        System.out.println("needToFillBillSessions = " + needToFillBillSessions);
         if (needToFillBillSessions != null && needToFillBillSessions) {
             fillBillSessions();
         }
@@ -911,7 +906,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageSessionQueueAtConsultantRoom() {
-        System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
             return null;
@@ -1213,7 +1207,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             ins.setAgentReferenceBooks(agentReferenceBooks);
         }
     }
-    
+
     private boolean errorCheckAgentValidate() {
         if (getSelectedSessionInstance() == null) {
             errorText = "Please Select Specility and Doctor.";
@@ -1241,13 +1235,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
             //To Do
-            
 //            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
 //                errorText = "Agency Balance is Not Enough";
 //                JsfUtil.addErrorMessage("Agency Balance is Not Enough");
 //                return true;
 //            }
-
         }
 
         ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
@@ -1753,12 +1745,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public boolean patientErrorPresent(Patient p) {
         System.out.println("patientErrorPresent");
-        System.out.println("p");
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
         }
-        System.out.println("p.getPerson() = " + p.getPerson());
         if (p.getPerson() == null) {
             p = patientFacade.find(p.getId());
         }
@@ -1766,15 +1756,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No Person. Not Saved");
             return true;
         }
-        System.out.println("p.getPerson().getName() = " + p.getPerson().getName());
         if (p.getPerson().getName() == null) {
-            System.out.println("err name mull");
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
 
         if (p.getPerson().getName().trim().equals("")) {
-            System.out.println("err trim");
             JsfUtil.addErrorMessage("Please enter a name");
             return true;
         }
@@ -1879,14 +1866,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addReservedChannelBooking() {
-        addChannelBooking(true);
+        boolean reservedBooking = true;
+        addChannelBooking(reservedBooking);
         fillBillSessions();
     }
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
         if (patient == null) {
-            System.out.println("patient");
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
@@ -1908,7 +1895,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        System.out.println("selectedSessionInstance.getMaxNo() = " + selectedSessionInstance.getMaxNo());
         if (selectedSessionInstance.getMaxNo() != 0) {
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
@@ -2709,7 +2695,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
-        System.out.println("this not arrived");
     }
 
     public void markAsLeft() {
@@ -3076,12 +3061,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillSessionActivities() {
-        System.out.println("fillSessionActivities");
-        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         } else {
-            System.out.println("selectedSessionInstance.getOriginatingSession().getActivities() = " + selectedSessionInstance.getOriginatingSession().getActivities());
             if (selectedSessionInstance.getOriginatingSession().getActivities() == null || selectedSessionInstance.getOriginatingSession().getActivities().trim().equals("")) {
                 return;
             }
@@ -3165,7 +3147,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillBillSessions() {
-        System.out.println("fillBillSessions = ");
         selectedBillSession = null;
         BillType[] billTypes = {
             BillType.ChannelAgent,
@@ -3214,7 +3195,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }
                 } catch (NullPointerException npe) {
                     // Log or handle the fact that there was an NPE checking completion status
-                    System.out.println("Null pointer encountered in isCompleted check for BillSession: " + bs);
+
                 }
 
                 // Additional check for paid status
@@ -3224,7 +3205,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }
                 } catch (NullPointerException npe) {
                     // Log or handle the fact that there was an NPE checking paid status
-                    System.out.println("Null pointer encountered in getPaidBillSession check for BillSession: " + bs);
+
                 }
             }
         }
@@ -4275,7 +4256,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         Integer count;
 
         if (forReservedNumbers) {
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers);
+            // Pass the selectedReservedBookingNumber to the service method
+            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
             if (count == null) {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
@@ -6108,7 +6090,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
         this.activeCreditLimitPannel = activeCreditLimitPannel;
     }
-    
-    
+
+    public Integer getSelectedReserverdBookingNumber() {
+        return selectedReserverdBookingNumber;
+    }
+
+    public void setSelectedReserverdBookingNumber(Integer selectedReserverdBookingNumber) {
+        this.selectedReserverdBookingNumber = selectedReserverdBookingNumber;
+    }
+
+    public List<Integer> getReservedBookingNumbers() {
+        return reservedBookingNumbers;
+    }
+
+    public void setReservedBookingNumbers(List<Integer> reservedBookingNumbers) {
+        this.reservedBookingNumbers = reservedBookingNumbers;
+    }
 
 }

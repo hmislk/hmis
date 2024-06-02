@@ -8,7 +8,11 @@ import com.divudi.entity.PaymentGatewayTransaction;
 import com.divudi.facade.PaymentGatewayTransactionFacade;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URLDecoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -47,6 +51,9 @@ public class PaymentGatewayController implements Serializable {
     private String orderId;
     private String cardType;
     private String cardNumber;
+    private String paidAmount;
+    private String paidDate;
+    private Date paymentDate;
     private String transactionId;
     private String successUrl;
     private String templateForOrderDescription;
@@ -99,9 +106,7 @@ public class PaymentGatewayController implements Serializable {
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("responseString = " + responseString);
                 sessionId = extractSessionId(responseString);
-                System.out.println("sessionId = " + sessionId);
                 if (sessionId != null) {
                     return "/patient_portal_pay?faces-redirect=true";
                 }
@@ -127,9 +132,7 @@ public class PaymentGatewayController implements Serializable {
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("status = " + extractStatusCode(responseString));
                 orderStatus = extractStatusCode(responseString);
-                System.out.println("orderStatus = " + orderStatus);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -152,11 +155,12 @@ public class PaymentGatewayController implements Serializable {
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("status = " + extractStatusCode(responseString));
                 orderStatus = extractStatusCode(responseString);
                 cardNumber = extractCardNo(responseString);
                 cardType = extractCardType(responseString);
                 transactionId = extractTransactionId(responseString);
+                paidAmount = extractPaidAmount(responseString);
+                paidDate = extractPaidDate(responseString);
                 if (orderStatus.equalsIgnoreCase("success")) {
                     patientPortalController.booking();
                     patientPortalController.completeBooking();
@@ -164,13 +168,11 @@ public class PaymentGatewayController implements Serializable {
                         patientPortalController.setCurrentPaymentGatewayTransaction(newPaymentGatewayTransaction);
                         FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
                     } catch (IOException e) {
-                        System.out.println("e = " + e);
                     }
                 }else{
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
                     } catch (IOException e) {
-                        System.out.println("e = " + e);
                     }
                 }
             }
@@ -196,7 +198,17 @@ public class PaymentGatewayController implements Serializable {
     
     private String extractTransactionId(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
-        return responseMap.get("authentication.3ds.transactionId");
+        return responseMap.get("transaction%5B1%5D.transaction.receipt");
+    }
+    
+    private String extractPaidAmount(String response) {
+        Map<String, String> responseMap = parseUrlEncodedResponse(response);
+        return responseMap.get("totalCapturedAmount");
+    }
+    
+    private String extractPaidDate(String response) {
+        Map<String, String> responseMap = parseUrlEncodedResponse(response);
+        return responseMap.get("lastUpdatedTime");
     }
     
     private String extractCardNo(String response) {
@@ -342,6 +354,38 @@ public class PaymentGatewayController implements Serializable {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(String paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+    public String getPaidDate() {
+        return paidDate;
+    }
+
+    public void setPaidDate(String paidDate) {
+        this.paidDate = paidDate;
+    }
+
+    public Date getPaymentDate() {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        try {
+            String decodedDateString = URLDecoder.decode(paidDate, "UTF-8");
+            Date date = inputFormat.parse(decodedDateString);
+            return date;
+        } catch (ParseException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return new Date(); // Handle parsing exception appropriately
+        }
+    }
+
+    public void setPaymentDate(Date paymentDate) {
+        this.paymentDate = paymentDate;
     }
 
 }

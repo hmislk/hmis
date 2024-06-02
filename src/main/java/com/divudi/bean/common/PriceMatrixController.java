@@ -354,7 +354,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Department department, Item item) {
-        System.out.println("getPaymentSchemeDiscount");
         PaymentSchemeDiscount paymentSchemeDiscount = null;
         Category category = null;
 
@@ -365,8 +364,6 @@ public class PriceMatrixController implements Serializable {
         System.err.println(paymentMethod);
         System.err.println(paymentScheme);
         System.err.println(department);
-        System.err.println(category);
-        System.err.println(item);
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentScheme, paymentMethod, item);
 
@@ -483,10 +480,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.item=:i ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         PaymentSchemeDiscount psd=  (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(jpql, params);
-        System.out.println("psd = " + psd);
         return psd;
     }
 

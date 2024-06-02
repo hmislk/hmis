@@ -854,7 +854,6 @@ public class ChannelBillController implements Serializable {
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
             Payment p = createPaymentForCancellationsAndRefunds(rb, refundPaymentMethod);
-            System.out.println("p = " + p.getPaidValue());
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -876,7 +875,6 @@ public class ChannelBillController implements Serializable {
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
             Payment p = createPaymentForCancellationsAndRefunds(rb, bill.getPaidBill().getPaymentMethod());
-            System.out.println("p = " + p.getPaidValue());
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -981,7 +979,6 @@ public class ChannelBillController implements Serializable {
         Payment p = new Payment();
         p.setBill(bill);
         double valueToSet = 0 - Math.abs(bill.getNetTotal());
-        System.out.println("valueToSet = " + valueToSet);
         p.setPaidValue(valueToSet);
         if(pm == null){
             pm = bill.getPaymentMethod();
@@ -996,7 +993,6 @@ public class ChannelBillController implements Serializable {
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-        System.out.println("paid value Channeling bill refund = " + p.getPaidValue());
         if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
