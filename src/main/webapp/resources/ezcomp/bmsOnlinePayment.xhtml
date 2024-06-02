@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="p" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+        <div style="margin: 100%px; page-break-after: always; width: 100%; height: 100%; margin : 10px; text-transform: capitalize!important; max-width: 210mm; max-height: 297mm;" >
+            <div class="mx-3">
+                <!-- Strat of header -->
+                <div class="d-flex align-items-center justify-content-between">
+                    <div align="left">
+                        <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Channel Booking Online Payment Bill Company Logo')}.png" height="55"/>
+                    </div>
+                    <div>
+                        <div class="p-2">
+                            <h5>#{sessionController.institution.name}</h5>
+                            <h6>#{sessionController.institution.address}</h6>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <h6 class="mx-2">#{sessionController.institution.email} / </h6>
+                                <h6>#{sessionController.institution.phone}</h6>
+                            </div>
+                            <h6>#{sessionController.institution.web}</h6>
+                        </div>
+                    </div>
+                </div>
+                <!-- end of header -->
+                <!-- Start of graphic -->
+                <div class="row justify-content-center align-items-center" >
+                    <div class="col text-center">
+                        <p:graphicImage library="image" name="success.PNG" height="200"/>
+                        <h3>Channel Booked Successfully!</h3>
+                        <h4>Hey #{patientPortalController.channelBookingBillSession.bill.patient.person.nameWithTitle}, Channel Booking Payment of Rs.#{paymentGatewayController.paidAmount} is successful.</h4>
+                    </div>
+                </div>
+                <!-- End of graphic -->
+                <!-- Start of Details -->
+                <hr/>
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>Channel Booking for #{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.person.nameWithTitle}</h4>
+                        <h5>#{patientPortalController.channelBookingBillSession.sessionInstance.originatingSession.staff.speciality.name} - #{patientPortalController.selectedSessionInstance.sessionDate} @ #{patientPortalController.channelSettlingBillSession.serialNo}</h5>
+                    </div>
+                    <div>
+                        <h3>Rs.#{paymentGatewayController.paidAmount}</h3>
+                    </div>
+                </div>
+                <hr/>
+                <div class="my-2 d-flex justify-content-between">
+                    <div>
+                        <h5>Order ID</h5>
+                        <h4>#{paymentGatewayController.newPaymentGatewayTransaction.idStr}</h4>
+                    </div>
+                    <div>
+                        <h5 style="text-align: right">Transaction  ID</h5>
+                        <h4>#{paymentGatewayController.transactionId}</h4>
+                    </div>
+                </div>
+                <div class="my-2 d-flex justify-content-between">
+                    <div>
+                        <h5>Date</h5>
+                        <h4>
+                            <h:outputLabel value="#{paymentGatewayController.paymentDate}">
+                                <f:convertDateTime pattern="yyyy-MM-dd" />
+                            </h:outputLabel>
+                        </h4>
+                    </div>
+                    <div>
+                        <h5 style="text-align: right">Time</h5>
+                        <h4>
+                            <h:outputLabel value="#{paymentGatewayController.paymentDate}">
+                            <f:convertDateTime pattern="hh:mm:ss a" />
+                        </h:outputLabel>
+                        </h4>
+                    </div>
+                </div>
+                <div class="my-2 d-flex justify-content-between">
+                    <div>
+                        <h5>Card Number</h5>
+                        <h4>#{paymentGatewayController.cardNumber}</h4>
+                    </div>
+                    <div>
+                        <h5 style="text-align: right">Card Type</h5>
+                        <h4><h:outputText class="mx-2" styleClass="fa-brands fa-cc-visa" rendered="#{paymentGatewayController.cardType eq 'VISA'}" />
+                            <h:outputText class="mx-2" styleClass="fa-brands fa-cc-mastercard" rendered="#{paymentGatewayController.cardType eq 'MASTERCARD'}" />
+                            #{paymentGatewayController.cardType}</h4>
+                    </div>
+                </div>
+                <hr/>
+                <div class="my-2 d-flex justify-content-between">
+                    <div>
+                        <h5>Customer Name</h5>
+                        <h4>#{patientPortalController.channelBookingBillSession.bill.patient.person.nameWithTitle}</h4>
+                    </div>
+                    <div>
+                        <h5 style="text-align: left">Phone Number</h5>
+                        <h4>#{patientPortalController.channelBookingBillSession.bill.patient.person.phone}</h4>
+                    </div>
+                </div>
+                <div class="my-2 d-flex justify-content-between">
+                    <div>
+                        <h5>Address</h5>
+                        <h4>#{patientPortalController.channelBookingBillSession.bill.patient.person.address}</h4>
+                    </div>
+                </div>
+                <!-- END of Details -->
+                <!--Start of Footer -->
+                <div class=" mt-4 row justify-content-center align-items-center" >
+                    <div class="col text-center">
+                        <h6>This is a computer-generated invoice confirming an online payment transaction. Thank you for your payment!</h6>
+                    </div>
+                </div>
+                <div class="row justify-content-center align-items-center" >
+                    <div class="col text-center my-1">
+                        <h6>Software powered by Care Code Solution </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

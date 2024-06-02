@@ -228,6 +228,83 @@
                                         <h:outputText value="Added Items" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <p:tabView id="tblBillItem" >
+                                        <p:tab id="tabBillFee" title="Fees" >
+                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" class="w-100">
+                                                <p:column>
+                                                    <f:facet name="header">Item Name</f:facet>
+                                                    <h:outputText value="#{bif.billItem.item.name}" />
+                                                    <h:outputText value=" - " />
+                                                    <h:outputText value="#{bif.fee.name}" rendered="#{bif.fee !=null}" ></h:outputText>
+                                                </p:column>
+
+                                                <p:column>
+                                                    <f:facet name="header">Payee</f:facet>  
+
+                                                    <h:panelGroup rendered="#{bif.fee.feeType eq 'Staff'}" >
+
+                                                        <h:panelGroup>
+                                                            <p:outputLabel value="Speciality"  rendered="#{bif.fee.speciality!=null}"  ></p:outputLabel>
+                                                            <p:selectOneMenu style="" id="drSp" value="#{bif.fee.speciality}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
+                                                                <f:selectItems  value="#{specialityController.items}" var="bis" itemLabel="#{bis.name}" itemValue="#{bis}" />
+                                                                <p:ajax process="drSp" update="drs"/>
+                                                            </p:selectOneMenu>
+                                                            <h:panelGroup rendered="#{bif.fee.speciality!=null}"  >
+                                                                <br/>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup id="drs" >
+                                                            <p:outputLabel value="Doctor" ></p:outputLabel>
+                                                            <p:selectOneMenu  value="#{bif.staff}" rendered="#{bif.fee.speciality ne null}" filter="true" filterMatchMode="contains">
+                                                                <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                            </p:selectOneMenu>
+
+                                                            <p:autoComplete 
+                                                                class="w-100"
+                                                                inputStyleClass="w-100"
+                                                                forceSelection="true" 
+                                                                rendered="#{bif.fee.speciality eq null}" 
+                                                                value="#{bif.staff}" 
+                                                                completeMethod="#{doctorController.completeDoctor}" var="mys" 
+                                                                itemLabel="#{mys.person.name}" 
+                                                                itemValue="#{mys}">
+                                                                <p:column headerText="Speciality">
+                                                                    <h:outputText value="#{mys.speciality.name}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="Doctor">
+                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                </p:column>
+                                                            </p:autoComplete>
+
+                                                        </h:panelGroup>
+
+                                                    </h:panelGroup>
+
+                                                </p:column>
+
+
+                                                <p:column style="width:10em;">
+                                                    <f:facet name="header">Fee</f:facet>
+                                                    <p:inputText 
+                                                        autocomplete="off"  
+                                                        required="true" 
+                                                        requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
+                                                        id="txtFeeVal" 
+                                                        class="m-2"
+                                                        style="width: 6em;"
+                                                        value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                        <f:ajax event="keyup" execute="@this" 
+                                                                render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                listener="#{opdBillController.feeChangeListener(bif)}" />
+                                                    </p:inputText>
+                                                    <p:commandButton ajax="false" 
+                                                                     icon="fa fa-refresh" 
+                                                                     disabled="#{!bif.billItem.item.userChangable}" 
+                                                                     action="#{opdBillController.feeChangeListener(bif)}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:tab>
+
                                         <p:tab id="tabBillItems" title="Bill Items" >
                                             <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdBillController.lstBillEntries}" var="bi" >
                                                 <p:column  style="width: 2em;" >
@@ -282,81 +359,7 @@
                                             </p:dataTable>
                                         </p:tab>
 
-                                        <p:tab id="tabBillFee" title="Fees" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" class="w-100">
-                                                <p:column>
-                                                    <f:facet name="header">Item Name</f:facet>
-                                                    <h:outputText value="#{bif.billItem.item.name}" />
-                                                    <h:outputText value=" - " />
-                                                    <h:outputText value="#{bif.fee.name}" rendered="#{bif.fee !=null}" ></h:outputText>
-                                                </p:column>
 
-                                                <p:column>
-                                                    <f:facet name="header">Payee</f:facet>  
-
-                                                    <h:panelGroup rendered="#{bif.fee.feeType eq 'Staff'}" >
-
-                                                        <h:panelGroup>
-                                                            <p:outputLabel value="Speciality"  rendered="#{bif.fee.speciality!=null}"  ></p:outputLabel>
-                                                            <p:selectOneMenu id="drSp" value="#{bif.fee.speciality}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
-                                                                <f:selectItems  value="#{specialityController.items}" var="bis" itemLabel="#{bis.name}" itemValue="#{bis}" />
-                                                                <p:ajax process="drSp" update="drs"/>
-                                                            </p:selectOneMenu>
-                                                            <h:panelGroup rendered="#{bif.fee.speciality!=null}"  >
-                                                                <br/>
-                                                            </h:panelGroup>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup id="drs" >
-                                                            <p:selectOneMenu  value="#{bif.staff}" rendered="#{bif.fee.speciality ne null}" filter="true" filterMatchMode="contains">
-                                                                <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
-                                                            </p:selectOneMenu>
-
-                                                            <p:autoComplete 
-                                                                class="w-100"
-                                                                inputStyleClass="w-100"
-                                                                forceSelection="true" 
-                                                                rendered="#{bif.fee.speciality eq null}" 
-                                                                value="#{bif.staff}" 
-                                                                completeMethod="#{doctorController.completeDoctor}" var="mys" 
-                                                                itemLabel="#{mys.person.name}" 
-                                                                itemValue="#{mys}">
-                                                                <p:column headerText="Speciality">
-                                                                    <h:outputText value="#{mys.speciality.name}" ></h:outputText>
-                                                                </p:column>
-                                                                <p:column headerText="Doctor">
-                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                                </p:column>
-                                                            </p:autoComplete>
-
-                                                        </h:panelGroup>
-
-                                                    </h:panelGroup>
-
-                                                </p:column>
-
-
-                                                <p:column style="width:10em;">
-                                                    <f:facet name="header">Fee</f:facet>
-                                                    <p:inputText 
-                                                        autocomplete="off"  
-                                                        required="true" 
-                                                        requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
-                                                        id="txtFeeVal" 
-                                                        class="m-2"
-                                                        style="width: 6em;"
-                                                        value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                        <f:ajax event="keyup" execute="@this" 
-                                                                render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                listener="#{opdBillController.feeChangeListener(bif)}" />
-                                                    </p:inputText>
-                                                    <p:commandButton ajax="false" 
-                                                                     icon="fa fa-refresh" 
-                                                                     disabled="#{!bif.billItem.item.userChangable}" 
-                                                                     action="#{opdBillController.feeChangeListener(bif)}" />
-                                                </p:column>
-                                            </p:dataTable>
-                                        </p:tab>
                                     </p:tabView>
                                 </p:panel>
                             </div>
@@ -738,7 +741,16 @@
                                                            process="btnAddNewDoc" 
                                                            update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
-                                                <h:panelGrid columns="2" >  
+                                                <h:panelGrid columns="2" > 
+                                                    <p:outputLabel id="lblTitleD" value="Title" ></p:outputLabel>
+                                                    <p:selectOneMenu 
+                                                        id="cmbTitle"
+                                                        class="form-control w-100"
+                                                        value="#{doctorController.current.person.title}">
+                                                        <f:selectItem itemLabel="Select Title" />
+                                                        <f:selectItems value="#{opdBillController.title}" var="i"
+                                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    </p:selectOneMenu>
                                                     <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
                                                     <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
                                                     <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>

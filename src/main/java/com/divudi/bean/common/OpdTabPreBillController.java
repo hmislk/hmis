@@ -778,7 +778,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         } else {
             patientFacade.edit(p);
         }
-        System.out.println("Save Patient = ");
         return p;
     }
 
@@ -996,10 +995,8 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         if (getToken() != null) {
             getToken().setBill(tmp);
             tokenFacade.edit(getToken());
-            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
             markToken(tmp);
         }
-        System.out.println("wb = " + wb);
     }
 
     @Inject
@@ -1154,7 +1151,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         }
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatient() == null) {
-                System.out.println("getPatient() == null");
                 return true;
             }
             boolean checkAge = false;

@@ -180,7 +180,6 @@ public class ChannelScheduleController implements Serializable {
             }
             jpql += " order by s.sessionWeekday,s.startingTime ";
             List<ServiceSession> selectedDoctorsServiceSessions = serviceSessionFacade.findByJpql(jpql, params);
-            System.out.println("selectedDoctorsServiceSessions = " + selectedDoctorsServiceSessions.size());
             try {
                 sessionInstances = channelBean.generateSesionInstancesFromServiceSessions(selectedDoctorsServiceSessions, sessionStartingDate);
             } catch (Exception e) {
@@ -377,26 +376,23 @@ public class ChannelScheduleController implements Serializable {
                 + " and (f.serviceSession=:ses or f.item=:ses )"
                 + " order by f.id";
         params.put("ses", current);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         itemFees = itemFeeFacade.findByJpql(jpql, params);
-        System.out.println("itemFees = " + itemFees);
         additionalItemsAddedForCurrentSession = itemForItemController.findItemsForParent(current);
-        
+
         double tot = 0.0;
         double totf = 0.0;
         for (ItemFee i : getItemFees()) {
             tot += i.getFee();
             totf += i.getFfee();
         }
-        
+
         current.setTotal(tot);
         current.setTotalForForeigner(totf);
         current.setTotalFee(tot);
         current.setTotalFfee(totf);
-        
+
         getFacade().edit(current);
-        
+
     }
 
     public ItemFee createStaffFee() {
@@ -501,7 +497,6 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public List<Staff> getSpecialityStaff() {
-        System.out.println("getSpecialityStaff");
         List<Staff> suggestions = new ArrayList<>();
         if (getSpeciality() == null) {
             return suggestions;
@@ -514,8 +509,6 @@ public class ChannelScheduleController implements Serializable {
                 + " and p.speciality =:sp "
                 + " order by p.person.name";
         params.put("sp", speciality);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         suggestions = getStaffFacade().findByJpql(jpql, params);
         return suggestions;
     }
@@ -629,8 +622,6 @@ public class ChannelScheduleController implements Serializable {
         this.tabIndex = tabIndex;
     }
 
-    
-    
     public DoctorSpeciality getSpeciality() {
         return speciality;
     }
@@ -899,12 +890,20 @@ public class ChannelScheduleController implements Serializable {
 
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
+                JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
+                return;
+            }
             getFacade().edit(getCurrent());
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
+            if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
+                JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
+                return;
+            }
             getFacade().create(getCurrent());
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Saved Successfully");

@@ -155,13 +155,9 @@ public class PharmacyPreSettleController implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue***** = " + multiplePaymentMethodTotalValue);
             }
-            System.out.println("multiplePaymentMethodTotalValue1 = " + multiplePaymentMethodTotalValue);
-            System.out.println("total = " + total);
             return total - multiplePaymentMethodTotalValue;
         }
-         System.out.println("total = " + total);
         return total;
     }
 
@@ -752,12 +748,9 @@ public class PharmacyPreSettleController implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue//// = " + multiplePaymentMethodTotalValue);
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            System.out.println("netTotal = " + netTotal);
-            System.out.println("differenceOfBillTotalAndPaymentValue = " + differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;

@@ -164,6 +164,11 @@ public class BillBhtController implements Serializable {
         stickers = convertJsonToList(json);
         return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
     }
+    
+    public String navigateToNewBillFromPrintLabelsForInvestigations() {
+        resetBillData();
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
 
     public List<InvestigationTubeSticker> convertJsonToList(String json) {
         List<InvestigationTubeSticker> stickers = new ArrayList<>();

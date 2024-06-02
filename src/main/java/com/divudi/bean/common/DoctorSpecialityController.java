@@ -269,9 +269,8 @@ public class DoctorSpecialityController implements Serializable {
                         getValue(facesContext.getELContext(), null, "doctorSpecialityController");
                 return controller.getEjbFacade().find(getKey(value));
             } catch (NumberFormatException e) {
-                // Log the error and handle the exception
-                System.out.println("Invalid value for DoctorSpeciality ID: " + value);
-                return null;
+// Log the error and handle the exception
+                                return null;
             }
         }
 
