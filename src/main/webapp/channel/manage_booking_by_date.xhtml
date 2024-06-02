@@ -34,7 +34,9 @@
                 </f:facet>
                 <p:tabView id="detail">
                     <p:tab title="Settle" id="settle">
+                      
                         <p:panel  id="set" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}">
+                           
                             <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
 
                             <p:outputLabel rendered="false" value="Payment Method"/>
@@ -235,6 +237,7 @@
                         </p:panel>
 
                         <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}">
+                            
                             <h:panelGroup rendered="#{!bookingControllerViewScope.printPreview}">
                                 <div class="row">
                                     <div class="col-6">
