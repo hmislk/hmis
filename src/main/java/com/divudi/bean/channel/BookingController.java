@@ -863,6 +863,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
+        foriegn = false;
+        paymentMethod = null;
+        institution = null;
+        agentRefNo = null;
+        paymentMethodData = null;
+        toStaff = null;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
     }
 
