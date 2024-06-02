@@ -871,6 +871,9 @@ public class ChannelBillController implements Serializable {
             getBillFacade().edit(bill);
 
         } else {
+            if(refundPaymentMethod == null){
+                refundPaymentMethod = bill.getPaidBill().getPaymentMethod();
+            }
             RefundBill rb = (RefundBill) createRefundBill(bill);
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
@@ -884,11 +887,11 @@ public class ChannelBillController implements Serializable {
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
 
-            RefundBill rpb = (RefundBill) createRefundBill(bill.getPaidBill());
+            RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
 
-            billSession.getPaidBillSession().setReferenceBillSession(rpSession);
+           billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
@@ -1753,7 +1756,11 @@ public class ChannelBillController implements Serializable {
         } else {
             rb.setPaymentMethod(bill.getPaymentMethod());
         }
-
+        if( bill.getPaymentMethod() == PaymentMethod.OnCall){
+                rb.setPaymentMethod(refundPaymentMethod);
+        }
+        
+        System.out.println("rb = " + rb.getPaymentMethod());
         getBillFacade().edit(rb);
 
 //Need To Update Agent BAllance
