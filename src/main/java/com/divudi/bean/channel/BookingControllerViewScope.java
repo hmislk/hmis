@@ -253,6 +253,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private String selectTextSession = "";
     private ArrivalRecord arrivalRecord;
     private String errorText;
+    private Integer selectedReserverdBookingNumber;
+    private List<Integer> reservedBookingNumbers;
     private Patient patient;
     private PaymentMethod paymentMethod;
     private PaymentMethodData paymentMethodData;
@@ -524,8 +526,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("2 = " + (new Date().getTime()));
         fillItemAvailableToAdd();
         fillFees();
+        fillReservedNumbers();
         printPreview = false;
         paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
+    }
+
+    public void fillReservedNumbers() {
+        reservedBookingNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
     }
 
     public boolean chackNull(String template) {
@@ -1859,7 +1866,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addReservedChannelBooking() {
-        addChannelBooking(true);
+        boolean reservedBooking = true;
+        addChannelBooking(reservedBooking);
         fillBillSessions();
     }
 
@@ -4248,7 +4256,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         Integer count;
 
         if (forReservedNumbers) {
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers);
+            // Pass the selectedReservedBookingNumber to the service method
+            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
             if (count == null) {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
@@ -6080,6 +6089,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setActiveCreditLimitPannel(boolean activeCreditLimitPannel) {
         this.activeCreditLimitPannel = activeCreditLimitPannel;
+    }
+
+    public Integer getSelectedReserverdBookingNumber() {
+        return selectedReserverdBookingNumber;
+    }
+
+    public void setSelectedReserverdBookingNumber(Integer selectedReserverdBookingNumber) {
+        this.selectedReserverdBookingNumber = selectedReserverdBookingNumber;
+    }
+
+    public List<Integer> getReservedBookingNumbers() {
+        return reservedBookingNumbers;
+    }
+
+    public void setReservedBookingNumbers(List<Integer> reservedBookingNumbers) {
+        this.reservedBookingNumbers = reservedBookingNumbers;
     }
 
 }

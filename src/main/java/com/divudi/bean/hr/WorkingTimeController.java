@@ -130,6 +130,10 @@ public class WorkingTimeController implements Serializable {
     Date fromDate;
     Date toDate;
     private PaymentMethod paymentMethod;
+    
+    public void navigateBackToDoctorSelect(){
+        staff=null;
+    }
 
     public List<WorkingTime> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");

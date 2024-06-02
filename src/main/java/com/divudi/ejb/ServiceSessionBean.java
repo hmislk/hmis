@@ -354,7 +354,7 @@ public class ServiceSessionBean {
     }
 
     @Lock(LockType.WRITE)
-    public Integer getNextAvailableReservedNumber(SessionInstance si, List<Integer> reservedNumbers) {
+    public Integer getNextAvailableReservedNumber(SessionInstance si, List<Integer> reservedNumbers, Integer selectedReservedBookingNumber) {
         BillType[] billTypes = {
             BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -382,6 +382,11 @@ public class ServiceSessionBean {
         Set<Integer> reservedNumbersSet = new HashSet<>(reservedNumbers);
         // Remove all booked numbers from the reservedNumbers set
         reservedNumbersSet.removeAll(bookedNumbers);
+
+        // First, check if selectedReservedBookingNumber is available and not booked
+        if (selectedReservedBookingNumber != null && reservedNumbersSet.contains(selectedReservedBookingNumber)) {
+            return selectedReservedBookingNumber;
+        }
 
         if (reservedNumbersSet.isEmpty()) {
             // If no reserved numbers are available (not already booked), return null
