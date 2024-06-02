@@ -258,7 +258,7 @@
                                                 </f:facet>
                                                 <f:facet name="footer">
                                                     <p:row>
-                                                        <p:column colspan="2" >
+                                                        <p:column colspan="4" >
                                                             <p:commandButton
                                                                 id="btnAdd"
                                                                 value="Add Normal Booking"
@@ -268,6 +268,12 @@
                                                                 icon="pi pi-check"
                                                                 action="#{bookingControllerViewScope.addNormalChannelBooking}" >
                                                             </p:commandButton>
+                                                            <p:spacer height="1" width="10" ></p:spacer>
+                                                            <p:spacer height="1" width="10" ></p:spacer>
+                                                            <p:selectOneMenu value="#{bookingControllerViewScope.selectedReserverdBookingNumber}" >
+                                                                <f:selectItem itemLabel="Next Number" ></f:selectItem>
+                                                                <f:selectItems value="#{bookingControllerViewScope.reservedBookingNumbers}" ></f:selectItems>
+                                                            </p:selectOneMenu>
                                                             <p:commandButton
                                                                 id="btnAddReserved"
                                                                 value="Add Reserved Booking"
@@ -560,7 +566,7 @@
 
 
                                         </p:panel>
-                                        <p:panel>
+                                        <p:panel header="Additional Items">
                                             <p:row >
                                                 <p:column >
                                                     <p:outputLabel  value="Item" ></p:outputLabel>

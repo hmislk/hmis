@@ -22,8 +22,16 @@
                     <h:form class="container-fluid" >
                         <p:panel class="text-center">
                             <f:facet name="header" >
-                                <h:outputText value="Pay Staff" >
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                         <h:outputText value="Pay Staff" >
                                 </h:outputText>
+                                    </div>
+                                    <div>
+                                        <p:commandButton rendered="#{workingTimeController.staff ne null}" value="Back" ajax="false" class="ui-button-secondary" action="#{workingTimeController.navigateBackToDoctorSelect()}"/>
+                                    </div>
+                                </div>
+                               
                             </f:facet>
 
                             <p:panelGrid columns="2" 
