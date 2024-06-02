@@ -887,11 +887,11 @@ public class ChannelBillController implements Serializable {
             bill.setRefundedBill(rb);
             getBillFacade().edit(bill);
 
-            //RefundBill rpb = (RefundBill) createRefundBill(bill.getPaidBill());
-            //BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
-            //BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
+            RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
+            BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
+            BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
 
-           // billSession.getPaidBillSession().setReferenceBillSession(rpSession);
+           billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
@@ -901,8 +901,8 @@ public class ChannelBillController implements Serializable {
                 }
             }
 
-            //bill.getPaidBill().setRefunded(true);
-            //bill.getPaidBill().setRefundedBill(rpb);
+            bill.getPaidBill().setRefunded(true);
+            bill.getPaidBill().setRefundedBill(rpb);
             getBillFacade().edit(bill.getPaidBill());
             JsfUtil.addSuccessMessage("Successfully Refunded");
         }
