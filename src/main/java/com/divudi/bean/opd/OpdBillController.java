@@ -427,15 +427,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
-        if (!listItemsByDepartment) {
+        if (!listItemsByDepartment || dept == null || dept.getId() == null) {
             return ils;
         }
         List<ItemLight> tils = new ArrayList<>();
         for (ItemLight il : ils) {
-            if (il.getDepartmentId() == null) {
-                continue;
-            }
-            if (il.getDepartmentId().equals(dept.getId())) {
+            if (il.getDepartmentId() != null && il.getDepartmentId().equals(dept.getId())) {
                 tils.add(il);
             }
         }
@@ -2401,7 +2398,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return;
         }
 
-
         for (BillFee bf : tmpBfs) {
             if (bf.getFee() == null) {
                 continue;
@@ -2409,7 +2405,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-
 
             if (bf.getFee().getFeeType() == FeeType.Staff) {
                 if (bf.getFee().getStaff() == null) {
@@ -2531,7 +2526,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 //            paymentScheme = null;
 //            creditCompany = null;
 //        }
-
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
