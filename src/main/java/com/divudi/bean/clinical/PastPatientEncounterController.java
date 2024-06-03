@@ -11,6 +11,7 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -135,7 +136,8 @@ public class PastPatientEncounterController implements Serializable {
 
     @Inject
     private FavouriteController favouriteController;
-
+    @Inject
+    SearchController searchController;
     private Patient patient;
 
     private List<DocumentTemplate> userDocumentTemplates;
@@ -153,6 +155,7 @@ public class PastPatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> patientMedicines;
     private List<ClinicalFindingValue> patientImages;
     private List<ClinicalFindingValue> patientDiagnoses;
+    private List<ClinicalFindingValue> patientProcedures;
     private List<ClinicalFindingValue> patientDiagnosticImages;
 
     private ClinicalFindingValue encounterMedicine;
@@ -1099,13 +1102,15 @@ public class PastPatientEncounterController implements Serializable {
     }
 
     public void fillCurrentPatientLists(Patient patient) {
-       
+        encounters = fillPatientEncounters(patient, 10);
 
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
-
+        opdBills = searchController.fillBills(BillType.OpdBill, null, null, patient, 10);
+        channelBills = searchController.fillBills(BillType.Channel, null, null, patient, 10);
         patientAllergies = new ArrayList<>();
         patientDiagnoses = new ArrayList<>();
+        patientProcedures = new ArrayList<>();
         patientImages = new ArrayList<>();
         patientDiagnosticImages = new ArrayList<>();
         patientMedicines = new ArrayList<>();
@@ -1134,10 +1139,13 @@ public class PastPatientEncounterController implements Serializable {
                 case PatientMedicine:
                     patientMedicines.add(tcfv);
                     break;
+                case PatientProcedure:
+                    patientProcedures.add(tcfv);
+                    break;
             }
         }
     }
-
+    
     public void fillCurrentEncounterLists(PatientEncounter encounter) {
         encounterFindingValues = fillCurrentEncounterFindingValues(encounter, null);
         encounterMedicines = fillEncounterMedicines(encounter);
@@ -2991,6 +2999,14 @@ public class PastPatientEncounterController implements Serializable {
 
     public void setEncounterInvestigationResults(List<ClinicalFindingValue> encounterInvestigationResults) {
         this.encounterInvestigationResults = encounterInvestigationResults;
+    }
+
+    public List<ClinicalFindingValue> getPatientProcedures() {
+        return patientProcedures;
+    }
+
+    public void setPatientProcedures(List<ClinicalFindingValue> patientProcedures) {
+        this.patientProcedures = patientProcedures;
     }
 
     
