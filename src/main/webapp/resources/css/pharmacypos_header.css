@@ -2,13 +2,13 @@
     .posbillheader{
         position: relative!important;
         margin-top: -0.5cm!important;
-        width: 11.01in!important;
+        width: 100%;
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
         font-family: Tahoma!important;
         /*        font:*/
-        font-size: 11pt!important;
+        font-size: 12px!important;
         /*        text-transform: uppercase!important;*/
 
 
@@ -136,7 +136,7 @@
     .posbillheader{
         position: relative!important;
 
-        width: 11.01in!important;
+        width:400px!important;
 
         font-family: Tahoma!important;
         margin: auto!important;
