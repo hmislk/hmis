@@ -364,11 +364,11 @@
                                                             <p:commandButton 
                                                                 id="btnFeeSave"
                                                                 value="Save" 
-                                                                             action="#{channelScheduleController.addNewFee()}" 
-                                                                             style="margin-left: 30px;" 
-                                                                             update="tblFees :#{p:resolveFirstComponentWithId('gpTotals',view).clientId}"
-                                                                             process="gpDetail btnFeeSave"
-                                                                             oncomplete="PF('dlg').hide();">
+                                                                action="#{channelScheduleController.addNewFee()}" 
+                                                                style="margin-left: 30px;" 
+                                                                update="tblFees :#{p:resolveFirstComponentWithId('gpTotals',view).clientId}"
+                                                                process="gpDetail btnFeeSave"
+                                                                oncomplete="PF('dlg').hide();">
                                                             </p:commandButton>
                                                         </f:facet>
                                                         <p:panelGrid columns="2" id="gpDetail" class="w-100">
@@ -531,9 +531,33 @@
                                                         <p:outputLabel value="Item to add"/>
                                                     </p:column>
                                                     <p:column >
-                                                        <p:selectOneMenu filter="true" filterMatchMode="contains" value="#{channelScheduleController.additionalItemToAdd}" id="acAdditionalItem">
-                                                            <f:selectItems value="#{itemController.suggestItems}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
-                                                        </p:selectOneMenu>
+                                                        <p:autoComplete widgetVar="aIx" 
+                                                                        id="acAdditionalItem"
+                                                                        forceSelection="true" 
+                                                                        value="#{channelScheduleController.additionalItemToAdd}" 
+                                                                        completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                                                        var="ix" 
+                                                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
+                                                                        class="w-100"
+                                                                        inputStyleClass="w-100">
+                                                            <p:column headerText="Type" >
+                                                                <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Name" >
+                                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Institution" >
+                                                                <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Department" >
+                                                                <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Total" >
+                                                                <p:outputLabel value="#{ix.total}" >
+                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                        </p:autoComplete>
 
                                                     </p:column>
                                                     <p:column  >
