@@ -336,6 +336,21 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         return "/channel/session_instance?faces-redirect=true";
     }
+    
+    public String navigateToManageSessionInstanceFromBillSession() {
+        if(selectedBillSession==null){
+            JsfUtil.addErrorMessage("No Bill Session");
+            return null;
+        }
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedBillSession.getSessionInstance());
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        return "/channel/session_instance?faces-redirect=true";
+    }
 
     public void cancelSession() {
         if (selectedSessionInstance == null) {
@@ -514,6 +529,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void sessionInstanceSelected() {
+        fillSessionInstanceDetails();
+    }
+    
+    public void fillSessionInstanceDetails(){
         System.out.println("sessionInstanceSelected");
         System.out.println("1 = " + (new Date().getTime()));
         System.out.println("selectedSessionInstance = " + selectedSessionInstance);
