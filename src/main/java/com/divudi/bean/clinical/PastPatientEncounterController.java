@@ -1170,17 +1170,19 @@ public class PastPatientEncounterController implements Serializable {
         String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
+        String nic = e.getPatient().getPerson().getNic() != null ? e.getPatient().getPerson().getNic() : "";
+        String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
         String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
         String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
-        String bp = e.getBp();
+        String bp = e.getBp() != null ? e.getBp() : "";
+        String rr = e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "";
         String comments = e.getComments();
-        String pulseRate = e.getPr()+" bpm";
-        String rr = e.getRespiratoryRate()+" bpm";
-        String pfr = e.getPfr()+"";
-        String saturation = e.getSaturation()+"";
+        String pulseRate = e.getPr() != null ? e.getPr() + " bpm" : "";
+        String pfr = e.getPfr() != null ? e.getPfr() + "":"";
+        String saturation = e.getSaturation() != null ? e.getSaturation() +"":"";
         if (comments == null) {
             comments = "";
         }
@@ -1215,7 +1217,23 @@ public class PastPatientEncounterController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    medicinesOutdoorAsString += rxName;
+                    if(!dose.trim().equals("")){
+                        medicinesOutdoorAsString += " - " + dose;
+                    }
+                    if(!doseUnit.trim().equals("")){
+                        medicinesOutdoorAsString += " " + doseUnit;
+                    }
+                    if (!frequencyUnit.trim().equals("")) {
+                        medicinesOutdoorAsString += " - " + frequencyUnit;
+                    }
+                    if (!duration.trim().equals("")) {
+                        medicinesOutdoorAsString += " - " + duration;
+                    }
+                    if (!durationUnit.trim().equals("")) {
+                        medicinesOutdoorAsString += " " + durationUnit;
+                    }
+                    medicinesOutdoorAsString += "<br/>";
                 }
             }
         }
@@ -1230,20 +1248,50 @@ public class PastPatientEncounterController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    medicinesIndoorAsString += rxName;
+                    if(!dose.trim().equals("")){
+                        medicinesIndoorAsString += " - " + dose;
+                    }
+                    if(!doseUnit.trim().equals("")){
+                        medicinesIndoorAsString += " " + doseUnit;
+                    }
+                    if (!frequencyUnit.trim().equals("")) {
+                        medicinesIndoorAsString += " - " + frequencyUnit;
+                    }
+                    if (!duration.trim().equals("")) {
+                        medicinesIndoorAsString += " - " + duration;
+                    }
+                    if (!durationUnit.trim().equals("")) {
+                        medicinesIndoorAsString += " " + durationUnit;
+                    }
+                    medicinesIndoorAsString += "<br/>";
                 }
             }
         }
 
-        String ixAsString = "Ix" + "<br/>";
+        String ixAsString = "";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName() + "<br/>";
+            ixAsString += ix.getItemValue().getName();
+            if (!ix.getLobValue().trim().equals("")) {
+                ixAsString += " - " + ix.getLobValue();
+            }
+            ixAsString += "<br/>";
+        }
+        String ixSameLine = "";
+
+        List<ClinicalFindingValue> encounterInvestigations = getEncounterInvestigations();
+        int totalInvestigations = encounterInvestigations.size();
+        for (int i = 0; i < totalInvestigations; i++) {
+            ClinicalFindingValue ix = encounterInvestigations.get(i);
+            ixSameLine += ix.getItemValue().getName();
+            if (i < totalInvestigations - 1) {
+                ixSameLine += " / ";
+            }
         }
         
-        String paAsString = "";
-        for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
-            paAsString += pa.getItemValue().getName() + "<br/>";
-        }
+        String bpPrSameLine = "";
+        bpPrSameLine += (e.getBp() != null ? "BP - " + e.getBp() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" : "BP - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        bpPrSameLine += (e.getPr() != null ? "PR - " + e.getPr() : "PR - ");
         
         String visitDx = "";
         for (ClinicalFindingValue ix : getEncounterDiagnoses()) {
@@ -1253,7 +1301,11 @@ public class PastPatientEncounterController implements Serializable {
             }
             visitDx += "<br/>";
         }
-        
+
+        String paAsString = "";
+        for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
+            paAsString += pa.getItemValue().getName() + "<br/>";
+        }
 
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
@@ -1270,15 +1322,24 @@ public class PastPatientEncounterController implements Serializable {
                 String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
                 String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
                 String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
-                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                String frequencyUnit = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
                 String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
                 String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
 
-                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit;
+                if (!frequencyUnit.trim().equals("")) {
+                    routineMedicinesAsString += " - " + frequencyUnit;
+                }
+                if (!duration.trim().equals("")) {
+                    routineMedicinesAsString += " - " + duration;
+                }
+                if (!durationUnit.trim().equals("")) {
+                    routineMedicinesAsString += " - " + durationUnit;
+                }
+                routineMedicinesAsString += "<br/>";
             }
         }
 
-        
         String diagnosesAsString = "";
         for (ClinicalFindingValue dx : getPatientDiagnoses()) {
             if (dx != null) {
@@ -1291,18 +1352,20 @@ public class PastPatientEncounterController implements Serializable {
 
         output = input.replace("{name}", name)
                 .replace("{age}", age)
-                .replace("{sex}", sex)
                 .replace("{comments}", comments)
+                .replace("{sex}", sex)
                 .replace("{address}", address)
                 .replace("{phone}", phone)
                 .replace("{medicines}", medicinesAsString)
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{visit-dx}", visitDx)
+                .replace("{ix-same-line}", ixSameLine)
+                .replace("{bp-pr-sameLine}", bpPrSameLine)
                 .replace("{rr}", rr)
                 .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
-                .replace("{visit-dx}", visitDx)
                 .replace("{routine-medicines}", routineMedicinesAsString)
                 .replace("{allergies}", allergiesAsString)
                 .replace("{visit-date}", visitDate)
@@ -1310,9 +1373,13 @@ public class PastPatientEncounterController implements Serializable {
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
                 .replace("{bp}", bp)
-                .replace("{pr}",pulseRate)
-                .replace("{pfr}",pfr)
-                .replace("{sat}", saturation);
+                .replace("{pr}", pulseRate)
+                .replace("{pfr}", pfr)
+                .replace("{sat}", saturation)
+                .replace("{patient_name}", name)
+                .replace("{patient_age}", age)
+                .replace("{patient_phn_number}", phn)
+                .replace("{patient_nic}", nic);
         return output;
 
     }
