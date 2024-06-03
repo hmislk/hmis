@@ -6,7 +6,7 @@
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
-        font-family: monospace!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         /*        font:*/
         font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
@@ -138,7 +138,7 @@
 
         width:400px!important;
 
-        font-family: monospace!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
