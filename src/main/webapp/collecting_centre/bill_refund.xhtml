@@ -20,22 +20,8 @@
                                 <f:facet name="header">
                                     <h:outputText value="Refund"/>
                                     <h:panelGrid columns="3" style="float: right" class="w-50">
-                                        <p:selectOneMenu 
-                                            id="commentsMenu" 
-                                            value="#{billSearch.comment}" 
-                                            editable="true" 
-                                            filter="true" 
-                                            placeholder="Select or enter a comment"
-                                            filterMatchMode="contains"  
-                                            style="float: right; width: 100%" 
-                                            class="p-2">
-                                            <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
-                                            <f:selectItems 
-                                                value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Refunding Comments')}" 
-                                                var="option" 
-                                                itemLabel="#{option}" 
-                                                itemValue="#{option}"/>
-                                        </p:selectOneMenu>
+                                        <p:inputText placeholder="Enter Comments to Refund Bill" value="#{billSearch.comment}" style="float: right" class="p-2 w-100"/> 
+
                                         <p:commandButton 
                                             ajax="false"
                                             value="Refund Bill" 
@@ -154,18 +140,18 @@
 
                         <p:panel rendered="#{billSearch.printPreview}" >
                             <f:facet name="header">
-
+                                
                                 <div class="d-flex justify-content-between">
                                     <h:outputLabel  value="Bill Preview" class="mt-2"/>
                                     <p:commandButton 
-                                        class="ui-button-info d-flex justify-content-end"
-                                        value="Print" 
-                                        icon="fa fa-print"
-                                        ajax="false" action="#"  >
-                                        <p:printer target="printPreview" ></p:printer>
-                                    </p:commandButton>
+                                    class="ui-button-info d-flex justify-content-end"
+                                    value="Print" 
+                                    icon="fa fa-print"
+                                    ajax="false" action="#"  >
+                                    <p:printer target="printPreview" ></p:printer>
+                                </p:commandButton>
                                 </div>
-
+                                
                             </f:facet>
                             <div class="d-flex justify-content-end">
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
