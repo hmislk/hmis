@@ -291,10 +291,10 @@
                                                     <h:outputLabel value="Base Fee" ></h:outputLabel>
                                                 </f:facet>
                                                 <p:outputLabel value="Session Value - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.total}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"/>
 
                                                 <p:outputLabel value="Session Value for Foreigners - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.totalForForeigner}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.totalForForeigner}"/>
 
                                             </p:panelGrid>
 
@@ -332,7 +332,7 @@
                                             </h:panelGrid>
 
                                             <p:outputLabel value="Total Professional Fee - "/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.professionalFee}"/>
+                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.totalFee}"/>
 
                                         </p:tab>
 
