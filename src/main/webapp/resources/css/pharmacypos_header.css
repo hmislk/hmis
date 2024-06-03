@@ -20,7 +20,7 @@
         width: 12cm!important;
         height: 14cm!important;
 
-        font-family: sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         font-size: 11px!important;
         margin: auto!important;
         background-size: 100% auto!important;
@@ -36,7 +36,7 @@
         width: 24.2cm!important;
         height: 9.3cm!important;
 
-        font-family: sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         margin: auto!important;
         background-size: 100% auto!important;
         /*        border: 1px solid!important;*/
@@ -60,7 +60,7 @@
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
-        font-family:Arial, Helvetica, sans-serif!important;
+        font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
         /*        font:*/
         font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
@@ -76,7 +76,7 @@
 
     .a4bill{
         page-break-after:always!important;
-        font-family: sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         font-size: 11px!important;
         position: relative!important;
         margin: 0px!important;
@@ -92,7 +92,7 @@
         font-weight: bold!important;
         font-size: 20px!important;
         font-weight: bolder;
-        font-family: monospace;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         text-transform: capitalize!important;
 
     }
@@ -101,13 +101,13 @@
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
-        font-family:monospace;
+        font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     }
 
     .billDetails{
         text-align: center!important;
         font-size: 12px!important;
-        font-family:Arial, Helvetica, sans-serif!important;
+        font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     }
     .channelNumber{
         font-size: 50px!important;
@@ -123,7 +123,7 @@
         width: 12cm!important;
         height: 14cm!important;
 
-        font-family: sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         font-size: 11px!important;
         margin: auto!important;
         background-size: 100% auto!important;
@@ -153,7 +153,7 @@
 
         width:400px!important;
 
-        font-family: monospace!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -170,7 +170,7 @@
         width: 24.2cm!important;
         height: 9.3cm!important;
 
-        font-family: sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -180,7 +180,7 @@
     .channelCoop{
         position: relative!important;
 
-        font-family: sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         border: 1px solid!important;
         padding: 5px!important;
         width: 12cm!important;
@@ -195,7 +195,7 @@
 
         width:400px!important;
 
-        font-family: monospace!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -226,7 +226,7 @@
         font-weight: bold!important;
         font-size: 20px!important;
         font-weight: bolder;
-        font-family: monospace;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
 
     }
 
@@ -234,13 +234,13 @@
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
-        font-family:monospace;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
     }
 
     .billDetails{
         text-align: center!important;
         font-size: 12px!important;
-        font-family:Arial, Helvetica, sans-serif!important;
+        font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
     }
 
 }
@@ -251,19 +251,19 @@
     position: relative!important;
     text-align: center!important;
     font-size: 12px!important;
-    font-family:monospace;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
 
 .billDetails{
     text-align: center!important;
     font-size: 12px!important;
-    font-family:Arial, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
 
 .billDetailsFiveFiveBHT{
     text-align: center!important;
     font-size: 10px!important;
-    font-family:Arial, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
 
 
@@ -276,27 +276,27 @@
 
 .billDetailsFiveFive{
     font-size: 14px!important;
-    font-family:verdana, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
 
 .itemHeadings{
     text-align: center!important;
     font-size: 13px!important;
-    font-family:Arial, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     font-weight: bold;
 }
 
 .itemHeadingsFiveFive{
 
     font-size: 15px!important;
-    font-family:verdana, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     font-weight: bold;
 }
 
 .itemsBlock{
     text-align: center!important;
     font-size: 13px!important;
-    font-family:verdana, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     text-transform: capitalize!important;
 }
 
@@ -304,7 +304,7 @@
 itemsBlockRight{
     text-align: right!important;
     font-size: 13px!important;
-    font-family:verdana, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
@@ -313,14 +313,14 @@ itemsBlockRight{
 .itemsBlockRightFiveFive{
     text-align: right!important;
     font-size: 12px!important;
-    font-family:Arial, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
 .footer{
     text-align: center!important;
     font-size: 12px!important;
-    font-family: monospace;
+    font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
 
 }
 
@@ -353,21 +353,21 @@ itemsBlockRight{
 
 .poDetail{
     font-size: 11px!important;
-    font-family: sans;
+    font-family: Calibri, Tahoma, Segoe, "Segoe UI"!important;
     min-width: 100%!important;
 }
 
 .totalsBlock{
     font-size: 15px!important;
-    font-family:Verdana, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
 
 .totalsItemBlock{
     font-size: 14px!important;
-    font-family:Arial, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
 
 .totalsBlockFiveFiveNo{
     font-size: 10px!important;
-    font-family:Arial, Helvetica, sans-serif!important;
+    font-family:Calibri, Tahoma, Segoe, "Segoe UI"!important;
 }
