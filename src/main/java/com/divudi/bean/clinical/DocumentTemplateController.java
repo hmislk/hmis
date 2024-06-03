@@ -117,6 +117,7 @@ public class DocumentTemplateController implements Serializable {
                 + "BMI : {bmi}<br/>"
                 + "Blood Pressure : {bp}<br/>"
                 + "Pulse Rate : {pr}<br/>"
+                + "Blood Pressure and Pulse Rate Same Line: {bp-pr-sameLine}<br/>"
                 + "Peak Flow Rate : {pfr}<br/>"
                 + "Respiratory Rate : {rr}<br/>"
                 + "Saturation : {sat}<br/>"
