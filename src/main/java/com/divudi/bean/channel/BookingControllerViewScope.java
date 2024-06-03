@@ -245,6 +245,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Date toDate;
     private Boolean needToFillBillSessions;
     private Boolean needToFillBillSessionDetails;
+    private Boolean needToFillSessionInstances;
+    private Boolean needToFillSessionInstanceDetails;
+
     private String comment;
     private String commentR;
     private Date sessionStartingDate;
@@ -331,14 +334,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
         viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
 
         return "/channel/session_instance?faces-redirect=true";
     }
-    
+
     public String navigateToManageSessionInstanceFromBillSession() {
-        if(selectedBillSession==null){
+        if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("No Bill Session");
             return null;
         }
@@ -349,6 +354,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setToDate(toDate);
         viewScopeDataTransferController.setNeedToFillBillSessions(true);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         return "/channel/session_instance?faces-redirect=true";
     }
 
@@ -531,8 +538,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void sessionInstanceSelected() {
         fillSessionInstanceDetails();
     }
-    
-    public void fillSessionInstanceDetails(){
+
+    public void fillSessionInstanceDetails() {
         System.out.println("sessionInstanceSelected");
         System.out.println("1 = " + (new Date().getTime()));
         System.out.println("selectedSessionInstance = " + selectedSessionInstance);
@@ -717,8 +724,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             toDate = tmptoDate;
         }
         sessionInstanceFilter = viewScopeDataTransferController.getSessionInstanceFilter();
-        listAllSesionInstances();
+
+        needToFillSessionInstances = viewScopeDataTransferController.getNeedToFillSessionInstances();
+        if (needToFillSessionInstances==null || needToFillSessionInstances != false) {
+            listAllSesionInstances();
+        }
+
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
+        needToFillSessionInstanceDetails = viewScopeDataTransferController.getNeedToFillSessionInstanceDetails();
+        if (needToFillSessionInstanceDetails==null || needToFillSessionInstanceDetails!=false) {
+            fillSessionInstanceDetails();
+        }
+
         needToFillBillSessions = viewScopeDataTransferController.getNeedToFillBillSessions();
         if (needToFillBillSessions != null && needToFillBillSessions) {
             fillBillSessions();
@@ -728,6 +745,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (Boolean.TRUE.equals(needToFillBillSessionDetails) && selectedBillSession != null) {
             fillBillSessionDetails();
+            fillFees();
         }
 
     }
@@ -837,8 +855,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
+
         viewScopeDataTransferController.setNeedToFillBillSessions(true);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
 
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
@@ -858,6 +879,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void fillBillSessionDetails() {
+        System.out.println("fillBillSessionDetails");
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Selected Bill Session is Null");
             return;
@@ -869,12 +891,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (selectedBillSession.getBill().getBillItems() == null) {
             selectedBillSession.getBill().setBillItems(billController.billItemsOfBill(selectedBillSession.getBill()));
         }
-        channelBillController.setBillSession(selectedBillSession);
         if (selectedBillSession.getBill().getBillItems() == null) {
             JsfUtil.addErrorMessage("Bill Items Null");
             return;
         }
-
         if (selectedBillSession.getBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
@@ -902,8 +922,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
+
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -914,8 +938,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
-        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        
+        
+        
+        viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
+
         return "/channel/channel_booking_by_date?faces-redirect=true";
     }
 
@@ -6131,6 +6161,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setReservedBookingNumbers(List<Integer> reservedBookingNumbers) {
         this.reservedBookingNumbers = reservedBookingNumbers;
+    }
+
+    public Boolean getNeedToFillSessionInstances() {
+        return needToFillSessionInstances;
+    }
+
+    public void setNeedToFillSessionInstances(Boolean needToFillSessionInstances) {
+        this.needToFillSessionInstances = needToFillSessionInstances;
+    }
+
+    public Boolean getNeedToFillSessionInstanceDetails() {
+        return needToFillSessionInstanceDetails;
+    }
+
+    public void setNeedToFillSessionInstanceDetails(Boolean needToFillSessionInstanceDetails) {
+        this.needToFillSessionInstanceDetails = needToFillSessionInstanceDetails;
     }
 
 }
