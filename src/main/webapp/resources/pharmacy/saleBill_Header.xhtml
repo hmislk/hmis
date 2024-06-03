@@ -17,17 +17,17 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
-        <div class="posbillheader" style="page-break-after: always!important; width: 100%; max-width: 80mm">
+        <div class="posbillheader1" style="page-break-after: always!important; max-width: 80mm;">
             
             <div class="d-flex align-items-center mx-2">
                 <div>
                     <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="100" width="100"/>
                 </div>
                 <div class="ml-3" style="text-align: center">
-                    <h:outputLabel style="font-size: 1.1em; font-weight: 600" value="#{cc.attrs.bill.institution.name}"></h:outputLabel><br/>
-                    <h:outputLabel style="font-size: 0.9em;" value="#{cc.attrs.bill.institution.address}"></h:outputLabel><br/>
-                    <h:outputLabel style="font-size: 0.9em;" value="#{cc.attrs.bill.department.printingName}"></h:outputLabel><br/>
-                     <h:outputLabel style="font-size: 0.9em;" value="#{cc.attrs.bill.department.telephone1} "></h:outputLabel><br/>
+                    <h:outputLabel style="font-size: 1em; font-weight: 600" value="#{cc.attrs.bill.institution.name}"></h:outputLabel><br/>
+                    <h:outputLabel style="font-size: 0.8em;" value="#{cc.attrs.bill.institution.address}"></h:outputLabel><br/>
+                    <h:outputLabel style="font-size: 0.8em;" value="#{cc.attrs.bill.department.printingName}"></h:outputLabel><br/>
+                     <h:outputLabel style="font-size: 0.8em;" value="#{cc.attrs.bill.department.telephone1} "></h:outputLabel><br/>
                 </div>
             </div> 
             

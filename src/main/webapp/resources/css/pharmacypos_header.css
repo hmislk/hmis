@@ -2,14 +2,13 @@
     .posbillheader{
         position: relative!important;
         margin-top: -0.5cm!important;
-        width: 100%;
-        max-width: 80mm;
+        width: 80mm;
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
         font-family: monospace!important;
         /*        font:*/
-        font-size: 12px!important;
+        font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
 
 
