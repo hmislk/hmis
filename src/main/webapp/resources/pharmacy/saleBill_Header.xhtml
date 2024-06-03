@@ -17,11 +17,11 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
-        <div class="posbillheader1" style="page-break-after: always!important; max-width: 80mm;">
+        <div class="posbillheader" style="page-break-after: always!important; max-width: 70mm;">
             
-            <div class="d-flex align-items-center mx-2">
+            <div class="d-flex align-items-center">
                 <div>
-                    <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="100" width="100"/>
+                    <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="100" width="80"/>
                 </div>
                 <div class="ml-3" style="text-align: center">
                     <h:outputLabel style="font-size: 1em; font-weight: 600" value="#{cc.attrs.bill.institution.name}"></h:outputLabel><br/>
@@ -113,7 +113,7 @@
 
 
             <div class="billline" style="width: 100%;">
-                <h:outputLabel value="-------------------------------------------"   />                        
+                <h:outputLabel value="-----------------------------------------"   />                        
             </div>
 
 
@@ -139,7 +139,7 @@
                     <tr>
                         <td colspan="4" style="width: 100%">
                             <div class="billline">
-                                <h:outputLabel value="------------------------------------------"   />                             
+                                <h:outputLabel value="----------------------------------------"   />                             
                             </div>
                         </td>
 
@@ -189,7 +189,7 @@
 
 
             <div class="billline" style="width: 100%;">
-                <h:outputLabel value="-------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------"   />                           
             </div>
 
 
