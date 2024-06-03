@@ -24,12 +24,6 @@
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 ajax="false" 
-                                class="mx-1 ui-button-success"
-                                value="Back to Session" 
-                                action="#{bookingControllerViewScope.navigateToManageSessionInstanceFromBillSession()}"
-                                icon="fa-solid fa-arrow-left" />
-                            <p:commandButton 
-                                ajax="false" 
                                 class="mx-1 ui-button-secondary"
                                 value="Back to Bookings" 
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
@@ -39,7 +33,7 @@
 
                 </f:facet>
                 <p:tabView id="detail">
-                    <p:tab title="Settle" id="settle" >
+                    <p:tab title="Settle" id="settle">
 
                         <p:panel  id="set" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Channel Credit Booking Settle Requires Additional Information')}">
 
@@ -472,73 +466,7 @@
                                         </p:panel>
                                     </div>
                                     <div class="col-md-12 my-2">
-                                        <ch:bill_fees
-                                            rendered="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
-                                                        or bookingControllerViewScope.selectedBillSession.bill.cancelled==true
-                                                        or  bookingControllerViewScope.selectedBillSession.bill.paidAmount ne 0}"
-                                            bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"> 
-
-
-
-                                        </ch:bill_fees>
-
-                                        <h:panelGroup
-                                            rendered="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent eq 'ChannelCreditFlow'
-                                                        and bookingControllerViewScope.selectedBillSession.bill.cancelled == false
-                                                        and bookingControllerViewScope.selectedBillSession.bill.paidAmount == 0}"
-                                            >
-
-                                            <h1>Edit Fees Here</h1>
-
-                                            <h:panelGroup id="gpAdditionalItems" >
-                                                <p:panel header="Additional Items" rendered="#{not empty bookingControllerViewScope.itemsAvailableToAddToBooking}">
-                                                    <p:row >
-                                                        <p:column >
-                                                            <p:outputLabel  value="Item" ></p:outputLabel>
-                                                        </p:column>
-                                                        <p:column >
-                                                            <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
-                                                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                                <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                                <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
-                                                            </p:selectOneMenu>
-                                                        </p:column>
-                                                        <p:column >
-                                                            <p:commandButton 
-                                                                id="btnAddItem"
-                                                                process="lstItems btnAddItem"
-                                                                value="Add Item" 
-                                                                icon="fas fa-plus"
-                                                                class="ui-button-success"
-                                                                action="#{bookingControllerViewScope.addItemToBooking}"
-                                                                update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
-                                                                ></p:commandButton>
-                                                        </p:column>
-                                                    </p:row>
-
-                                                    <h:panelGroup id="lstAddedItems" >
-                                                        <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}">
-                                                            <div class="row">
-                                                                <div class="d-flex justify-content-between align-items-center my-2">
-                                                                    <h6>#{item.name}</h6>
-                                                                    <h6>#{item.itemFee.fee}</h6>
-                                                                    <p:commandButton 
-                                                                        id="btnRemoveAdditem" 
-                                                                        icon="fas fa-trash" 
-                                                                        class="ui-button-danger" 
-                                                                        action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" 
-                                                                        process="btnRemoveAdditem" 
-                                                                        update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
-                                                                </div>
-                                                            </div>
-                                                        </ui:repeat>
-
-                                                    </h:panelGroup>
-                                                </p:panel>
-                                            </h:panelGroup>
-
-                                        </h:panelGroup>
-
+                                        <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                     </div>
                                 </div>
                             </h:panelGroup>
@@ -882,6 +810,10 @@
                                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" duplicate="true"/>
                             <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                             </h:panelGroup>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" duplicate="true"/>
+                            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
+                                                            </h:panelGroup>
                                                         </ui:repeat>
                                                     </h:panelGroup>
                                                 </div>
@@ -1015,9 +947,22 @@
                                          onclick="PF('confirmationDialog').show();"/>
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationDialog" modal="true" resizable="false">
                             <p>Are you sure you want to cancel the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{bookingControllerViewScope.comment}"
-                                         placeholder="Please provide a comment for the cancel Channel Booking" />
+                            <p:selectOneMenu 
+                                id="commentsMenuCancel" 
+                                value="#{billSearch.comment}" 
+                                editable="true" 
+                                filter="true" 
+                                placeholder="Select or enter a comment"
+                                filterMatchMode="contains"  
+                                style="float: right; width: 100%" 
+                                class="p-2">
+                                <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems 
+                                    value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Canceling Comments')}" 
+                                    var="option" 
+                                    itemLabel="#{option}" 
+                                    itemValue="#{option}"/>
+                            </p:selectOneMenu>
 
                             <f:facet name="footer">
                                 <p:commandButton
@@ -1078,9 +1023,22 @@
 
                         <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmationRefundDialog" modal="true" resizable="false">
                             <p>Are you sure you want to refund the channel booking?</p>
-                            <p:inputText class="w-100"
-                                         value="#{bookingControllerViewScope.commentR}"
-                                         placeholder="Please provide a comment for the Refund of Channel Booking" />
+                            <p:selectOneMenu 
+                                id="commentsMenuRefund" 
+                                value="#{billSearch.comment}" 
+                                editable="true" 
+                                filter="true" 
+                                placeholder="Select or enter a comment"
+                                filterMatchMode="contains"  
+                                style="float: right; width: 100%" 
+                                class="p-2">
+                                <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems 
+                                    value="#{configOptionApplicationController.getListOfCustomOptions('Channel Bill Refunding Comments')}" 
+                                    var="option" 
+                                    itemLabel="#{option}" 
+                                    itemValue="#{option}"/>
+                            </p:selectOneMenu>
 
                             <f:facet name="footer">
                                 <p:commandButton
