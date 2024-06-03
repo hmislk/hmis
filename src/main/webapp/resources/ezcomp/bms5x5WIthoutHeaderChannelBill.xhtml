@@ -178,16 +178,16 @@
                 <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
                     <tr>
                         <td>
-                            <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
+                            <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
                         </td>
                         <td>
-                            <p:spacer width="10" rendered="#{cbif.feeGrossValue ne 0.0}"></p:spacer>
+                            <p:spacer width="10" ></p:spacer>
                         </td>
                         <td>
-                            <h:outputLabel value=":" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
+                            <h:outputLabel value=":" ></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value="#{cbif.feeGrossValue}" rendered="#{cbif.feeGrossValue ne 0.0}">
+                            <h:outputLabel value="#{cbif.feeGrossValue}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>
                         </td>
