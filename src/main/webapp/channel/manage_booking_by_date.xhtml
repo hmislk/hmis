@@ -949,7 +949,7 @@
                             <p>Are you sure you want to cancel the channel booking?</p>
                             <p:selectOneMenu 
                                 id="commentsMenuCancel" 
-                                value="#{billSearch.comment}" 
+                                value="#{bookingControllerViewScope.comment}" 
                                 editable="true" 
                                 filter="true" 
                                 placeholder="Select or enter a comment"
@@ -1025,7 +1025,7 @@
                             <p>Are you sure you want to refund the channel booking?</p>
                             <p:selectOneMenu 
                                 id="commentsMenuRefund" 
-                                value="#{billSearch.comment}" 
+                                value="#{bookingControllerViewScope.commentR}" 
                                 editable="true" 
                                 filter="true" 
                                 placeholder="Select or enter a comment"
