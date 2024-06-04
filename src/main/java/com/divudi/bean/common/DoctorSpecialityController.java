@@ -256,9 +256,6 @@ public class DoctorSpecialityController implements Serializable {
         return items;
     }
 
-    /**
-     *
-     */
     @FacesConverter(forClass = DoctorSpeciality.class)
     public static class DoctorSpecialityControllerConverter implements Converter {
 
@@ -267,21 +264,22 @@ public class DoctorSpecialityController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            DoctorSpecialityController controller = (DoctorSpecialityController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "doctorSpecialityController");
-            return controller.getEjbFacade().find(getKey(value));
+            try {
+                DoctorSpecialityController controller = (DoctorSpecialityController) facesContext.getApplication().getELResolver().
+                        getValue(facesContext.getELContext(), null, "doctorSpecialityController");
+                return controller.getEjbFacade().find(getKey(value));
+            } catch (NumberFormatException e) {
+// Log the error and handle the exception
+                                return null;
+            }
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            return Long.valueOf(value);
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return value.toString();
         }
 
         @Override

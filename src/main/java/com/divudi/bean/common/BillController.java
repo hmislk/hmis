@@ -292,13 +292,13 @@ public class BillController implements Serializable {
             if (billFee.getFee() == null) {
                 continue;
             }
-            if(billFee.getFee().getFeeType()!=FeeType.Staff){
-                hospitalFee+=billFee.getFeeValue();
+            if (billFee.getFee().getFeeType() != FeeType.Staff) {
+                hospitalFee += billFee.getFeeValue();
             }
         }
         return hospitalFee;
     }
-    
+
     public double getStaffFee(BillItem i) {
         List<BillFee> billFees = billFeesOfBillItem(i);
         double hospitalFee = 0.0;
@@ -306,8 +306,8 @@ public class BillController implements Serializable {
             if (billFee.getFee() == null) {
                 continue;
             }
-            if(billFee.getFee().getFeeType()==FeeType.Staff){
-                hospitalFee+=billFee.getFeeValue();
+            if (billFee.getFee().getFeeType() == FeeType.Staff) {
+                hospitalFee += billFee.getFeeValue();
             }
         }
         return hospitalFee;
@@ -1612,32 +1612,45 @@ public class BillController implements Serializable {
     }
 
     public List<BillFee> findBillFees(Staff staff, Date fromDate, Date toDate) {
+        System.out.println("findBillFees");
         List<BillFee> tmpFees;
         String jpql;
         List<BillTypeAtomic> btcs = new ArrayList<>();
         btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btcs.add(BillTypeAtomic.CC_BILL);
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
+
         jpql = "select bf "
                 + " from BillFee bf"
                 + " where bf.retired=:ret"
-                + " and bf.bill.billTime between :fromDate and :toDate "
                 + " and bf.staff=:staff "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
                 + " and bf.bill.billTypeAtomic in :btcs "
-                + " and bf.fee.feeType=:ft ";
+                + " and bf.fee.feeType=:ft";
+
+        if (fromDate != null) {
+            jpql += " and bf.bill.billTime >= :fromDate";
+            m.put("fromDate", fromDate);
+        }
+
+        if (toDate != null) {
+            jpql += " and bf.bill.billTime <= :toDate";
+            m.put("toDate", toDate);
+        }
+
         m.put("btcs", btcs);
         m.put("staff", staff);
         m.put("ret", false);
         m.put("ft", FeeType.Staff);
-        m.put("fromDate", fromDate);
-        m.put("toDate", toDate);
+
+
         tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        List<BillFee> removeingBillFees = new ArrayList<>();
+
+        List<BillFee> removingBillFees = new ArrayList<>();
         for (BillFee bf : tmpFees) {
-            m = new HashMap();
+            m = new HashMap<>();
             jpql = "SELECT bi FROM BillItem bi where "
                     + " bi.retired=false"
                     + " and bi.bill.cancelled=false "
@@ -1646,13 +1659,11 @@ public class BillController implements Serializable {
             m.put("class", RefundBill.class);
             m.put("rbi", bf.getBillItem());
             BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
-
             if (rbi != null) {
-                removeingBillFees.add(bf);
+                removingBillFees.add(bf);
             }
-
         }
-        tmpFees.removeAll(removeingBillFees);
+        tmpFees.removeAll(removingBillFees);
 
         return tmpFees;
     }
@@ -2231,7 +2242,7 @@ public class BillController implements Serializable {
 //            for (BillEntry be : getLstBillEntries()) {
 //                if (be.getBillItem().getItem() instanceof Investigation) {
 //                    if (referredBy == null && referredByInstitution == null) {
-//                        JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+//                        JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
 //                        return true;
 //                    }
 //                }
@@ -2274,7 +2285,7 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
 
@@ -3170,8 +3181,8 @@ public class BillController implements Serializable {
         billFacade.edit(bill);
         JsfUtil.addSuccessMessage("Ref Doctor Updated");
     }
-    
-    public String findBatchBillSessionID(String deptID){
+
+    public String findBatchBillSessionID(String deptID) {
         String jpql = "select b from Bill b "
                 + "where b.billType=:bt "
                 + " and type(b)=:type "
@@ -3179,22 +3190,22 @@ public class BillController implements Serializable {
                 + " and b.retired=:ret"
                 + " and b.deptId is not null "
                 + " and b.cancelled=false";
-        
+
         Map m = new HashMap();
         m.put("bt", BillType.OpdBathcBillPre);
         m.put("id", deptID);
         m.put("type", PreBill.class);
         m.put("ret", false);
-        
+
         Bill b = billFacade.findFirstByJpql(jpql, m);
         //System.out.println("b = " + b);
         //System.out.println("b.getSessionId() = " + b.getSessionId());
-        if((b.getSessionId() == null) || ("".equals(b.getSessionId().trim()))){
+        if ((b.getSessionId() == null) || ("".equals(b.getSessionId().trim()))) {
             return "*0*";
-        }else{
+        } else {
             return b.getSessionId();
         }
-        
+
     }
 
     public BillFacade getEjbFacade() {

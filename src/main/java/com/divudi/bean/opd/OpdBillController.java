@@ -124,7 +124,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -138,21 +137,21 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @EJB
     private SmsManagerEjb smsManagerEjb;
     @EJB
-    TokenFacade tokenFacade;
+    private TokenFacade tokenFacade;
 
     /**
      * Controllers
      */
     @Inject
-    BillController billController;
+    private BillController billController;
     @Inject
     private SessionController sessionController;
     @Inject
     private ItemController itemController;
     @Inject
-    ItemApplicationController itemApplicationController;
+    private ItemApplicationController itemApplicationController;
     @Inject
-    ItemMappingController itemMappingController;
+    private ItemMappingController itemMappingController;
     @Inject
     private CommonController commonController;
     @Inject
@@ -176,9 +175,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @Inject
     private AuditEventController auditEventController;
     @Inject
-    WorkingTimeController workingTimeController;
+    private WorkingTimeController workingTimeController;
     @Inject
-    FinancialTransactionController financialTransactionController;
+    private FinancialTransactionController financialTransactionController;
+    @Inject
+    private DepartmentController departmentController;
+    @Inject
+    ViewScopeDataTransferController viewScopeDataTransferController;
 
     @Inject
     OpdTokenController opdTokenController;
@@ -191,6 +194,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     /**
      * Class Variables
      */
+    private CommonFunctions commonFunctions;
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
@@ -272,17 +276,21 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private int opdAnalyticsIndex;
 
     private List<ItemLight> opdItems;
+    private List<ItemLight> departmentOpdItems;
     private boolean patientDetailsEditable;
 
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
     List<BillSession> billSessions;
+    private List<Department> opdItemDepartments;
+    private Department selectedOpdItemDepartment;
 
     private boolean duplicatePrint;
     private Token token;
 
     private Double totalHospitalFee;
     private Double totalSaffFee;
+    private boolean canChangeSpecialityAndDoctorInAddedBillItem;
 
     /**
      *
@@ -314,7 +322,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void fillOpdBillItems() {
-        System.out.println("fillOpdBillItems");
         lstBillItems = new ArrayList<>();
         String jpql;
         Map m = new HashMap();
@@ -329,14 +336,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         m.put("to", toDate);
         m.put("ret", false);
         m.put("can", false);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         lstBillItems = billItemFacade.findByJpql(jpql, m);
         if (lstBillItems == null) {
             return;
         }
         for (BillItem i : lstBillItems) {
-            System.out.println("i = " + i);
             if (i.getBillFees() == null || i.getBillFees().isEmpty()) {
                 i.setBillFees(billController.billFeesOfBillItem(i));
             }
@@ -387,19 +391,73 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
+        List<ItemLight> temItems;
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
-                return itemApplicationController.getInvestigationsAndServices();
+                temItems = itemApplicationController.getInvestigationsAndServices();
+                break;
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
-                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+                temItems = itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+                break;
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
-                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+                temItems = itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+                break;
             case ITEMS_OF_LOGGED_DEPARTMENT:
-                return itemController.getDepartmentItems();
+                temItems = itemController.getDepartmentItems();
+                break;
             case ITEMS_OF_LOGGED_INSTITUTION:
-                return itemController.getInstitutionItems();
+                temItems = itemController.getInstitutionItems();
+                break;
             default:
-                return itemApplicationController.getInvestigationsAndServices();
+                temItems = itemApplicationController.getInvestigationsAndServices();
+                break;
+        }
+        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
+        if (listItemsByDepartment) {
+            fillOpdItemDepartments(temItems);
+        } else {
+            opdItemDepartments = null;
+        }
+        if (getSelectedOpdItemDepartment() != null) {
+            departmentOpdItems = filterItemLightesByDepartment(temItems, getSelectedOpdItemDepartment());
+        }
+
+        return temItems;
+    }
+
+    private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
+        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
+        if (!listItemsByDepartment || dept == null || dept.getId() == null) {
+            return ils;
+        }
+        List<ItemLight> tils = new ArrayList<>();
+        for (ItemLight il : ils) {
+            if (il.getDepartmentId() != null && il.getDepartmentId().equals(dept.getId())) {
+                tils.add(il);
+            }
+        }
+        return tils;
+    }
+
+    public void departmentChanged() {
+        if (selectedOpdItemDepartment == null) {
+            departmentOpdItems = getOpdItems();
+        } else {
+            departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
+        }
+    }
+
+    public void fillOpdItemDepartments(List<ItemLight> itemLightsToAddDepartments) {
+        opdItemDepartments = new ArrayList<>();
+        Set<Long> uniqueDeptIds = new HashSet<>();
+        for (ItemLight il : itemLightsToAddDepartments) {
+            if (il.getDepartmentId() != null) {
+                uniqueDeptIds.add(il.getDepartmentId());
+            }
+        }
+        for (Long deptId : uniqueDeptIds) {
+            Department d = departmentController.findDepartment(deptId);
+            opdItemDepartments.add(d);
         }
     }
 
@@ -1409,16 +1467,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         s.setSmsType(MessageType.OpdBillSettle);
         getSmsFacade().create(s);
 
-        SmsSentResponse sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
-        if (sent.isSentSuccefully()) {
-            s.setSentSuccessfully(true);
-            s.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(s);
+        Boolean sent = smsManagerEjb.sendSms(s);
+        if (sent) {
             JsfUtil.addSuccessMessage("Sms send");
         } else {
-            s.setSentSuccessfully(false);
-            s.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(s);
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
     }
@@ -1624,7 +1676,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             b.setVat(b.getVat());
             b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
-            
+
             getBillFacade().edit(b);
             getBillBean().checkBillItemFeesInitiated(b);
             getBills().add(b);
@@ -1638,10 +1690,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
 
-        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-            staffBean.updateStaffCredit(toStaff, netPlusVat);
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            staffBean.updateStaffWelfare(toStaff, netPlusVat);
             JsfUtil.addSuccessMessage("User Credit Updated");
+        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
+            staffBean.updateStaffCredit(toStaff, netPlusVat);
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         }
+
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             if (getPatient().getRunningBalance() != null) {
                 getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
@@ -1650,6 +1706,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
             getPatientFacade().edit(getPatient());
         }
+
         if (getToken() != null) {
             getToken().setBill(getBatchBill());
             tokenFacade.edit(getToken());
@@ -1871,7 +1928,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
         newBill.setDeptId(deptId);
-
         switch (sessionController.getDepartmentPreference().getOpdTokenNumberGenerationStrategy()) {
             case NO_TOKEN_GENERATION:
                 newBill.setSessionId(null);
@@ -2019,6 +2075,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Can not bill without a name for the new Patient !");
             return true;
         }
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return true;
+        }
         if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
             if (getPatient().getPerson().getArea() == null) {
                 JsfUtil.addErrorMessage("Please Add Patient Area");
@@ -2050,7 +2110,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
             if (referredBy == null && referredByInstitution == null) {
-                JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+                JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
                 return true;
             }
         }
@@ -2059,7 +2119,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem() instanceof Investigation) {
                     if (referredBy == null && referredByInstitution == null) {
-                        JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+                        JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
                         return true;
                     }
                 }
@@ -2094,12 +2154,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return true;
         }
 
-        if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return true;
-        }
-
-        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+        if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
 
@@ -2125,20 +2180,34 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
 
         if (paymentMethod == PaymentMethod.Credit) {
-            if (toStaff == null && creditCompany == null && collectingCentre == null) {
+            if (creditCompany == null && collectingCentre == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
                 return true;
             }
-            if (toStaff != null && creditCompany != null) {
-                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+        }
+
+        if (paymentMethod == PaymentMethod.Staff) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member.");
                 return true;
             }
-            if (toStaff != null) {
-                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    JsfUtil.addErrorMessage("No enough walfare credit.");
-                    return true;
-                }
+
+            if (toStaff.getCurrentCreditValue() + netTotal > toStaff.getCreditLimitQualified()) {
+                JsfUtil.addErrorMessage("No enough Credit.");
+                return true;
             }
+        }
+
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                return true;
+            }
+            if (Math.abs(toStaff.getAnnualWelfareUtilized()) + netTotal > toStaff.getAnnualWelfareQualified()) {
+                JsfUtil.addErrorMessage("No enough credit.");
+                return true;
+            }
+
         }
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -2176,11 +2245,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         }
 
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-            JsfUtil.addErrorMessage("Check Payment method");
-            return true;
-        }
-
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (cashPaid == 0.0) {
                 JsfUtil.addErrorMessage("Please enter the paid amount");
@@ -2188,10 +2252,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
 
         }
-
-//        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
-//            return true;
-//        }
         return false;
     }
 
@@ -2319,9 +2379,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
-        if(clearItemAfterAddingToOpdBill){
+        if (clearItemAfterAddingToOpdBill) {
             setItemLight(null);
-        }else{
+        } else {
             setItemLight(itemLight);
         }
         JsfUtil.addSuccessMessage("Added");
@@ -2337,6 +2397,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getCurrentlyWorkingStaff().isEmpty()) {
             return;
         }
+
         for (BillFee bf : tmpBfs) {
             if (bf.getFee() == null) {
                 continue;
@@ -2344,21 +2405,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-//            if (bf.getFee().getSpeciality() == null) {
-//                bf.setStaff(getSelectedCurrentlyWorkingStaff());
-//                continue;
-//            }
+
             if (bf.getFee().getFeeType() == FeeType.Staff) {
-                if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                    if (bf.getFee().getStaff() == null) {
+                if (bf.getFee().getStaff() == null) {
+                    if (bf.getFee().getSpeciality() != null) {
+                        boolean staffSet = false;
+                        for (Staff s : currentlyWorkingStaff) {
+                            if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
+                                bf.setStaff(s);
+                                staffSet = true;
+                                break;
+                            }
+                        }
+                        if (!staffSet) {
+                        }
+                    } else {
+                        System.out.println("bf.getStaff() = " + bf.getStaff());
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
                     }
                 } else {
-                    for (Staff s : currentlyWorkingStaff) {
-                        if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                            bf.setStaff(s);
-                        }
-                    }
                 }
             }
         }
@@ -2374,7 +2439,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
-        payments=null;
+        payments = null;
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -2401,7 +2466,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-
+        currentlyWorkingStaff = null;
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
@@ -2453,16 +2518,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
-//     //   ////// // System.out.println("calculating totals");
         if (paymentMethod == null) {
             return;
         }
 
-        if (toStaff != null) {
-            paymentScheme = null;
-            creditCompany = null;
-        }
-
+//        if (toStaff != null) {
+//            paymentScheme = null;
+//            creditCompany = null;
+//        }
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -2731,8 +2794,38 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToNewOpdBill(Patient pt) {
+        String navigateLink = navigateToNewOpdBill();
+        patient = pt;
+        return navigateLink;
+    }
+
+    public String navigateToNewOpdBillFromChannelling() {
+        String navigateLink = navigateToNewOpdBill();
+        BillSession bs = viewScopeDataTransferController.getSelectedBillSession();
+        if (bs == null) {
+            return null;
+        }
+        if (bs.getBill().getPatient() == null) {
+            return null;
+        }
+        if (bs.getSessionInstance().getStaff() == null) {
+            return null;
+        }
+        patient = bs.getBill().getPatient();
+        Staff channellingDoc = bs.getSessionInstance().getStaff();
+        getCurrentlyWorkingStaff().add(channellingDoc);
+        setSelectedCurrentlyWorkingStaff(channellingDoc);
+        if (channellingDoc.getDepartment() != null) {
+            setSelectedOpdItemDepartment(channellingDoc.getDepartment());
+            departmentChanged();
+        }
+        return navigateLink;
+    }
+
+    public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {
         navigateToNewOpdBill();
         patient = pt;
+        paymentScheme = ps;
         return "/opd/opd_bill?faces-redirect=true";
     }
 
@@ -3672,7 +3765,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Payment> getPayments() {
-        if(payments==null){
+        if (payments == null) {
             payments = new ArrayList<>();
         }
         return payments;
@@ -3731,6 +3824,57 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public void setTotalSaffFee(Double totalSaffFee) {
         this.totalSaffFee = totalSaffFee;
+    }
+
+    public boolean isCanChangeSpecialityAndDoctorInAddedBillItem() {
+        return canChangeSpecialityAndDoctorInAddedBillItem;
+    }
+
+    public void setCanChangeSpecialityAndDoctorInAddedBillItem(boolean canChangeSpecialityAndDoctorInAddedBillItem) {
+        boolean config = configOptionController.getBooleanValueByKey("Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill", OptionScope.DEPARTMENT, null, null, null);
+        this.canChangeSpecialityAndDoctorInAddedBillItem = config;
+    }
+
+    public List<Department> getOpdItemDepartments() {
+        if (opdItemDepartments == null) {
+            getOpdItems();
+        }
+        return opdItemDepartments;
+    }
+
+    public void setOpdItemDepartments(List<Department> opdItemDepartments) {
+        this.opdItemDepartments = opdItemDepartments;
+    }
+
+    public Department getSelectedOpdItemDepartment() {
+        if (selectedOpdItemDepartment == null) {
+            if (opdItemDepartments != null && !opdItemDepartments.isEmpty()) {
+                selectedOpdItemDepartment = opdItemDepartments.get(0);
+            }
+        }
+        return selectedOpdItemDepartment;
+    }
+
+    public void setSelectedOpdItemDepartment(Department selectedOpdItemDepartment) {
+        this.selectedOpdItemDepartment = selectedOpdItemDepartment;
+    }
+
+    public void fillDepartmentOpdItems() {
+        departmentOpdItems = null;
+        itemApplicationController.reloadItems();
+        getDepartmentOpdItems();
+    }
+
+    public List<ItemLight> getDepartmentOpdItems() {
+        if (departmentOpdItems == null) {
+            getOpdItems();
+            departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
+        }
+        return departmentOpdItems;
+    }
+
+    public void setDepartmentOpdItems(List<ItemLight> departmentOpdItems) {
+        this.departmentOpdItems = departmentOpdItems;
     }
 
 }

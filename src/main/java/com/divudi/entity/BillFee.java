@@ -101,8 +101,6 @@ public class BillFee implements Serializable {
     double transNetValue;
     @ManyToOne
     private PatientRoom referencePatientRoom;
-    
-    
 
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
@@ -366,20 +364,17 @@ public class BillFee implements Serializable {
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                 }
 
-                //SETTING DISCOUNT
-                this.feeDiscount = this.feeGrossValue * (discountPercent / 100) ;
+                // SETTING DISCOUNT
+                this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                 this.feeValue = this.feeGrossValue - this.feeDiscount;
-//                this.feeVatPlusValue = this.feeVat + this.feeValue;
 
             } else {
                 if (foriegn) {
                     this.feeGrossValue = getFee().getFfee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFfee() * this.getBillItem().getQty();
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeGrossValue = getFee().getFee() * this.getBillItem().getQty();
                     this.feeValue = getFee().getFee() * this.getBillItem().getQty();
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             }
         } else {
@@ -388,18 +383,14 @@ public class BillFee implements Serializable {
                 if (tmpChangedValue != 0) {
                     this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                     this.feeValue = this.feeGrossValue - this.feeDiscount;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeValue = 0;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             } else {
                 this.feeGrossValue = tmpChangedValue * this.getBillItem().getQty();
                 this.feeValue = tmpChangedValue * this.getBillItem().getQty();
-//                this.feeVatPlusValue = this.feeVat + this.feeValue;
             }
         }
-
     }
 
     public Long getId() {

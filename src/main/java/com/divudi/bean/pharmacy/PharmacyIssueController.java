@@ -400,6 +400,14 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Department");
             return true;
         }
+        if(preBill.getComments() == null || preBill.getComments().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Add Comment");
+            return true;
+        }
+        if(preBill.getInvoiceNumber() == null || preBill.getInvoiceNumber().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Fill Invoice Number");
+            return true;
+        }
         return false;
     }
 
@@ -479,6 +487,10 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private boolean checkAllBillItem() {
+        if(getPreBill().getBillItems().isEmpty()){
+            JsfUtil.addErrorMessage("Please add items");
+            return true;
+        }
         for (BillItem b : getPreBill().getBillItems()) {
 
             if (onEdit(b)) {
@@ -538,17 +550,12 @@ public class PharmacyIssueController implements Serializable {
             return;
         }
         
-        if(storeIssueController.getPreBill().getComments() == null){
-            JsfUtil.addErrorMessage("Write the Comment..");
-            return;
-        }
-
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
-        getPreBill().setComments(storeIssueController.getPreBill().getComments());
-        getPreBill().setInvoiceNumber(storeIssueController.getPreBill().getInvoiceNumber());
+        getPreBill().setComments(getPreBill().getComments());
+        getPreBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
@@ -605,12 +612,12 @@ public class PharmacyIssueController implements Serializable {
 
         if (getStock() == null) {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
-            JsfUtil.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Please Enter Item");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Please enter a quentity");
             return;
         }
 

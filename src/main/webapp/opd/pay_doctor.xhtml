@@ -10,7 +10,7 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
-    
+
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -20,35 +20,78 @@
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
 
                     <h:form class="container-fluid" >
-                        <p:panel >
+                        <p:panel class="text-center">
                             <f:facet name="header" >
-                                <h:outputText value="Pay Staff" >
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                         <h:outputText value="Pay Staff" >
                                 </h:outputText>
+                                    </div>
+                                    <div>
+                                        <p:commandButton rendered="#{workingTimeController.staff ne null}" value="Back" ajax="false" class="ui-button-secondary" action="#{workingTimeController.navigateBackToDoctorSelect()}"/>
+                                    </div>
+                                </div>
+                               
                             </f:facet>
 
-                            <p:panelGrid columns="3" class="w-75" rendered="#{workingTimeController.staff eq null}">
+                            <p:panelGrid columns="2" 
+                                         class="w-75 mx-auto" 
+                                         rendered="#{workingTimeController.staff eq null}">
                                 <f:facet name="header" >
                                     <h:outputText value="Select Doctor" ></h:outputText>
                                 </f:facet>
 
                                 <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
-                                <p:autoComplete value="#{workingTimeController.staff}" 
-                                                completeMethod="#{doctorController.completeDoctor}"
-                                                var="s"
-                                                itemLabel="#{s.person.name}"
-                                                itemValue="#{s}"
-                                                >
-                                    <p:column headerText="Speciality">
-                                        <h:outputText value="#{s.speciality.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Doctor">
-                                        <h:outputText value="#{s.person.nameWithTitle}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
+                                <p:selectOneMenu 
+                                    id="acSpeciality"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{workingTimeController.speciality}"
+                                    class="w-100 fullHeightListbox"
+                                    >
+                                    <p:ajax
+                                        event="change"
+                                        process="@this" 
+                                        update="scStaff"
+                                        listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{doctorSpecialityController.selectedItems}"
+                                        var="spe" 
+                                        itemValue="#{spe}"
+                                        itemLabel="#{spe.name}">
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Doctor / Staff" ></p:outputLabel>
+                                <p:selectOneMenu 
+                                    id="scStaff"
+                                    value="#{workingTimeController.staff}" 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    class="w-100"
+                                    >
+                                    <f:selectItems  value="#{workingTimeController.listOfDoctors}"
+                                                    var="s"
+                                                    itemLabel="#{s.person.name}"
+                                                    itemValue="#{s}"></f:selectItems>
+                                </p:selectOneMenu>
+
+
+                                <p:spacer rendered="#{not configOptionApplicationController.getBooleanValueByKey('OPD Doctor Payments can be given without closing the shift.')}"></p:spacer>
+
                                 <p:commandButton 
                                     ajax="false" 
-                                    value="Select"
-                                    action="#{workingTimeController.selectStaffForOpdPayment}" ></p:commandButton>
+                                    value="Select for Shift Payments"
+                                    action="#{workingTimeController.selectStaffForOpdPaymentForShifts()}" ></p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Select for All Payments"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor Payments can be given without closing the shift.')}"
+                                    action="#{workingTimeController.selectStaffForOpdPaymentForAll()}" ></p:commandButton>
+
+
 
                             </p:panelGrid>
 
@@ -64,6 +107,9 @@
                                             <h:outputText value="#{workingTimeController.staff.person.name}" />
                                             <p:outputLabel value="Speciality" />
                                             <h:outputText value="#{workingTimeController.staff.speciality.name}" />
+                                            <p:outputLabel value="ID" />
+                                            <h:outputText value="#{workingTimeController.staff.id}" />
+
                                             <p:outputLabel value="Shift Start" />
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.startRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
@@ -72,6 +118,20 @@
                                             <h:outputText value="#{workingTimeController.workingTimeForPayment.endRecord.recordTimeStamp}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </h:outputText>
+                                            
+                                             <p:outputLabel value="Payment Method" />
+                                             <p:selectOneMenu   
+                                                id="pay"
+                                                class="w-100"
+                                                value="#{workingTimeController.paymentMethod}"
+                                                >     
+                                                <f:selectItems 
+                                                    value="#{enumController.paymentMethodsForMakingProfessionalPayments}"  
+                                                    var="pm"
+                                                    itemLabel="#{pm.label}"
+                                                    itemValue="#{pm}"/>
+                                            </p:selectOneMenu>
+                                             
                                         </p:panelGrid>
                                         <p:panelGrid columns="2" >
                                             <p:outputLabel value="Total Value Paying" />
@@ -135,26 +195,50 @@
 
                                     </p:panelGrid>
                                 </h:panelGroup>
+
                                 <h:panelGroup rendered="#{workingTimeController.printPreview}" >
-                                    <h:outputText value="OPD Doctor Payment" ></h:outputText>
-                                    
-<!--                                    <bill:DoctorPayment5x5Bill bill="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill}" duplicate="true"/>-->
-                                    <h:outputLabel value="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill.total}" >
-                                    </h:outputLabel>
+
+
+                                    <div class="d-flex m-1 justify-content-end">
+                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-sync-alt" 
+                                            class="ui-button m-1" 
+                                            title="Redraw Bill">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            value="Print" 
+                                            ajax="false" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            >
+                                            <p:printer 
+                                                target="groupPrint" >
+                                            </p:printer>
+                                        </p:commandButton>
+                                    </div>
+
+                                    <h:panelGroup id="groupPrint">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                            <bill:DoctorPayment5x5Bill bill="#{workingTimeController.workingTimeForPayment.professinoalPaymentBill}" duplicate="false"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
                                 </h:panelGroup>
                             </h:panelGroup>
-
-
-
 
                         </p:panel>
 
                     </h:form>
 
-
                 </h:panelGroup>
-
-
             </ui:define>
 
         </ui:composition>

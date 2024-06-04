@@ -6,14 +6,14 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddhika
  */
 public enum TextTransform {
+
     none,
     capitalize,
     uppercase,
     lowercase,
     initial,
-    inherit;
+    inherit
 }

@@ -36,7 +36,7 @@
                                                 action="#{searchController.toListAllBills}" 
                                                 rendered="#{webUserController.hasPrivilege('Search')}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 value="List All Payments"  
                                                 ajax="false"
@@ -74,8 +74,16 @@
                                             value="Check Missing Fields"  
                                             class="w-100"
                                             />
-                                        
-                                        
+
+                                        <p:commandButton 
+                                            ajax="false"
+                                            action="#{itemController.makeAllItemsToAllowDiscounts()}"
+                                            rendered="true"
+                                            value="Make All OPD Services and Investigations to Allow Discounts" 
+                                            onclick="if (!confirm('Really want to do that?'))
+                                                        return false"/>
+
+
                                         <p:panel rendered="false" >
                                             <h:outputLabel 
                                                 value="Very Dangerous Section." 

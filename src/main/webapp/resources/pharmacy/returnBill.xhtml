@@ -123,11 +123,13 @@
                     </tr>
 
                     <tr>
-                        <div class="billline">
-                            <h:outputLabel value="-----------------------------------------------"   />                           
-                        </div>
-                    </tr>
+                        <td colspan="4" style="width: 100%">
+                            <div class="billline">
+                                <h:outputLabel value="-------------------------------------------------"   />                           
+                            </div>
+                        </td>
 
+                    </tr>
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
 
                         <tr>

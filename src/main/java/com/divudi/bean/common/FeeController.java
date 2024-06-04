@@ -7,28 +7,34 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.entity.Fee;
 import com.divudi.facade.FeeFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped; import javax.faces.component.UIComponent;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.FeeType;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
 @SuppressWarnings("serial")
-public  class FeeController implements Serializable {
+public class FeeController implements Serializable {
 
     @Inject
     SessionController sessionController;
@@ -58,6 +64,26 @@ public  class FeeController implements Serializable {
 
     private void recreateModel() {
         items = null;
+    }
+
+    public Fee findFee(String name) {
+        String jpql = "select f "
+                + " from Fee f "
+                + " where f.retired=:ret "
+                + " and f.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        Fee fee = getFacade().findFirstByJpql(jpql, m);
+        if (fee != null) {
+            return fee;
+        }
+        fee = new Fee();
+        fee.setCreatedAt(new Date());
+        fee.setCreater(sessionController.getLoggedUser());
+        fee.setFeeType(FeeType.Staff);
+        getFacade().create(fee);
+        return fee;
     }
 
     public void saveSelected() {
@@ -131,13 +157,13 @@ public  class FeeController implements Serializable {
         items = getFacade().findAll("name", true);
         return items;
     }
-    
-    public String navigateToAdminFee(){
-        return "/admin/pricing/index";
+
+    public String navigateToAdminFee() {
+        return "/admin/pricing/index?faces-redirect=true";
     }
-    
-    public String navigateToAdminDiscounts(){
-        return "/admin/pricing/admin_discounts";
+
+    public String navigateToAdminDiscounts() {
+        return "/admin/pricing/admin_discounts?faces-redirect=true";
     }
 
     /**

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template_without_menu.xhtml"
+                template="/resources/template/template_channeling_tab_view.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -170,33 +170,10 @@
                         </div>
                         <div class="col-2 ">
                             <div class="d-flex justify-content-end align-items-center mt-2">
-                                <div>
-                                    <p:commandButton 
-                                        rendered="#{s.arrived eq false}"
-                                        id="btnArrival"
-                                        ajax="false"
-                                        styleClass="rounded-button ui-button-success "
-                                        value="Arrival " 
-                                        class="ui-button-info mx-4"
-                                        action="#{bookingController.markAsArrived()}"
-                                        icon="fa-solid fa-check">
-                                        <f:setPropertyActionListener target="#{bookingController.selectedSessionInstance}" value="#{s}"/>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        rendered="#{s.arrived}"
-                                        id="btnNonArrival"
-                                        ajax="false"
-                                        styleClass="rounded-button ui-button-success "
-                                        value="Not Arrival " 
-                                        class="ui-button-info mx-4"
-                                        action="#{bookingController.markAsNotArrived()}"
-                                        icon="fa-solid fa-check">
-                                        <f:setPropertyActionListener target="#{bookingController.selectedSessionInstance}" value="#{s}"/>
-                                    </p:commandButton>
-                                </div>
+                                
                                 <div>
                                     <p:commandButton icon="fas fa-play" iconPos="right"
-                                                     styleClass=" rounded-button ui-button-success " ajax="false"
+                                                     styleClass="rounded-button ui-button-success" ajax="false"
                                                      action="#{bookingController.navigateToManageSessionQueueAtConsultantRoom}"
                                                      rendered="#{s.completed}">
                                         <f:setPropertyActionListener value="#{s}" target="#{bookingController.selectedSessionInstance}"/>

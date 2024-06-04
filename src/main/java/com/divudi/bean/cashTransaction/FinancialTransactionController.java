@@ -508,7 +508,7 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/initial_withdrawal_processing_bill_print?faces-redirect=true";
+        return "/cashier/fund_withdrawal_bill_print?faces-redirect=true";
     }
 
     // </editor-fold>  
@@ -545,11 +545,11 @@ public class FinancialTransactionController implements Serializable {
         } else {
             currentBill = null;
         }
-        return "/cashier/shift_end_summery_bill?faces-redirect=true";
+        return "/cashier/shift_end_summery_bill_by_bills?faces-redirect=true";
     }
 
     public void fillPaymentsFromShiftStartToNow() {
-        currentBillPayments = new ArrayList<>();
+        paymentsFromShiftSratToNow = new ArrayList<>();
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
@@ -564,17 +564,19 @@ public class FinancialTransactionController implements Serializable {
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
-        currentBillPayments = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
-        for (Payment p : currentBillPayments) {
+        for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
+            } else {
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             }
-            atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(p.getBill().getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
-//            calculateBillValuesFromBillTypes(p);
+            //            calculateBillValuesFromBillTypes(p);
         }
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+        
     }
 
     public void fillBillsFromShiftStartToNow() {
@@ -611,8 +613,6 @@ public class FinancialTransactionController implements Serializable {
         for (Bill p : currentBills) {
             if (p.getBillTypeAtomic() == null) {
             } else {
-                System.out.println("p = " + p);
-                System.out.println("p = " + p.getBillTypeAtomic());
             }
             atomicBillTypeTotalsByBills.addOrUpdateAtomicRecord(p.getBillTypeAtomic(), p.getPaymentMethod(), p.getNetTotal());
 //            calculateBillValuesFromBillTypes(p);
@@ -654,7 +654,6 @@ public class FinancialTransactionController implements Serializable {
 //
 //        }
 //    }
-
     public void calculateBillValuesFromBillTypes(Bill p) {
         if (p == null) {
             return;
@@ -691,16 +690,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        totalBillCancelledValue = totalOpdBillCanceledValue
-                + totalCcBillCanceledValue
-                + totalPharmecyBillCanceledValue;
-        totalOpdBillValue = totalOpdBillValue;
-        totalPharmecyBillValue = totalPharmecyBillValue;
-        totalCcBillValue = totalCcBillValue;
-        double totalBillValues = totalBilledBillValue + totalTransferRecive;
-
-        additions = totalBillValues + totalShiftStartValue;
-        Deductions = totalBalanceTransfer + totalDeposits + totalBillRefundValue + totalBillCancelledValue;
+        additions = financialReportByPayments.getCashTotal()+financialReportByPayments.getNetCreditCardTotal()+financialReportByPayments.getCollectedVoucher()+financialReportByPayments.getNetOtherNonCreditTotal()+financialReportByPayments.getBankWithdrawals();
+        Deductions = financialReportByPayments.getRefundedCash()+financialReportByPayments.getRefundedCreditCard()+financialReportByPayments.getRefundedVoucher()+financialReportByPayments.getRefundedOtherNonCredit()+financialReportByPayments.getFloatHandover()+financialReportByPayments.getBankDeposits();
         totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
 
@@ -795,17 +786,18 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         billController.save(currentBill);
-        currentBill.setTotal(shiftEndTotalValue);
-        currentBill.setNetTotal(shiftEndTotalValue);
+        currentBill.setTotal(financialReportByPayments.getTotal());
+        currentBill.setNetTotal(financialReportByPayments.getTotal());
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-
+        calculateTotalFundsFromShiftStartToNow();
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
+        
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
@@ -950,9 +942,9 @@ public class FinancialTransactionController implements Serializable {
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
 
-    public String navigateToCreateNewWithdrawalProcessingBill() {
+    public String navigateToCreateNewFundWithdrawalBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=true;";
+        return "/cashier/fund_withdrawal_bill?faces-redirect=true;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
@@ -1341,7 +1333,5 @@ public class FinancialTransactionController implements Serializable {
     public void setFinancialReportByPayments(FinancialReport financialReportByPayments) {
         this.financialReportByPayments = financialReportByPayments;
     }
-    
-    
 
 }

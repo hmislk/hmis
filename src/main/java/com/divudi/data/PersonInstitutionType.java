@@ -6,15 +6,15 @@
 package com.divudi.data;
 
 /**
- *
  * @author buddhika
  */
 public enum PersonInstitutionType {
+
     Channelling,
     Opd,
     Inward;
-    
-    public String getLabel(){
+
+    public String getLabel() {
         return this.toString();
     }
 }

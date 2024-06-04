@@ -92,7 +92,7 @@ public class PaymentSchemeController implements Serializable {
         this.membershipScheme = membershipScheme;
     }
 
-    public boolean errorCheckPaymentMethod(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+    public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
         if (paymentMethod == PaymentMethod.Cheque) {
             if (paymentMethodData.getCheque().getInstitution() == null
                     || paymentMethodData.getCheque().getNo() == null

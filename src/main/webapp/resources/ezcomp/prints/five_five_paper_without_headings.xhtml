@@ -29,13 +29,6 @@
                         <h:outputLabel value="RECEIPT"/><h:outputText value=" - " /><h:outputText value="#{cc.attrs.bill.department.name}" />
                     </div>
                 </div>
-                <div class="col-7">
-                    <div class="mx-5">
-                        <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
-                            <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
-                        </div>
-                    </div>
-                </div>
 
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
@@ -196,6 +189,14 @@
                 </table>
             </div>
 
+            <h:panelGroup rendered="false" style="font-weight: bold;text-align: left;font-size: 14pt" >
+                <div >
+                    <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder" class="mt-2">
+                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.staff}" ></h:outputLabel>
+                    </div>
+                </div>
+            </h:panelGroup>
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
@@ -237,12 +238,9 @@
                             <hr/>
                         </td> 
                     </tr>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
-
-
-                            <h:panelGroup >
+                            <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
                                 <tr>
                                     <td  style="overflow: visible;">
                                         <div class="d-flex justify-content-between">
@@ -269,7 +267,6 @@
                                     </td>
                                 </tr>
                             </h:panelGroup>
-
                             <h:panelGroup rendered="#{bip.item.printFeesForBills}">
                                 <ui:repeat value="#{bip.billFees}" var="bf" >
                                     <tr>
@@ -306,6 +303,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
+                       
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
@@ -407,7 +405,7 @@
                 </h:outputLabel>
             </div>
 
-            <ui:repeat value="#{cc.attrs.bill.payments}" var="ps">
+            <ui:repeat value="#{cc.attrs.payments}" var="ps">
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                     <h:outputText 
                         style="font-size: 8pt"  

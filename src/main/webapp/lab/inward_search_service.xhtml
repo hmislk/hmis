@@ -11,102 +11,121 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
-                        <f:facet name="header" >
-                            <h:panelGroup>
-                                <h:panelGrid columns="5">
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                       
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                       
-                                    </p:calendar>
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardServiceTablebyLoggedDepartment()}" value="Search"  />
-                                </h:panelGrid>
+                    <p:panel header="Search Inpatient Bills" >
+                        <div class="row">
 
-                                <h:panelGrid columns="6">
-                                    <h:outputLabel value="Bill No"/>
-                                    <h:outputLabel value="BHT No"/>
-                                    <h:outputLabel value="Patient Name"/>
-                                    <h:outputLabel value="Patient Phone"/>   
-                                    <h:outputLabel value="Item Name"/>   
-                                    <h:outputLabel value="Net Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-
-                                </h:panelGrid>
-
-                            </h:panelGroup>
-                        </f:facet>
-
-                        <p:dataTable id="tblBills" 
-                                     value="#{searchController.bills}" 
-                                     var="bill"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >    
-                            <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="/inward/inward_reprint_bill_service"  >
-                                    <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
+                            <div class="col-md-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                       
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                       
+                                </p:calendar>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    action="#{searchController.createInwardServiceTablebyLoggedDepartment()}" 
+                                    value="Search" 
+                                    icon="fa fa-search"
+                                    class="mb-3 mt-2 w-100 ui-button-warning">
                                 </p:commandButton>
-                            </p:column>
 
-                            <p:column headerText="Bill No">                               
-                                <h:outputLabel value="#{bill.insId}"></h:outputLabel>                                
-                            </p:column>
+                                <h:outputLabel value="Bill No" />
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
+                                <h:outputLabel value="BHT No"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
+                                <h:outputLabel value="Patient Name"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
+                                <h:outputLabel value="Patient Phone"/>   
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientPhone}" />
+                                <h:outputLabel value="Item Name"/>   
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.itemName}" />
+                                <h:outputLabel value="Net Total"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
 
-                            <p:column headerText="Bht No">                              
-                                <h:outputLabel value="#{bill.patientEncounter.bhtNo}"  ></h:outputLabel>                                    
-                            </p:column>
+                            </div>
 
-                            <p:column headerText="Bill Date" >
-                                <h:outputLabel value="#{bill.createdAt}" />
-                                <br/>
-                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                </h:panelGroup>        
-                            </p:column>
+                            <div class="col-md-10">
+                                <p:dataTable 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill"
+                                    paginatorPosition="bottom"
+                                    paginator="true"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    >    
 
-                            <p:column headerText="Billed By">  
-                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                </h:outputLabel>                                  
-                                <br/>
-                                <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>
-                            </p:column>
+                                    <p:column headerText="Bill No">   
+                                        <p:commandLink
+                                            value="#{bill.insId}"
+                                            ajax="false"
+                                            action="/inward/inward_reprint_bill_service" >
+                                            <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
+                                        </p:commandLink>                              
+                                    </p:column>
 
-                            <p:column headerText="Client">                              
-                                <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    <p:column headerText="Bht No">                              
+                                        <h:outputLabel value="#{bill.patientEncounter.bhtNo}"  ></h:outputLabel>                                    
+                                    </p:column>
 
-                            </p:column>   
-                            <p:column headerText="Comments" >                                
-                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="BHT Total Value">
-                                #{bill.patientEncounter.finalBill.netTotal}
-                            </p:column>
-                        </p:dataTable>
+                                    <p:column headerText="Bill Date" >
+                                        <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>        
+                                    </p:column>
 
+                                    <p:column headerText="Billed By">  
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>                                  
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Client">                              
+                                        <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+
+                                    </p:column>   
+                                    <p:column headerText="Comments" >                                
+                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="BHT Total Value">
+                                         <h:outputLabel value="#{bill.patientEncounter.finalBill.netTotal}" >
+                                             <f:convertNumber pattern="###,#00.00"/>
+                                         </h:outputLabel>
+                                        
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
 
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

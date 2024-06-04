@@ -22,6 +22,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Payment;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -30,6 +31,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
@@ -72,6 +74,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     StaffFacade staffFacade;
     @EJB
     private ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    private PaymentFacade paymentFacade;
     /////////////////
 
     private CommonFunctions commonFunctions;
@@ -626,6 +630,30 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         return tmp;
     }
+    
+    public Payment createPaymentProPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        if(pm == null){
+            pm = bill.getPaymentMethod();
+        }
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+      
+     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+        getPaymentFacade().edit(p);
+    }
 
     private Bill createPaymentBillForSession() {
         BilledBill tmp = new BilledBill();
@@ -779,6 +807,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         Bill b = createPaymentBillForSession();
         current = b;
         getBillFacade().create(b);
+        createPaymentProPayment(b,paymentMethod);
         saveBillItemsAndFees(b);
         if (sessionController.getDepartmentPreference().isSendSmsOnChannelBookingDocterPayment()) {
             sendSmsAfterDocPayment();
@@ -794,8 +823,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
         calculateTotalPay();
         Bill b = createPaymentBill();
-
+        
         getBillFacade().create(b);
+        createPaymentProPayment(b, paymentMethod);
         List<BillItem> bis = saveBillItemsAndFees(b);
         if (bis != null && !bis.isEmpty()) {
             BillSession bs = createBillSession(bis.get(0), sessionInstance);
@@ -841,11 +871,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setPending(false);
         e.setSmsType(MessageType.DoctorPayment);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     public void sendSmsAfterSessionPayment() {
@@ -862,11 +894,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         e.setPending(false);
         e.setSmsType(MessageType.DoctorPayment);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     private String generateDoctorPaymentSms(Bill b) {
@@ -1333,6 +1367,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSessionInstance(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
     }
 
     /**

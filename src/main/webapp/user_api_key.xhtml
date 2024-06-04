@@ -52,8 +52,8 @@
                         </p:outputLabel>
                     </p:column>
                     <p:column headerText="Actions" >
-                        <p:commandButton ajax="false" value="Remove" action="#{apiKeyController.removing}" >
-                            <f:setPropertyActionListener value="#{i}" target="#{apiKeyController.delete()}" ></f:setPropertyActionListener>
+                        <p:commandButton ajax="false" value="Remove" action="#{apiKeyController.delete()}" >
+                            <f:setPropertyActionListener value="#{i}" target="#{apiKeyController.removing}" ></f:setPropertyActionListener>
                         </p:commandButton>
                     </p:column>
 

@@ -17,10 +17,6 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:commandButton value="Print" class="ui-button-info mx-2" icon="fas fa-print" ajax="false" action="#" >
-            <p:printer target="gpBillPreview" ></p:printer>
-        </p:commandButton>
-
         <h:outputStylesheet library="css" name="inwardpayments.css" ></h:outputStylesheet>
         <!--<div class="a4bill" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >-->
         <h:panelGroup id="gpBillPreview" >
@@ -166,7 +162,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Value" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.netValue}" 
+                            <h:outputLabel value="#{bip.netValue}" class="d-flex justify-content-end" 
                                            style="font-size:  10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>

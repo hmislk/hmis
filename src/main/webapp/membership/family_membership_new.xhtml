@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:panelGroup >
+                    <h:form  >
+                        <p:growl />
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-people-group" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Add Family Mambership" class="m-2"/>
+                                <div style="float: right;">
+                                    <p:commandButton value="Save Family &amp; Manage" action="#{patientController.saveFamilyAndNavigateToManageFamily()}" ajax="false" class="ui-button-warning mx-1" icon="fas fa-save"></p:commandButton>
+                                    <p:commandButton value="Save &amp; Clear for a new Family" action="#{patientController.saveAndClearForNewFamily()}" class="ui-button-danger" icon="fas fa-eraser" ajax="false"></p:commandButton>
+                                </div>
+                            </f:facet>
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:panel header="Membership" >
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <p:outputLabel value="Membership Card No:" for="membershipCardNo" />
+                                            <p:inputText class="w-100"
+                                                         autocomplete="off" id="membershipCardNo" value="#{patientController.currentFamily.membershipCardNo}" title="MembershipCardNo" />
+
+                                            <p:outputLabel value="Phone No.:" for="phoneNo" />
+                                            <p:inputText  autocomplete="off" class="w-100"
+                                                          id="phoneNo" value="#{patientController.currentFamily.phoneNo}" title="MembershipCardNo" />
+
+
+                                            <p:outputLabel value="MembershipScheme:" for="membershipScheme" />
+                                            <p:selectOneMenu 
+                                                id="membershipScheme"
+                                                class="w-100" 
+                                                value="#{patientController.currentFamily.membershipScheme}" 
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItems 
+                                                    value="#{membershipSchemeController.items}" 
+                                                    var="m" 
+                                                    itemLabel="#{m.name}" itemValue="#{m}"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Comments:" for="comments" />
+                                            <p:inputTextarea rows="4" cols="30" class="w-100" id="comments" value="#{patientController.currentFamily.comments}" title="Comments" />
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

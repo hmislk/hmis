@@ -232,93 +232,137 @@
 
                                                 </p:tab>
                                                 <p:tab title="Administartion" >
-                                                        <h:panelGrid columns="2" id="gridAdmin" >
-                                                            <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
-                                                            <p:inputText class="mx-2" style="width: 300px" autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </p:inputText>
+                                                    <p:panelGrid columns="2" id="gridAdmin" >
+                                                        <p:outputLabel value="Eligible Welfare Period" ></p:outputLabel>
+                                                        <p:selectOneMenu class="w-100"  value="#{staffController.current.staffWelfarePeriod}" >
+                                                            <f:selectItem itemLabel="Please select"/>
+                                                            <f:selectItems value="#{enumController.staffWelfarePeriods}" />
+                                                        </p:selectOneMenu>  
 
-                                                            <p:outputLabel value="Utilized Welfare Value for this year" ></p:outputLabel>
-                                                            <p:outputLabel class="mx-2" style="width: 300px" value="#{staffController.current.annualWelfareUtilized}" >
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </p:outputLabel>
-                                                            <p:separator/>
-                                                            <p:separator/>
-                                                            <p:outputLabel value="Institution" ></p:outputLabel>                                     
-                                                            <p:selectOneMenu class="mx-2" style="width: 300px" id="cmbIns" value="#{staffController.current.institution}" >
-                                                                <f:selectItem itemLabel="Please select a institution"/>
-                                                                <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                                <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
-                                                            </p:selectOneMenu>                                          
-                                                            <p:outputLabel value="Working Department" ></p:outputLabel>                                     
-                                                            <p:selectOneMenu class=" mx-2"  style="width: 300px" id="cmbDep" value="#{staffController.current.workingDepartment}">
-                                                                <f:selectItem itemLabel="Please select a Department"/>
-                                                                <f:selectItems value="#{staffController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                            </p:selectOneMenu>
-                                                            <p:outputLabel value="Employee Status "/>
-                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.employeeStatus}" >
-                                                                <f:selectItem itemLabel="Please select Employee Status"/>
-                                                                <f:selectItems value="#{staffController.employeeStatuses}"/>
-                                                            </p:selectOneMenu>
-                                                            <p:outputLabel value="Staff Category "/>
-                                                            <p:selectOneMenu class=" mx-2" style="width: 300px" value="#{staffController.current.staffCategory}">
-                                                                <f:selectItem itemLabel="Please Staff Category"/>
-                                                                <f:selectItems value="#{staffCategoryController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
-                                                            </p:selectOneMenu>
-                                                            <p:outputLabel value="Staff Grade "/>
-                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.grade}">
-                                                                <f:selectItem itemLabel="Please Staff Grade"/>
-                                                                <f:selectItems value="#{gradeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
-                                                            </p:selectOneMenu>
-                                                            <p:outputLabel value="Staff Designation " />
-                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.designation}" >
-                                                                <f:selectItem itemLabel="Please Staff Designation"/>
-                                                                <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
-                                                            </p:selectOneMenu>
-                                                            <h:outputText  value="Roster" ></h:outputText>
-                                                            <p:selectOneMenu class=" mx-2" style="width: 300px"  value="#{staffController.current.roster}"  >
-                                                                <f:selectItem itemLabel="Select Roster"/>
-                                                                <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                                            </p:selectOneMenu>
+                                                        <p:outputLabel value="Eligible Welfare Value" ></p:outputLabel>
+                                                        <p:inputText class="mx-2" autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </p:inputText>
 
-                                                            <p:separator/>
-                                                            <p:separator/>
+                                                        <p:outputLabel value="Utilized Welfare Value for this Period" ></p:outputLabel>
+                                                        <p:outputLabel class="mx-2" style="width: 300px" value="#{staffController.current.annualWelfareUtilized}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </p:outputLabel>
 
-                                                            <p:outputLabel value="Paying Method "/>
-                                                            <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.payingMethod}">
-                                                                <f:selectItem itemLabel="Please select PayingMethod"/>
-                                                                <f:selectItems value="#{staffController.payingMethod}"/>
-                                                            </p:selectOneMenu>
-                                                            <p:outputLabel value="Salary PaymentMethod "/>
-                                                            <p:selectOneMenu class=" mx-2" style="width: 300px" value="#{staffController.current.salaryPaymentMethod}">
-                                                                <f:selectItem itemLabel="Please selectSalary Paymentmethod"/>
-                                                                <f:selectItems value="#{staffController.salaryPaymentMethods}"/>
-                                                            </p:selectOneMenu>
-                                                            <p:separator/>
-                                                            <p:separator/>                                           
-                                                            <p:outputLabel value="Bank Branch"/>                                           
-                                                            <autocomplete:completeBank_Branch class="mx-2"  value="#{staffController.current.bankBranch}"/>                                           
-                                                            <p:outputLabel  value="Account No" ></p:outputLabel>
-                                                            <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.accountNo}"  />
-                                                            <p:outputLabel  value="Memo" ></p:outputLabel>
-                                                            <p:inputTextarea class=" mx-2" style="width: 300px"  value="#{staffController.current.person.description}"    />
-                                                            <p:separator/>
-                                                            <p:separator/>
-                                                            <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
-                                                            <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
-                                                            <p:outputLabel  value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
-                                                            <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
-                                                            <p:outputLabel value="Allowed Late In Leave"/>
-                                                            <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedLateInLeave}" />
-                                                            <p:outputLabel value="Allowed Early Out Leave"/>
-                                                            <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedEarlyOutLeave}" />
-                                                        </h:panelGrid>
-                                                   
+                                                        <p:outputLabel value="Credit Limit Qualified" ></p:outputLabel>
+                                                        <p:inputText class="mx-2" autocomplete="off" value="#{staffController.current.creditLimitQualified}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </p:inputText>
+
+                                                        <p:outputLabel value="Current Credit Value" ></p:outputLabel>
+                                                        <p:inputText class="mx-2" autocomplete="off" value="#{staffController.current.currentCreditValue}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </p:inputText>
+
+
+                                                        <h:outputText value="Institution" />
+                                                        <p:autoComplete 
+                                                            forceSelection="true"
+                                                            value="#{staffController.current.institution}"
+                                                            completeMethod="#{institutionController.completeIns}" id="ins2"
+                                                            var="ix" 
+                                                            itemLabel="#{ix.name}" 
+                                                            itemValue="#{ix}" 
+                                                            class="w-100" 
+                                                            inputStyleClass="w-100"
+                                                            style="width: 500px;">
+                                                            <p:ajax event="itemSelect" process="@this" update="somDept cmbDep" />
+                                                        </p:autoComplete>
+
+                                                        <h:outputText value="Department" />
+                                                        <p:selectOneMenu 
+                                                            id="somDept" 
+                                                            filter="true"
+                                                            filterMatchMode="contains"
+                                                            value="#{staffController.current.department}"
+                                                            class="w-100">
+                                                            <f:selectItem  itemLabel="Please select a Department"/>
+                                                            <f:selectItems 
+                                                                value="#{departmentController.getInsDepartments(staffController.current.institution)}" 
+                                                                var="d" 
+                                                                itemLabel="#{d.name}" itemValue="#{d}" 
+                                                                />
+                                                        </p:selectOneMenu>
+
+
+
+
+                                                        <p:outputLabel value="Working Department" ></p:outputLabel>                                     
+                                                        <p:selectOneMenu class=" mx-2"  style="width: 300px" id="cmbDep" value="#{staffController.current.workingDepartment}">
+                                                            <f:selectItem itemLabel="Please select a Department"/>
+                                                            <f:selectItems value="#{staffController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                        </p:selectOneMenu>
+                                                        <p:outputLabel value="Employee Status "/>
+                                                        <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.employeeStatus}" >
+                                                            <f:selectItem itemLabel="Please select Employee Status"/>
+                                                            <f:selectItems value="#{staffController.employeeStatuses}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:outputLabel value="Staff Category "/>
+                                                        <p:selectOneMenu class=" mx-2" style="width: 300px" value="#{staffController.current.staffCategory}">
+                                                            <f:selectItem itemLabel="Please Staff Category"/>
+                                                            <f:selectItems value="#{staffCategoryController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:outputLabel value="Staff Grade "/>
+                                                        <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.grade}">
+                                                            <f:selectItem itemLabel="Please Staff Grade"/>
+                                                            <f:selectItems value="#{gradeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:outputLabel value="Staff Designation " />
+                                                        <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.designation}" >
+                                                            <f:selectItem itemLabel="Please Staff Designation"/>
+                                                            <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                        </p:selectOneMenu>
+                                                        <h:outputText  value="Roster" ></h:outputText>
+                                                        <p:selectOneMenu class=" mx-2" style="width: 300px"  value="#{staffController.current.roster}"  >
+                                                            <f:selectItem itemLabel="Select Roster"/>
+                                                            <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                                        </p:selectOneMenu>
+
+                                                        <p:separator/>
+                                                        <p:separator/>
+
+                                                        <p:outputLabel value="Paying Method "/>
+                                                        <p:selectOneMenu class="mx-2" style="width: 300px" value="#{staffController.current.payingMethod}">
+                                                            <f:selectItem itemLabel="Please select PayingMethod"/>
+                                                            <f:selectItems value="#{staffController.payingMethod}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:outputLabel value="Salary PaymentMethod "/>
+                                                        <p:selectOneMenu class=" mx-2" style="width: 300px" value="#{staffController.current.salaryPaymentMethod}">
+                                                            <f:selectItem itemLabel="Please selectSalary Paymentmethod"/>
+                                                            <f:selectItems value="#{staffController.salaryPaymentMethods}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:separator/>
+                                                        <p:separator/>                                           
+                                                        <p:outputLabel value="Bank Branch"/>                                           
+                                                        <autocomplete:completeBank_Branch class="mx-2"  value="#{staffController.current.bankBranch}"/>                                           
+                                                        <p:outputLabel  value="Account No" ></p:outputLabel>
+                                                        <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.accountNo}"  />
+                                                        <p:outputLabel  value="Memo" ></p:outputLabel>
+                                                        <p:inputTextarea class=" mx-2" style="width: 300px"  value="#{staffController.current.person.description}"    />
+                                                        <p:separator/>
+                                                        <p:separator/>
+                                                        <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
+                                                        <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
+                                                        <p:outputLabel  value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
+                                                        <p:inputText class=" mx-2" style="width: 300px" autocomplete="off"  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
+                                                        <p:outputLabel value="Allowed Late In Leave"/>
+                                                        <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedLateInLeave}" />
+                                                        <p:outputLabel value="Allowed Early Out Leave"/>
+                                                        <p:selectBooleanCheckbox class="mx-2" style="width: 300px" value="#{staffController.current.allowedEarlyOutLeave}" />
+                                                    </p:panelGrid>
+
 
                                                 </p:tab>
                                                 <p:tab title="Aditional Details" >
                                                     <p:panelGrid id="tabDetails2" columns="2" class="w-100">
                                                         <p:outputLabel  value="Staff Id" ></p:outputLabel>
+                                                        <p:outputLabel value="#{staffController.current.id}"  />
+                                                        <p:outputLabel  value="Class" ></p:outputLabel>
                                                         <p:outputLabel value="#{staffController.current.id}"  />
                                                         <p:separator/>
                                                         <p:separator/>

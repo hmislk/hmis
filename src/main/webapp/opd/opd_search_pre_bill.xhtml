@@ -83,6 +83,8 @@
 
                                     >
 
+                                   
+                                    
                                     <p:column headerText="No" styleClass="alignTop" width="3em">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
@@ -133,7 +135,8 @@
                                         </h:outputLabel>
 
                                     </p:column>
-
+                                    
+                                   
                                     <p:column headerText="Settling" >
                                         <ui:repeat value="#{bill.cashBillsOpdPre}" var="rb">
                                             <h:panelGroup layout="block" style="margin-bottom: 10px;">
@@ -161,7 +164,7 @@
                                     </p:column>
 
                                     <p:column style="width: 10em;" headerText="Actions">
-                                        <p:commandButton ajax="false"  value="Accept Payment" 
+                                        <p:commandButton ajax="false"  value="To Accept Payment" 
                                                          class="ui-button-primary"
                                                          action="#{opdPreSettleController.toSettle(bill)}" 
                                                          disabled="#{bill.referenceBill ne null or bill.cancelled}">     

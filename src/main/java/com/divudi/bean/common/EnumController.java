@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -61,7 +62,10 @@ public class EnumController implements Serializable {
 
     private PaymentScheme paymentScheme;
     private List<Class<? extends Enum<?>>> enumList;
-
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    List<PaymentMethod> paymentMethodsForOpdBilling;
+    List<PaymentMethod> paymentMethodsForChanneling;
     SessionNumberType[] sessionNumberTypes;
 
     @PostConstruct
@@ -71,6 +75,45 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForOpdBilling();
+        }
+        return paymentMethodsForOpdBilling;
+    }
+
+    public void resetPaymentMethods() {
+        paymentMethodsForOpdBilling = null;
+        paymentMethodsForChanneling = null;
+    }
+
+    public void fillPaymentMethodsForOpdBilling() {
+        paymentMethodsForOpdBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+            if (include) {
+                paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+    
+     public List<PaymentMethod> getPaymentMethodsForChanneling() {
+        if (paymentMethodsForChanneling == null) {
+            fillPaymentMethodsForChanneling();
+        }
+        return paymentMethodsForChanneling;
+    }
+
+    public void fillPaymentMethodsForChanneling() {
+        paymentMethodsForChanneling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
+            if (include) {
+                paymentMethodsForChanneling.add(pm);
+            }
+        }
     }
 
     public List<String> getEnumValues(String enumClassName) {
@@ -83,7 +126,6 @@ public class EnumController implements Serializable {
                         .collect(Collectors.toList());
             }
         } catch (ClassNotFoundException e) {
-            System.out.println("Enum class not found: " + e.getMessage());
             return new ArrayList<>();
         }
         return new ArrayList<>();
@@ -252,6 +294,10 @@ public class EnumController implements Serializable {
         return BillType.values();
     }
 
+    public StaffWelfarePeriod[] getStaffWelfarePeriods() {
+        return StaffWelfarePeriod.values();
+    }
+
     public BillClassType[] getBillClassTypes() {
         return BillClassType.values();
     }
@@ -374,7 +420,9 @@ public class EnumController implements Serializable {
             InwardChargeType.HospitalSupportService,
             InwardChargeType.ExtraMedicine,
             InwardChargeType.DialysisTreatment,
-            InwardChargeType.OtherCharges};
+            InwardChargeType.OtherCharges,
+            InwardChargeType.Eye,
+            InwardChargeType.Dental};
 
         return b;
     }
@@ -450,6 +498,7 @@ public class EnumController implements Serializable {
         BillType[] b = {
             BillType.PharmacyGrnBill,
             BillType.PharmacyGrnReturn,
+            BillType.PharmacyReturnWithoutTraising,
             BillType.PharmacyOrder,
             BillType.PharmacyOrderApprove,
             BillType.PharmacyPre,
@@ -457,7 +506,7 @@ public class EnumController implements Serializable {
             BillType.PharmacySale,
             BillType.PharmacyAdjustment,
             BillType.PurchaseReturn,
-            BillType.GrnPayment,
+            BillType.GrnPaymentPre,
             BillType.PharmacyTransferRequest,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyWholeSale,
@@ -565,7 +614,17 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.MultiplePaymentMethods};
-
+        return p;
+    }
+    
+    public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Credit,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.MultiplePaymentMethods};
         return p;
     }
 
@@ -587,6 +646,11 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getPaymentMethodsForChannel() {
         PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForMakingProfessionalPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;
     }
 

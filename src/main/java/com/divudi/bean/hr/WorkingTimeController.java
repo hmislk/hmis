@@ -9,6 +9,10 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.FeeController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.OpdPreBillController;
 import com.divudi.bean.common.SessionController;
 
@@ -33,6 +37,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
 import com.divudi.facade.BillFeeFacade;
@@ -95,7 +100,14 @@ public class WorkingTimeController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     BillController billController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    FeeController feeController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
+    private Speciality speciality;
     List<WorkingTime> selectedItems;
     private WorkingTime current;
     private List<WorkingTime> items = null;
@@ -118,13 +130,18 @@ public class WorkingTimeController implements Serializable {
     Date fromDate;
     Date toDate;
     private PaymentMethod paymentMethod;
+    
+    public void navigateBackToDoctorSelect(){
+        staff=null;
+    }
 
     public List<WorkingTime> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
-    public String selectStaffForOpdPayment() {
+    public String selectStaffForOpdPaymentForShifts() {
+        System.out.println("selectStaffForOpdPayment");
         if (staff == null) {
             JsfUtil.addErrorMessage("Select staff");
             return "";
@@ -138,7 +155,29 @@ public class WorkingTimeController implements Serializable {
             return toViewOpdPaymentsDone();
         }
         staffAdmissionsForPayments = admissionController.findAdmissions(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
-        staffBillFeesForPayment = billController.findBillFees(staff, workingTimeForPayment.getStartRecord().getRecordTimeStamp(), workingTimeForPayment.getEndRecord().getRecordTimeStamp());
+        boolean payDoctorAfterMarkingOut = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking Out", false);
+        boolean payDoctorAfterMarkingIn = configOptionApplicationController.getBooleanValueByKey("Pay Doctors only After Marking In", false);
+        Date startTime =null;
+        Date endTime = null;
+        
+        if(payDoctorAfterMarkingIn){
+            startTime = workingTimeForPayment.getStartRecord().getRecordTimeStamp();
+        }
+        if(payDoctorAfterMarkingOut){
+            endTime = workingTimeForPayment.getEndRecord().getRecordTimeStamp();
+        }
+        staffBillFeesForPayment = billController.findBillFees(staff, startTime, endTime);
+        
+        calculateStaffPayments();
+        return "/opd/pay_doctor?faces-redirect=true";
+    }
+    
+    public String selectStaffForOpdPaymentForAll() {
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Select staff");
+            return "";
+        }
+        staffBillFeesForPayment = billController.findBillFees(staff, null, null);
         calculateStaffPayments();
         return "/opd/pay_doctor?faces-redirect=true";
     }
@@ -173,6 +212,10 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void settleStaffPayments() {
+        if(paymentMethod==null){
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
         Bill bill = new BilledBill();
         bill.setBillDate(Calendar.getInstance().getTime());
         bill.setBillTime(Calendar.getInstance().getTime());
@@ -195,11 +238,11 @@ public class WorkingTimeController implements Serializable {
         bill.setDepartment(sessionController.getDepartment());
         bill.setInstitution(sessionController.getInstitution());
         billController.save(bill);
-        
+
         Payment paymentForProfessionalPayment = createPayment(bill, paymentMethod);
-        
-        createBillFeesAndSave(bill,paymentForProfessionalPayment,staffBillFeesForPayment);
-        
+
+        createBillFeesAndSave(bill, paymentForProfessionalPayment, staffBillFeesForPayment);
+
         workingTimeForPayment.setProfessinoalPaymentBill(bill);
         save(workingTimeForPayment);
         printPreview = true;
@@ -232,12 +275,83 @@ public class WorkingTimeController implements Serializable {
     }
 
     public void createBillFeesAndSave(Bill b, Payment p, List<BillFee> payingBillFees) {
-        for (BillFee bf : payingBillFees) {
-            saveBillItemForPaymentBill(b, bf, p);
-            bf.setPaidValue(bf.getFeeValue());
-            bf.setSettleValue(bf.getFeeValue());
-            billFeeFacade.edit(bf);
+        int serviceFeeQty = 0;
+        int admissionQty = 0;
+        if (payingBillFees != null) {
+            for (BillFee bf : payingBillFees) {
+                saveBillItemForPaymentBill(b, bf, p);
+                bf.setPaidValue(bf.getFeeValue());
+                bf.setSettleValue(bf.getFeeValue());
+                billFeeFacade.edit(bf);
+            }
+            serviceFeeQty = payingBillFees.size();
         }
+
+        //System.out.println("admissionRate = " + admissionRate);
+        BillItem admiddionFeeItem = new BillItem();
+        admiddionFeeItem.setBill(b);
+        admiddionFeeItem.setQty((double) admissionCount);
+        admiddionFeeItem.setCreatedAt(new Date());
+        admiddionFeeItem.setCreater(sessionController.getLoggedUser());
+        admiddionFeeItem.setItem(itemController.findAndCreateItemByName("Doctor Payment for Admissions", sessionController.getDepartment()));
+        admiddionFeeItem.setRate(admissionRate);
+        billItemFacade.create(admiddionFeeItem);
+        BillFee admissionFee = new BillFee();
+        admissionFee.setBillItem(admiddionFeeItem);
+        admissionFee.setFeeValue(admissionFeeValue);
+        admissionFee.setFee(feeController.findFee("Doctor Payment for Admission Fee"));
+        billFeeFacade.create(admissionFee);
+
+        BillItem serviceBillItem = new BillItem();
+        serviceBillItem.setBill(b);
+        serviceBillItem.setQty((double) staffBillFeesForPaymentCount);
+        serviceBillItem.setCreatedAt(new Date());
+        serviceBillItem.setCreater(sessionController.getLoggedUser());
+        serviceBillItem.setItem(itemController.findAndCreateItemByName("Doctor Payment for Services", sessionController.getDepartment()));
+        billItemFacade.create(serviceBillItem);
+        BillFee serviceFee = new BillFee();
+        serviceFee.setBillItem(serviceBillItem);
+        serviceFee.setFeeValue(billFeeValue);
+        serviceFee.setFee(feeController.findFee("Doctor Payment for Services"));
+        billFeeFacade.create(serviceFee);
+
+        BillItem shiftFeeItem = new BillItem();
+        shiftFeeItem.setBill(b);
+        shiftFeeItem.setCreatedAt(new Date());
+        shiftFeeItem.setCreater(sessionController.getLoggedUser());
+        shiftFeeItem.setItem(itemController.findAndCreateItemByName("Doctor Payment for Shift", sessionController.getDepartment()));
+        billItemFacade.create(shiftFeeItem);
+        BillFee shiftFee = new BillFee();
+        shiftFee.setBillItem(shiftFeeItem);
+        shiftFee.setFeeValue(shiftPaymentValue);
+        shiftFee.setFee(feeController.findFee("Doctor Payment for Shift"));
+        billFeeFacade.create(shiftFee);
+
+        BillItem otherFeeItem = new BillItem();
+        otherFeeItem.setBill(b);
+        otherFeeItem.setCreatedAt(new Date());
+        otherFeeItem.setCreater(sessionController.getLoggedUser());
+        otherFeeItem.setItem(itemController.findAndCreateItemByName("Doctor Payment for Other", sessionController.getDepartment()));
+        billItemFacade.create(otherFeeItem);
+        BillFee otherFee = new BillFee();
+        otherFee.setBillItem(otherFeeItem);
+        otherFee.setFeeValue(otherFeeValue);
+        otherFee.setFee(feeController.findFee("Doctor Payment for Other"));
+        billFeeFacade.create(otherFee);
+
+        b.getBillItems().add(admiddionFeeItem);
+        b.getBillItems().add(serviceBillItem);
+        b.getBillItems().add(shiftFeeItem);
+        b.getBillItems().add(otherFeeItem);
+
+        b.getBillFees().add(admissionFee);
+        b.getBillFees().add(serviceFee);
+        b.getBillFees().add(shiftFee);
+        b.getBillFees().add(otherFee);
+
+        //System.out.println("b.getBillItems() = " + b.getBillItems());
+        billController.save(b);
+
     }
 
     private void saveBillItemForPaymentBill(Bill b, BillFee bf, Payment p) {
@@ -257,7 +371,7 @@ public class WorkingTimeController implements Serializable {
         saveBillFee(i, p);
         b.getBillItems().add(i);
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
@@ -275,12 +389,12 @@ public class WorkingTimeController implements Serializable {
 
         if (bf.getId() == null) {
             billFeeFacade.create(bf);
-        }else{
+        } else {
             billFeeFacade.edit(bf);
         }
         createBillFeePaymentAndPayment(bf, p);
     }
-    
+
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -542,8 +656,6 @@ public class WorkingTimeController implements Serializable {
         return items;
     }
 
-
-
     public Staff getStaff() {
         return staff;
     }
@@ -714,6 +826,30 @@ public class WorkingTimeController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+    
+     public List<Doctor> getListOfDoctors() {
+        List<Doctor> suggestions;
+        String sql;
+        sql = " select p from Doctor p "
+                + " where p.retired=:ret ";
+        HashMap hm = new HashMap();
+        hm.put("ret", false);
+        if (speciality != null) {
+            sql += "and p.speciality=:sp ";
+            hm.put("sp", speciality);
+        }
+        sql += " order by p.person.name";
+        suggestions = getFacade().findByJpql(sql, hm);
+        return suggestions;
     }
 
     /**

@@ -40,10 +40,10 @@ public class FinancialReport {
     private double cashTotal;
 
     // Floats and handovers
-    private double floatCollected;
+    private double floatReceived;
     private double floatHandover;
-    private double floatMySafe;
-    private double collectionHandover;
+    private double shiftStartFunds;
+    private double shiftEndFunds;
 
     // Other transactions
     private double cashCollectedTransferIn;
@@ -116,8 +116,8 @@ public class FinancialReport {
     private List<PaymentMethod> paymentMethodsForFloatMySafe;
     private List<BillTypeAtomic> billTypesForFloatMySafe;
 
-    private List<PaymentMethod> paymentMethodsForCollectionHandover;
-    private List<BillTypeAtomic> billTypesForCollectionHandover;
+    private List<PaymentMethod> paymentMethodsForShiftEndHandovers;
+    private List<BillTypeAtomic> billTypesOfShiftEndHandovers;
 
 // Lists for the rest of the transactions...
     private List<PaymentMethod> paymentMethodsForCashCollectedTransferIn;
@@ -154,6 +154,58 @@ public class FinancialReport {
     public FinancialReport() {
     }
 
+    public void calculateTotal() {
+        System.out.println("Starting calculation of totals.");
+
+        // Update and sum up all the transaction types
+        netCashTotal = getNetCashTotal();
+        netCreditTotal = getNetCreditTotal();
+        netCreditCardTotal = getNetCreditCardTotal();
+        netOtherNonCreditTotal = getNetOtherNonCreditTotal();
+        netVoucherTotal = getNetVoucherTotal();
+
+        shiftStartFunds = getShiftStartFunds();
+        floatHandover = getFloatHandover();
+        floatReceived = getFloatReceived();
+        shiftEndFunds = getShiftEndFunds();
+
+        bankWithdrawals = getBankWithdrawals();
+        bankDeposits = getBankDeposits();
+
+        // Calculate the overall total starting from the float my safe value and adjusting with all other totals
+        total = shiftStartFunds;  // Start with the float my safe value
+        System.out.println("Initial Total (Float My Safe): " + total);
+
+        // Add net totals of all transaction types
+        total += netCashTotal;
+        System.out.println("Total after adding Net Cash: " + total);
+
+        total += netCreditTotal;
+        System.out.println("Total after adding Net Credit: " + total);
+
+        total += netCreditCardTotal;
+        System.out.println("Total after adding Net Credit Card: " + total);
+
+        total += netOtherNonCreditTotal;
+        System.out.println("Total after adding Net Other Non-Credit: " + total);
+
+        total += netVoucherTotal;
+        System.out.println("Total after adding Net Voucher: " + total);
+
+        // Adjust float and handover transactions
+        total += floatReceived;
+        System.out.println("Total after adding Float Collected: " + total);
+
+        total += floatHandover;
+        System.out.println("Total after adding Float Handover: " + total);
+
+        total -= shiftEndFunds;
+
+        // Adjust bank transactions
+        total += bankWithdrawals - bankDeposits;
+
+    }
+
     public double getCollectedCash() {
         collectedCash = atomicBillTypeTotals.getTotal(getBillTypesForCollectedCash(), getPaymentMethodsForCollectedCash());
         return collectedCash;
@@ -165,7 +217,7 @@ public class FinancialReport {
     }
 
     public double getNetCashTotal() {
-        netCashTotal = getCollectedCash() - getRefundedCash();
+        netCashTotal = getCollectedCash() - Math.abs(getRefundedCash()) ;
         return netCashTotal;
     }
 
@@ -195,7 +247,7 @@ public class FinancialReport {
     }
 
     public double getNetCreditCardTotal() {
-        netCreditCardTotal = getCollectedCreditCard() - getRefundedCreditCard();
+        netCreditCardTotal = getCollectedCreditCard() - Math.abs(getRefundedCreditCard());
         return netCreditCardTotal;
     }
 
@@ -210,7 +262,7 @@ public class FinancialReport {
     }
 
     public double getNetOtherNonCreditTotal() {
-        netOtherNonCreditTotal = getCollectedOtherNonCredit() - getRefundedOtherNonCredit();
+        netOtherNonCreditTotal = getCollectedOtherNonCredit() - Math.abs(getRefundedOtherNonCredit());
         return netOtherNonCreditTotal;
     }
 
@@ -225,33 +277,33 @@ public class FinancialReport {
     }
 
     public double getNetVoucherTotal() {
-        netVoucherTotal = getCollectedVoucher() - getRefundedVoucher();
+        netVoucherTotal = getCollectedVoucher() - Math.abs(getRefundedVoucher());
         return netVoucherTotal;
     }
 
     public double getCashTotal() {
-        cashTotal = getNetCashTotal() + getNetCreditTotal() + getNetCreditCardTotal() + getNetOtherNonCreditTotal() + getNetVoucherTotal();
+        cashTotal = getNetCashTotal();
         return cashTotal;
     }
 
-    public double getFloatCollected() {
-        floatCollected = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected(), getPaymentMethodsForFloatCollected());
-        return floatCollected;
+    public double getFloatReceived() {
+        floatReceived = atomicBillTypeTotals.getTotal(getBillTypesForFloatCollected());
+        return floatReceived;
     }
 
     public double getFloatHandover() {
-        floatHandover = atomicBillTypeTotals.getTotal(getBillTypesForFloatHandover(), getPaymentMethodsForFloatHandover());
+        floatHandover = atomicBillTypeTotals.getTotal(getBillTypesForFloatHandover());
         return floatHandover;
     }
 
-    public double getFloatMySafe() {
-        floatMySafe = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe(), getPaymentMethodsForFloatMySafe());
-        return floatMySafe;
+    public double getShiftStartFunds() {
+        shiftStartFunds = atomicBillTypeTotals.getTotal(getBillTypesForFloatMySafe());
+        return shiftStartFunds;
     }
 
-    public double getCollectionHandover() {
-        collectionHandover = atomicBillTypeTotals.getTotal(getBillTypesForCollectionHandover(), getPaymentMethodsForCollectionHandover());
-        return collectionHandover;
+    public double getShiftEndFunds() {
+        shiftEndFunds = atomicBillTypeTotals.getTotal(getBillTypesOfShiftEndHandovers());
+        return shiftEndFunds;
     }
 
     public double getCashCollectedTransferIn() {
@@ -270,7 +322,7 @@ public class FinancialReport {
     }
 
     public double getTotalShiftCashIn() {
-        totalShiftCashIn = getFloatCollected() + getCashCollectedTransferIn() + getBankWithdrawals() + getReceivedFromCollectionCenter();
+        totalShiftCashIn = getFloatReceived() + getCashCollectedTransferIn() + getBankWithdrawals() + getReceivedFromCollectionCenter();
         return totalShiftCashIn;
     }
 
@@ -300,7 +352,8 @@ public class FinancialReport {
     }
 
     public double getTotal() {
-        total = getTotalShiftCashIn() - getFloatHandover() - getFloatMySafe() - getCollectionHandover() - getDrPayments() - getOtherPayments() + getCashGivenOutTransferOut() + getBankDeposits() + getShortExcess();
+        calculateTotal();
+//        total = getTotalShiftCashIn() - getFloatHandover() - getFloatMySafe() - getCollectionHandover() - getDrPayments() - getOtherPayments() + getCashGivenOutTransferOut() + getBankDeposits() + getShortExcess();
         return total;
     }
 
@@ -333,6 +386,7 @@ public class FinancialReport {
             billTypesForRefundedCash = new ArrayList<>();
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
+            billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
         }
         return billTypesForRefundedCash;
     }
@@ -431,6 +485,7 @@ public class FinancialReport {
             // Assuming CHANNEL_BOOKING_WITH_PAYMENT and OPD_BILL_WITH_PAYMENT are collected via credit card
             billTypesForCollectedCreditCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             billTypesForCollectedCreditCard.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypesForCollectedCreditCard.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
             // Add other BillTypeAtomic entries if they are collected via credit card
         }
         return billTypesForCollectedCreditCard;
@@ -449,8 +504,9 @@ public class FinancialReport {
         if (billTypesForRefundedCreditCard == null) {
             billTypesForRefundedCreditCard = new ArrayList<>();
             // Add BillTypeAtomic entries that represent credit card refunds
-            // Assuming CHANNEL_REFUND is refunded via credit card
-            billTypesForRefundedCreditCard.add(BillTypeAtomic.CHANNEL_REFUND);
+            // Assuming CHANNEL_REFUND is refunded via credit card 
+            billTypesForRefundedCreditCard.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+            billTypesForRefundedCreditCard.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
             // Add other BillTypeAtomic entries if they are refunded via credit card
         }
         return billTypesForRefundedCreditCard;
@@ -479,7 +535,17 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForCollectedDebitCard() {
         if (paymentMethodsForCollectedDebitCard == null) {
             paymentMethodsForCollectedDebitCard = new ArrayList<>();
-            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Card); // Assuming 'Card' also covers debit card collections
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Credit);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Agent);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Cheque);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.MultiplePaymentMethods); 
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.OnlineSettlement);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.PatientDeposit);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Slip);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.Staff);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.IOU);
+            paymentMethodsForCollectedDebitCard.add(PaymentMethod.ewallet);
+            // Assuming 'Card' also covers debit card collections
             // If your application differentiates between credit and debit cards, you may need a specific entry for debit cards
         }
         return paymentMethodsForCollectedDebitCard;
@@ -488,9 +554,11 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForCollectedDebitCard() {
         if (billTypesForCollectedDebitCard == null) {
             billTypesForCollectedDebitCard = new ArrayList<>();
+            billTypesForCollectedDebitCard.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+            billTypesForCollectedDebitCard.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_IN));
             // Add BillTypeAtomic entries that represent debit card collections
             // Assuming specific services like CHANNEL_BOOKING_WITH_PAYMENT are paid for with debit cards
-            billTypesForCollectedDebitCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            //billTypesForCollectedDebitCard.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             // Add other BillTypeAtomic entries if they are typically paid with a debit card
         }
         return billTypesForCollectedDebitCard;
@@ -499,7 +567,17 @@ public class FinancialReport {
     public List<PaymentMethod> getPaymentMethodsForRefundedDebitCard() {
         if (paymentMethodsForRefundedDebitCard == null) {
             paymentMethodsForRefundedDebitCard = new ArrayList<>();
-            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Card); // Assuming 'Card' also covers debit card refunds
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Credit);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Agent);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Cheque);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.MultiplePaymentMethods); 
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.OnlineSettlement);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.PatientDeposit);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Slip);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.Staff);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.IOU);
+            paymentMethodsForRefundedDebitCard.add(PaymentMethod.ewallet);
+            // Assuming 'Card' also covers debit card refunds
             // Again, if your application distinguishes between credit and debit cards for refunds, adjust accordingly
         }
         return paymentMethodsForRefundedDebitCard;
@@ -511,6 +589,9 @@ public class FinancialReport {
             // Add BillTypeAtomic entries related to debit card refunds
             // Assuming CHANNEL_REFUND might be refunded to a debit card
             billTypesForRefundedDebitCard.add(BillTypeAtomic.CHANNEL_REFUND);
+            billTypesForRefundedDebitCard.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
+            billTypesForRefundedDebitCard.addAll(BillTypeAtomic.findByCategory(BillCategory.CANCELLATION));
+            billTypesForRefundedDebitCard.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
             // Include any other applicable BillTypeAtomic entries for debit card refunds
         }
         return billTypesForRefundedDebitCard;
@@ -626,7 +707,7 @@ public class FinancialReport {
     public List<BillTypeAtomic> getBillTypesForFloatHandover() {
         if (billTypesForFloatHandover == null) {
             billTypesForFloatHandover = new ArrayList<>();
-            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+            billTypesForFloatHandover.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_DECREASE));
         }
         return billTypesForFloatHandover;
     }
@@ -647,23 +728,22 @@ public class FinancialReport {
         return billTypesForFloatMySafe;
     }
 
-    public List<PaymentMethod> getPaymentMethodsForCollectionHandover() {
-        if (paymentMethodsForCollectionHandover == null) {
-            paymentMethodsForCollectionHandover = new ArrayList<>();
+    public List<PaymentMethod> getPaymentMethodsForShiftEndHandovers() {
+        if (paymentMethodsForShiftEndHandovers == null) {
+            paymentMethodsForShiftEndHandovers = new ArrayList<>();
             // Collection handover might primarily involve cash, but other methods can be included as needed
-            paymentMethodsForCollectionHandover.add(PaymentMethod.Cash);
+            paymentMethodsForShiftEndHandovers.add(PaymentMethod.Cash);
             // Add any other relevant methods if applicable
         }
-        return paymentMethodsForCollectionHandover;
+        return paymentMethodsForShiftEndHandovers;
     }
 
-    public List<BillTypeAtomic> getBillTypesForCollectionHandover() {
-        if (billTypesForCollectionHandover == null) {
-            billTypesForCollectionHandover = new ArrayList<>();
-            // Include any bill types specifically associated with the handover of collections
-            // Example: billTypesForCollectionHandover.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
+    public List<BillTypeAtomic> getBillTypesOfShiftEndHandovers() {
+        if (billTypesOfShiftEndHandovers == null) {
+            billTypesOfShiftEndHandovers = new ArrayList<>();
+            billTypesOfShiftEndHandovers.add(BillTypeAtomic.FUND_SHIFT_END_BILL);
         }
-        return billTypesForCollectionHandover;
+        return billTypesOfShiftEndHandovers;
     }
 
     public List<PaymentMethod> getPaymentMethodsForCashCollectedTransferIn() {
@@ -680,7 +760,7 @@ public class FinancialReport {
         if (billTypesForCashCollectedTransferIn == null) {
             billTypesForCashCollectedTransferIn = new ArrayList<>();
             // Assuming specific transactions associated with cash collected through transfers
-             billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            billTypesForCashCollectedTransferIn.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         }
         return billTypesForCashCollectedTransferIn;
     }

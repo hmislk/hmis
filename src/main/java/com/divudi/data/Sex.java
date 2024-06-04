@@ -5,8 +5,9 @@
 package com.divudi.data;
 
 public enum Sex {
+    
     Male,
     Female,
     Unknown,
-    Other;
+    Other
 }

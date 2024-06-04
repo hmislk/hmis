@@ -14,7 +14,7 @@
 
                 <p:panel >
                     <f:facet name="header" >
-                        <h:outputText value="Channel Activities" ></h:outputText>
+                        <h:outputText value="Channel Schedule Management" ></h:outputText>
                     </f:facet>
                     <div class="row">
                         <div class="col-2">
@@ -22,20 +22,31 @@
                                 <div class="d-grid gap-2 m-1">
                                     <p:commandButton  
                                         ajax="false" 
-                                        value="Channel Schedules" 
-                                        action="#{channelScheduleController.navigateToChannelSchedule}"/>
+                                        value="Channel Schedule Management" 
+                                        action="#{channelScheduleController.navigateToChannelSchedule}"
+                                        icon="fa fa-calendar-alt"
+                                        styleClass="ui-button-success" />
                                     <p:commandButton  
                                         ajax="false" 
-                                        value="Channel Schedule Management" 
-                                        action="#{channelScheduleController.navigateToChannelScheduleManagement}"/>
+                                        value="Channel Session Management" 
+                                        action="#{channelScheduleController.navigateToChannelScheduleManagement}"
+                                        icon="fa fa-users"
+                                        styleClass="ui-button-info" />
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Channel Activities" 
-                                        action="#{appointmentActivityController.navigateToManageAppointmentActivities()}" />
-
-
+                                        value="Channel Activity Management" 
+                                        action="#{appointmentActivityController.navigateToManageAppointmentActivities()}"
+                                        icon="fa fa-tasks"
+                                        styleClass="ui-button-warning" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Channel Scheduling for All Doctors" 
+                                        action="#{channelScheduleController.channelSheduleForAllDoctor(null)}"
+                                        icon="fa fa-user-md"
+                                        styleClass="ui-button-primary" />
                                 </div>
                             </h:form>
+
                         </div>
                         <div class="col-10">
                             <ui:insert name="subcontent">

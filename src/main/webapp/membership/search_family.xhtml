@@ -33,7 +33,10 @@
                         
 
                             <p:dataTable value="#{patientController.families}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
-                                <p:column headerText="Membership No" >
+                                <p:column headerText="Membership" >
+                                    <p:outputLabel value="#{f.membershipScheme.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Card No" >
                                     <p:outputLabel value="#{f.membershipCardNo}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Phone No" >

@@ -26,6 +26,12 @@
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
+                                                value="Financial Transactions Summary by cashier" 
+                                                action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
                                                 value="Financial Transactions Summary - Payment Method" 
                                                 action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
                                                 class="w-100">
@@ -38,18 +44,18 @@
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
-                                                value="Financial Transactions Summary - Cashier PaymentMethod" 
+                                                value="Financial Transactions Summary - Cashier Payment Method" 
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Financial Transactions Summary - Department" 
                                                 action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="All Bills" 
@@ -85,6 +91,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
                                             <p:commandButton ajax="false" value="SMS Failed List" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
+                                            <p:commandButton ajax="false" value="Sent SMS" action="#{searchController.navigateToSendSms()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>  
                                     <p:tab title="Audit Reports">

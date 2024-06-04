@@ -679,8 +679,6 @@ public class ChannelBean {
         return listTodaysSessionInstances(null, null, null);
     }
 
-    
-
     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
         List<SessionInstance> sessionInstances = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
@@ -721,6 +719,109 @@ public class ChannelBean {
                 }
             }
         });
+        return sessionInstances;
+    }
+
+    public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
+        return listSessionInstances(fromDate, toDate, ongoing, completed, pending, null);
+    }
+
+    public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending, Boolean cancelled) {
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret");
+
+        // Initializing the parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+
+        // Adding date conditions
+        if (fromDate != null && toDate != null) {
+            jpql.append(" and i.sessionDate between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        } else if (fromDate != null) {
+            jpql.append(" and i.sessionDate >= :fromDate");
+            params.put("fromDate", fromDate);
+        } else if (toDate != null) {
+            jpql.append(" and i.sessionDate <= :toDate");
+            params.put("toDate", toDate);
+        } else {
+            jpql.append(" and i.sessionDate = :sd");
+            params.put("sd", new Date());
+        }
+
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (ongoing != null && ongoing) {
+            conditions.add("(i.started = true and i.completed = false)");
+        }
+        if (completed != null && completed) {
+            conditions.add("i.completed = true");
+        }
+        if (pending != null && pending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+        if (cancelled != null && cancelled) {
+            conditions.add("i.cancelled = true");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                // Check if the session dates are null
+                Date d1 = s1.getSessionDate();
+                Date d2 = s2.getSessionDate();
+                if (d1 == null && d2 == null) {
+                    return 0;
+                }
+                if (d1 == null) {
+                    return -1;
+                }
+                if (d2 == null) {
+                    return 1;
+                }
+
+                int dateCompare = d1.compareTo(d2);
+                if (dateCompare != 0) {
+                    return dateCompare;
+                }
+
+                // Check if the originating sessions or their names are null
+                ServiceSession session1 = s1.getOriginatingSession();
+                ServiceSession session2 = s2.getOriginatingSession();
+                if (session1 == null && session2 == null) {
+                    return 0;
+                }
+                if (session1 == null) {
+                    return -1;
+                }
+                if (session2 == null) {
+                    return 1;
+                }
+
+                String name1 = session1.getName();
+                String name2 = session2.getName();
+                if (name1 == null && name2 == null) {
+                    return 0;
+                }
+                if (name1 == null) {
+                    return -1;
+                }
+                if (name2 == null) {
+                    return 1;
+                }
+
+                return name1.compareTo(name2);
+            }
+        });
+
         return sessionInstances;
     }
 

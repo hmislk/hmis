@@ -6,10 +6,10 @@
 package com.divudi.data;
 
 /**
- *
  * @author Buddhika
  */
 public enum DepartmentListMethod {
+
     LoggedDepartmentOnly,
     AllDepartmentsOfLoggedInstitution,
     AllDepartmentsOfAllInstitutions,

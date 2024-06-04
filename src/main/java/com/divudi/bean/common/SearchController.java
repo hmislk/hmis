@@ -50,11 +50,18 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
+import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
@@ -108,6 +115,8 @@ public class SearchController implements Serializable {
     PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
+    @EJB
+    TokenFacade tokenFacade;
 
     /**
      * Inject
@@ -136,6 +145,12 @@ public class SearchController implements Serializable {
     TokenController tokenController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    BillSearch billSearch;
+    @Inject
+    PharmacyBillSearch pharmacyBillSearch;
+    @Inject
+    OpdBillController opdBillController;
 
     /**
      * Properties
@@ -226,11 +241,62 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
-    private Long currentTokenId;
+    private Long barcodeIdLong;
+    private Date maxDate;
+
+    private double cashTotal;
+    private double cardTotal;
+    private double chequeTotal;
+    private double slipTotal;
+    private double totalOfOtherPayments;
+    private double billCount;
+    private Token token;
+
+    private boolean duplicateBillView;
+
+    public String navigateTobill(Bill bill) {
+        String navigateTo = "";
+        if (bill == null) {
+            return "";
+        }
+        switch (bill.getBillTypeAtomic()) {
+            //Opd Bill Navigation
+            case OPD_BILL_WITH_PAYMENT:
+                billSearch.setBill(bill);
+                navigateTo = "/opd/bill_reprint.xhtml";
+                break;
+            case OPD_BILL_REFUND:
+                billSearch.setBill(bill);
+                navigateTo = "/opd/bill_reprint.xhtml";
+                break;
+            case OPD_BILL_CANCELLATION:
+                billSearch.setBill(bill);
+                navigateTo = "/opd/bill_reprint.xhtml";
+                break;
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                System.out.println("bill = " + bill);
+                opdBillController.setBatchBill(bill);
+                navigateTo = "/opd/opd_batch_bill_print.xhtml";
+                break;
+            //Pharmacy Bill Navigation    
+            case PHARMACY_RETAIL_SALE:
+                pharmacyBillSearch.setBill(bill);
+                navigateTo = "/pharmacy/pharmacy_reprint_bill_sale.xhtml";
+                break;
+            default:
+                return navigateTo;
+        }
+        return navigateTo;
+    }
 
     public String navigateToAllFinancialTransactionSummary() {
         billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary?faces-redirect=true";
+    }
+
+    public String navigateToAllFinancialTransactionSummaryCashier() {
+        billSummaryRows = null;
+        return "/analytics/all_financial_transaction_summary_by_user?faces-redirect=true";
     }
 
     public String navigateToFinancialTransactionSummaryPaymentMethod() {
@@ -238,6 +304,12 @@ public class SearchController implements Serializable {
         department = null;
         billSummaryRows = null;
         return "/analytics/financial_transaction_summary_PaymentMethod?faces-redirect=true";
+    }
+
+    public String navigateToAddToStockBillList() {
+        printPreview = false;
+        bills = null;
+        return "/pharmacy/pharmacy_add_to_stock_search_bill?faces-redirect=true";
     }
 
     public String navigateToFinancialTransactionSummaryByUsers() {
@@ -269,7 +341,7 @@ public class SearchController implements Serializable {
         }
     }
 
-    public Bill searchBillFromBillId(Long currentTokenId) {
+    public Bill searchBillFromTokenId(Long currentTokenId) {
         if (currentTokenId == null) {
             JsfUtil.addErrorMessage("Enter Correct Bill Number !");
             return null; // Return null if the token ID is null
@@ -282,23 +354,47 @@ public class SearchController implements Serializable {
         return getBillFacade().findFirstByJpql(sql, hm);
     }
 
-    public String settleBillByBarcode() {
-        currentBill = searchBillFromBillId(currentTokenId);
-        String action;
-        if (currentBill == null) {
-            Token t = tokenController.findToken(currentBillId);
-            if (t != null) {
-                if (t.getBill() != null) {
-
-                    currentBill = t.getBill();
-                }
-            }
+    public Token searchTokenFromTokenId(Long currentTokenId) {
+        if (currentTokenId == null) {
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
         }
+        String sql = "SELECT t FROM Token t "
+                + "WHERE t.retired = false "
+                + "AND t.id = :tid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("tid", currentTokenId);
+        return tokenFacade.findFirstByJpql(sql, hm);
+    }
+
+    public Bill searchBillFromBillId(Long currentTokenId) {
+        if (currentTokenId == null) {
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
+            return null; // Return null if the token ID is null
+        }
+        String sql = " SELECT b "
+                + " FROM Bill b "
+                + " WHERE b.retired = false "
+                + "AND b.id = :bid";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bid", currentTokenId);
+        return getBillFacade().findFirstByJpql(sql, hm);
+    }
+
+    public String settleBillByBarcode() {
+        System.out.println("settleBillByBarcode");
+        currentBill = searchBillFromBillId(barcodeIdLong);
+        System.out.println("currentBill by bill id= " + currentBill);
+        if (currentBill == null) {
+            currentBill = searchBillFromTokenId(barcodeIdLong);
+            opdPreSettleController.setToken(searchTokenFromTokenId(barcodeIdLong));
+            System.out.println("currentBill by token id = " + currentBill);
+        }
+        String action;
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
         }
-
         if (currentBill.isPaid()) {
             JsfUtil.addErrorMessage("Error : Bill is Already Paid");
             return " ";
@@ -308,44 +404,70 @@ public class SearchController implements Serializable {
 
     }
 
-    public String toSettle(Bill args) {
-        String sql = "Select b from BilledBill b"
+    public String toSettle(Bill preBill) {
+        System.out.println("preBill = " + preBill);
+        System.out.println("preBill ATOMIC BILL TYPE= " + preBill.getBillTypeAtomic());
+
+        if (preBill == null) {
+            JsfUtil.addErrorMessage("No Such Prebill");
+            return "";
+        }
+        String sql = "Select b from "
+                + " BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
-        hm.put("bil", args);
+        hm.put("bil", preBill);
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
             JsfUtil.addErrorMessage("Allready Paid");
             return "";
-        } else {
-
-            BillType btype = args.getBillType();
-            switch (btype) {
-                case OpdPreBill:
-                    setPreBillForOpd(args);
-                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
-
-                case PharmacyPre:
-                    setPreBillForPharmecy(args);
-                    return "/pharmacy/pharmacy_bill_pre_settle";
-
-                case OpdBathcBillPre:
-                    setPreBillForOpd(args);
-                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
-
-                default:
-                    throw new AssertionError();
-            }
-
         }
+
+        if (preBill.getBillTypeAtomic() != null) {
+            BillTypeAtomic bta = preBill.getBillTypeAtomic();
+            switch (bta) {
+                case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+                    return opdPreSettleController.toSettle(preBill);
+                case PHARMACY_RETAIL_SALE_PRE:
+                case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                    setPreBillForPharmecy(preBill);
+                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
+                default:
+                    JsfUtil.addErrorMessage("Other Bill Type Error");
+                    System.out.println("No Adomic bill type for = " + b);
+                    return null;
+            }
+        }
+//        if (preBill.getBillType() != null) {
+//            BillType btype = preBill.getBillType();
+//            switch (btype) {
+//                case OpdPreBill:
+//                    setPreBillForOpd(preBill);
+//
+//                case PharmacyPre:
+//                    setPreBillForPharmecy(preBill);
+//                    return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
+//
+////                case OpdBathcBillPre:
+////                    opdPreBatchBillSettleController.setPreBill(preBill);
+////                    return "/opd/opd_bill_pre_settle?faces-redirect=true";
+//                default:
+//                    throw new AssertionError();
+//            }
+//
+//        }
+        JsfUtil.addErrorMessage("No bill error");
+        return null;
     }
 
     public void setPreBillForOpd(Bill preBill) {
         makeNull();
         opdPreSettleController.setPreBill(preBill);
+        System.out.println("preBill = " + preBill.getBillItems().size());
+        opdPreSettleController.toSettle(preBill);
         //System.err.println("Setting Bill " + preBill);
         opdPreSettleController.setBillPreview(false);
 
@@ -394,7 +516,10 @@ public class SearchController implements Serializable {
 
     public String navigateToFailedSmsList() {
         return "/analytics/sms_faild?faces-redirect=true";
+    }
 
+    public String navigateToSendSms() {
+        return "/analytics/sms_send?faces-redirect=true";
     }
 
     public String navigateToListOtherInstitutionBills() {
@@ -515,6 +640,7 @@ public class SearchController implements Serializable {
         billItems = null;
         patientInvestigations = null;
         searchKeyword = null;
+        printPreview = false;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -1173,12 +1299,12 @@ public class SearchController implements Serializable {
         this.currentBillId = currentBillId;
     }
 
-    public Long getCurrentTokenId() {
-        return currentTokenId;
+    public Long getBarcodeIdLong() {
+        return barcodeIdLong;
     }
 
-    public void setCurrentTokenId(Long currentTokenId) {
-        this.currentTokenId = currentTokenId;
+    public void setBarcodeIdLong(Long barcodeIdLong) {
+        this.barcodeIdLong = barcodeIdLong;
     }
 
     public List<Payment> getPayments() {
@@ -1275,6 +1401,103 @@ public class SearchController implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public Date getMaxDate() {
+        maxDate = commonFunctions.getEndOfDay(new Date());
+        return maxDate;
+    }
+
+    public void setMaxDate(Date maxDate) {
+        this.maxDate = maxDate;
+    }
+
+    public double getCashTotal() {
+        return cashTotal;
+    }
+
+    public void setCashTotal(double cashTotal) {
+        this.cashTotal = cashTotal;
+    }
+
+    public double getCardTotal() {
+        return cardTotal;
+    }
+
+    public void setCardTotal(double cardTotal) {
+        this.cardTotal = cardTotal;
+    }
+
+    public double getChequeTotal() {
+        return chequeTotal;
+    }
+
+    public void setChequeTotal(double chequeTotal) {
+        this.chequeTotal = chequeTotal;
+    }
+
+    public double getSlipTotal() {
+        return slipTotal;
+    }
+
+    public void setSlipTotal(double slipTotal) {
+        this.slipTotal = slipTotal;
+    }
+
+    public double getTotalOfOtherPayments() {
+        return totalOfOtherPayments;
+    }
+
+    public void setTotalOfOtherPayments(double totalOfOtherPayments) {
+        this.totalOfOtherPayments = totalOfOtherPayments;
+    }
+
+    public double getBillCount() {
+        return billCount;
+    }
+
+    public void setBillCount(double billCount) {
+        this.billCount = billCount;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
+        return pharmaceuticalBillItemFacade;
+    }
+
+    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
+        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
+    }
+
+    public boolean isDuplicateBillView() {
+        return duplicateBillView;
+    }
+
+    public void setDuplicateBillView(boolean duplicateBillView) {
+        this.duplicateBillView = duplicateBillView;
     }
 
     public class billsWithbill {
@@ -1614,6 +1837,66 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createPharmacyAddToStockBills() {
+        Date startTime = new Date();
+        createPharmacyAddToBills(BillType.PharmacyAddtoStock, true);
+        //System.out.println("bills = " + bills);
+    }
+
+    public void createPharmacyAddToStockAllBills() {
+        Date startTime = new Date();
+        createPharmacyAddToBills(BillType.PharmacyAddtoStock, false);
+        //System.out.println("Allbills = " + bills);
+    }
+
+    public void createPharmacyAddToBills(BillType billtype, boolean maxNum) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select b from Bill b where "
+                + " b.createdAt between :fd and :td "
+                + " and b.billType=:bt"
+                + " and b.institution=:ins "
+                + " and b.department=:ldep";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  ((b.department.name) like :dep )";
+            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        m.put("bt", billtype);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ins", getSessionController().getInstitution());
+        m.put("ldep", getSessionController().getLoggedUser().getDepartment());
+//    
+        //System.out.println("sql = " + sql);
+
+        if (maxNum == true) {
+            bills = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 25);
+        } else {
+            bills = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        netTotal = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+        }
+        //System.out.println("Method_bills = " + bills);
+    }
+
     public void createPharmacyWholesaleBills() {
         createPharmacyRetailBills(BillType.PharmacyWholesalePre, true);
     }
@@ -1841,58 +2124,57 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyTableRe() {
-        Date startTime = new Date();
-
-        Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
-        //     m.put("class", PreBill.class);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("ret", false);
-        m.put("ins", getSessionController().getInstitution());
+        bills = null;
         String sql;
+        Map temMap = new HashMap();
 
-        sql = "Select b from Bill b where "
-                + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt "
-                + " and b.retired=:ret "
-                + " and b.institution=:ins";
-        //+ " and type(b)=:class ";
+        sql = "select b from PreBill b "
+                + " where b.billTypeAtomic = :billTypeAtomic "
+                + " and b.institution=:ins "
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false "
+                + " and b.deptId is not null "
+                + " and b.cancelled=false";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
-            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
-            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             sql += " and  ((b.department.name) like :dep )";
-            m.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+            temMap.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             sql += " and  ((b.netTotal) like :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((b.total) like :total )";
-            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patient.person.phone) like :phone )";
-            m.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+            temMap.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
-
         sql += " order by b.createdAt desc  ";
 //    
-        //     //////System.out.println("sql = " + sql);
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        temMap.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
 
     }
 
@@ -2003,7 +2285,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //    
         //     //////System.out.println("sql = " + sql);
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2644,6 +2926,8 @@ public class SearchController implements Serializable {
 
     public void createRequestTable() {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2651,10 +2935,12 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
         tmp.put("bTp", BillType.PharmacyTransferRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -2679,6 +2965,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2686,10 +2974,12 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
         tmp.put("bTp", BillType.InwardPharmacyRequest);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.department=:dep "
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -2746,6 +3036,8 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTForIssueTable(Boolean bool) {
         Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
 
         String sql;
 
@@ -2754,9 +3046,11 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bct", bct);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billClassType not in :bct"
                 + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -4995,7 +5289,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
+            sql += " and  (b.insId like :billNo or b.deptId like :billNo)";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
@@ -5240,7 +5534,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
+            sql += " and  (b.insId like :billNo or b.deptId like :billNo)";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
@@ -5425,6 +5719,7 @@ public class SearchController implements Serializable {
 
         sql = "select b from PreBill b where b.billType = :billType and "
                 + " b.institution=:ins and (b.billedBill is null) and "
+                + " b.department=:dept and "
                 + " b.referenceBill.billType=:refBillType "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false "
                 // for remove cancel bills
@@ -5447,6 +5742,7 @@ public class SearchController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("dept", getSessionController().getLoggedUser().getDepartment());
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
@@ -5470,10 +5766,48 @@ public class SearchController implements Serializable {
 
     }
 
+    @Inject
+    private BillController billController;
+
+    @EJB
+    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+
+    private boolean printPreview = false;
+
+    public String navigateToAddToStockBillPrint() {
+        printPreview = true;
+        duplicateBillView = true;
+
+        return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
+    }
+
     public void addToStock() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+
+        bill = new Bill();
+
+        bill.setBillDate(new Date());
+        bill.setBillTime(new Date());
+        bill.setCreatedAt(new Date());
+
+        bill.setDeptId(billController.getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.PharmacyAddtoStock, BillClassType.BilledBill));
+        bill.setInsId(billController.getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.PharmacyAddtoStock, BillClassType.BilledBill, BillNumberSuffix.NONE));
+
+        bill.setBillClassType(BillClassType.Bill);
+        bill.setBillType(BillType.PharmacyAddtoStock);
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+
+        bill.setCreater(getSessionController().getLoggedUser());
+        bill.setDepartment(getSessionController().getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
+
+        getBillFacade().create(bill);
+
+        List<BillItem> billItems = new ArrayList<>();
+
+        double totalValue = 0.0;
 
         for (Bill b : getSelectedBills()) {
             b = getBillFacade().find(b.getId());
@@ -5485,6 +5819,29 @@ public class SearchController implements Serializable {
                 continue;
             }
 
+            totalValue += b.getNetTotal();
+
+            for (BillItem bi : b.getBillItems()) {
+                BillItem nbi = new BillItem();
+                nbi.copy(bi);
+                nbi.invertValue();
+                nbi.setBill(bill);
+
+                billItemFacade.create(nbi);
+
+                PharmaceuticalBillItem npi = new PharmaceuticalBillItem();
+                npi.copy(bi.getPharmaceuticalBillItem());
+                npi.invertValue(npi);
+                npi.setBillItem(nbi);
+
+                pharmaceuticalBillItemFacade.create(npi);
+
+                nbi.setPharmaceuticalBillItem(npi);
+
+                billItemFacade.edit(nbi);
+                billItems.add(nbi);
+            }
+
             Bill prebill = getPharmacyBean().reAddToStock(b, getSessionController().getLoggedUser(),
                     getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
 
@@ -5494,9 +5851,13 @@ public class SearchController implements Serializable {
                 getBillFacade().edit(b);
             }
         }
+        bill.setNetTotal(totalValue);
+        bill.setBillItems(billItems);
+        getBillFacade().edit(bill);
 
         createPreBillsNotPaid();
-
+        printPreview = true;
+        duplicateBillView = false;
     }
 
     public void cancelIssueToUnitBills() {
@@ -6704,14 +7065,23 @@ public class SearchController implements Serializable {
                 + " from Bill b "
                 + " where b.retired=:ret"
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and b.billTypeAtomic in :abts "
-                + " group by b.billTypeAtomic"
-                + " order by b.billTypeAtomic ";
+                + " and b.billTypeAtomic in :abts ";
+
 //        Bill b = new Bill();
 //        b.getTotal();
 //        b.getDiscount();
 //        b.getNetTotal();
 //        b.getBillTypeAtomic();
+        if (webUser == null) {
+            jpql += "and b.creater=:bc ";
+            params.put("bc", sessionController.getLoggedUser());
+        } else {
+            jpql += "and b.creater=:bc ";
+            params.put("bc", webUser);
+        }
+
+        jpql += "group by b.billTypeAtomic order by b.billTypeAtomic";
+
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ret", false);
@@ -6737,15 +7107,18 @@ public class SearchController implements Serializable {
     }
 
     public void processAllFinancialTransactionalSummarybyPaymentMethod() {
-        //System.out.println("institution = " + institution);
-        //System.out.println("department = " + department);
+        System.out.println("institution = " + institution);
         if (institution == null) {
             setDepartments(null);
         }
         billSummaryRows = null;
-        grossTotal = 0.0;
-        discount = 0.0;
-        netTotal = 0.0;
+        totalPaying = 0.0;
+        cashTotal = 0.0;
+        cardTotal = 0.0;
+        chequeTotal = 0.0;
+        slipTotal = 0.0;
+        totalOfOtherPayments = 0.0;
+
         String jpql;
         Map params = new HashMap();
         List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
@@ -6755,45 +7128,119 @@ public class SearchController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
 
         jpql = "select new com.divudi.light.common.BillSummaryRow("
-                + "b.billTypeAtomic, "
-                + "sum(b.total), "
-                + "sum(b.discount), "
-                + "sum(b.netTotal), "
-                + "count(b), "
-                + "b.paymentMethod ) "
-                + " from Bill b "
-                + " where b.retired=:ret"
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.billTypeAtomic in :abts ";
+                + "p.bill.billTypeAtomic, "
+                + "sum(p.paidValue), "
+                + "count(p.bill), "
+                + "p.paymentMethod ) "
+                + " from Payment p "
+                + " where p.bill.retired=:ret"
+                + " and p.createdAt between :fromDate and :toDate "
+                + " and p.bill.billTypeAtomic in :abts ";
 
-        if (institution != null) {
-            jpql += " and b.institution=:ins";
-            params.put("ins", getInstitution());
-
-            if (department != null) {
-                jpql += " and b.department=:dept";
-                params.put("dept", getDepartment());
-            }
+        if (institution == null) {
+            jpql += " and p.bill.institution=:ins";
+            params.put("ins", sessionController.getInstitution());
+        } else {
+            jpql += " and p.bill.institution=:ins";
+            params.put("ins", institution);
         }
 
-        jpql += " group by b.paymentMethod, b.billTypeAtomic "
-                + " order by b.billTypeAtomic";
+        if (department == null) {
+            jpql += " and p.bill.department=:dept";
+            params.put("dept", sessionController.getLoggedUser().getDepartment());
+        } else {
+            jpql += " and p.bill.department=:dept";
+            params.put("dept", department);
+        }
+
+        jpql += " group by p.paymentMethod, p.bill.billTypeAtomic "
+                + " order by p.bill.billTypeAtomic";
 
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
-        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        //System.out.println("billSummaryRows = " + billSummaryRows);
+        billSummaryRows = paymentFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         for (BillSummaryRow bss : billSummaryRows) {
-            grossTotal += bss.getGrossTotal();
-            discount += bss.getDiscount();
-            netTotal += bss.getNetTotal();
+            if (bss.getPaymentMethod() == PaymentMethod.Cash) {
+                cashTotal += bss.getPaidValue();
+            } else if (bss.getPaymentMethod() == PaymentMethod.Card) {
+                cardTotal += bss.getPaidValue();
+            } else if (bss.getPaymentMethod() == PaymentMethod.Cheque) {
+                chequeTotal += bss.getPaidValue();
+            } else if (bss.getPaymentMethod() == PaymentMethod.Slip) {
+                slipTotal += bss.getPaidValue();
+            } else {
+
+                totalOfOtherPayments += bss.getPaidValue();
+            }
+            totalPaying += bss.getPaidValue();
         }
 
     }
 
+//    public void processAllFinancialTransactionalSummarybyPaymentMethod() {
+//        System.out.println("institution = " + institution);
+//        if (institution == null) {
+//            setDepartments(null);
+//        }
+//        billSummaryRows = null;
+//        grossTotal = 0.0;
+//        discount = 0.0;
+//        netTotal = 0.0;
+//        String jpql;
+//        Map params = new HashMap();
+//        List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
+//        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+//        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+//        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT));
+//        billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CREDIT_SETTLEMENT_REVERSE));
+//
+//        jpql = "select new com.divudi.light.common.BillSummaryRow("
+//                + "b.billTypeAtomic, "
+//                + "sum(b.total), "
+//                + "sum(b.discount), "
+//                + "sum(b.netTotal), "
+//                + "count(b), "
+//                + "b.paymentMethod ) "
+//                + " from Bill b "
+//                + " where b.retired=:ret"
+//                + " and b.createdAt between :fromDate and :toDate "
+//                + " and b.billTypeAtomic in :abts ";
+//
+//        if (institution == null) {
+//            jpql += " and b.institution=:ins";
+//            params.put("ins", sessionController.getInstitution());
+//        } else {
+//            jpql += " and b.institution=:ins";
+//            params.put("ins", institution);
+//        }
+//
+//        if (department == null) {
+//            jpql += " and b.department=:dept";
+//            params.put("dept", sessionController.getLoggedUser().getDepartment());
+//        } else {
+//            jpql += " and b.department=:dept";
+//            params.put("dept", department);
+//        }
+//
+//        jpql += " group by b.paymentMethod, b.billTypeAtomic "
+//                + " order by b.billTypeAtomic";
+//
+//        params.put("toDate", getToDate());
+//        params.put("fromDate", getFromDate());
+//        params.put("ret", false);
+//        params.put("abts", billTypesToFilter);
+//        billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+//
+//        for (BillSummaryRow bss : billSummaryRows) {
+//            grossTotal += bss.getGrossTotal();
+//            discount += bss.getDiscount();
+//            netTotal += bss.getNetTotal();
+//        }
+//
+//    }
     public void processAllFinancialTransactionalSummarybyUsers() {
         //System.out.println("institution = " + institution);
         //System.out.println("department = " + department);
@@ -6804,6 +7251,7 @@ public class SearchController implements Serializable {
         grossTotal = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        totalBillCount = 0.0;
         String jpql;
         Map params = new HashMap();
         List<BillTypeAtomic> billTypesToFilter = new ArrayList<>();
@@ -6847,6 +7295,7 @@ public class SearchController implements Serializable {
             grossTotal += bss.getGrossTotal();
             discount += bss.getDiscount();
             netTotal += bss.getNetTotal();
+            totalBillCount += bss.getBillCount();
         }
     }
 
@@ -6966,7 +7415,7 @@ public class SearchController implements Serializable {
             grossTotal += bss.getTotal();
             discount += bss.getDiscount();
             netTotal += bss.getNetTotal();
-            totalBillCount ++;
+            totalBillCount++;
         }
     }
 
@@ -7092,9 +7541,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department) {
-        System.out.println("fillAllBills");
-        System.out.println("department = " + department);
+    public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department, PaymentMethod paymentMethod, BillTypeAtomic billtypeAtomic) {
         bills = null;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
@@ -7125,6 +7572,16 @@ public class SearchController implements Serializable {
                 jpql.append(" and b.department = :dept ");
                 params.put("dept", department);
             }
+        }
+
+        if (paymentMethod != null) {
+            jpql.append(" and b.paymentMethod=:pm ");
+            params.put("pm", paymentMethod);
+        }
+
+        if (billtypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:ba ");
+            params.put("ba", billtypeAtomic);
         }
 
         // Order by bill ID
@@ -8934,13 +9391,17 @@ public class SearchController implements Serializable {
     }
 
     public void createPettyTable() {
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PettyCash);
+        billTypes.add(BillType.IouIssue);
+
         Date startTime = new Date();
 
         bills = null;
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billType = :billType and b.institution=:ins "
+        sql = "select b from BilledBill b where b.billType IN :billTypes and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -8970,7 +9431,8 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PettyCash);
+
+        temMap.put("billTypes", billTypes);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -9145,31 +9607,29 @@ public class SearchController implements Serializable {
 
     }
 
-    public void sendSms() {
-        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-    }
-
-    public void sendSmsAll() {
-        if (selectedTelephoneNumbers == null) {
-            JsfUtil.addErrorMessage("Please Select Numbers");
-            return;
-        }
-        if (selectedTelephoneNumbers.size() > 10000) {
-            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
-            return;
-        }
-        if (smsText.equals("") || smsText == null) {
-            JsfUtil.addErrorMessage("Enter Message");
-            return;
-        }
-        for (String stn : selectedTelephoneNumbers) {
-
-            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-            JsfUtil.addSuccessMessage("Done.");
-        }
-
-    }
-
+//    public void sendSms() {
+//        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+//    }
+//    public void sendSmsAll() {
+//        if (selectedTelephoneNumbers == null) {
+//            JsfUtil.addErrorMessage("Please Select Numbers");
+//            return;
+//        }
+//        if (selectedTelephoneNumbers.size() > 10000) {
+//            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
+//            return;
+//        }
+//        if (smsText.equals("") || smsText == null) {
+//            JsfUtil.addErrorMessage("Enter Message");
+//            return;
+//        }
+//        for (String stn : selectedTelephoneNumbers) {
+//
+//            smsController.sendSmsToNumberList(stn, getSessionController().getApplicationPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+//            JsfUtil.addSuccessMessage("Done.");
+//        }
+//
+//    }
     public String navigateToCancelPurchaseOrder() {
         makeNull();
         Calendar c1 = Calendar.getInstance();

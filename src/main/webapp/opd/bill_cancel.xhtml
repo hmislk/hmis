@@ -18,7 +18,22 @@
                             <f:facet name="header">
                                 <h:outputText value="Cancellation" class="mt-5"/>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
-                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billSearch.comment}" style="float: right" class="p-2 w-100"/>
+                                    <p:selectOneMenu 
+                                        id="commentsMenu" 
+                                        value="#{billSearch.comment}" 
+                                        editable="true" 
+                                        filter="true" 
+                                        placeholder="Select or enter a comment"
+                                        filterMatchMode="contains"  
+                                        style="float: right; width: 100%" 
+                                        class="p-2">
+                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems 
+                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
+                                            var="option" 
+                                            itemLabel="#{option}" 
+                                            itemValue="#{option}"/>
+                                    </p:selectOneMenu>
 
                                     <p:commandButton 
                                         ajax="false"
@@ -26,6 +41,14 @@
                                         icon="fa fa-cancel"
                                         style="float: right"
                                         class="ui-button-danger" action="#{billSearch.cancelOpdBill()}">
+                                    </p:commandButton>
+                                    <p:commandButton  
+                                        class="ui-button-secondary d-flex justify-content-end mx-2"
+                                        style="float: right"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/opd/opd_bill_search"
+                                        ajax="false">
                                     </p:commandButton>
                                 </h:panelGrid>
                             </f:facet>
@@ -113,12 +136,13 @@
                                 <h:outputLabel value="Bill Preview" class="mt-2"></h:outputLabel>
                                 <div>
                                     <h:panelGroup rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
-                                        <p:commandButton 
-                                            value="New OPD Bill" 
-                                            ajax="false" 
-                                            icon="fa fa-plus"
-                                            class="ui-button-success"
-                                            action="#{opdBillController.navigateToNewOpdBill()}" >
+                                        <p:commandButton  
+                                            class="ui-button-secondary d-flex justify-content-end mx-2"
+                                            style="float: right"
+                                            value="Back To Search"
+                                            icon="fa-solid fa-arrow-left"
+                                            action="/opd/opd_bill_search"
+                                            ajax="false">
                                         </p:commandButton>
                                     </h:panelGroup> 
 

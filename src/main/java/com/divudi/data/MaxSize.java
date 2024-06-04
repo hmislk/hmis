@@ -6,7 +6,6 @@
 package com.divudi.data;
 
 /**
- *
  * @author safrin
  */
 public enum MaxSize {
@@ -15,10 +14,10 @@ public enum MaxSize {
     _100,
     _200,
     _300,
-    _500,    
+    _500,
     _1000,
-    _1500,  
-    _2000,;
+    _1500,
+    _2000;
 
     public int getValue() {
         switch (this) {
@@ -35,10 +34,9 @@ public enum MaxSize {
             case _1000:
                 return 1000;
             case _1500:
-                return 1500;         
+                return 1500;
         }
 
         return 10;
     }
-
 }

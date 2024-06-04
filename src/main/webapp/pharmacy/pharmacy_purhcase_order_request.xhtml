@@ -114,7 +114,7 @@
                                 <p:column headerText="Expiry" style="width:4em; text-align: right; padding: 0;">
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
-                                                  process="itemList"
+                                                   process="itemList"
                                                    update="expStockDetailsForm"
                                                    actionListener="#{stockController.listExpiaringStocks(bi.item)}"
                                                    style="#{stockController.findExpiaringStock(bi.item) > 0 ? 'color: red;' : 'color: #02e05f;'}">
@@ -254,14 +254,15 @@
                                     class="w-75"
                                     filterMatchMode="contains"
                                     filter="true"
+                                    height="500"
                                     var="vt" >
-                                    <p:column headerText="Item" >
+                                    <p:column headerText="Item"  style="padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Code" >
+                                    <p:column headerText="Code"  style="padding: 6px;">
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Department Stock" >
+                                    <p:column headerText="Department Stock"  style="padding: 6px; text-align: right;">
                                         <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
                                     </p:column>
                                     <f:selectItems value="#{purchaseOrderRequestController.dealorItems}" var="di" itemLabel="#{di.name}" itemValue="#{di}" ></f:selectItems>
@@ -282,14 +283,18 @@
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
                                     forceSelection="true"
                                     class="w-75"
-                                    maxResults="10"
+                                    maxResults="50"
+                                    scrollHeight="600"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                    <p:column headerText="Item" >
+                                    <p:column headerText="Item" style="padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Code" >
+                                    <p:column headerText="Code" style="padding: 6px;">
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Department Stock" style="padding: 6px; text-align: right;">
+                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
                                     </p:column>
                                 </p:autoComplete>
                                 <p:commandButton 

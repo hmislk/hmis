@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
@@ -67,6 +68,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.data.SmsSentResponse;
@@ -191,6 +193,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     SessionInstanceActivityController sessionInstanceActivityController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Properties
      */
@@ -401,8 +405,20 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToChannelBookingFromMenu() {
-        prepareForNewChannellingBill();
-        return "/channel/channel_booking?faces-redirect=true";
+        Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
+        if (opdBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                prepareForNewChannellingBill();
+                return "/channel/channel_booking?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } else {
+            prepareForNewChannellingBill();
+            return "/channel/channel_booking?faces-redirect=true";
+        }
     }
 
     public String navigateToChannelQueueFromMenu() {
@@ -484,6 +500,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Bill Fees");
             return "";
         }
+        channelBillController.setPrintPreview(false);
+        channelBillController.setPrintPreviewC(false);
+
+        channelBillController.setPrintPreviewR(false);
 
         return "/channel/manage_booking?faces-redirect=true";
     }
@@ -499,7 +519,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageSessionQueueAtConsultantRoom() {
-        System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
             return null;
@@ -749,19 +768,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (paymentMethod == null) {
             return true;
         }
-      
+
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
                 return true;
             }
         }
-      
+
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
                 return true;
             }
         }
-      
+
         if (configOptionApplicationController.getBooleanValueByKey("Channel Credit Booking Settle Requires Additional Information")) {
             if (paymentMethod == PaymentMethod.Card) {
                 if (paymentMethodData.getCreditCard().getInstitution() == null) {
@@ -778,7 +797,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 if (paymentMethodData.getCheque().getInstitution() == null) {
                     return true;
                 }
-                if (paymentMethodData.getCheque().getDate()== null) {
+                if (paymentMethodData.getCheque().getDate() == null) {
                     return true;
                 }
             }
@@ -819,6 +838,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
             settleSucessFully = false;
             return;
         }
+        
+        if(paymentMethod == PaymentMethod.OnCall){
+            if(selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true){
+                JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
+                settleSucessFully = false;
+                return;
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {
@@ -830,11 +857,48 @@ public class BookingController implements Serializable, ControllerWithPatient {
         patientController.save(patient);
         printingBill = saveBilledBill(reservedBooking);
 
-        createPayment(printingBill, paymentMethod);
+        if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
+            createPayment(printingBill, paymentMethod);
+        }
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
+        foriegn = false;
+        paymentMethod = null;
+        institution = null;
+        agentRefNo = null;
+        paymentMethodData = null;
+        toStaff = null;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
+    }
+
+    public BillSession addChannelBookingForOnlinePayment() {
+        errorText = "";
+        if (billSessionErrorPresent()) {
+            JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
+            settleSucessFully = false;
+            return null;
+        }
+        if (patientErrorPresent(patient)) {
+            JsfUtil.addErrorMessage("Please Enter Patient Details.");
+            settleSucessFully = false;
+            return null;
+        }
+        if (paymentMethodErrorPresent()) {
+            JsfUtil.addErrorMessage("Please Enter Payment Details");
+            settleSucessFully = false;
+            return null;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
+            if (selectedSessionInstance.isCompleted()) {
+                JsfUtil.addErrorMessage("This Session Has Been Completed");
+                settleSucessFully = false;
+                return null;
+            }
+        }
+        patientController.save(patient);
+        return saveBilledBillForPatientPortal();
     }
 
     public void sendSmsAfterBooking() {
@@ -851,11 +915,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        e.setSentSuccessfully(sent.isSentSuccefully());
-        e.setReceivedMessage(sent.getReceivedMessage());
-        getSmsFacade().edit(e);
-        JsfUtil.addSuccessMessage("SMS Sent");
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS Sent");
+        } else {
+            JsfUtil.addSuccessMessage("SMS Failed");
+        }
+
     }
 
     public void sendSmsOnChannelDoctorArrival() {
@@ -880,10 +946,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all Patients.");
     }
@@ -913,10 +977,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
             e.setPending(false);
             e.setSmsType(MessageType.ChannelDoctorArrival);
             getSmsFacade().create(e);
-            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent.isSentSuccefully());
-            e.setReceivedMessage(sent.getReceivedMessage());
-            getSmsFacade().edit(e);
+            Boolean sent = smsManager.sendSms(e);
+
         }
         JsfUtil.addSuccessMessage("SMS Sent to all No Show Patients.");
     }
@@ -1374,24 +1436,36 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void generateSessions() {
         sessionInstances = new ArrayList<>();
-        String sql;
-        Map m = new HashMap();
-        m.put("staff", getStaff());
-        m.put("class", ServiceSession.class);
+        String jpql;
+        Map params = new HashMap();
+        params.put("staff", getStaff());
+        params.put("class", ServiceSession.class);
         if (staff != null) {
-            sql = "Select s From ServiceSession s "
+            jpql = "Select s From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
                     + " and s.originatingSession is null"
-                    + " and type(s)=:class "
-                    + " order by s.sessionWeekday,s.startingTime ";
-            List<ServiceSession> selectedDoctorsServiceSessions = getServiceSessionFacade().findByJpql(sql, m);
+                    + " and type(s)=:class ";
+            boolean listChannelSessionsForLoggedDepartmentOnly = configOptionApplicationController.getBooleanValueByKey("List Channel Sessions For Logged Department Only", false);
+            boolean listChannelSessionsForLoggedInstitutionOnly = configOptionApplicationController.getBooleanValueByKey("List Channel Sessions For Logged Institution Only", false);
+            if (listChannelSessionsForLoggedDepartmentOnly) {
+                jpql += " and s.department=:dept ";
+                params.put("dept", sessionController.getDepartment());
+            }
+            if (listChannelSessionsForLoggedInstitutionOnly) {
+                jpql += " and s.institution=:ins ";
+                params.put("ins", sessionController.getInstitution());
+            }
+            jpql += " order by s.sessionWeekday,s.startingTime ";
+            List<ServiceSession> selectedDoctorsServiceSessions = getServiceSessionFacade().findByJpql(jpql, params);
             calculateFee(selectedDoctorsServiceSessions, channelBillController.getPaymentMethod());
             try {
                 sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedDoctorsServiceSessions, sessionStartingDate);
             } catch (Exception e) {
             }
             generateSessionEvents(sessionInstances);
+        } else {
+            sessionInstances = new ArrayList<>();
         }
 
     }
@@ -1542,7 +1616,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
     }
-    
+
     public void markAsNotArrived() {
         if (selectedSessionInstance == null) {
             return;
@@ -1565,29 +1639,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
-        System.out.println("this not arrived");
-    }
-
-    public void markAsLeft() {
-        if (selectedServiceSession == null) {
-            return;
-        }
-        if (selectedServiceSession.getSessionDate() == null) {
-            return;
-        }
-        if (arrivalRecord == null) {
-            arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
-            arrivalRecord.setCreatedAt(new Date());
-            arrivalRecord.setCreater(sessionController.getLoggedUser());
-            fpFacade.create(arrivalRecord);
-        }
-
-        arrivalRecord.setApproved(true);
-        arrivalRecord.setApprovedAt(new Date());
-        arrivalRecord.setApprover(sessionController.getLoggedUser());
-        fpFacade.edit(arrivalRecord);
     }
 
     public void markToCancel() {
@@ -1932,12 +1983,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillSessionActivities() {
-        System.out.println("fillSessionActivities");
-        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         } else {
-            System.out.println("selectedSessionInstance.getOriginatingSession().getActivities() = " + selectedSessionInstance.getOriginatingSession().getActivities());
             if (selectedSessionInstance.getOriginatingSession().getActivities() == null || selectedSessionInstance.getOriginatingSession().getActivities().trim().equals("")) {
                 return;
             }
@@ -2069,7 +2117,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     }
                 } catch (NullPointerException npe) {
                     // Log or handle the fact that there was an NPE checking completion status
-                    System.out.println("Null pointer encountered in isCompleted check for BillSession: " + bs);
+
                 }
 
                 // Additional check for paid status
@@ -2079,7 +2127,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     }
                 } catch (NullPointerException npe) {
                     // Log or handle the fact that there was an NPE checking paid status
-                    System.out.println("Null pointer encountered in getPaidBillSession check for BillSession: " + bs);
+
                 }
             }
         }
@@ -2306,6 +2354,137 @@ public class BookingController implements Serializable, ControllerWithPatient {
         getBillFacade().edit(savingBill);
         getBillSessionFacade().edit(savingBillSession);
         return savingBill;
+    }
+
+    private BillSession saveBilledBillForPatientPortal() {
+        paymentMethod = PaymentMethod.OnlineSettlement;
+        paymentScheme = null;
+        Bill savingBill = new BilledBill();
+        savingBill.setStaff(getSelectedSessionInstance().getOriginatingSession().getStaff());
+        savingBill.setToStaff(toStaff);
+        savingBill.setAppointmentAt(getSelectedSessionInstance().getSessionDate());
+        savingBill.setTotal(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBill.setNetTotal(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBill.setPaymentMethod(paymentMethod);
+        savingBill.setPatient(getPatient());
+        savingBill.setToDepartment(getSelectedSessionInstance().getDepartment());
+        savingBill.setToInstitution(getSelectedSessionInstance().getInstitution());
+        savingBill.setDepartment(selectedSessionInstance.getDepartment());
+        savingBill.setInstitution(selectedSessionInstance.getInstitution());
+        savingBill.setBillType(BillType.ChannelOnCall);
+        savingBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        savingBill.setRetired(true);
+        String deptId = generateBillNumberDeptIdForOnlinePayment(savingBill);
+
+        if (deptId.equals("")) {
+            return null;
+        }
+        savingBill.setDeptId(deptId);
+        savingBill.setInsId(deptId);
+        savingBill.setPaidAmount(0.0);
+        savingBill.setBalance(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBill.setBillDate(new Date());
+        savingBill.setBillTime(new Date());
+        savingBill.setCreatedAt(new Date());
+        getBillFacade().create(savingBill);
+
+        BillItem savingBillItem = new BillItem();
+        savingBillItem.setAdjustedValue(0.0);
+        savingBillItem.setAgentRefNo(agentRefNo);
+        savingBillItem.setBill(savingBill);
+        savingBillItem.setBillTime(new Date());
+        savingBillItem.setCreatedAt(new Date());
+        savingBillItem.setGrossValue(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBillItem.setItem(getSelectedSessionInstance().getOriginatingSession());
+        savingBillItem.setNetRate(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBillItem.setNetValue(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBillItem.setQty(1.0);
+        savingBillItem.setRate(getSelectedSessionInstance().getOriginatingSession().getTotal());
+        savingBillItem.setSessionDate(getSelectedSessionInstance().getSessionAt());
+        billItemFacade.create(savingBillItem);
+
+        BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
+
+        if (itemToAddToBooking != null) {
+            BillItem bi = new BillItem();
+            bi.setAdjustedValue(0.0);
+            bi.setAgentRefNo(agentRefNo);
+            bi.setBill(savingBill);
+            bi.setBillTime(new Date());
+            bi.setCreatedAt(new Date());
+            bi.setGrossValue(itemToAddToBooking.getDblValue());
+            bi.setItem(itemToAddToBooking);
+            bi.setNetRate(itemToAddToBooking.getDblValue());
+            bi.setNetValue(itemToAddToBooking.getDblValue());
+            bi.setQty(1.0);
+            bi.setRate(itemToAddToBooking.getDblValue());
+            bi.setSessionDate(getSelectedSessionInstance().getSessionAt());
+            billItemFacade.create(bi);
+        }
+
+        BillSession savingBillSession;
+        savingBillSession = createBillSession(savingBill, savingBillItem, false);
+
+//        BillSession bs = new BillSession();
+//        bs.setAbsent(false);
+//        bs.setBill(savingBill);
+//        bs.setBillItem(savingBillItem);
+//        bs.setCreatedAt(new Date());
+//        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
+//        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
+//        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
+//        bs.setSessionInstance(getSelectedSessionInstance());
+//        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
+//        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
+//        bs.setStaff(getSelectedSessionInstance().getStaff());
+//
+//        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+//        Integer count;
+//
+//        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+//
+//        if (count != null) {
+//            bs.setSerialNo(count);
+//        } else {
+//            bs.setSerialNo(1);
+//        }
+//
+//        getBillSessionFacade().create(bs);
+
+        List<BillFee> savingBillFees = new ArrayList<>();
+
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessionsForPatientPortal(savingBill, savingBillItem, false);
+        List<BillFee> savingBillFeesFromAdditionalItem = createBillFeeForSessionsForPatientPortal(savingBill, additionalBillItem, true);
+
+        if (savingBillFeesFromSession != null) {
+            savingBillFees.addAll(savingBillFeesFromSession);
+        }
+        if (savingBillFeesFromAdditionalItem != null) {
+            savingBillFees.addAll(savingBillFeesFromAdditionalItem);
+        }
+
+        List<BillItem> savingBillItems = new ArrayList<>();
+        savingBillItems.add(savingBillItem);
+        getBillItemFacade().edit(savingBillItem);
+        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
+        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
+        savingBillItem.setBillSession(savingBillSession);
+        getBillSessionFacade().edit(savingBillSession);
+        savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
+        savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
+        savingBill.setSingleBillItem(savingBillItem);
+        savingBill.setSingleBillSession(savingBillSession);
+        savingBill.setBillItems(savingBillItems);
+        savingBill.setBillFees(savingBillFees);
+        savingBill.setBalance(savingBill.getNetTotal());
+        savingBill.setSingleBillItem(savingBillItem);
+        savingBill.setSingleBillSession(savingBillSession);
+
+        calculateBillTotalsFromBillFees(savingBill, savingBillFees);
+
+        getBillFacade().edit(savingBill);
+        getBillSessionFacade().edit(savingBillSession);
+        return savingBillSession;
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
@@ -2577,6 +2756,99 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     }
 
+    private List<BillFee> createBillFeeForSessionsForPatientPortal(Bill bill, BillItem billItem, boolean thisIsAnAdditionalFee) {
+        List<BillFee> billFeeList = new ArrayList<>();
+        double tmpTotal = 0;
+        double tmpDiscount = 0;
+        double tmpGrossTotal = 0.0;
+        List<ItemFee> sessionsFees = null;
+        if (thisIsAnAdditionalFee) {
+            sessionsFees = findItemFees(billItem.getItem());
+        } else {
+            if (billItem.getItem() instanceof ServiceSession) {
+                sessionsFees = findServiceSessionFees((ServiceSession) billItem.getItem());
+            }
+        }
+        if (sessionsFees == null) {
+            return billFeeList;
+        }
+        for (ItemFee f : sessionsFees) {
+            BillFee bf = new BillFee();
+            bf.setBill(bill);
+            bf.setBillItem(billItem);
+            bf.setCreatedAt(new Date());
+            if (f.getFeeType() == FeeType.OwnInstitution) {
+                bf.setInstitution(f.getInstitution());
+                bf.setDepartment(f.getDepartment());
+            } else if (f.getFeeType() == FeeType.OtherInstitution) {
+                bf.setInstitution(f.getInstitution());
+            } else if (f.getFeeType() == FeeType.Staff) {
+                bf.setSpeciality(f.getSpeciality());
+                bf.setStaff(f.getStaff());
+            }
+
+            bf.setFee(f);
+            bf.setFeeAt(new Date());
+            bf.setFeeDiscount(0.0);
+            bf.setOrderNo(0);
+            bf.setPatient(bill.getPatient());
+
+            bf.setPatient(bill.getPatient());
+
+            if (f.getFeeType() == FeeType.Staff) {
+                bf.setStaff(f.getStaff());
+            }
+
+            PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
+
+            double d = 0;
+            if (foriegn) {
+                bf.setFeeValue(f.getFfee());
+                bf.setFeeGrossValue(f.getFfee());
+            } else {
+                bf.setFeeValue(f.getFee());
+                bf.setFeeGrossValue(f.getFee());
+            }
+
+            if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
+                d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                bf.setFeeDiscount(d);
+                bf.setFeeGrossValue(bf.getFeeGrossValue());
+                bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+                tmpDiscount += d;
+            } else if (bill.getPatient().getPerson().getMembershipScheme() != null && f.getFeeType() == FeeType.OwnInstitution) {
+//                MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(bill.getPatient());
+
+                MembershipScheme membershipScheme = bill.getPatient().getPerson().getMembershipScheme();
+
+                PriceMatrix priceMatrix = priceMatrixController.getChannellingDisCount(paymentMethod, membershipScheme, f.getDepartment());
+//                priceMatrix.getDiscountPercent();
+//                //System.out.println("priceMatrix.getDiscountPercent() = " + priceMatrix.getDiscountPercent());
+
+                if (priceMatrix != null) {
+
+                    d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
+                    bf.setFeeDiscount(d);
+                    bf.setFeeGrossValue(bf.getFeeGrossValue());
+                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+                    tmpDiscount += d;
+                }
+            }
+
+            tmpGrossTotal += bf.getFeeGrossValue();
+            tmpTotal += bf.getFeeValue();
+            billFeeFacade.create(bf);
+            billFeeList.add(bf);
+        }
+
+        billItem.setDiscount(tmpDiscount);
+        billItem.setNetValue(tmpTotal);
+        getBillItemFacade().edit(billItem);
+
+        return billFeeList;
+
+    }
+
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
@@ -2611,6 +2883,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 bill.setBillType(BillType.ChannelOnCall);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
+
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
                 bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
@@ -2637,11 +2910,15 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 break;
             case Staff:
                 bill.setBillType(BillType.ChannelStaff);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                 break;
             case Credit:
                 bill.setBillType(BillType.ChannelCredit);
-                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                break;
+            case OnlineSettlement:
+                bill.setBillType(BillType.ChannelCash);
+                bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
                 break;
         }
 //        String insId = generateBillNumberInsId(bill);
@@ -2764,6 +3041,45 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return deptId;
     }
 
+    private String generateBillNumberDeptIdForOnlinePayment(Bill bill) {
+        String suffix = bill.getDepartment().getDepartmentCode();
+        BillClassType billClassType = null;
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
+        List<BillType> bts = Arrays.asList(billTypes);
+        BillType billType = null;
+        String deptId = null;
+        if (bill instanceof BilledBill) {
+
+            billClassType = BillClassType.BilledBill;
+            if (bill.getBillType() == BillType.ChannelOnCall || bill.getBillType() == BillType.ChannelStaff) {
+                billType = bill.getBillType();
+                if (billType == BillType.ChannelOnCall) {
+                    suffix += "BKONCALL";
+                } else {
+                    suffix += "BKSTAFF";
+                }
+                deptId = billNumberBean.departmentBillNumberGenerator(bill.getInstitution(), bill.getDepartment(), billType, billClassType, suffix);
+            } else {
+                suffix += "CHANN";
+                deptId = billNumberBean.departmentBillNumberGenerator(bill.getInstitution(), bill.getDepartment(), bts, billClassType, suffix);
+            }
+        }
+
+        if (bill instanceof CancelledBill) {
+            suffix += "CHANNCAN";
+            billClassType = BillClassType.CancelledBill;
+            deptId = billNumberBean.departmentBillNumberGenerator(bill.getInstitution(), bill.getDepartment(), bts, billClassType, suffix);
+        }
+
+        if (bill instanceof RefundBill) {
+            suffix += "CHANNREF";
+            billClassType = BillClassType.RefundBill;
+            deptId = billNumberBean.departmentBillNumberGenerator(bill.getInstitution(), bill.getDepartment(), bts, billClassType, suffix);
+        }
+
+        return deptId;
+    }
+
     private BillItem createSessionItem(Bill bill) {
         BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
@@ -2831,7 +3147,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         Integer count;
 
         if (forReservedNumbers) {
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers);
+            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, null);
             if (count == null) {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");

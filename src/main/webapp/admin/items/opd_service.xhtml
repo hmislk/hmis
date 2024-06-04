@@ -48,6 +48,7 @@
                                                 id="lstSelect"   
                                                 value="#{serviceController.current}" 
                                                 filter="true"
+                                                filterMatchMode="contains"
                                                 class="form-control h-100">
                                                 <f:selectItems  value="#{serviceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                                 </f:selectItems>

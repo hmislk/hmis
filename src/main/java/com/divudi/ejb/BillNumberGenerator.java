@@ -491,7 +491,7 @@ public class BillNumberGenerator {
 
     }
 
-    private BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
+    private synchronized BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
                 + " where b.retired=false "
@@ -516,7 +516,6 @@ public class BillNumberGenerator {
             sql = "SELECT count(b) FROM Bill b "
                     + " where b.billType=:bTp "
                     + " and b.retired=false"
-                    + " and b.deptId is not null "
                     + " and type(b)=:class"
                     + " and b.department=:dep "
                     + " and b.toDepartment=:tDep";
@@ -546,6 +545,11 @@ public class BillNumberGenerator {
             billNumber.setLastBillNumber(dd);
             billNumberFacade.createAndFlush(billNumber);
         }
+        if(billNumber.getLastBillNumber()==null){
+            billNumber.setLastBillNumber(0l);
+        }
+        billNumber.setLastBillNumber(billNumber.getLastBillNumber()+1);
+        billNumberFacade.editAndFlush(billNumber);
         return billNumber;
 
     }
@@ -1144,11 +1148,11 @@ public class BillNumberGenerator {
         result.append(toDept.getDepartmentCode());
 
         result.append("/");
-        dd++;
+//        dd++;
         result.append(dd);
-
-        billNumber.setLastBillNumber(dd);
-        billNumberFacade.editAndFlush(billNumber);
+//
+//        billNumber.setLastBillNumber(dd);
+//        billNumberFacade.editAndFlush(billNumber);
 
         return result.toString();
     }

@@ -29,6 +29,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -72,6 +73,17 @@ public class PettyCashBillController implements Serializable {
     private Bill currentReturnBill;
     private PaymentMethod paymentMethod;
     private boolean printPriview;
+    private List<Bill> billList;
+    
+    public String NavigatePettyAndIouReprint(){
+        if (current.getBillType()==BillType.PettyCash) {
+            return "petty_cash_bill_reprint";
+        }
+        if (current.getBillType()==BillType.IouIssue) {
+            return "iou_bill_reprint";
+        }
+        return "";
+    }
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -101,6 +113,15 @@ public class PettyCashBillController implements Serializable {
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
     }
+    
+    public void fillBillsReferredByCurrentBill(){
+        billList=new ArrayList<>();
+        String sql="Select b from Bill b where b.retired=:ret and b.billedBill=:cb";
+        HashMap m=new HashMap();
+        m.put("ret", false);
+        m.put("cb", getCurrent());
+        billList=getBillFacade().findByJpql(sql,m);
+    }
 
     private boolean errorCheck() {
         if (getCurrent().getPaymentMethod() == null) {
@@ -120,7 +141,7 @@ public class PettyCashBillController implements Serializable {
 
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 
@@ -309,7 +330,6 @@ public class PettyCashBillController implements Serializable {
             getBillFacade().edit(getCurrent());
             savePettyCashReturnBill(rb);
             printPriview=true;
-            System.out.println("p = Success");
         }
     }
 
@@ -390,6 +410,8 @@ public class PettyCashBillController implements Serializable {
         currentReturnBill = rb;
         return true;
     }
+    
+    
     
     public void recreateModle(){
         returnAmount=0.0;
@@ -559,6 +581,14 @@ public class PettyCashBillController implements Serializable {
 
     public void setPrintPriview(boolean printPriview) {
         this.printPriview = printPriview;
+    }
+
+    public List<Bill> getBillList() {
+        return billList;
+    }
+
+    public void setBillList(List<Bill> billList) {
+        this.billList = billList;
     }
 
 }

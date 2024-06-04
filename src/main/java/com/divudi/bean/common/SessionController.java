@@ -700,6 +700,18 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
     }
+    
+    public String loginForChannelingTabView() {
+        department = null;
+        institution = null;
+        boolean l = checkUsersWithoutDepartment();
+        if (l) {
+            return "/index1.xhtml?faces-redirect=true";
+        } else {
+            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
+            return "";
+        }
+    }
 
     private boolean login() {
         getApplicationEjb().recordAppStart();
@@ -1211,6 +1223,76 @@ public class SessionController implements Serializable, HttpSessionListener {
         recordLogin();
         return "/home?faces-redirect=true";
     }
+    
+     public String selectDepartmentForChannelingTabView() {
+        if (loggedUser == null) {
+            return "/login?faces-redirect=true";
+        }
+        if (loggedUser.getWebUserPerson() == null) {
+            Person p = new Person();
+            p.setName(loggedUser.getName());
+            personFacade.create(p);
+            loggedUser.setWebUserPerson(p);
+            webUserFacade.edit(loggedUser);
+        }
+
+        loggedUser.setDepartment(department);
+        loggedUser.setInstitution(department.getInstitution());
+        getFacede().edit(loggedUser);
+
+        userIcons = userIconController.fillUserIcons(loggedUser, department);
+        dashboards = webUserController.listWebUserDashboards(loggedUser);
+
+        userPrivilages = fillUserPrivileges(loggedUser, department, false);
+        loggableSubDepartments = fillLoggableSubDepts(department);
+//        if (userPrivilages == null || userPrivilages.isEmpty()) {
+//            userPrivilages = fillUserPrivileges(loggedUser, null, true);
+//            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
+//            logout();
+//        }
+
+        String sql;
+        Map m;
+
+//        UserPreference preferances;
+        sql = "select p from UserPreference p where p.department =:dep order by p.id desc";
+        m = new HashMap();
+        m.put("dep", department);
+        departmentPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
+
+//        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
+//            long i = searchController.createInwardBHTForIssueBillCount();
+//            if (i > 0) {
+//                JsfUtil.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
+//            }
+//        }
+        sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
+        m = new HashMap();
+        m.put("ins", institution);
+        institutionPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
+
+        sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+        applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
+
+        if (applicationPreference == null) {
+            applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
+            getUserPreferenceFacade().create(applicationPreference);
+        }
+
+        if (institutionPreference == null) {
+            institutionPreference = applicationPreference;
+        }
+        if (departmentPreference == null) {
+            departmentPreference = institutionPreference;
+        }
+
+        setLoggedPreference(departmentPreference);
+        recordLogin();
+        return "/channel/channel_queue.xhtml?faces-redirect=true";
+    }
 
     private void loadApplicationPreferances() {
         String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
@@ -1703,7 +1785,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         thisLogin.setIpaddress(ip);
         thisLogin.setComputerName(host);
-        System.out.println("Creating login with ID: " + thisLogin.getId()); // This should print null if the ID is not set.
+        // This should print null if the ID is not set.
 
         if (thisLogin.getId() == null) {
             getLoginsFacade().create(thisLogin);

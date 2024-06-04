@@ -236,16 +236,16 @@
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column rendered="false" headerText="Booked" style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.displayCount}">
+                            <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booked Details on Channel Booking')}" headerText="Booked" style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.bookedPatientCount}" rendered="#{s.bookedPatientCount ne null}">
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
                                 <h:outputText value="&nbsp;"></h:outputText>
-                                <h:outputText value="(" class="text-danger"></h:outputText>
-                                <h:outputText value="#{s.transCreditBillCount}"  class="text-danger">
+                                <h:outputText value="(" class="text-success" rendered="#{s.bookedPatientCount ne null}"></h:outputText>
+                                <h:outputText value="#{s.paidPatientCount}"  class="text-success" rendered="#{s.bookedPatientCount ne null}">
                                     <f:convertNumber pattern="00" />
                                 </h:outputText>
-                                <h:outputText value=")"  class="text-danger"></h:outputText>
+                                <h:outputText value=")"  class="text-success" rendered="#{s.bookedPatientCount ne null}"></h:outputText>
                             </p:column>
                             <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
                                 <h:outputText value="#{s.originatingSession.total}">
@@ -264,15 +264,16 @@
                     <div class="col-4" >
                         <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
                         <h:outputText id="test" value="#{bookingController.selectedBillSession}" rendered="false"></h:outputText>
-                        <p:selectOneListbox 
+                        <p:selectOneListbox
                             id="acBookings" 
                             value="#{bookingController.selectedBillSession}" 
-                            filter="true" 
-
-                            var="bs" 
+                            filter="true"
+                            filterMatchMode="contains"
+                            var="bs"
                             class="w-100 fullHeightListbox">
-                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
+                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" itemLabel="#{item.bill.patient.person.nameWithTitle}" />
                             <p:ajax process="acBookings" update="test"></p:ajax>
+
                             <p:column style="width: 5px!important;">
                                 <h:outputText value="#{bs.serialNo}" />
                             </p:column>
@@ -283,8 +284,8 @@
 
                             <p:column style="width: 20px!important;" rendered="#{bookingController.selectedSessionInstance.started}">
                                 <p:tag class="mr-2" style="font-size: 0.8rem" severity="success" value="Completed" rendered="#{bs.completed}"/>
-                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{!bs.completed and bookingController.selectedSessionInstance.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq bs.serialNo}"/>
-                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{!bs.completed and bookingController.selectedSessionInstance.nextInLineBillSession.bill.singleBillSession.serialNo eq bs.serialNo}"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="warning" value="OnGoing" rendered="#{bs.currentlyConsulted}"/>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Next" rendered="#{bs.nextInLine}"/>
                             </p:column>
 
                             <p:column style="width: 20px!important;">

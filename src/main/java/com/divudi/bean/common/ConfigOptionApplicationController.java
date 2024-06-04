@@ -10,10 +10,13 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -70,6 +73,23 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    public void saveShortTextOption(String key, String value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.SHORT_TEXT);
+            option.setOptionValue(value);
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+    }
+
 //    public ConfigOption getOptionValueByKey(String key) {
 //        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
 //        Map<String, Object> params = new HashMap<>();
@@ -122,6 +142,7 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setWebUser(null);
             option.setValueType(OptionValueType.DOUBLE);
             optionFacade.create(option);
+
             loadApplicationOptions();
         }
         try {
@@ -149,7 +170,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getLongTextValueByKey(String key, String defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
@@ -158,7 +179,7 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setOptionKey(key);
             option.setScope(OptionScope.APPLICATION);
             option.setValueType(OptionValueType.LONG_TEXT);
-            option.setOptionValue(defaultValue); 
+            option.setOptionValue(defaultValue);
             optionFacade.create(option);
             loadApplicationOptions();
         }
@@ -182,7 +203,25 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
+    public String getShortTextValueByKey(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.SHORT_TEXT);
+            option.setOptionValue(defaultValue);
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        return option.getOptionValue();
+    }
+
     public String getEnumValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.ENUM) {
@@ -222,8 +261,23 @@ public class ConfigOptionApplicationController implements Serializable {
             return Long.parseLong(option.getOptionValue());
         } catch (NumberFormatException e) {
 // Log or handle the case where the value cannot be parsed into a Long
-                        return null;
+            return null;
         }
+    }
+
+    public List<String> getListOfCustomOptions(String optionName) {
+        // Fetch the string that contains options separated by line breaks
+        String listOfOptionSeperatedByLineBreaks = getLongTextValueByKey("Custom option values for " + optionName);
+        // Check if the string is not null or empty before processing
+        if (listOfOptionSeperatedByLineBreaks == null || listOfOptionSeperatedByLineBreaks.isEmpty()) {
+            return Collections.emptyList(); // Return an empty list if there's nothing to process
+        }
+        // Split the string by any standard line break sequence and convert to a list
+        List<String> listOfCustomOptions = Arrays.stream(listOfOptionSeperatedByLineBreaks.split("\\r?\\n|\\r"))
+                .map(String::trim) // Trim leading and trailing whitespaces
+                .filter(s -> !s.isEmpty()) // Filter out any empty strings
+                .collect(Collectors.toList());
+        return listOfCustomOptions;
     }
 
     public Boolean getBooleanValueByKey(String key) {
@@ -243,7 +297,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return Boolean.parseBoolean(option.getOptionValue());
     }
-    
+
     public Boolean getBooleanValueByKey(String key, boolean defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
@@ -255,9 +309,9 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setDepartment(null);
             option.setWebUser(null);
             option.setValueType(OptionValueType.BOOLEAN);
-            if(defaultValue){
+            if (defaultValue) {
                 option.setOptionValue("true");
-            }else{
+            } else {
                 option.setOptionValue("false");
             }
             optionFacade.create(option);

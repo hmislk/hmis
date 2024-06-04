@@ -200,9 +200,9 @@
                                         />
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Add Surgeries" 
+                                    value="Add Timed Service"
                                     icon="fa fa-clock"
-                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
+                                    action="/theater/inward_timed_service_consume_surgery?faces-redirect=true"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
@@ -212,10 +212,10 @@
                                 <p:commandButton 
 
                                     ajax="false"
-                                    value="Add Services for Surgeries" 
+                                    value="Professional Fee"
 
                                     icon="fa fa-briefcase"
-                                    action="#{billBhtController.navigateToAddServicesFromAdmissionProfile}"
+                                    action="/theater/inward_bill_surgery_professional?faces-redirect=true"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
