@@ -3985,6 +3985,45 @@ public class SearchController implements Serializable {
         return sql;
 
     }
+    
+    private String keysForGrnReturnByBillItem(HashMap tmp) {
+        String sql = "";
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((bi.bill.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  ((bi.bill.invoiceNumber) like :invoice )";
+            tmp.put("invoice", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+            sql += " and  ((bi.bill.referenceBill.deptId) like :refNo )";
+            tmp.put("refNo", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
+            sql += " and  ((bi.bill.fromInstitution.name) like :frmIns )";
+            tmp.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((bi.bill.referenceBill.netTotal) like :total )";
+            tmp.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((bi.bill.netTotal) like :netTotal )";
+            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  ((bi.item.name) like :item )";
+            tmp.put("item", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        return sql;
+    }
 
     private String keysForGrnReturn(HashMap tmp) {
         String sql = "";
@@ -4027,14 +4066,19 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
+        
+        sql = "Select bi.bill From BillItem bi"
+                + " where bi.retired=false and bi.bill.billType= :bTp "
+                + " and bi.bill.institution=:ins "
+                + " and bi.createdAt between :fromDate and :toDate ";
 
-        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
-                + " and b.institution=:ins and"
-                + " b.createdAt between :fromDate and :toDate ";
+//        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
+//                + " and b.institution=:ins and"
+//                + " b.createdAt between :fromDate and :toDate ";
 
-        sql += keysForGrnReturn(tmp);
+        sql += keysForGrnReturnByBillItem(tmp);
 
-        sql += " order by b.createdAt desc  ";
+        sql += " order by bi.createdAt desc  ";
 
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
@@ -4082,12 +4126,15 @@ public class SearchController implements Serializable {
         String sql;
         HashMap tmp = new HashMap();
 
-        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
-                + " and b.createdAt between :fromDate and :toDate ";
+        sql = "Select bi.bill From BillItem bi"
+                + " where bi.retired=false and bi.bill.billType= :bTp "
+                + " and bi.createdAt between :fromDate and :toDate ";
+//        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
+//                + " and b.createdAt between :fromDate and :toDate ";
 
-        sql += keysForGrnReturn(tmp);
+        sql += keysForGrnReturnByBillItem(tmp);
 
-        sql += " order by b.createdAt desc  ";
+        sql += " order by bi.createdAt desc  ";
 
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());

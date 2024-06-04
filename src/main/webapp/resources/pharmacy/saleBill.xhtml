@@ -221,23 +221,26 @@
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td style="width: 40%; ">
+                        <td style="width: 12%; text-align: left;">
+                            <h:outputLabel value="CODE" styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+                        <td style="width: 35%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
-                        <td  style="width:20%;text-align: right;">
+                        <td  style="width:18%;text-align: right;">
                             <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:20%;text-align: right;">
+                        <td  style="width:18%;text-align: right;">
                             <h:outputLabel value="RATE"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:20%;text-align: right;">
+                        <td  style="width:22%;text-align: right;">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="width: 100%">
+                        <td colspan="5" style="width: 100%">
                             <div class="billline">
                                 <h:outputLabel value="-------------------------------------------------"   />                           
                             </div>
@@ -247,26 +250,30 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
 
                         <tr>
-                            <td colspan="4" style="overflow: visible;">
-                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                            <td colspan="1">
+                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                </h:outputLabel>
+                            </td>
+                            <td colspan="4">
+                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important; text-align: left;"  >
                                 </h:outputLabel>
                             </td>
                         </tr>
                         <tr>
-                            <td style="width: 40%">
+                            <td colspan="2">
 
                             </td>
-                            <td  style="width: 20%; text-align: right;">
+                            <td styleClass="itemsBlockRight" style="width: 20%; text-align: right;">
                                 <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock"   style="text-align: right;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right; width: 20%" >
+                            <td  styleClass="itemsBlockRight"  style="text-align: right; width: 18%" >
                                 <h:outputLabel    value="#{bip.rate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; width: 20%" >
+                            <td  styleClass="itemsBlockRight" style="text-align: right; width: 42%" >
                                 <h:outputLabel    value="#{bip.grossValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
