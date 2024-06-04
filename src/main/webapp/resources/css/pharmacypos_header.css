@@ -88,7 +88,7 @@
 
     }
 
-    .fiveinchbill{
+    .fiveinchbill1{
         position: relative!important;
         padding: 5px!important;
         width: 12cm!important;
@@ -104,7 +104,7 @@
 
     }
 
-    .channelRecipt_24_2x9_3{
+    .channelRecipt_24_2x9_31{
         position: relative!important;
         padding: 5px!important;
         width: 24.2cm!important;
@@ -117,7 +117,7 @@
         text-transform: capitalize!important;
     }
 
-    .channelCoop{
+    .channelCoop1{
 
         border: 1px solid!important;
         padding: 5px!important;
@@ -127,7 +127,7 @@
         margin: auto!important;
     }
 
-    .posbillBreak{
+    .posbillBreak1{
         position: relative!important;
         margin-top: -2cm!important;
         width: 100%;
@@ -142,13 +142,13 @@
 
     }
 
-    /*    .billDetails{
+    /*    .billDetails1{
             text-align: center!important;   
             font-size: 9px!important;
             font-family:Arial, Helvetica, sans-serif!important;
         }*/
 
-    .a4bill{
+    .a4bill1{
         page-break-after:always!important;
         font-family: "Times New Roman", Times, serif!important;
         font-size: 11px!important;
@@ -161,7 +161,7 @@
 
     }
 
-    .institutionName{
+    .institutionName1{
         text-align: center!important;
         font-weight: bold!important;
         font-size: 20px!important;
@@ -171,19 +171,19 @@
 
     }
 
-    .institutionContact{
+    .institutionContact1{
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
         font-family: "Times New Roman", Times, serif!important;
     }
 
-    .billDetails{
+    .billDetails1{
         text-align: center!important;
         font-size: 12px!important;
         font-family: "Times New Roman", Times, serif!important;
     }
-    .channelNumber{
+    .channelNumber1{
         font-size: 50px!important;
     }
 
@@ -222,7 +222,7 @@
         page-break-after:always!important;
     }
 
-    .posbillBreak{
+    .posbillBreak1{
         position: relative!important;
 
         width:400px!important;
@@ -238,7 +238,7 @@
 
     }
 
-    .channelRecipt_24_2x9_3{
+    .channelRecipt_24_2x9_31{
         position: relative!important;
         padding: 5px!important;
         width: 24.2cm!important;
@@ -251,7 +251,7 @@
         text-transform: capitalize!important;
     }
 
-    .channelCoop{
+    .channelCoop1{
         position: relative!important;
 
         font-family: "Times New Roman", Times, serif!important;
@@ -264,7 +264,7 @@
         background-size: 100% auto!important;
     }
 
-    .posbillBreak{
+    .posbillBreak1{
         position: relative!important;
 
         width:400px!important;
@@ -280,7 +280,7 @@
 
     }
 
-    .a4bill{
+    .a4bill1{
 
         font-family: "Times New Roman", Times, serif!important;
         font-size: 11px!important;
@@ -295,7 +295,7 @@
     }
 
 
-    .institutionName{
+    .institutionName1{
         text-align: center!important;
         font-weight: bold!important;
         font-size: 20px!important;
@@ -304,14 +304,14 @@
 
     }
 
-    .institutionContact{
+    .institutionContact1{
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
         font-family: "Times New Roman", Times, serif!important;
     }
 
-    .billDetails{
+    .billDetails1{
         text-align: center!important;
         font-size: 12px!important;
         font-family: "Times New Roman", Times, serif!important;
@@ -321,53 +321,53 @@
 
 
 
-.institutionContact{
+.institutionContact1{
     position: relative!important;
     text-align: center!important;
     font-size: 12px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
 
-.billDetails{
+.billDetails1{
     text-align: center!important;
     font-size: 12px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
 
-.billDetailsFiveFiveBHT{
+.billDetailsFiveFiveBHT1{
     text-align: center!important;
     font-size: 10px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
 
 
-.headingBillFiveFiveBHT{
+.headingBillFiveFiveBHT1{
     text-align: center!important;
     font-weight: bold!important;
     font-size: 12px!important;
     font-weight: bold;
 }
 
-.billDetailsFiveFive{
+.billDetailsFiveFive1{
     font-size: 14px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
 
-.itemHeadings{
+.itemHeadings1{
     text-align: center!important;
     font-size: 13px!important;
     font-family: "Times New Roman", Times, serif!important;
     font-weight: bold;
 }
 
-.itemHeadingsFiveFive{
+.itemHeadingsFiveFive1{
 
     font-size: 15px!important;
     font-family: "Times New Roman", Times, serif!important;
     font-weight: bold;
 }
 
-.itemsBlock{
+.itemsBlock1{
     text-align: center!important;
     font-size: 13px!important;
     font-family: "Times New Roman", Times, serif!important;
@@ -375,7 +375,7 @@
 }
 
 
-itemsBlockRight{
+itemsBlockRight1{
     text-align: right!important;
     font-size: 13px!important;
     font-family: "Times New Roman", Times, serif!important;
@@ -384,40 +384,40 @@ itemsBlockRight{
 }
 
 
-.itemsBlockRightFiveFive{
+.itemsBlockRightFiveFive1{
     text-align: right!important;
     font-size: 12px!important;
     font-family: "Times New Roman", Times, serif!important;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
-.footer{
+.footer1{
     text-align: center!important;
     font-size: 12px!important;
     font-family: "Times New Roman", Times, serif!important;
 
 }
 
-.billline{
+.billline1{
     text-align: center!important;
     overflow: hidden;
     padding: 0px!important;
 }
 
-.bhtNoPharmacy{
+.bhtNoPharmacy1{
     position: absolute;
     margin-top: 50px;
     margin-right: 30px;
 }
 
-.headingBill{
+.headingBill1{
     text-align: center!important;
     font-weight: bold!important;
     font-size: 12px!important;
     font-weight: bold;
 }
 
-.headingBillFiveFive{
+.headingBillFiveFive1{
     text-align: center!important;
     font-weight: bold!important;
     font-size: 18px!important;
@@ -425,23 +425,23 @@ itemsBlockRight{
     padding: 0px!important;
 }
 
-.poDetail{
+.poDetail1{
     font-size: 11px!important;
     font-family: "Times New Roman", Times, serif!important;
     min-width: 100%!important;
 }
 
-.totalsBlock{
+.totalsBlock1{
     font-size: 15px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
 
-.totalsItemBlock{
+.totalsItemBlock1{
     font-size: 14px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
 
-.totalsBlockFiveFiveNo{
+.totalsBlockFiveFiveNo11{
     font-size: 10px!important;
     font-family: "Times New Roman", Times, serif!important;
 }
