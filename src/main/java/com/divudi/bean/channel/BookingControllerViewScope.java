@@ -1907,6 +1907,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
+            if (patient.getPerson().getArea() == null || patient.getPerson().getArea().getName().isEmpty()) {
+                JsfUtil.addErrorMessage("Pleace Select Patient Area");
+                return;
+            }
+        }
+
         saveSelected(patient);
         printingBill = saveBilledBill(reservedBooking);
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
