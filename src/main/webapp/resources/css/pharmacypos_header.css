@@ -80,7 +80,7 @@
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         /*        font:*/
         font-size: 12px!important;
         /*        text-transform: uppercase!important;*/
@@ -94,7 +94,7 @@
         width: 12cm!important;
         height: 14cm!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         font-size: 11px!important;
         margin: auto!important;
         background-size: 100% auto!important;
@@ -110,7 +110,7 @@
         width: 24.2cm!important;
         height: 9.3cm!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         margin: auto!important;
         background-size: 100% auto!important;
         /*        border: 1px solid!important;*/
@@ -134,7 +134,7 @@
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         /*        font:*/
         font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
@@ -150,7 +150,7 @@
 
     .a4bill{
         page-break-after:always!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         font-size: 11px!important;
         position: relative!important;
         margin: 0px!important;
@@ -166,7 +166,7 @@
         font-weight: bold!important;
         font-size: 20px!important;
         font-weight: bolder;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         text-transform: capitalize!important;
 
     }
@@ -175,13 +175,13 @@
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
     }
 
     .billDetails{
         text-align: center!important;
         font-size: 12px!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
     }
     .channelNumber{
         font-size: 50px!important;
@@ -197,7 +197,7 @@
         width: 12cm!important;
         height: 14cm!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         font-size: 11px!important;
         margin: auto!important;
         background-size: 100% auto!important;
@@ -212,7 +212,7 @@
 
         width:400px!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -227,7 +227,7 @@
 
         width:400px!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -244,7 +244,7 @@
         width: 24.2cm!important;
         height: 9.3cm!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -254,7 +254,7 @@
     .channelCoop{
         position: relative!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         border: 1px solid!important;
         padding: 5px!important;
         width: 12cm!important;
@@ -269,7 +269,7 @@
 
         width:400px!important;
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -282,7 +282,7 @@
 
     .a4bill{
 
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
         font-size: 11px!important;
         position: relative!important;
         margin: 0px auto!important;
@@ -300,7 +300,7 @@
         font-weight: bold!important;
         font-size: 20px!important;
         font-weight: bolder;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
 
     }
 
@@ -308,13 +308,13 @@
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
     }
 
     .billDetails{
         text-align: center!important;
         font-size: 12px!important;
-        font-family: Arial, Helvetica, sans-serif!important;
+        font-family: "Times New Roman", Times, serif;
     }
 
 }
@@ -325,19 +325,19 @@
     position: relative!important;
     text-align: center!important;
     font-size: 12px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .billDetails{
     text-align: center!important;
     font-size: 12px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .billDetailsFiveFiveBHT{
     text-align: center!important;
     font-size: 10px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
 
 
@@ -350,27 +350,27 @@
 
 .billDetailsFiveFive{
     font-size: 14px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .itemHeadings{
     text-align: center!important;
     font-size: 13px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
     font-weight: bold;
 }
 
 .itemHeadingsFiveFive{
 
     font-size: 15px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
     font-weight: bold;
 }
 
 .itemsBlock{
     text-align: center!important;
     font-size: 13px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
     text-transform: capitalize!important;
 }
 
@@ -378,7 +378,7 @@
 itemsBlockRight{
     text-align: right!important;
     font-size: 13px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
@@ -387,14 +387,14 @@ itemsBlockRight{
 .itemsBlockRightFiveFive{
     text-align: right!important;
     font-size: 12px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
 .footer{
     text-align: center!important;
     font-size: 12px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 
 }
 
@@ -427,21 +427,21 @@ itemsBlockRight{
 
 .poDetail{
     font-size: 11px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
     min-width: 100%!important;
 }
 
 .totalsBlock{
     font-size: 15px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .totalsItemBlock{
     font-size: 14px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .totalsBlockFiveFiveNo{
     font-size: 10px!important;
-    font-family: Arial, Helvetica, sans-serif!important;
+    font-family: "Times New Roman", Times, serif;
 }
