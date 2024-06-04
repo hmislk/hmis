@@ -124,7 +124,7 @@
                                             <p:ajax 
                                                 event="rowSelect" 
                                                 process="@this"
-                                                update=":#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId}"
+                                                update=":#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId} :#{p:resolveFirstComponentWithId('gdManageBookings',view).clientId} :#{p:resolveFirstComponentWithId('gpAdditionalItems',view).clientId}"
                                                 listener="#{bookingControllerViewScope.sessionInstanceSelected()}" />
 
 
@@ -567,44 +567,53 @@
 
 
                                         </p:panel>
-                                        <p:panel>
-                                            <p:row >
-                                                <p:column >
-                                                    <p:outputLabel  value="Item" ></p:outputLabel>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
-                                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                        <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
-                                                        <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:commandButton 
-                                                        id="btnAddItem"
-                                                        process="lstItems btnAddItem"
-                                                        value="Add Item" 
-                                                        icon="fas fa-plus"
-                                                        class="ui-button-success"
-                                                        action="#{bookingControllerViewScope.addItemToBooking}"
-                                                        update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems"
-                                                        ></p:commandButton>
-                                                </p:column>
-                                            </p:row>
+                                        <h:panelGroup id="gpAdditionalItems" >
+                                            <p:panel header="Additional Items" rendered="#{not empty bookingControllerViewScope.itemsAvailableToAddToBooking}">
+                                                <p:row >
+                                                    <p:column >
+                                                        <p:outputLabel  value="Item" ></p:outputLabel>
+                                                    </p:column>
+                                                    <p:column >
+                                                        <p:selectOneMenu class="w-75 mx-1" autoWidth="false" id="lstItems" value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                            <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                                            <p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>
+                                                        </p:selectOneMenu>
+                                                    </p:column>
+                                                    <p:column >
+                                                        <p:commandButton 
+                                                            id="btnAddItem"
+                                                            process="lstItems btnAddItem"
+                                                            value="Add Item" 
+                                                            icon="fas fa-plus"
+                                                            class="ui-button-success"
+                                                            action="#{bookingControllerViewScope.addItemToBooking}"
+                                                            update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                            ></p:commandButton>
+                                                    </p:column>
+                                                </p:row>
 
-                                            <h:panelGroup id="lstAddedItems" >
-                                                <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item">
-                                                    <div class="row">
-                                                        <div class="d-flex justify-content-between align-items-center my-2">
-                                                            <h6>#{item.name}</h6>
-                                                            <h6>#{item.itemFee.fee}</h6>
-                                                            <p:commandButton id="btnRemoveAdditem" icon="fas fa-trash" class="ui-button-danger" action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" process="btnRemoveAdditem" update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId}"/>
+                                                <h:panelGroup id="lstAddedItems" >
+                                                    <ui:repeat  value="#{bookingControllerViewScope.itemsAddedToBooking}" var="item" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}">
+                                                        <div class="row">
+                                                            <div class="d-flex justify-content-between align-items-center my-2">
+                                                                <h6>#{item.name}</h6>
+                                                                <h6>#{item.itemFee.fee}</h6>
+                                                                <p:commandButton 
+                                                                    id="btnRemoveAdditem" 
+                                                                    icon="fas fa-trash" 
+                                                                    class="ui-button-danger" 
+                                                                    action="#{bookingControllerViewScope.removeAddedAditionalItems(item)}" 
+                                                                    process="btnRemoveAdditem" 
+                                                                    update=":#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('panelBookingDetails',view).clientId}"/>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </ui:repeat>
+                                                    </ui:repeat>
 
-                                            </h:panelGroup>
-                                        </p:panel>
+                                                </h:panelGroup>
+                                            </p:panel>
+                                        </h:panelGroup>
+
 
                                         <p:panel id="panelBillReferrals" class="my-1" >
                                             <f:facet name="header" >
@@ -760,26 +769,31 @@
                                                 <p:column colspan="2">
                                                     <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
                                                         <p:column headerText="Name">
-                                                            <h:outputLabel value="#{i.name}"/> 
-                                                        </p:column>
-                                                        <p:column headerText="Fee Type">
-                                                            #{i.feeType.label}
+                                                            <h:outputLabel value="#{i.item.name}"/> 
+                                                            <h:outputLabel class="mr-4" value="("/> 
+                                                            <h:outputLabel value="#{i.feeType.label}"/> 
+                                                            <h:outputLabel value=")"/> 
                                                         </p:column>
                                                         <p:column headerText="Fee for">
-                                                            <h:outputLabel rendered="#{i.speciality.name ne null}" value="#{i.speciality.name} - "></h:outputLabel>
-
-                                                            <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
-
-                                                            <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name} - "></h:outputLabel>
-
-                                                            <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                                            <h:panelGroup rendered="#{i.feeType eq 'Staff'}" >
+                                                                <h:outputLabel rendered="#{i.staff.person.name ne null}"  value=" #{i.staff.person.name}"></h:outputLabel>
+                                                                <h:outputLabel  rendered="#{i.speciality.name ne null}" class="mr-4" value="("/> 
+                                                                <h:outputLabel rendered="#{i.speciality.name ne null}"  value="#{i.speciality.name}"/> 
+                                                                <h:outputLabel  rendered="#{i.speciality.name ne null}" value=")"/> 
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{i.feeType eq 'OwnInstitution' or i.feeType eq 'OtherInstitution' }" >
+                                                                <h:outputLabel rendered="#{i.institution.name ne null}"  value="#{i.institution.name}"></h:outputLabel>
+                                                                <h:outputLabel  rendered="#{i.department.name ne null}" class="mr-4" value="("/> 
+                                                                <h:outputLabel rendered="#{i.department.name ne null}"  value=" #{i.department.name}"></h:outputLabel>
+                                                                <h:outputLabel  rendered="#{i.department.name ne null}" value=")"/> 
+                                                            </h:panelGroup>
                                                         </p:column>
-                                                        <p:column headerText="Local Fee" rendered="#{!bookingControllerViewScope.foriegn}">
+                                                        <p:column headerText="Fee" rendered="#{!bookingControllerViewScope.foriegn}">
                                                             <h:outputText value="#{i.fee}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </h:outputText>
                                                         </p:column>
-                                                        <p:column headerText="Foreign Fee" rendered="#{bookingControllerViewScope.foriegn}">
+                                                        <p:column headerText="Fee" rendered="#{bookingControllerViewScope.foriegn}">
                                                             <h:outputText value="#{i.ffee}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </h:outputText>
