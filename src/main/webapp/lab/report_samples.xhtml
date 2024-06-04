@@ -24,7 +24,9 @@
                 </f:facet>
                 <p:commandButton ajax="false" value="Generate Sample Reports" action="#{investigationController.prepareSelectedReportSamples}"
                                  styleClass="noPrintButton"   />
-                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
+                <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print">
+                    <p:printer target="printReports" />
+                </p:commandButton>
 
                 <p:dataTable id="tbl" rowIndexVar="rowIndex" 
                              value="#{investigationController.allIxs}" 
@@ -57,11 +59,13 @@
 
 
 
-                <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >                    
+                        <h:panelGroup id="printReports">
+                            <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >                    
                     <div style="page-break-after: always!important;">
                         <ez:patient_report patientReport="#{pr}"/>
                     </div>
                 </ui:repeat>
+                        </h:panelGroup>
 
                 <p:dataTable value="#{investigationController.ixWithoutSamples}" var="ixw" style="width: 600px;"
                              styleClass="nonPrintBlock"  >
