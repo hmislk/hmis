@@ -496,6 +496,7 @@
                                 </p:commandButton>
 
                                 <p:commandButton value="Print Panel" icon="fa-solid fa-print"
+                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
                                                  class="mx-1 ui-button-info">
                                     <p:printer target="divPrint" />
                                 </p:commandButton>
