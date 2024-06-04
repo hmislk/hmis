@@ -519,7 +519,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToManageSessionQueueAtConsultantRoom() {
-        System.out.println("navigateToManageSessionQueueAtConsultantRoom");
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("Not Selected");
             return null;
@@ -839,6 +838,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
             settleSucessFully = false;
             return;
         }
+        
+        if(paymentMethod == PaymentMethod.OnCall){
+            if(selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true){
+                JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
+                settleSucessFully = false;
+                return;
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Channelling Patients Cannot Be Added After the Channel Has Been Completed")) {
             if (selectedSessionInstance.isCompleted()) {
@@ -856,6 +863,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
+        foriegn = false;
+        paymentMethod = null;
+        institution = null;
+        agentRefNo = null;
+        paymentMethodData = null;
+        toStaff = null;
         JsfUtil.addSuccessMessage("Channel Booking Added.");
     }
 
@@ -1626,7 +1639,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
-        System.out.println("this not arrived");
     }
 
     public void markToCancel() {
@@ -1971,12 +1983,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillSessionActivities() {
-        System.out.println("fillSessionActivities");
-        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         } else {
-            System.out.println("selectedSessionInstance.getOriginatingSession().getActivities() = " + selectedSessionInstance.getOriginatingSession().getActivities());
             if (selectedSessionInstance.getOriginatingSession().getActivities() == null || selectedSessionInstance.getOriginatingSession().getActivities().trim().equals("")) {
                 return;
             }
@@ -2108,7 +2117,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     }
                 } catch (NullPointerException npe) {
                     // Log or handle the fact that there was an NPE checking completion status
-                    System.out.println("Null pointer encountered in isCompleted check for BillSession: " + bs);
+
                 }
 
                 // Additional check for paid status
@@ -2118,7 +2127,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                     }
                 } catch (NullPointerException npe) {
                     // Log or handle the fact that there was an NPE checking paid status
-                    System.out.println("Null pointer encountered in getPaidBillSession check for BillSession: " + bs);
+
                 }
             }
         }
@@ -2416,31 +2425,31 @@ public class BookingController implements Serializable, ControllerWithPatient {
         BillSession savingBillSession;
         savingBillSession = createBillSession(savingBill, savingBillItem, false);
 
-        BillSession bs = new BillSession();
-        bs.setAbsent(false);
-        bs.setBill(savingBill);
-        bs.setBillItem(savingBillItem);
-        bs.setCreatedAt(new Date());
-        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
-        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
-        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
-        bs.setSessionInstance(getSelectedSessionInstance());
-        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
-        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
-        bs.setStaff(getSelectedSessionInstance().getStaff());
-
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
-
-        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
-        }
-
-        getBillSessionFacade().create(bs);
+//        BillSession bs = new BillSession();
+//        bs.setAbsent(false);
+//        bs.setBill(savingBill);
+//        bs.setBillItem(savingBillItem);
+//        bs.setCreatedAt(new Date());
+//        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
+//        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
+//        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
+//        bs.setSessionInstance(getSelectedSessionInstance());
+//        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
+//        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
+//        bs.setStaff(getSelectedSessionInstance().getStaff());
+//
+//        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
+//        Integer count;
+//
+//        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+//
+//        if (count != null) {
+//            bs.setSerialNo(count);
+//        } else {
+//            bs.setSerialNo(1);
+//        }
+//
+//        getBillSessionFacade().create(bs);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -3138,7 +3147,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         Integer count;
 
         if (forReservedNumbers) {
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers);
+            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, null);
             if (count == null) {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
                 JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");

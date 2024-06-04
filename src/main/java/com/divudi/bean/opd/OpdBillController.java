@@ -180,6 +180,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private FinancialTransactionController financialTransactionController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    ViewScopeDataTransferController viewScopeDataTransferController;
 
     @Inject
     OpdTokenController opdTokenController;
@@ -320,7 +322,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void fillOpdBillItems() {
-        System.out.println("fillOpdBillItems");
         lstBillItems = new ArrayList<>();
         String jpql;
         Map m = new HashMap();
@@ -335,14 +336,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         m.put("to", toDate);
         m.put("ret", false);
         m.put("can", false);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         lstBillItems = billItemFacade.findByJpql(jpql, m);
         if (lstBillItems == null) {
             return;
         }
         for (BillItem i : lstBillItems) {
-            System.out.println("i = " + i);
             if (i.getBillFees() == null || i.getBillFees().isEmpty()) {
                 i.setBillFees(billController.billFeesOfBillItem(i));
             }
@@ -429,15 +427,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
-        if (!listItemsByDepartment) {
+        if (!listItemsByDepartment || dept == null || dept.getId() == null) {
             return ils;
         }
         List<ItemLight> tils = new ArrayList<>();
         for (ItemLight il : ils) {
-            if (il.getDepartmentId() == null) {
-                continue;
-            }
-            if (il.getDepartmentId().equals(dept.getId())) {
+            if (il.getDepartmentId() != null && il.getDepartmentId().equals(dept.getId())) {
                 tils.add(il);
             }
         }
@@ -2402,6 +2397,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getCurrentlyWorkingStaff().isEmpty()) {
             return;
         }
+
         for (BillFee bf : tmpBfs) {
             if (bf.getFee() == null) {
                 continue;
@@ -2409,21 +2405,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (bf.getFee().getFeeType() == null) {
                 continue;
             }
-//            if (bf.getFee().getSpeciality() == null) {
-//                bf.setStaff(getSelectedCurrentlyWorkingStaff());
-//                continue;
-//            }
+
             if (bf.getFee().getFeeType() == FeeType.Staff) {
-                if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                    if (bf.getFee().getStaff() == null) {
+                if (bf.getFee().getStaff() == null) {
+                    if (bf.getFee().getSpeciality() != null) {
+                        boolean staffSet = false;
+                        for (Staff s : currentlyWorkingStaff) {
+                            if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
+                                bf.setStaff(s);
+                                staffSet = true;
+                                break;
+                            }
+                        }
+                        if (!staffSet) {
+                        }
+                    } else {
+                        System.out.println("bf.getStaff() = " + bf.getStaff());
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
                     }
                 } else {
-                    for (Staff s : currentlyWorkingStaff) {
-                        if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                            bf.setStaff(s);
-                        }
-                    }
                 }
             }
         }
@@ -2466,7 +2466,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-
+        currentlyWorkingStaff = null;
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
@@ -2518,16 +2518,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
-//     //   ////// // System.out.println("calculating totals");
         if (paymentMethod == null) {
             return;
         }
 
-        if (toStaff != null) {
-            paymentScheme = null;
-            creditCompany = null;
-        }
-
+//        if (toStaff != null) {
+//            paymentScheme = null;
+//            creditCompany = null;
+//        }
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -2796,11 +2794,34 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToNewOpdBill(Patient pt) {
-        navigateToNewOpdBill();
+        String navigateLink = navigateToNewOpdBill();
         patient = pt;
-        return "/opd/opd_bill?faces-redirect=true";
+        return navigateLink;
     }
-    
+
+    public String navigateToNewOpdBillFromChannelling() {
+        String navigateLink = navigateToNewOpdBill();
+        BillSession bs = viewScopeDataTransferController.getSelectedBillSession();
+        if (bs == null) {
+            return null;
+        }
+        if (bs.getBill().getPatient() == null) {
+            return null;
+        }
+        if (bs.getSessionInstance().getStaff() == null) {
+            return null;
+        }
+        patient = bs.getBill().getPatient();
+        Staff channellingDoc = bs.getSessionInstance().getStaff();
+        getCurrentlyWorkingStaff().add(channellingDoc);
+        setSelectedCurrentlyWorkingStaff(channellingDoc);
+        if (channellingDoc.getDepartment() != null) {
+            setSelectedOpdItemDepartment(channellingDoc.getDepartment());
+            departmentChanged();
+        }
+        return navigateLink;
+    }
+
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {
         navigateToNewOpdBill();
         patient = pt;
@@ -3815,7 +3836,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public List<Department> getOpdItemDepartments() {
-        if(opdItemDepartments==null){
+        if (opdItemDepartments == null) {
             getOpdItems();
         }
         return opdItemDepartments;
@@ -3837,14 +3858,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setSelectedOpdItemDepartment(Department selectedOpdItemDepartment) {
         this.selectedOpdItemDepartment = selectedOpdItemDepartment;
     }
-    
+
     public void fillDepartmentOpdItems() {
-        departmentOpdItems=null;
+        departmentOpdItems = null;
+        itemApplicationController.reloadItems();
         getDepartmentOpdItems();
     }
 
     public List<ItemLight> getDepartmentOpdItems() {
-        if(departmentOpdItems==null){
+        if (departmentOpdItems == null) {
             getOpdItems();
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }

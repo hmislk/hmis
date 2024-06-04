@@ -3314,7 +3314,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 50;
+        int maxNo = 20;
 
         List<Bill> bills1 = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, true);
 

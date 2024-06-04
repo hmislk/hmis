@@ -10,8 +10,19 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.channel.ChannelScheduleEvent;
+import com.divudi.ejb.ChannelBean;
+import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Staff;
 import com.divudi.entity.channel.AppointmentActivity;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.AppointmentActivityFacade;
+import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionInstanceFacade;
+import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +37,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.model.DefaultScheduleModel;
+import org.primefaces.model.ScheduleModel;
 
 /**
  *
@@ -39,17 +52,37 @@ public class AppointmentActivityController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    ChannelBillController channelBillController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private AppointmentActivityFacade appointmentActivityFacade;
+    @EJB
+    ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    private StaffFacade staffFacade;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    ChannelBean channelBean;
 
+    private ScheduleModel eventModel;
     private AppointmentActivity current;
     private List<AppointmentActivity> items;
     private Date date;
+    List<SessionInstance> sessionInstances;
+    private Staff staff;
+    private List<Staff> consultants;
+    private Date sessionStartingDate;
 
     public String navigateToManageAppointmentActivities() {
         fillAppointmentActivities();
         return "/channel/channel_scheduling/appointment_activity_management?faces-redirect=true";
     }
+
 
     public void addAppointmentActivity() {
         current = new AppointmentActivity();
@@ -74,19 +107,19 @@ public class AppointmentActivityController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (current.getName() == null || current.getName().isEmpty()){
+        if (current.getName() == null || current.getName().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Name");
             return;
         }
-        if (current.getCode() == null || current.getCode().isEmpty()){
+        if (current.getCode() == null || current.getCode().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Code");
             return;
         }
-        if (current.getDiscription()== null || current.getDiscription().isEmpty()){
+        if (current.getDiscription() == null || current.getDiscription().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Discription");
             return;
         }
-        if (current.getImageLink()== null || current.getImageLink().isEmpty()){
+        if (current.getImageLink() == null || current.getImageLink().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Image Link");
             return;
         }
@@ -151,14 +184,11 @@ public class AppointmentActivityController implements Serializable {
     }
 
     public List<AppointmentActivity> findActivitiesByCodesOrNames(String input) {
-        System.out.println("findActivitiesByCodesOrNames");
-        System.out.println("input = " + input);
         List<AppointmentActivity> activities = new ArrayList<>();
         if (input == null || input.trim().equals("")) {
             return activities;
         }
         String[] lines = input.split("\\r?\\n"); // Split input into lines, supporting both UNIX and Windows line endings
-        System.out.println("lines = " + lines);
         for (String line : lines) {
             System.out.println("input = " + input);
             if (line.trim().isEmpty()) {
@@ -169,10 +199,7 @@ public class AppointmentActivityController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("ret", false);
             params.put("searchTerm", "%" + searchTerm + "%");
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
             List<AppointmentActivity> results = getFacade().findByJpql(jpql, params);
-            System.out.println("results = " + results);
             activities.addAll(results);
         }
         return activities;
@@ -204,6 +231,16 @@ public class AppointmentActivityController implements Serializable {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+
+    }
+
 
     @FacesConverter(forClass = AppointmentActivity.class)
     public static class AppointmentActivityConverter implements Converter {

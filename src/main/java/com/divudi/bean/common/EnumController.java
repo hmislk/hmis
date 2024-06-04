@@ -126,7 +126,6 @@ public class EnumController implements Serializable {
                         .collect(Collectors.toList());
             }
         } catch (ClassNotFoundException e) {
-            System.out.println("Enum class not found: " + e.getMessage());
             return new ArrayList<>();
         }
         return new ArrayList<>();
@@ -421,7 +420,9 @@ public class EnumController implements Serializable {
             InwardChargeType.HospitalSupportService,
             InwardChargeType.ExtraMedicine,
             InwardChargeType.DialysisTreatment,
-            InwardChargeType.OtherCharges};
+            InwardChargeType.OtherCharges,
+            InwardChargeType.Eye,
+            InwardChargeType.Dental};
 
         return b;
     }
@@ -613,7 +614,17 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.MultiplePaymentMethods};
-
+        return p;
+    }
+    
+    public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Credit,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.MultiplePaymentMethods};
         return p;
     }
 
@@ -635,6 +646,11 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getPaymentMethodsForChannel() {
         PaymentMethod[] p = {PaymentMethod.OnCall, PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.Staff, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForMakingProfessionalPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;
     }
 

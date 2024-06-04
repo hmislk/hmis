@@ -299,8 +299,12 @@
                                 var="bp" 
                                 paginator="true"
                                 paginatorPosition="bottom"
+                                rows="5"
                                 style="width:150em;"
-                                >
+                                rowKey="#{bp.id}"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                rowsPerPageTemplate="5,10,20,50,100">
                                 <p:column headerText="Payment ID" >
                                     <p:inputText value="#{bp.id}" ></p:inputText>
                                 </p:column>

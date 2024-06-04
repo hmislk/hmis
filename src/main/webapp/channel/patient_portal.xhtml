@@ -172,26 +172,28 @@
 
             <h:form id="form">
 
-                <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
-                    <div class="align-items-center justify-content-center" style="text-align: center">
-                        <div class="d-flex justify-content-end">
-                            <p:commandButton id="btnOrderStatus" ajax="false" action="#{paymentGatewayController.resetOrderStatus()}" icon="pi pi-times" styleClass="rounded-button ui-button-danger"  />
+                <h:panelGroup rendered="false">
+                    <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'SUCCESS'}" >
+                        <div class="align-items-center justify-content-center" style="text-align: center">
+                            <div class="d-flex justify-content-end">
+                                <p:commandButton id="btnOrderStatus" ajax="false" action="#{paymentGatewayController.resetOrderStatus()}" icon="pi pi-times" styleClass="rounded-button ui-button-danger"  />
+                            </div>
+                            <div>
+                                <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
+                            </div>
+                            <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
                         </div>
-                        <div>
-                            <img src="https://i.gifer.com/7efs.gif" style="min-width: 20rem"/>
-                        </div>
-                        <p>We received your channel booking request;<br/> you'll receiving a confirmation shortly!</p>
-                    </div>
-                </h:panelGroup>
+                    </h:panelGroup>
 
-                <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
-                    <div class="align-items-center justify-content-center" style="text-align: center">
-                        <div>
-                            <img src="https://cdn.dribbble.com/users/251873/screenshots/9388228/media/0d882a65a39bbdd294edc7fee5da59c6.gif" style="min-width: 20rem"/>
+                    <h:panelGroup class="success-message" rendered="#{paymentGatewayController.orderStatus eq 'FAILURE'}" >
+                        <div class="align-items-center justify-content-center" style="text-align: center">
+                            <div>
+                                <img src="https://cdn.dribbble.com/users/251873/screenshots/9388228/media/0d882a65a39bbdd294edc7fee5da59c6.gif" style="min-width: 20rem"/>
+                            </div>
+                            <h1>Oops! Payment Failed</h1>
+                            <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
                         </div>
-                        <h1>Oops! Payment Failed</h1>
-                        <p>Please double-check your details and retry.<br/> If issues persist, contact your bank support for assistance!</p>
-                    </div>
+                    </h:panelGroup>
                 </h:panelGroup>
 
 
@@ -315,7 +317,7 @@
                                             <h:outputText value="#{s.staff.name}">
                                             </h:outputText></h5>
                                         <p class="card-text">
-                                            <h:outputText value="#{s.staff.speciality.name}"> </h:outputText>
+                                            <h:outputText value="#{s.staff.speciality.name}"> </h:outputText>   <h:outputText class="mx-3" value="#{s.name}"/>
                                         </p>
                                         <p class="card-text " style="font-weight: bolder">
                                             <h:outputText value="#{s.startingTime}"> 
@@ -353,7 +355,7 @@
                                         <p:commandButton 
                                             value="Add Booking" 
                                             class="ui-button-success" 
-                                            action="#{patientPortalController.booking()}">
+                                            action="#{patientPortalController.navigateToPayBooking()}">
                                             <f:setPropertyActionListener target="#{patientPortalController.selectedSessionInstance}" value="#{s}"/>
                                         </p:commandButton>
 

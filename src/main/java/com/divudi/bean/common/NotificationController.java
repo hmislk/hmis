@@ -85,11 +85,9 @@ public class NotificationController implements Serializable {
     }
 
     public void createNotification(Bill bill) {
-        System.out.println("createNotification");
         if (bill == null) {
             return;
         }
-        System.out.println("bill = " + bill.getBillTypeAtomic());
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
              case INWARD_PHARMACY_REQUEST:
@@ -372,7 +370,6 @@ public class NotificationController implements Serializable {
             nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
-            System.out.println("Created Notification");
         }
     }
 

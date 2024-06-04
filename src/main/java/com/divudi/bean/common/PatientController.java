@@ -282,7 +282,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (current == null) {
             return;
         }
-        System.out.println("patient = " + current);
+//        List<BillTypeAtomic> billTypesAtomics=new ArrayList<>();
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+//        billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
 //        List<BillTypeAtomic> billTypesAtomics=new ArrayList<>();
 //        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 //        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
@@ -304,7 +313,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("btas", billTypes);
         m.put("pt", current);
         patientsPastChannelBookings = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("PatientsPastChannelBookings = " + patientsPastChannelBookings.size());
     }
 
     public Map<String, Patient> CreatePatientMap(List<Patient> patients) {

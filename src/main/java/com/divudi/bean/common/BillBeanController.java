@@ -4,6 +4,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
@@ -2217,6 +2218,7 @@ public class BillBeanController implements Serializable {
     }
 
     public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, PaymentScheme paymentScheme, Institution institution, PriceMatrix priceMatrix) {
+
         boolean discountAllowed = false;
 
         if (bf == null) {
@@ -2225,17 +2227,19 @@ public class BillBeanController implements Serializable {
 
         if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
             discountAllowed = bf.getBillItem().getItem().isDiscountAllowed();
+        } else {
         }
 
         double discount = 0;
 
         if (priceMatrix != null) {
             discount = priceMatrix.getDiscountPercent();
+        } else {
         }
 
-        if (discountAllowed == false) {
+        if (!discountAllowed) {
             bf.setFeeValueBoolean(foreign);
-        } else if (discountAllowed == true
+        } else if (discountAllowed
                 && institution != null
                 && institution.getLabBillDiscount() > 0.0) {
             bf.setFeeValueForCreditCompany(foreign, institution.getLabBillDiscount());
@@ -2243,6 +2247,7 @@ public class BillBeanController implements Serializable {
             bf.setFeeValueForeignAndDiscount(foreign, discount);
             bf.setPriceMatrix(priceMatrix);
         }
+
     }
 
     public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, MembershipScheme membershipScheme, Item item, PriceMatrix priceMatrix) {
@@ -2788,7 +2793,7 @@ public class BillBeanController implements Serializable {
 
         String sql = "Select i from MedicalPackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
         List<Item> packageItems = getItemFacade().findByJpql(sql);
-        if(packageItems==null){
+        if (packageItems == null) {
             packageItems = new ArrayList<>();
             JsfUtil.addErrorMessage("No Items inside Package");
         }

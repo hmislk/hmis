@@ -19,57 +19,60 @@
 
 
                 <p:panel header="Manage Discount Scheme Payment Method" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
 
+
+
+                    <div class="w-100 d-flex align-items-center">
                         <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >                               
-                                <h:selectOneListbox  value="#{paymentSchemeController.current}" size="1" >
+                            <p:panel class="w-100" >                               
+                                <p:selectOneMenu value="#{paymentSchemeController.current}"  >
                                     <f:selectItem itemLabel="Select Discount Scheme Scheme"/>
                                     <f:selectItems value="#{paymentSchemeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                     <f:ajax event="change" render="@all" execute="@this" listener="#{paymentSchemeController.createAllowedPaymentMethods()}" />                                        
-                                </h:selectOneListbox>
-                                <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{paymentSchemeController.currentAllowedPaymentMethod}" style="min-width: 223px">
+                                </p:selectOneMenu>
+                                <h:panelGrid id="gpSelectText" class="w-100" >
+                                    <p:selectOneListbox scrollHeight="250" class="w-100" id="lstSelect" value="#{paymentSchemeController.currentAllowedPaymentMethod}">
                                         <f:selectItems  value="#{paymentSchemeController.allowedPaymentMethods}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.paymentMethod}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
                                     <p:commandButton ajax="false" id="btnAdd" value="Add" 
-                                                    action="#{paymentSchemeController.prepareAdd()}" 
+                                                     action="#{paymentSchemeController.prepareAdd()}" 
                                                      styleClass="buttons" disabled="true"/>                                       
 
 
-                                    <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                    <p:commandButton ajax="false" icon="fas fa-trash" class="ui-button-danger" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" action="#{paymentSchemeController.delete()}"  value="Delete"  >
                                     </p:commandButton>
 
-                                    <p:commandButton ajax="false" value="Clear"
-                                                    action="#{paymentSchemeController.recreateModel}"/>
+                                    <p:commandButton ajax="false" value="Clear" class="ui-button-secondary"
+                                                     action="#{paymentSchemeController.recreateModel}"/>
 
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
-
-                        <p:panel>
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">                                  
+                        <p:panel class="w-100 float-left">
+                            <h:panelGrid id="gpDetail" class="w-100">
+                                <h:panelGrid id="gpDetailText" columns="3">                                  
                                     <h:outputText value="Payment Method" ></h:outputText>
-                                    <h:selectOneListbox value="#{paymentSchemeController.currentAllowedPaymentMethod.paymentMethod}" size="1" >
+                                    <p:selectOneMenu class="mx-2" value="#{paymentSchemeController.currentAllowedPaymentMethod.paymentMethod}">
                                         <f:selectItem itemLabel="Select Payment Method"/>
                                         <f:selectItems value="#{enumController.paymentMethods}"/>
-                                    </h:selectOneListbox>
+                                    </p:selectOneMenu>
 
-                                    <h:commandButton id="btnSave"  value="Add" action="#{paymentSchemeController.saveSelectedAllowedPaymentMethod()}" styleClass="buttons">                                        
-                                    </h:commandButton>
+                                    <p:commandButton id="btnSave" icon="fas fa-plus" value="Add" action="#{paymentSchemeController.saveSelectedAllowedPaymentMethod()}" class="ui-button-success mx-2">                                        
+                                    </p:commandButton>
                                 </h:panelGrid>
-                                
+
                             </h:panelGrid>
                         </p:panel>
-                    </h:panelGrid>
+                    </div>
                 </p:panel>
+
+
             </h:form>
 
         </h:panelGroup>

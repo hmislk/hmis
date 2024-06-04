@@ -240,8 +240,7 @@
                     </tr>
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
-
-                            <h:panelGroup rendered="#{bip.item.printFeesForBills}">
+                            <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
                                 <tr>
                                     <td  style="overflow: visible;">
                                         <div class="d-flex justify-content-between">
@@ -304,6 +303,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
+                       
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
@@ -405,7 +405,7 @@
                 </h:outputLabel>
             </div>
 
-            <ui:repeat value="#{cc.attrs.bill.payments}" var="ps">
+            <ui:repeat value="#{cc.attrs.payments}" var="ps">
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                     <h:outputText 
                         style="font-size: 8pt"  

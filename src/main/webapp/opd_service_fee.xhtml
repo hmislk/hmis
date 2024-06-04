@@ -21,7 +21,7 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="Select Service" />
                                 <p:autoComplete widgetVar="serv" id="acIx" forceSelection="true" 
-                                                value="#{serviceFeeController.currentIx}" completeMethod="#{itemController.completeInwardItems}"
+                                                value="#{serviceFeeController.currentIx}" completeMethod="#{itemController.completeAllServicesAndInvestigations}"
                                                 var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                     <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId} :#{p:resolveFirstComponentWithId('dtbFee',view).clientId}" listener="#{serviceFeeController.createCharges()}" ></p:ajax>
                                     <p:column>#{ix.name}</p:column>

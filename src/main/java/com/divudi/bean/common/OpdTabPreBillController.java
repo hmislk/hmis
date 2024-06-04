@@ -778,7 +778,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         } else {
             patientFacade.edit(p);
         }
-        System.out.println("Save Patient = ");
         return p;
     }
 
@@ -996,10 +995,8 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         if (getToken() != null) {
             getToken().setBill(tmp);
             tokenFacade.edit(getToken());
-            System.out.println("getToken().getIdStr() = " + getToken().getIdStr());
             markToken(tmp);
         }
-        System.out.println("wb = " + wb);
     }
 
     @Inject
@@ -1035,7 +1032,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
 
     private PreBill saveBill(Department bt, PreBill updatingPreBill) {
         updatingPreBill.setBillType(BillType.OpdPreBill);
-        //updatingPreBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        updatingPreBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         updatingPreBill.setDepartment(getSessionController().getDepartment());
         updatingPreBill.setInstitution(getSessionController().getInstitution());
         updatingPreBill.setToDepartment(bt);
@@ -1154,7 +1151,6 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         }
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatient() == null) {
-                System.out.println("getPatient() == null");
                 return true;
             }
             boolean checkAge = false;
@@ -1271,6 +1267,13 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
             getCurrentBillItem().setQty(1.0);
         }
 
+        for (BillEntry bi : lstBillEntries) {
+            if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
+                JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
+                return;
+            }
+        }
+        
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = getCurrentBillItem();
@@ -1544,9 +1547,10 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         }
     }
 
-    public void removeBillItem(BillEntry bi) {
-        if (bi != null) {
-            getLstBillEntries().remove(bi);
+    public void removeBillItem() {
+        if (getIndex() != null) {
+            BillEntry temp = getLstBillEntries().get(getIndex());
+            recreateList(temp);
             calTotals();
         }
 
