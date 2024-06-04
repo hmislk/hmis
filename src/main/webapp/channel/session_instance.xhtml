@@ -302,7 +302,7 @@
 
 
                                             <h:panelGrid columns="1">
-                                                <p:dataTable value="#{channelScheduleController.itemFees}" var="i" >
+                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
                                                     <p:column headerText="Name">
                                                         <h:outputLabel value="#{i.name}"/> 
                                                     </p:column>
@@ -332,7 +332,7 @@
                                             </h:panelGrid>
 
                                             <p:outputLabel value="Total Professional Fee - "/>
-                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.totalFee}"/>
+                                            <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.professionalFee}"/>
 
                                         </p:tab>
 
