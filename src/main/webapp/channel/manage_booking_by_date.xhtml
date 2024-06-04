@@ -867,6 +867,10 @@
                                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                             <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                             </h:panelGroup>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" duplicate="true"/>
+                            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
+                                                            </h:panelGroup>
                                                         </ui:repeat>
                                                     </h:panelGroup>
                                                 </div>
@@ -949,7 +953,7 @@
                             <p>Are you sure you want to cancel the channel booking?</p>
                             <p:selectOneMenu 
                                 id="commentsMenuCancel" 
-                                value="#{billSearch.comment}" 
+                                value="#{bookingControllerViewScope.comment}" 
                                 editable="true" 
                                 filter="true" 
                                 placeholder="Select or enter a comment"
@@ -1025,7 +1029,7 @@
                             <p>Are you sure you want to refund the channel booking?</p>
                             <p:selectOneMenu 
                                 id="commentsMenuRefund" 
-                                value="#{billSearch.comment}" 
+                                value="#{bookingControllerViewScope.commentR}" 
                                 editable="true" 
                                 filter="true" 
                                 placeholder="Select or enter a comment"

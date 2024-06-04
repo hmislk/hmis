@@ -14,6 +14,7 @@
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
+       <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -402,7 +403,7 @@
                     </h:outputText>
                     <h:outputText 
                         style="font-size: 8pt"  
-                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethoddata.creditCardRefNo})"/>
+                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">

@@ -138,7 +138,7 @@ public class WebUserController implements Serializable {
     
     private WebUserRole webUserRole;
 
-    boolean testRun = false;
+    boolean testRun = true;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
