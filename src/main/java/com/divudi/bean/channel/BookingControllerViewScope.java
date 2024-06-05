@@ -726,13 +726,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceFilter = viewScopeDataTransferController.getSessionInstanceFilter();
 
         needToFillSessionInstances = viewScopeDataTransferController.getNeedToFillSessionInstances();
-        if (needToFillSessionInstances==null || needToFillSessionInstances != false) {
+        if (needToFillSessionInstances == null || needToFillSessionInstances != false) {
             listAllSesionInstances();
         }
 
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
         needToFillSessionInstanceDetails = viewScopeDataTransferController.getNeedToFillSessionInstanceDetails();
-        if (needToFillSessionInstanceDetails==null || needToFillSessionInstanceDetails!=false) {
+        if (needToFillSessionInstanceDetails == null || needToFillSessionInstanceDetails != false) {
             fillSessionInstanceDetails();
         }
 
@@ -938,9 +938,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
-        
-        
-        
+
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(true);
