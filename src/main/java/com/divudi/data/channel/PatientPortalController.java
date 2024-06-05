@@ -305,6 +305,7 @@ public class PatientPortalController implements Serializable {
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(PatientphoneNumber);
         e.setSendingMessage("Your authentication code is " + otp);
+        System.out.println("Your authentication code is " + otp);
         e.setPending(false);
         e.setOtp(otp);
         getSmsFacade().create(e);
