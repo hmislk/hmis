@@ -44,13 +44,13 @@
                                 class="mx-2"
                                 rendered="false"
                                 style="width: 10em;"
-                                id="cmbSettlePs" value="#{bookingControllerViewScope.settlePaymentMethod}">  
+                                id="cmbSettlePs" value="#{bookingControllerViewScope.paymentMethod}">  
                                 <f:selectItems value="#{enumController.paymentMethodsForChannelSettle}"/>                                                               
                                 <f:ajax execute="@this" render="settleAgent settleAgent2 settleBallance settleBallance2 settleAgRefLbl settleAgRefTxt" event="change" />
                             </p:selectOneMenu>
 
-                            <h:outputLabel id="settleAgent" value="Agent"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <p:autoComplete id="settleAgent2" forceSelection="true" style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "
+                            <h:outputLabel id="settleAgent" value="Agent"  style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                            <p:autoComplete id="settleAgent2" forceSelection="true" style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
                                             value="#{bookingControllerViewScope.settleInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" >
                                 <f:ajax  event="itemSelect" execute="@this"  render="settleBallance settleBallance2 settleAgRefLbl settleAgRefTxt"/>
@@ -58,11 +58,11 @@
                                 <p:column>#{ix.name}</p:column>                                
                             </p:autoComplete> 
 
-                            <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
-                            <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{bookingControllerViewScope.agentRefNo}"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                            <h:outputLabel id="settleAgRefLbl" value="Agent Reference No"  style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
+                            <p:inputText autocomplete="off" id="settleAgRefTxt" value="#{bookingControllerViewScope.agentRefNo}"  style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
                             <h:outputLabel id="settleBallance" value="Balance"  style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <h:outputLabel id="settleBallance2" value="#{bookingControllerViewScope.institution.ballance}"  style="display: #{bookingControllerViewScope.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                            <h:outputLabel id="settleBallance2" value="#{bookingControllerViewScope.institution.ballance}"  style="display: #{bookingControllerViewScope.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
                             <p:commandButton 
                                 id="setBtn"  
@@ -261,7 +261,7 @@
                                                     <p:selectOneMenu
                                                         id="pay"
                                                         class="w-100"
-                                                        value="#{bookingControllerViewScope.settlePaymentMethod}"
+                                                        value="#{bookingControllerViewScope.paymentMethod}"
                                                         >
                                                         <f:selectItems
                                                             value="#{enumController.paymentMethodsForChanneling}"
@@ -299,7 +299,7 @@
                                                     <h:panelGroup
                                                         class="row"
                                                         layout="block"
-                                                        rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Credit'}" >
+                                                        rendered="#{bookingControllerViewScope.paymentMethod eq 'Credit'}" >
                                                         <div class="my-1" id="credit">
                                                             <div class="row">
                                                                 <div class="col-12 d-flex ">
@@ -337,7 +337,7 @@
                                                     <h:panelGroup
                                                         class="row"
                                                         layout="block"
-                                                        rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Staff'}" >
+                                                        rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff'}" >
                                                         <div class="my-1" id="staffCredit">
                                                             <div class="row mt-1">
                                                                 <div class="col-12">
@@ -381,7 +381,7 @@
                                                     <h:panelGroup
                                                         class="row"
                                                         layout="block"
-                                                        rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Staff_Welfare'}" >
+                                                        rendered="#{bookingControllerViewScope.paymentMethod eq 'Staff_Welfare'}" >
                                                         <div class="my-1" id="credit">
                                                             <div class="row mt-1">
                                                                 <div class="col-12">
@@ -425,39 +425,39 @@
                                                     <h:panelGroup
                                                         class="row my-1"
                                                         layout="block"
-                                                        id="creditCard" rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Card'}" >
+                                                        id="creditCard" rendered="#{bookingControllerViewScope.paymentMethod eq 'Card'}" >
                                                         <pa:creditCard paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1"
                                                         layout="block"
-                                                        id="eWallet"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'ewallet'}" >
+                                                        id="eWallet"  rendered="#{bookingControllerViewScope.paymentMethod eq 'ewallet'}" >
                                                         <pa:ewallet paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1"
                                                         layout="block"
-                                                        id="cheque"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Cheque'}" >
+                                                        id="cheque"  rendered="#{bookingControllerViewScope.paymentMethod eq 'Cheque'}" >
                                                         <pa:cheque paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1"
                                                         layout="block"
-                                                        id="slip"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'Slip'}" >
+                                                        id="slip"  rendered="#{bookingControllerViewScope.paymentMethod eq 'Slip'}" >
                                                         <pa:slip paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1"
                                                         layout="block"
-                                                        id="patientDeposit"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'PatientDeposit'}" >
+                                                        id="patientDeposit"  rendered="#{bookingControllerViewScope.paymentMethod eq 'PatientDeposit'}" >
                                                         <pa:patient_deposit paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1 w-100"
                                                         layout="block"
-                                                        id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'MultiplePaymentMethods'}"
+                                                        id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}"
                                                         >
-                                                        <pa:multiple_payment_methods paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" controller="#{bookingControllerViewScope}" class="w-100"/>
+                                                        <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
 
                                                     </h:panelGroup>
 
@@ -949,7 +949,7 @@
                             <p>Are you sure you want to cancel the channel booking?</p>
                             <p:selectOneMenu 
                                 id="commentsMenuCancel" 
-                                value="#{billSearch.comment}" 
+                                value="#{bookingControllerViewScope.comment}" 
                                 editable="true" 
                                 filter="true" 
                                 placeholder="Select or enter a comment"
@@ -1025,7 +1025,7 @@
                             <p>Are you sure you want to refund the channel booking?</p>
                             <p:selectOneMenu 
                                 id="commentsMenuRefund" 
-                                value="#{billSearch.comment}" 
+                                value="#{bookingControllerViewScope.commentR}" 
                                 editable="true" 
                                 filter="true" 
                                 placeholder="Select or enter a comment"
