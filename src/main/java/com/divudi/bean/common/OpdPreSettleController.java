@@ -77,7 +77,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class OpdPreSettleController implements Serializable {
+public class OpdPreSettleController implements Serializable, ControllerWithMultiplePayments {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -210,20 +210,16 @@ public class OpdPreSettleController implements Serializable {
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
-            
-            List<BillFee> billFeesOfSingleBillOfBatchBillPre ;
-            
-            
-            if(b.getBillFees()==null || b.getBillFees().isEmpty()){
+
+            List<BillFee> billFeesOfSingleBillOfBatchBillPre;
+
+            if (b.getBillFees() == null || b.getBillFees().isEmpty()) {
                 billFeesOfSingleBillOfBatchBillPre = billController.billFeesOfBill(b);
                 b.setBillFees(billFeesOfSingleBillOfBatchBillPre);
             }
-            
 
             for (BillFee bff : b.getBillFees()) {
-                
-                
-                
+
                 Department department = bff.getBillItem().getItem().getDepartment();
                 Item item = bff.getBillItem().getItem();
                 Category category = null;
@@ -878,6 +874,31 @@ public class OpdPreSettleController implements Serializable {
         return total;
     }
 
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == paymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
+    }
+
     public BilledBill createBilledBillForPreBill(Bill preBill) {
         setPreBill(preBill);
         if (errorCheckForSaleBill()) {
@@ -1032,6 +1053,8 @@ public class OpdPreSettleController implements Serializable {
         }
         System.out.println("billsOfBatchBillPre = " + billsOfBatchBillPre.size());
         getPreBill().setPaymentMethod(preBatchBill.getPaymentMethod());
+        paymentMethod = getPreBill().getPaymentMethod();
+        netTotal = getPreBill().getNetTotal();
         calculateDiscount();
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
