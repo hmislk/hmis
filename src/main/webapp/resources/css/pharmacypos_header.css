@@ -1,76 +1,8 @@
-/* cyrillic-ext */
 @font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8lN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHYakyK7ThA.woff2) format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+    font-family: 'VRC';
+    src: url('../fonts/VRC.ttf') format('truetype');
+    /* Add other font properties like font-weight, font-style if necessary */
 }
-/* vietnamese */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8lN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHYamyK7ThA.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8lN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHYanyK7ThA.woff2) format('woff2');
-  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8lN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHYapyK4.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* cyrillic-ext */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY4S7bvhpYY1Fw.woff2) format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-/* vietnamese */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY4S7bvjpYY1Fw.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY4S7bvipYY1Fw.woff2) format('woff2');
-  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/ibmplexsanscondensed/v14/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY4S7bvspYY.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
 
 @media print{
     .posbillheader{
@@ -80,7 +12,7 @@
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         /*        font:*/
         font-size: 12px!important;
         /*        text-transform: uppercase!important;*/
@@ -94,7 +26,7 @@
         width: 12cm!important;
         height: 14cm!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         font-size: 11px!important;
         margin: auto!important;
         background-size: 100% auto!important;
@@ -110,7 +42,7 @@
         width: 24.2cm!important;
         height: 9.3cm!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         margin: auto!important;
         background-size: 100% auto!important;
         /*        border: 1px solid!important;*/
@@ -134,7 +66,7 @@
         padding: 0px!important;
         margin: 0px!important;
         border: none!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         /*        font:*/
         font-size: 11px!important;
         /*        text-transform: uppercase!important;*/
@@ -150,7 +82,7 @@
 
     .a4bill1{
         page-break-after:always!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         font-size: 11px!important;
         position: relative!important;
         margin: 0px!important;
@@ -166,7 +98,7 @@
         font-weight: bold!important;
         font-size: 20px!important;
         font-weight: bolder;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         text-transform: capitalize!important;
 
     }
@@ -175,13 +107,13 @@
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
     }
 
     .billDetails1{
         text-align: center!important;
         font-size: 12px!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
     }
     .channelNumber1{
         font-size: 50px!important;
@@ -197,7 +129,7 @@
         width: 12cm!important;
         height: 14cm!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         font-size: 11px!important;
         margin: auto!important;
         background-size: 100% auto!important;
@@ -212,7 +144,7 @@
 
         width:400px!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -227,7 +159,7 @@
 
         width:400px!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -244,7 +176,7 @@
         width: 24.2cm!important;
         height: 9.3cm!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -254,7 +186,7 @@
     .channelCoop1{
         position: relative!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         border: 1px solid!important;
         padding: 5px!important;
         width: 12cm!important;
@@ -269,7 +201,7 @@
 
         width:400px!important;
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         margin: auto!important;
         background-size: 100% auto!important;
         border: 1px solid!important;
@@ -282,7 +214,7 @@
 
     .a4bill1{
 
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
         font-size: 11px!important;
         position: relative!important;
         margin: 0px auto!important;
@@ -300,7 +232,7 @@
         font-weight: bold!important;
         font-size: 20px!important;
         font-weight: bolder;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
 
     }
 
@@ -308,13 +240,13 @@
         position: relative!important;
         text-align: center!important;
         font-size: 12px!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
     }
 
     .billDetails1{
         text-align: center!important;
         font-size: 12px!important;
-        font-family: "Times New Roman", Times, serif!important;
+        font-family: 'VRC', Arial, sans-serif!important;
     }
 
 }
@@ -325,19 +257,19 @@
     position: relative!important;
     text-align: center!important;
     font-size: 12px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
 
 .billDetails1{
     text-align: center!important;
     font-size: 12px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
 
 .billDetailsFiveFiveBHT1{
     text-align: center!important;
     font-size: 10px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
 
 
@@ -350,27 +282,27 @@
 
 .billDetailsFiveFive1{
     font-size: 14px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
 
 .itemHeadings1{
     text-align: center!important;
     font-size: 13px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
     font-weight: bold;
 }
 
 .itemHeadingsFiveFive1{
 
     font-size: 15px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
     font-weight: bold;
 }
 
 .itemsBlock1{
     text-align: center!important;
     font-size: 13px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
     text-transform: capitalize!important;
 }
 
@@ -378,7 +310,7 @@
 itemsBlockRight1{
     text-align: right!important;
     font-size: 13px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
@@ -387,14 +319,14 @@ itemsBlockRight1{
 .itemsBlockRightFiveFive1{
     text-align: right!important;
     font-size: 12px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
     text-transform: capitalize!important;
     padding-right: 30px;
 }
 .footer1{
     text-align: center!important;
     font-size: 12px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 
 }
 
@@ -427,21 +359,21 @@ itemsBlockRight1{
 
 .poDetail1{
     font-size: 11px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
     min-width: 100%!important;
 }
 
 .totalsBlock1{
     font-size: 15px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
 
 .totalsItemBlock1{
     font-size: 14px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
 
 .totalsBlockFiveFiveNo11{
     font-size: 10px!important;
-    font-family: "Times New Roman", Times, serif!important;
+    font-family: 'VRC', Arial, sans-serif!important;
 }
