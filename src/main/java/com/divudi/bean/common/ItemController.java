@@ -405,7 +405,7 @@ public class ItemController implements Serializable {
         allItems = null;
         return "/item/reports/item_list";
     }
-    
+
     public String navigateToEditFeaturesOfMultipleItems() {
         return "/admin/items/multiple_item_edit";
     }
@@ -906,7 +906,7 @@ public class ItemController implements Serializable {
             }
         }
     }
-    
+
     public void markSelectedItemsFeesChangableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -918,7 +918,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
     }
-    
+
     public void markSelectedItemsAsDiscountableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -930,30 +930,54 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
     }
-    
-    public void unmarkSelectedItemsFeesChangableAtBilling() {
-    if (selectedList == null || selectedList.isEmpty()) {
-        JsfUtil.addErrorMessage("Nothing is selected");
-        return;
-    }
-    for (Item i : selectedList) {
-        i.setUserChangable(false);
-        itemFacade.edit(i);
-    }
-    JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
-}
 
-public void unmarkSelectedItemsAsDiscountableAtBilling() {
-    if (selectedList == null || selectedList.isEmpty()) {
-        JsfUtil.addErrorMessage("Nothing is selected");
-        return;
+    public void unmarkSelectedItemsFeesChangableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setUserChangable(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
     }
-    for (Item i : selectedList) {
-        i.setDiscountAllowed(false);
-        itemFacade.edit(i);
+
+    public void unmarkSelectedItemsAsDiscountableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setDiscountAllowed(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked as Discountable at Billing");
     }
-    JsfUtil.addSuccessMessage("All Unmarked as Discountable at Billing");
-}
+
+    public void markSelectedItemsForPrintSeparateFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintFeesForBills(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked for Print Separate Fees");
+    }
+
+    public void unMarkSelectedItemsForPrintSeparateFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintFeesForBills(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
+    }
 
     public void updateSelectedItemFees() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1657,7 +1681,7 @@ public void unmarkSelectedItemsAsDiscountableAtBilling() {
         return suggestions;
 
     }
-    
+
     public List<Item> completeAllServicesAndInvestigations(String query) {
         List<Item> suggestions;
         HashMap m = new HashMap();
@@ -1713,8 +1737,6 @@ public void unmarkSelectedItemsAsDiscountableAtBilling() {
         }
         return suggestions;
     }
-    
-    
 
     public void fillItemsForInward() {
         HashMap m = new HashMap();

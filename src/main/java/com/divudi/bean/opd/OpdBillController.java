@@ -98,7 +98,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class OpdBillController implements Serializable, ControllerWithPatient {
+public class OpdBillController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
 
@@ -2054,6 +2054,31 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return total - multiplePaymentMethodTotalValue;
         }
         return total;
+    }
+    
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
     }
 
     private boolean errorCheck() {

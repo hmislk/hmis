@@ -72,7 +72,7 @@
                             layout="block" 
                             id="multiplePaymentMethods"  style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;" 
                             >
-                            <pa:multiple_payment_methods paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}" controller="#{pharmacyPreSettleController}" class="w-100"/>
+                            <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" class="w-100"/>
                         </h:panelGroup>
 
                         <div class="row mt-2">
