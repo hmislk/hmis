@@ -17,8 +17,8 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
-        <div class="posbillheader" style="page-break-after: always!important; max-width: 72mm">
-            
+        <h:commandButton value="Print Bill" onclick="printBill()"/>
+        <div id="printAll" class="posbillheader" style="page-break-after: always!important; max-width: 72mm">
             <div class="d-flex align-items-center">
                 <div>
                     <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="110" width="100"/>
@@ -311,5 +311,15 @@
 
 
         </div>
+        <script>
+        function printBill() {
+            var billContent = document.getElementById('printAll').innerHTML;
+            var printWindow = window.open('', '_blank');
+            printWindow.document.open();
+            printWindow.document.write('<html><head><title>Print Bill</title></head><body>' + billContent + '</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
     </cc:implementation>
 </html>
