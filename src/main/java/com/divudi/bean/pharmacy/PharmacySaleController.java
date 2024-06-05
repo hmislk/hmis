@@ -379,6 +379,30 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return getPreBill().getTotal();
     }
 
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == paymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
+    }
+
     public double getOldQty(BillItem bItem) {
         String sql = "Select b.qty From BillItem b where b.retired=false and b.bill=:b and b=:itm";
         HashMap hm = new HashMap();
@@ -1553,7 +1577,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillFacade().edit(getSaleBill());
     }
-    
+
     private void saveSaleBillItems(List<BillItem> list, Payment p) {
         for (BillItem tbi : list) {
 
@@ -1678,8 +1702,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @EJB
     private CashTransactionBean cashTransactionBean;
-    
-    public boolean errorCheckOnPaymentMethod(){
+
+    public boolean errorCheckOnPaymentMethod() {
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -1711,7 +1735,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //                return true;
 //            }
 //        }
-
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
@@ -1776,7 +1799,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public List<Payment> createPaymentsForBill(Bill b) {
         return createMultiplePayments(b, b.getPaymentMethod());
     }
-    
+
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1862,7 +1885,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         return ps;
     }
-    
+
     public void settleBillWithPay() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -2004,7 +2027,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        if (checkAllBillItem()) {
 //            return;
 //        }
-        
         calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
