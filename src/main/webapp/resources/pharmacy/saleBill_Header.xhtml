@@ -323,16 +323,17 @@
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Print Bill</title>');
     // Include Bootstrap CSS file
-    printWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">');
-    rintWindow.document.write('<link rel="stylesheet" href="../../resources/css/pharmacypos_header.css">');
+    printWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>');
+    printWindow.document.write('<link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>');
     // Include your custom CSS files here if any
-    // printWindow.document.write('<link rel="stylesheet" href="your_custom_stylesheet.css">');
+    // printWindow.document.write('<link rel="stylesheet" href="your_custom_stylesheet.css"/>');
     printWindow.document.write('</head><body>' + billContent + '</body></html>');
     printWindow.document.close();
     
     // Trigger the print functionality for the print window
     printWindow.print();
 }
+
     </script>
     </cc:implementation>
 </html>
