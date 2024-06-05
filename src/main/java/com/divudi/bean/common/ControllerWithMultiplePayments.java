@@ -13,5 +13,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 public interface ControllerWithMultiplePayments {
     public double calculatRemainForMultiplePaymentTotal();
     public void recieveRemainAmountAutomatically();
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData);
+    public PaymentMethodData getPaymentMethodData();
     
 }

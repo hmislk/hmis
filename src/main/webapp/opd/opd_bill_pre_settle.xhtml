@@ -41,7 +41,6 @@
                                     icon="fa fa-check"
                                     id="settle"
                                     action="#{opdPreSettleController.settleOpdBatchBill}" />
-                                <h1>#{opdPreSettleController.netTotal}</h1>
                             </f:facet>
                             
                             <h:panelGrid columns="20" class="w-50">
@@ -198,7 +197,7 @@
                             </h:panelGrid>
 
                             <h:panelGroup class="w-50" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
+                                <pa:multiple_payment_methods controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
 
 
