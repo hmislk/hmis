@@ -104,7 +104,7 @@
                                             <p:commandButton 
                                                 icon="fa-solid fa-book" 
                                                 title="Past Channel Bookings"
-                                                class="ui-button-flat"
+                                                class="ui-button-secondary"
                                                 action="#{patientController.navigateToPatientPastChannelBiiking()}"
                                                 ajax="false">
                                                 <f:setPropertyActionListener target="#{patientController.patient}" value="#{bs.bill.patient}"/>
@@ -114,14 +114,14 @@
                                                 title="OPD" 
                                                 ajax="false" 
                                                 action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
-                                                class="ui-button-flat">
+                                                class="ui-button-secondary mx-1">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 icon="pi pi-cog" 
                                                 title="Manage Booking" 
                                                 ajax="false" 
                                                 action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                                class="ui-button-text-icon-left mx-1">
+                                                class="ui-button-secondary ">
                                             </p:commandButton>
 
                                         </div>
