@@ -14,6 +14,7 @@
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="ref" type="java.lang.Boolean" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -402,15 +403,20 @@
                     </h:outputText>
                     <h:outputText 
                         style="font-size: 8pt"  
-                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethoddata.creditCardRefNo})"/>
+                        value="(Card Last 4 Digits:#{cc.attrs.paymentMethodData.creditCard.no})"/>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" style="margin-top: 10px;font-size: 8pt">
                     <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
                     <ui:repeat value="#{cc.attrs.payments}" var="p">
-                        <div class="d-flex align-items-center m-1">
-                            <div>#{p.paymentMethod}</div>
-                            <div class="mx-2">#{p.paidValue}</div>
+                        <div class="col-2">
+                            <div class="d-flex align-items-center m-1 justify-content-between">
+                                <div class="d-flex">
+                                    <div>#{p.paymentMethod}</div>
+                                    <p:outputLabel style="font-size: 8pt" class="mx-1" rendered="#{p.paymentMethod eq 'Card'}" value="RefNo:#{p.creditCardRefNo}" />
+                                </div>
+                                <div class="mx-2">#{p.paidValue}</div>
+                            </div>
                         </div>
                     </ui:repeat>
                 </h:panelGroup>
