@@ -58,7 +58,8 @@
                                         itemValue="#{pm1}"/>
                                     <p:ajax process="pay" 
                                             update="paymentDetails"
-                                            event="change"/>
+                                            event="change"
+                                            listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  />
                                 </p:selectOneMenu>
                                  <p:commandButton 
                                     class="mx-2 ui-button-danger" 
