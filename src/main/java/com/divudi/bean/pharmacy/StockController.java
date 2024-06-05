@@ -101,7 +101,7 @@ public class StockController implements Serializable {
 
     public void listStocksOfSelectedItem(Item item) {
         selectedItemStocks = null;
-        if(selectedItemStocks == null){
+        if (selectedItemStocks == null) {
             selectedItemStocks = new ArrayList<>();
         }
         selectedItem = item;
@@ -388,20 +388,24 @@ public class StockController implements Serializable {
         } else {
             daysToMarkAsExpiaring = 30;
         }
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, daysToMarkAsExpiaring);
-        Date doe = c.getTime();
+        Calendar today = Calendar.getInstance();
+        Calendar shortExpiryDate = Calendar.getInstance();
+        shortExpiryDate.add(Calendar.DATE, daysToMarkAsExpiaring);
+        Date doeStart = today.getTime();
+        Date doeEnd = shortExpiryDate.getTime();
         m.put("amps", amps);
-        m.put("doe", doe);
+        m.put("doeStart", doeStart);
+        m.put("doeEnd", doeEnd);
         jpql = "select sum(i.stock) "
                 + " from Stock i ";
         if (institution == null) {
             jpql += " where i.itemBatch.item in :amps "
-                    + " and i.itemBatch.dateOfExpire < :doe ";
+                    + " and i.itemBatch.dateOfExpire between :doeStart and :doeEnd ";
         } else {
             m.put("ins", institution);
             jpql += " where i.department.institution=:ins "
-                    + " and i.itemBatch.item in :amps ";
+                    + " and i.itemBatch.item in :amps"
+                    + " and i.itemBatch.dateOfExpire between :doeStart and :doeEnd ";
         }
 
         stock = billItemFacade.findDoubleByJpql(jpql, m);
@@ -419,28 +423,34 @@ public class StockController implements Serializable {
         }
         String jpql;
         Map m = new HashMap();
-        Vmp tvmp = amps.get(0).getVmp();
-        int daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, daysToMarkAsExpiaring);
-        Date doe = c.getTime();
-        m.put("amps", amps);
-
+        Amp amp = amps.get(0);
+        int daysToMarkAsExpiaring = amp.getNumberOfDaysToMarkAsShortExpiary();
+        Calendar today = Calendar.getInstance();
+        Calendar shortExpiryDate = Calendar.getInstance();
+        shortExpiryDate.add(Calendar.DATE, daysToMarkAsExpiaring);
+        Date doeStart = today.getTime();
+        Date doeEnd = shortExpiryDate.getTime();
+        
+        System.out.println("daysToMarkAsExpiaring = " + daysToMarkAsExpiaring);
         if (inputShortExpiaryDate == null) {
-            inputShortExpiaryDate = doe;
+            inputShortExpiaryDate = doeEnd;
+            System.out.println("doe = " + doeEnd);
         }
-        m.put("doe", inputShortExpiaryDate);
         jpql = "select i "
                 + " from Stock i ";
         if (institution == null) {
             jpql += " where i.itemBatch.item in :amps "
-                    + " and i.itemBatch.dateOfExpire < :doe ";
+                    + " and i.itemBatch.dateOfExpire between :doeStart and :doeEnd ";
         } else {
             m.put("ins", institution);
             jpql += " where i.department.institution=:ins "
-                    + " and i.itemBatch.item in :amps ";
+                    + " and i.itemBatch.item in :amps "
+                    + " and i.itemBatch.dateOfExpire between :doeStart and :doeEnd ";
         }
         jpql += " and i.stock > :sqty ";
+        m.put("amps", amps);
+        m.put("doeStart", doeStart);
+        m.put("doeEnd", doeEnd);
         m.put("sqty", 0.0);
 
         return billItemFacade.findByJpql(jpql, m);
