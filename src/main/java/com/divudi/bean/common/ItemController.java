@@ -1675,7 +1675,6 @@ public class ItemController implements Serializable {
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=MedicalPackage "
                     + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
@@ -1715,7 +1714,6 @@ public class ItemController implements Serializable {
 
             sql = sqlBuilder.toString();
 
-            // Put types in the map
             m.put("pac", Packege.class);
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
