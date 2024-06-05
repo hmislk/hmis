@@ -381,10 +381,10 @@ public class StockController implements Serializable {
         Double stock = null;
         String jpql;
         Map m = new HashMap();
-        Vmp tvmp = amps.get(0).getVmp();
+        Amp tamp = amps.get(0);
         int daysToMarkAsExpiaring;
-        if (tvmp != null) {
-            daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        if (tamp != null) {
+            daysToMarkAsExpiaring = tamp.getNumberOfDaysToMarkAsShortExpiary();
         } else {
             daysToMarkAsExpiaring = 30;
         }
