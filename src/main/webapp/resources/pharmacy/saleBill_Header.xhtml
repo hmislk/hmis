@@ -17,8 +17,8 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
-        <div class="posbillheader" style="page-break-after: always!important; max-width: 72mm">
-            
+        <h:commandButton value="Print Bill" onclick="printBill()"/>
+        <div id="printAll" class="posbillheader" style="page-break-after: always!important; max-width: 72mm">
             <div class="d-flex align-items-center">
                 <div>
                     <p:graphicImage library="image" name="CompanyLogo/#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Bill Company Logo')}.png" height="110" width="100"/>
@@ -311,5 +311,29 @@
 
 
         </div>
+        <script>
+        function printBill() {
+    // Get the HTML content of the section with ID "printAll"
+    var billContent = document.getElementById('printAll').innerHTML;
+    
+    // Open a new window for printing
+    var printWindow = window.open('', '_blank');
+    
+    // Write the HTML content along with CSS styles into the print window
+    printWindow.document.open();
+    printWindow.document.write('<html><head><title>Print Bill</title>');
+    // Include Bootstrap CSS file
+    printWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>');
+    printWindow.document.write('<link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>');
+    // Include your custom CSS files here if any
+    // printWindow.document.write('<link rel="stylesheet" href="your_custom_stylesheet.css"/>');
+    printWindow.document.write('</head><body>' + billContent + '</body></html>');
+    printWindow.document.close();
+    
+    // Trigger the print functionality for the print window
+    printWindow.print();
+}
+
+    </script>
     </cc:implementation>
 </html>

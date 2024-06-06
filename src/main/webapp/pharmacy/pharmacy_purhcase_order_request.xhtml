@@ -354,9 +354,6 @@
                                         <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
                                     </div>
-                                    <!--                <div >
-                                                        <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.department.telephone1} "/>
-                                                    </div>-->
                                     <div >
                                         <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
                                     </div>
@@ -371,10 +368,13 @@
                                 </div>
 
                                 <div class="purchase-order">
-                                    <h:panelGrid columns="3" class="my-2 w-50">
+                                    <h:panelGrid columns="6" class="my-2 w-100">
                                         <h:outputLabel value="Order No" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.insId}" />
+                                        <h:outputLabel value="Order Department" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.department.name}" />
                                         <h:outputLabel value="Supplier" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />

@@ -24,13 +24,14 @@
                             <p:outputLabel value="Transfer to Staff" ></p:outputLabel>
 
                             <p:autoComplete
-                                completeMethod="#{staffController.completeStaff}"
+                                completeMethod="#{webUserController.completeUser}"
                                 class="mx-2"
                                 id="acStaff" 
                                 value="#{financialTransactionController.currentBill.toStaff}" 
                                 var="s"
-                                itemLabel="#{s.person.nameWithTitle}" 
-                                itemValue="#{s}" >
+                                scrollHeight="450"
+                                itemLabel="#{s.webUserPerson.nameWithTitle}" 
+                                itemValue="#{s.staff}" >
                             </p:autoComplete>
 
                             <p:commandButton 

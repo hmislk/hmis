@@ -10,6 +10,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.ItemForItemController;
@@ -114,7 +115,7 @@ import org.primefaces.model.ScheduleModel;
  */
 @Named
 @ViewScoped
-public class BookingControllerViewScope implements Serializable, ControllerWithPatientViewScope {
+public class BookingControllerViewScope implements Serializable, ControllerWithPatientViewScope, ControllerWithMultiplePayments {
 
     /**
      * EJBs
@@ -324,6 +325,31 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return feeTotalForSelectedBill - multiplePaymentMethodTotalValue;
         }
         return feeTotalForSelectedBill;
+    }
+    
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
     }
 
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
@@ -726,13 +752,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceFilter = viewScopeDataTransferController.getSessionInstanceFilter();
 
         needToFillSessionInstances = viewScopeDataTransferController.getNeedToFillSessionInstances();
-        if (needToFillSessionInstances==null || needToFillSessionInstances != false) {
+        if (needToFillSessionInstances == null || needToFillSessionInstances != false) {
             listAllSesionInstances();
         }
 
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
         needToFillSessionInstanceDetails = viewScopeDataTransferController.getNeedToFillSessionInstanceDetails();
-        if (needToFillSessionInstanceDetails==null || needToFillSessionInstanceDetails!=false) {
+        if (needToFillSessionInstanceDetails == null || needToFillSessionInstanceDetails != false) {
             fillSessionInstanceDetails();
         }
 
@@ -938,9 +964,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
-        
-        
-        
+
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
         viewScopeDataTransferController.setNeedToFillSessionInstances(true);

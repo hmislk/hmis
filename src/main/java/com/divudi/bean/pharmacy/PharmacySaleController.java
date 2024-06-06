@@ -10,6 +10,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
@@ -99,7 +100,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController implements Serializable, ControllerWithPatient {
+public class PharmacySaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -377,6 +378,31 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
         }
         return getPreBill().getTotal();
+    }
+
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            System.out.println("pm = " + pm.getPaymentMethod().getLabel());
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            }
+
+        }
     }
 
     public double getOldQty(BillItem bItem) {
@@ -1553,7 +1579,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getBillFacade().edit(getSaleBill());
     }
-    
+
     private void saveSaleBillItems(List<BillItem> list, Payment p) {
         for (BillItem tbi : list) {
 
@@ -1678,8 +1704,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @EJB
     private CashTransactionBean cashTransactionBean;
-    
-    public boolean errorCheckOnPaymentMethod(){
+
+    public boolean errorCheckOnPaymentMethod() {
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -1711,7 +1737,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //                return true;
 //            }
 //        }
-
         if (paymentMethod == PaymentMethod.Staff) {
             if (toStaff == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
@@ -1776,7 +1801,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public List<Payment> createPaymentsForBill(Bill b) {
         return createMultiplePayments(b, b.getPaymentMethod());
     }
-    
+
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1862,7 +1887,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         return ps;
     }
-    
+
     public void settleBillWithPay() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -2004,7 +2029,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        if (checkAllBillItem()) {
 //            return;
 //        }
-        
         calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
