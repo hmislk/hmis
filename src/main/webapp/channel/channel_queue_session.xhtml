@@ -94,16 +94,23 @@
                         <ui:repeat value="#{bookingController.billSessions}" var="bs">
                             <div class="card p-2 my-1">
                                 <div class="row">
-                                    <div class="col-6">
-                                        <div class="d-flex align-items-center">
+                                    <div class="col-1">
+                                        <div>
                                             <div style="box-sizing: border-box;width: 35px;height: 35px;border: 2px solid black;border-radius: 50%;" class="d-flex align-items-center justify-content-center mx-2 bg-dark">
                                                 <div>
                                                     <h5 class="text-white">#{bs.serialNo}</h5>
                                                 </div>
                                             </div>
-                                            <div class="mx-2">
-                                                <h6>#{bs.bill.patient.person.nameWithTitle}</h6>
-                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="mx-2">
+                                            <h6>#{bs.bill.patient.person.nameWithTitle}</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="d-flex align-items-center">
+
                                             <div class="mx-4">
                                                 <p:badge value="Credit" severity="light" rendered="#{bs.bill.paidAmount eq 0}" styleClass="p-badge-green mx-1" />
                                                 <p:badge value="On Call" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" styleClass="p-badge-green" />
@@ -216,14 +223,14 @@
                                                         update="pnlActionButton pnlAct">
                                                         <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                                     </p:commandButton>
-                                                   
+
                                                 </div>
                                             </h:panelGroup>
 
                                         </div>
                                     </div>
                                 </div>
-                                
+
                             </div>
                             <p:dialog header="Manage Booking" widgetVar="dlg2" modal="true" height="200" width="500">
                                 <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
