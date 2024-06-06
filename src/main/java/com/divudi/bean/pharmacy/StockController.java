@@ -431,10 +431,8 @@ public class StockController implements Serializable {
         Date doeStart = today.getTime();
         Date doeEnd = shortExpiryDate.getTime();
         
-        System.out.println("daysToMarkAsExpiaring = " + daysToMarkAsExpiaring);
         if (inputShortExpiaryDate == null) {
             inputShortExpiaryDate = doeEnd;
-            System.out.println("doe = " + doeEnd);
         }
         jpql = "select i "
                 + " from Stock i ";
