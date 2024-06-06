@@ -126,11 +126,9 @@
                                                         <div class="m-1">
                                                             <p:badge value="Attend" severity="info" rendered="#{bs.currentlyConsulted and bs.completed eq false}" />
                                                             <p:badge value="Completed" severity="primary" rendered="#{bs.completed}" />
+                                                            <p:badge value="Refunded" class="mx-1" severity="warning" rendered="#{bs.markedToRefund}"  />
                                                         </div>
-                                                        <div class="m-1">
-                                                            <p:badge class="mx-2" value="Refunded" severity="warning" rendered="#{bs.markedToRefund}" />
-                                                            <p:badge value="Canceled" severity="danger" rendered="#{bs.markedToCancel}" />
-                                                        </div>
+                                                       
                                                     </div>
                                                 </h:panelGroup>
                                             </div>
