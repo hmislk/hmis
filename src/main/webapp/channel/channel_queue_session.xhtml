@@ -128,7 +128,7 @@
                                                             <p:badge value="Completed" severity="primary" rendered="#{bs.completed}" />
                                                             <p:badge value="R" class="m-1" severity="warning" rendered="#{bs.markedToRefund}"  />
                                                         </div>
-                                                       
+
                                                     </div>
                                                 </h:panelGroup>
                                             </div>
@@ -166,29 +166,7 @@
                                                         update="pnlAct pnlActionButton">
                                                         <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                                     </p:commandButton>
-
-                                                    <p:commandButton 
-                                                        id="btnComplete"
-                                                        value="Complete"
-                                                        rendered="#{!bs.completed}"
-                                                        disabled="#{!bs.currentlyConsulted}"
-                                                        action="#{bookingController.completeSelectedBillSession()}"
-                                                        icon="fas fa-step-forward"
-                                                        styleClass="ui-button-info w-100"
-                                                        process="btnComplete"
-                                                        update="pnlAct pnlActionButton">
-                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        id="btnCompleteundo"
-                                                        rendered="#{bs.completed}"
-                                                        action="#{bookingController.completeSelectedBillSessionUndo()}"
-                                                        icon="fas fa-undo"
-                                                        styleClass="ui-button-info w-100 mx-1"
-                                                        process="btnCompleteundo"
-                                                        update="pnlAct pnlActionButton">
-                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                                    </p:commandButton>
+-
                                                     <p:commandButton 
                                                         id="btnActions"
                                                         value="Services"
@@ -231,45 +209,53 @@
 
                             </div>
                             <p:dialog header="Manage Booking" widgetVar="dlg2" modal="true" height="200" width="500">
-                                <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
-                                    <div style="box-sizing: border-box;width: 100%;background-color: white;height: 60px" class="my-1 shadow-lg p-1">
-                                        <div class="row d-flex align-items-center">
-                                            <div class="col-3">
-                                                <p:outputLabel class="mx-2" style="font-size: 8pt;font-weight: bold" value="#{activity.name}" />
-                                            </div>
-                                            <div class="col-2 d-flex justify-content-center align-items-center">
-                                                <div class="square-image">
-                                                    <p:graphicImage url="#{activity.imageLink}"
-                                                                    styleClass="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession) ? 'w-75 h-75 img-prominent' : 'w-75 h-75 img-light'}" />
+                                <h:panelGroup id="pnlActivities">
+                                    <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
+                                        <div style="box-sizing: border-box;width: 100%;background-color: white;height: 60px" class="my-1 shadow-lg p-1">
+                                            <div class="row d-flex align-items-center">
+                                                <div class="col-3">
+                                                    <p:outputLabel class="mx-2" style="font-size: 8pt;font-weight: bold" value="#{activity.name}" />
                                                 </div>
-                                            </div>
-                                            <div class="col-7">
-                                                <div class="d-flex justify-content-between">
+                                                <div class="col-2 d-flex justify-content-center align-items-center">
+                                                    <div class="square-image">
+                                                        <p:graphicImage url="#{activity.imageLink}"
+                                                                        styleClass="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession) ? 'w-75 h-75 img-prominent' : 'w-75 h-75 img-light'}" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-7">
+                                                    <div class="d-flex justify-content-between">
 
-                                                    <p:commandButton 
-                                                        value="Mark"
-                                                        ajax="false"
-                                                        action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
-                                                        disabled="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
-                                                        styleClass="ui-button ui-button-primary ui-button-rounded mx-1"/>
-                                                    <p:commandButton 
-                                                        value="Unmark"
-                                                        ajax="false"
-                                                        action="#{bookingController.unmarkActivity(activity, bookingController.selectedBillSession)}"
-                                                        disabled="#{!bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
-                                                        styleClass="ui-button ui-button-secondary ui-button-rounded mx-1"/>
-                                                    <p:commandButton 
-                                                        value="List"
-                                                        action="#{bookingController.navigateToListSessionInstanceActivities(activity, bookingController.selectedSessionInstance)}"
-                                                        styleClass="ui-button ui-button-info ui-button-rounded mx-1"/>
+                                                        <p:commandButton 
+                                                            id="actMark"
+                                                            value="Mark"
+                                                            process="actMark"
+                                                            update=":#{p:resolveFirstComponentWithId('pnlActivities',view).clientId}"
+                                                            action="#{bookingController.markActivity(activity, bookingController.selectedBillSession)}"
+                                                            disabled="#{bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
+                                                            styleClass="ui-button ui-button-primary ui-button-rounded mx-1"/>
+                                                        <p:commandButton 
+                                                            id="actUnMark"
+                                                            value="Unmark"
+                                                            process="actUnMark"
+                                                            update=":#{p:resolveFirstComponentWithId('pnlActivities',view).clientId}"
+                                                            action="#{bookingController.unmarkActivity(activity, bookingController.selectedBillSession)}"
+                                                            disabled="#{!bookingController.getActivityStatus(activity, bookingController.selectedBillSession)}"
+                                                            styleClass="ui-button ui-button-secondary ui-button-rounded mx-1"/>
+                                                        <p:commandButton 
+                                                            value="List"
+                                                            action="#{bookingController.navigateToListSessionInstanceActivities(activity, bookingController.selectedSessionInstance)}"
+                                                            styleClass="ui-button ui-button-info ui-button-rounded mx-1"/>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-
-
-                                </ui:repeat>
-
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <p:commandButton id="apComplete" process="apComplete" update="pnlActionButton pnlAct" action="#{bookingController.completeSelectedBillSession()}" value="Complete" >
+                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                    </p:commandButton>
+                                </f:facet>
                             </p:dialog>
                         </ui:repeat>
                     </h:panelGroup>
