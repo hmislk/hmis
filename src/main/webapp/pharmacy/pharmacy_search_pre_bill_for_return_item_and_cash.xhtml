@@ -39,7 +39,8 @@
                                     class="w-100 ui-button-warning mt-2 mb-3"
                                     value="Search" 
                                     action="#{searchController.createPreBillsForReturn}"/>
-
+                                <h:outputLabel value="Item Name"/>    
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/> 
                                 <h:outputLabel value="Net Total"/>
