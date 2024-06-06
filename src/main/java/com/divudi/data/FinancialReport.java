@@ -196,7 +196,7 @@ public class FinancialReport {
         total += floatReceived;
         System.out.println("Total after adding Float Collected: " + total);
 
-        total += floatHandover;
+        total -= floatHandover;
         System.out.println("Total after adding Float Handover: " + total);
 
         total -= shiftEndFunds;
