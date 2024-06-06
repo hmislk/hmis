@@ -141,6 +141,7 @@
                                                 <div class="d-flex align-items-center">
                                                     <p:commandButton 
                                                         id="btnCall"
+                                                        value="Attend"
                                                         rendered="#{!bs.currentlyConsulted}"
                                                         disabled="#{!bookingController.selectedSessionInstance.started}"
                                                         action="#{bookingController.patientAttend()}"
@@ -163,6 +164,7 @@
 
                                                     <p:commandButton 
                                                         id="btnComplete"
+                                                        value="Complete"
                                                         rendered="#{!bs.completed}"
                                                         disabled="#{!bs.currentlyConsulted}"
                                                         action="#{bookingController.completeSelectedBillSession()}"
@@ -184,6 +186,7 @@
                                                     </p:commandButton>
                                                     <p:commandButton 
                                                         id="btnActions"
+                                                        value="Services"
                                                         disabled="#{!bs.currentlyConsulted}"
                                                         icon="fas fa-cogs"
                                                         styleClass="ui-button-info w-100 mx-1"
@@ -191,29 +194,8 @@
                                                         <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                                     </p:commandButton>
                                                     <p:commandButton 
-                                                        id="btnCancel"
-                                                        disabled="#{!bs.currentlyConsulted}"
-                                                        rendered="#{!bs.markedToCancel}"
-                                                        action="#{bookingController.markToCancel()}"
-                                                        icon="fas fa-times"
-                                                        styleClass="ui-button-info w-100"
-                                                        process="btnRefund"
-                                                        update="pnlActionButton pnlAct">
-                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        id="btnCancelUndo"
-                                                        disabled="#{!bs.currentlyConsulted}"
-                                                        rendered="#{bs.markedToCancel}"
-                                                        action="#{bookingController.markToCancelUndo()}"
-                                                        icon="fas fa-times"
-                                                        styleClass="ui-button-info w-100 mx-1"
-                                                        process="btnCancelUndo"
-                                                        update="pnlActionButton pnlAct">
-                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                                    </p:commandButton>
-                                                    <p:commandButton 
                                                         id="btnRefund"
+                                                        value="Refund"
                                                         disabled="#{!bs.currentlyConsulted}"
                                                         rendered="#{!bs.markedToRefund}"
                                                         action="#{bookingController.markToRefund()}"
@@ -234,16 +216,7 @@
                                                         update="pnlActionButton pnlAct">
                                                         <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                                                     </p:commandButton>
-                                                    <p:commandButton 
-                                                        id="btnReset"
-                                                        disabled="#{!bs.currentlyConsulted}"
-                                                        action="#{bookingController.resetBillSession()}"
-                                                        icon="fas fa-sync-alt"
-                                                        styleClass="ui-button-info w-100"
-                                                        process="btnReset"
-                                                        update="pnlActionButton pnlAct">
-                                                        <f:setPropertyActionListener target="#{bookingController.fillBillSessions()}" value="#{bs}"/>
-                                                    </p:commandButton>
+                                                   
                                                 </div>
                                             </h:panelGroup>
 
