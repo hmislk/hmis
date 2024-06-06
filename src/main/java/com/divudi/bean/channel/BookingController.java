@@ -524,6 +524,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return null;
         }
         fillBillSessions();
+        selectedBillSession = null;
         fillSessionActivities();
         return "/channel/channel_queue_session?faces-redirect=true";
     }

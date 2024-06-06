@@ -93,170 +93,164 @@
                     <h:panelGroup id="lstBillSessions">
                         <ui:repeat value="#{bookingController.billSessions}" var="bs">
                             <div class="card p-2 my-1">
-                                <div class="d-flex align-items-center justify-content-between ">
-                                    <div class="d-flex align-items-center">
-                                        <div style="box-sizing: border-box;width: 35px;height: 35px;border: 2px solid black;border-radius: 50%;" class="d-flex align-items-center justify-content-center mx-2 bg-dark">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <div class="d-flex align-items-center">
+                                            <div style="box-sizing: border-box;width: 35px;height: 35px;border: 2px solid black;border-radius: 50%;" class="d-flex align-items-center justify-content-center mx-2 bg-dark">
+                                                <div>
+                                                    <h5 class="text-white">#{bs.serialNo}</h5>
+                                                </div>
+                                            </div>
+                                            <div class="mx-2">
+                                                <h4>#{bs.bill.patient.person.nameWithTitle}</h4>
+                                            </div>
+                                            <div class="mx-4">
+                                                <p:badge value="Credit" severity="light" rendered="#{bs.bill.paidAmount eq 0}" styleClass="p-badge-green mx-1" />
+                                                <p:badge value="On Call" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" styleClass="p-badge-green" />
+                                                <p:badge value="Staff" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" styleClass="p-badge-green" />
+                                                <p:badge value="Paid" class="mx-1" severity="success" rendered="#{bs.bill.paidAmount ne 0}" />
+                                                <p:badge value="Agent" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" />
+                                                <p:badge value="On Call" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" />
+                                                <p:badge value="Staff" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" />
+                                            </div>
                                             <div>
-                                                <h5 class="text-white">#{bs.serialNo}</h5>
+                                                <h:panelGroup id="pnlAct">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="mx-4">
+                                                            <p:badge value="Attend" severity="info" rendered="#{bs.currentlyConsulted and bs.completed eq false}" />
+                                                            <p:badge value="Completed" severity="primary" rendered="#{bs.completed}" />
+                                                        </div>
+                                                        <div class="mx-4">
+                                                            <p:badge class="mx-2" value="Refunded" severity="warning" rendered="#{bs.markedToRefund}" />
+                                                            <p:badge value="Canceled" severity="danger" rendered="#{bs.markedToCancel}" />
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
                                             </div>
                                         </div>
-                                        <div class="mx-2">
-                                            <h4>#{bs.bill.patient.person.nameWithTitle}</h4>
-                                        </div>
-                                        <div class="mx-4">
-                                            <p:badge value="Credit" severity="light" rendered="#{bs.bill.paidAmount eq 0}" styleClass="p-badge-green mx-1" />
-                                            <p:badge value="On Call" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" styleClass="p-badge-green" />
-                                            <p:badge value="Staff" severity="light" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" styleClass="p-badge-green" />
-                                            <p:badge value="Paid" class="mx-1" severity="success" rendered="#{bs.bill.paidAmount ne 0}" />
-                                            <p:badge value="Agent" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" />
-                                            <p:badge value="On Call" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" />
-                                            <p:badge value="Staff" severity="success" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" />
-                                        </div>
+                                    </div>
+                                    <div class="col-4">
                                         <div>
-                                            <h:panelGroup id="pnlAct">
+                                            <h:panelGroup id="pnlActionButton" class="w-100 bg-danger">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="mx-4">
-                                                        <p:badge value="Attend" severity="info" rendered="#{bs.currentlyConsulted and bs.completed eq false}" />
-                                                        <p:badge value="Completed" severity="primary" rendered="#{bs.completed}" />
-                                                    </div>
-                                                    <div class="mx-4">
-                                                        <p:badge class="mx-2" value="Refunded" severity="warning" rendered="#{bs.markedToRefund}" />
-                                                        <p:badge value="Canceled" severity="danger" rendered="#{bs.markedToCancel}" />
-                                                    </div>
+                                                    <p:commandButton 
+                                                        id="btnCall"
+                                                        rendered="#{!bs.currentlyConsulted}"
+                                                        disabled="#{!bookingController.selectedSessionInstance.started}"
+                                                        action="#{bookingController.patientAttend()}"
+                                                        icon="fas fa-clipboard-user"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnCall"
+                                                        update="pnlAct pnlActionButton">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnCallundo"
+                                                        rendered="#{bs.currentlyConsulted}"
+                                                        action="#{bookingController.patientAttendUndo()}"
+                                                        icon="fas fa-undo"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnCallundo"
+                                                        update="pnlAct pnlActionButton">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+
+                                                    <p:commandButton 
+                                                        id="btnComplete"
+                                                        rendered="#{!bs.completed}"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        action="#{bookingController.completeSelectedBillSession()}"
+                                                        icon="fas fa-step-forward"
+                                                        styleClass="ui-button-info w-100"
+                                                        process="btnComplete"
+                                                        update="pnlAct pnlActionButton">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnCompleteundo"
+                                                        rendered="#{bs.completed}"
+                                                        action="#{bookingController.completeSelectedBillSessionUndo()}"
+                                                        icon="fas fa-undo"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnCompleteundo"
+                                                        update="pnlAct pnlActionButton">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnActions"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        icon="fas fa-cogs"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        onclick="PF('dlg2').show();">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnCancel"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        rendered="#{!bs.markedToCancel}"
+                                                        action="#{bookingController.markToCancel()}"
+                                                        icon="fas fa-times"
+                                                        styleClass="ui-button-info w-100"
+                                                        process="btnRefund"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnCancelUndo"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        rendered="#{bs.markedToCancel}"
+                                                        action="#{bookingController.markToCancelUndo()}"
+                                                        icon="fas fa-times"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnCancelUndo"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnRefund"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        rendered="#{!bs.markedToRefund}"
+                                                        action="#{bookingController.markToRefund()}"
+                                                        icon="fas fa-dollar-sign"
+                                                        styleClass="ui-button-info w-100 mx-1"
+                                                        process="btnRefund"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnRefundUndo"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        rendered="#{bs.markedToRefund}"
+                                                        action="#{bookingController.markToRefundUndo()}"
+                                                        icon="fas fa-dollar-sign"
+                                                        styleClass="ui-button-info w-100"
+                                                        process="btnRefundUndo"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        id="btnReset"
+                                                        disabled="#{!bs.currentlyConsulted}"
+                                                        action="#{bookingController.resetBillSession()}"
+                                                        icon="fas fa-sync-alt"
+                                                        styleClass="ui-button-info w-100"
+                                                        process="btnReset"
+                                                        update="pnlActionButton pnlAct">
+                                                        <f:setPropertyActionListener target="#{bookingController.fillBillSessions()}" value="#{bs}"/>
+                                                    </p:commandButton>
                                                 </div>
                                             </h:panelGroup>
+
                                         </div>
-
-
-
-                                        <div>
-                                            <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                                        </div>
-                                        <div>
-                                            <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h:panelGrid id="pnlActionButton" columns="8">
-                                            <p:commandButton 
-                                                id="btnCall"
-                                                value="Attend"
-                                                rendered="#{!bs.currentlyConsulted}"
-                                                disabled="#{!bookingController.selectedSessionInstance.started}"
-                                                action="#{bookingController.patientAttend()}"
-                                                icon="fas fa-clipboard-user"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnCall"
-                                                update="pnlAct pnlActionButton">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnCallundo"
-                                                value="undo"
-                                                rendered="#{bs.currentlyConsulted}"
-                                                action="#{bookingController.patientAttendUndo()}"
-                                                icon="fas fa-undo"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnCallundo"
-                                                update="pnlAct pnlActionButton">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                id="btnComplete"
-                                                value="Complete" 
-                                                rendered="#{!bs.completed}"
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                action="#{bookingController.completeSelectedBillSession()}"
-                                                icon="fas fa-step-forward"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnComplete"
-                                                update="pnlAct pnlActionButton">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnCompleteundo"
-                                                rendered="#{bs.completed}"
-                                                value="Undo" 
-                                                action="#{bookingController.completeSelectedBillSessionUndo()}"
-                                                icon="fas fa-undo"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnCompleteundo"
-                                                update="pnlAct pnlActionButton">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnActions"
-                                                value="Actions" 
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                icon="fas fa-cogs"
-                                                styleClass="ui-button-info w-100"
-                                                onclick="PF('dlg2').show();">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnCancel"
-                                                value="Mark to Cancel" 
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                action="#{bookingController.markToCancel()}"
-                                                rendered="#{!bs.markedToCancel}"
-                                                icon="fas fa-times"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnRefund"
-                                                update="pnlActionButton pnlAct">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnCancelUndo"
-                                                value="undo" 
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                action="#{bookingController.markToCancelUndo()}"
-                                                rendered="#{bs.markedToCancel}"
-                                                icon="fas fa-times"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnCancelUndo"
-                                                update="pnlActionButton pnlAct">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnRefund"
-                                                value="Mark as Refund" 
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                action="#{bookingController.markToRefund()}"
-                                                rendered="#{!bs.markedToRefund}"
-                                                icon="fas fa-dollar-sign"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnRefund"
-                                                update="pnlActionButton pnlAct">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnRefundUndo"
-                                                value="undo" 
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                action="#{bookingController.markToRefundUndo()}"
-                                                rendered="#{bs.markedToRefund}"
-                                                icon="fas fa-dollar-sign"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnRefundUndo"
-                                                update="pnlActionButton pnlAct">
-                                                <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnReset"
-                                                value="Reset" 
-                                                disabled="#{!bs.currentlyConsulted}"
-                                                action="#{bookingController.resetBillSession()}"
-                                                icon="fas fa-sync-alt"
-                                                styleClass="ui-button-info w-100"
-                                                process="btnReset"
-                                                update="pnlActionButton pnlAct">
-                                                <f:setPropertyActionListener target="#{bookingController.fillBillSessions()}" value="#{bs}"/>
-                                            </p:commandButton>
-                                        </h:panelGrid>
-
                                     </div>
                                 </div>
+                                
                             </div>
                             <p:dialog header="Manage Booking" widgetVar="dlg2" modal="true" height="200" width="500">
                                 <ui:repeat value="#{bookingController.selectedAppointmentActivities}" var="activity" >
