@@ -4067,7 +4067,7 @@ public class SearchController implements Serializable {
         String sql;
         HashMap tmp = new HashMap();
         
-        sql = "Select bi.bill From BillItem bi"
+        sql = "Select DISTINCT(bi.bill) From BillItem bi"
                 + " where bi.retired=false and bi.bill.billType= :bTp "
                 + " and bi.bill.institution=:ins "
                 + " and bi.createdAt between :fromDate and :toDate ";
@@ -4126,7 +4126,7 @@ public class SearchController implements Serializable {
         String sql;
         HashMap tmp = new HashMap();
 
-        sql = "Select bi.bill From BillItem bi"
+        sql = "Select DISTINCT(bi.bill) From BillItem bi"
                 + " where bi.retired=false and bi.bill.billType= :bTp "
                 + " and bi.createdAt between :fromDate and :toDate ";
 //        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
@@ -5764,25 +5764,30 @@ public class SearchController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from PreBill b where b.billType = :billType and "
-                + " b.institution=:ins and (b.billedBill is null) and "
-                + " b.department=:dept and "
-                + " b.referenceBill.billType=:refBillType "
-                + " and b.createdAt between :fromDate and :toDate and b.retired=false "
+        sql = "select DISTINCT(bi.bill) from BillItem bi where bi.bill.billType = :billType and "
+                + " bi.bill.institution=:ins and (bi.bill.billedBill is null) and "
+                + " bi.bill.department=:dept and "
+                + " bi.bill.referenceBill.billType=:refBillType "
+                + " and bi.createdAt between :fromDate and :toDate and bi.bill.retired=false "
                 // for remove cancel bills
-                + " and b.referenceBill.cancelled=false ";
+                + " and bi.bill.referenceBill.cancelled=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.deptId) like :billNo )";
+            sql += " and  ((bi.bill.deptId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((bi.bill.netTotal) like :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  ((bi.item.name) like :item )";
+            temMap.put("item", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
 
-        sql += " order by b.createdAt desc  ";
+        sql += " order by bi.createdAt desc  ";
 
         temMap.put("billType", billType);
         temMap.put("refBillType", refBillType);
@@ -5791,7 +5796,7 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("dept", getSessionController().getLoggedUser().getDepartment());
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
 
