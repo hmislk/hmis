@@ -100,20 +100,31 @@
                                         <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                                     </p:column>
                                     <p:column headerText="Actions">
-                                        <p:commandButton 
-                                            icon="pi pi-user-plus" 
-                                            title="OPD" 
-                                            ajax="false" 
-                                            action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
-                                            class="ui-button-text-icon-left mx-1">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            icon="pi pi-cog" 
-                                            title="Manage Booking" 
-                                            ajax="false" 
-                                            action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                            class="ui-button-text-icon-left mx-1">
-                                        </p:commandButton>
+                                        <div class="d-flex">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-book" 
+                                                title="Past Channel Bookings"
+                                                class="ui-button-secondary"
+                                                action="#{patientController.navigateToPatientPastChannelBiiking()}"
+                                                ajax="false">
+                                                <f:setPropertyActionListener target="#{patientController.patient}" value="#{bs.bill.patient}"/>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="pi pi-user-plus" 
+                                                title="OPD" 
+                                                ajax="false" 
+                                                action="#{bookingControllerViewScope.navigateToOpdBilling(bs)}" 
+                                                class="ui-button-secondary mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                icon="pi pi-cog" 
+                                                title="Manage Booking" 
+                                                ajax="false" 
+                                                action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                class="ui-button-secondary ">
+                                            </p:commandButton>
+
+                                        </div>
                                         <h:panelGroup rendered="#{bs.markedToCancel}">
                                             <i class="fas fa-ban text-danger" title="Cancel"></i>
                                         </h:panelGroup>
@@ -291,10 +302,10 @@
                                                     <h:outputLabel value="Base Fee" ></h:outputLabel>
                                                 </f:facet>
                                                 <p:outputLabel value="Session Value - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.total}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.total}"/>
 
                                                 <p:outputLabel value="Session Value for Foreigners - "/>
-                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.totalForForeigner}"/>
+                                                <p:outputLabel value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.totalForForeigner}"/>
 
                                             </p:panelGrid>
 
@@ -302,7 +313,7 @@
 
 
                                             <h:panelGrid columns="1">
-                                                <p:dataTable value="#{channelScheduleController.itemFees}" var="i" >
+                                                <p:dataTable value="#{bookingControllerViewScope.selectedItemFees}" var="i" >
                                                     <p:column headerText="Name">
                                                         <h:outputLabel value="#{i.name}"/> 
                                                     </p:column>

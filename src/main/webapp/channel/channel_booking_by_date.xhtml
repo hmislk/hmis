@@ -244,6 +244,7 @@
                                 <div class="col-5" > 
                                     <div class="sticky-top shadow " style="max-height: 100vh; overflow-y: auto;z-index: 100;">
                                         <common:patient_details_view_scope
+                                            editable="#{true}"
                                             controller="#{bookingControllerViewScope}"/>
 
                                         <p:panel class="my-1">
@@ -558,7 +559,7 @@
                                                 <p:row
                                                     class="row my-1 w-100" rendered="#{bookingControllerViewScope.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                     >
-                                                    <pa:multiple_payment_methods paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" controller="#{bookingControllerViewScope}" class="w-100"/>
+                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
 
                                                 </p:row>
 
@@ -904,7 +905,9 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{bookingControllerViewScope.departmentPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.printingBill}" payments="#{bookingControllerViewScope.payments}"/> 
-            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
                                             </h:panelGroup>
                                         </ui:repeat>
                                     </h:panelGroup>

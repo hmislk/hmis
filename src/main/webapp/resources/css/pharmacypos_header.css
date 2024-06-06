@@ -1,0 +1,379 @@
+@font-face {
+    font-family: 'VRC';
+    src: url('../fonts/VRC.ttf') format('truetype');
+    /* Add other font properties like font-weight, font-style if necessary */
+}
+
+@media print{
+    .posbillheader{
+        position: relative!important;
+        margin-top: -0.5cm!important;
+        width: 100%;
+        padding: 0px!important;
+        margin: 0px!important;
+        border: none!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+        /*        font:*/
+        font-size: 12px!important;
+        /*        text-transform: uppercase!important;*/
+
+
+    }
+
+    .fiveinchbill1{
+        position: relative!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        /*        border: 1px solid!important;*/
+        font-size: 130%;
+        text-transform: capitalize!important;
+
+    }
+
+    .channelRecipt_24_2x9_31{
+        position: relative!important;
+        padding: 5px!important;
+        width: 24.2cm!important;
+        height: 9.3cm!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        /*        border: 1px solid!important;*/
+        text-transform: capitalize!important;
+    }
+
+    .channelCoop1{
+
+        border: 1px solid!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 9.5cm!important;
+
+        margin: auto!important;
+    }
+
+    .posbillBreak1{
+        position: relative!important;
+        margin-top: -2cm!important;
+        width: 100%;
+        padding: 0px!important;
+        margin: 0px!important;
+        border: none!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+        /*        font:*/
+        font-size: 11px!important;
+        /*        text-transform: uppercase!important;*/
+        page-break-after:always!important;
+
+    }
+
+    /*    .billDetails1{
+            text-align: center!important;   
+            font-size: 9px!important;
+            font-family:Arial, Helvetica, sans-serif!important;
+        }*/
+
+    .a4bill1{
+        page-break-after:always!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 100%;
+
+    }
+
+    .institutionName1{
+        text-align: center!important;
+        font-weight: bold!important;
+        font-size: 20px!important;
+        font-weight: bolder;
+        font-family: 'VRC', Arial, sans-serif!important;
+        text-transform: capitalize!important;
+
+    }
+
+    .institutionContact1{
+        position: relative!important;
+        text-align: center!important;
+        font-size: 12px!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+    }
+
+    .billDetails1{
+        text-align: center!important;
+        font-size: 12px!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+    }
+    .channelNumber1{
+        font-size: 50px!important;
+    }
+
+}
+
+
+@media screen{
+    .fiveinchbill{
+        position: relative!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        border: 1px solid!important;
+        font-size: 100%!important;
+        text-transform: capitalize!important;
+
+    }
+    
+    .posbillheader{
+        position: relative!important;
+
+        width:400px!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        border: 1px solid!important;
+        font-size: 100%;
+
+        font-size: 11px!important;
+        page-break-after:always!important;
+    }
+
+    .posbillBreak1{
+        position: relative!important;
+
+        width:400px!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        border: 1px solid!important;
+        font-size: 100%;
+
+        font-size: 11px!important;
+        page-break-after:always!important;
+
+    }
+
+    .channelRecipt_24_2x9_31{
+        position: relative!important;
+        padding: 5px!important;
+        width: 24.2cm!important;
+        height: 9.3cm!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        border: 1px solid!important;
+        text-transform: capitalize!important;
+    }
+
+    .channelCoop1{
+        position: relative!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        border: 1px solid!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 9.5cm!important;
+
+        margin: auto!important;
+        background-size: 100% auto!important;
+    }
+
+    .posbillBreak1{
+        position: relative!important;
+
+        width:400px!important;
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        border: 1px solid!important;
+        font-size: 100%;
+
+        font-size: 11px!important;
+        page-break-after:always!important;
+
+    }
+
+    .a4bill1{
+
+        font-family: 'VRC', Arial, sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px auto!important;
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 100%;
+        border: 1px solid!important;
+        page-break-after: always;
+    }
+
+
+    .institutionName1{
+        text-align: center!important;
+        font-weight: bold!important;
+        font-size: 20px!important;
+        font-weight: bolder;
+        font-family: 'VRC', Arial, sans-serif!important;
+
+    }
+
+    .institutionContact1{
+        position: relative!important;
+        text-align: center!important;
+        font-size: 12px!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+    }
+
+    .billDetails1{
+        text-align: center!important;
+        font-size: 12px!important;
+        font-family: 'VRC', Arial, sans-serif!important;
+    }
+
+}
+
+
+
+.institutionContact1{
+    position: relative!important;
+    text-align: center!important;
+    font-size: 12px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
+
+.billDetails1{
+    text-align: center!important;
+    font-size: 12px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
+
+.billDetailsFiveFiveBHT1{
+    text-align: center!important;
+    font-size: 10px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
+
+
+.headingBillFiveFiveBHT1{
+    text-align: center!important;
+    font-weight: bold!important;
+    font-size: 12px!important;
+    font-weight: bold;
+}
+
+.billDetailsFiveFive1{
+    font-size: 14px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
+
+.itemHeadings1{
+    text-align: center!important;
+    font-size: 13px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+    font-weight: bold;
+}
+
+.itemHeadingsFiveFive1{
+
+    font-size: 15px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+    font-weight: bold;
+}
+
+.itemsBlock1{
+    text-align: center!important;
+    font-size: 13px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+    text-transform: capitalize!important;
+}
+
+
+itemsBlockRight1{
+    text-align: right!important;
+    font-size: 13px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+    text-transform: capitalize!important;
+    padding-right: 30px;
+}
+
+
+.itemsBlockRightFiveFive1{
+    text-align: right!important;
+    font-size: 12px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+    text-transform: capitalize!important;
+    padding-right: 30px;
+}
+.footer1{
+    text-align: center!important;
+    font-size: 12px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+
+}
+
+.billline1{
+    text-align: center!important;
+    overflow: hidden;
+    padding: 0px!important;
+}
+
+.bhtNoPharmacy1{
+    position: absolute;
+    margin-top: 50px;
+    margin-right: 30px;
+}
+
+.headingBill1{
+    text-align: center!important;
+    font-weight: bold!important;
+    font-size: 12px!important;
+    font-weight: bold;
+}
+
+.headingBillFiveFive1{
+    text-align: center!important;
+    font-weight: bold!important;
+    font-size: 18px!important;
+    font-weight: bold;
+    padding: 0px!important;
+}
+
+.poDetail1{
+    font-size: 11px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+    min-width: 100%!important;
+}
+
+.totalsBlock1{
+    font-size: 15px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
+
+.totalsItemBlock1{
+    font-size: 14px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
+
+.totalsBlockFiveFiveNo11{
+    font-size: 10px!important;
+    font-family: 'VRC', Arial, sans-serif!important;
+}
