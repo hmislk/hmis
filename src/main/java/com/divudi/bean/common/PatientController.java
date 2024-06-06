@@ -1496,7 +1496,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPatientList = getFacade().findByJpql(j, m);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
-            controller.setPatientDetailsEditable(true);
             controller.setPatient(null);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
             controller.getPatient().setMobileNumberStringTransient(quickSearchPhoneNumber);

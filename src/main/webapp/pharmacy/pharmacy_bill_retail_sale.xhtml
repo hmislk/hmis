@@ -442,7 +442,7 @@
                                                                         layout="block" 
                                                                         id="multiplePaymentMethods"  rendered="#{pharmacySaleController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                                         >
-                                                                        <pa:multiple_payment_methods paymentMethodData="#{pharmacySaleController.paymentMethodData}" class="w-100" controller="#{pharmacySaleController}"/>
+                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacySaleController}"/>
 
                                                                     </h:panelGroup>
 
@@ -597,6 +597,7 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
+                            
 
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                 <div >
@@ -613,7 +614,15 @@
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>                            
-
+                            
+                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_Header bill="#{pharmacySaleController.printBill}"></phi:saleBill_Header>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>  
+                            
                         </h:panelGroup>                     
 
 

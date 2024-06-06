@@ -10,8 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
-        <cc:attribute name="controller" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -19,7 +18,7 @@
         <div class="col-12" >
             <p:dataTable class="w-100"
                          id="tblMultiplePayments"
-                         value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" 
+                         value="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" 
                          var="pm" >
                 <p:column class="w-100">
                     <f:facet name="header" class="d-flex justify-content-center" >
@@ -33,13 +32,15 @@
                                     actionListener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
                                     icon="fas fa-plus" process="@this"
                                     update="tblMultiplePayments" 
-                                    action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
+                                    action="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
                                 </p:commandButton>
                             </div>
-                            <p:outputLabel id="bl" value="Balance Amount - #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
-                                           style="color: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" />
+                            <p:outputLabel id="bl"  value="Balance Amount - #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
+                                           style="color: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" >
+                            </p:outputLabel>
+                            
 
-
+                            <p:commandButton icon="fas fa-arrows-rotate" process="@this" update="tblMultiplePayments"/>
                         </div>
 
 
@@ -58,7 +59,8 @@
                                         itemValue="#{pm1}"/>
                                     <p:ajax process="pay" 
                                             update="paymentDetails"
-                                            event="change"/>
+                                            event="change"
+                                            listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  />
                                 </p:selectOneMenu>
                                  <p:commandButton 
                                     class="mx-2 ui-button-danger" 
@@ -66,7 +68,7 @@
                                     icon="fas fa-times" 
                                     process="@this"
                                     update="tblMultiplePayments" 
-                                    action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.removePaymentDetail(pm)}" >
+                                    action="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.removePaymentDetail(pm)}" >
                                 </p:commandButton>
                             </div>
                     </div>

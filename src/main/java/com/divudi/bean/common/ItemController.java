@@ -405,7 +405,7 @@ public class ItemController implements Serializable {
         allItems = null;
         return "/item/reports/item_list";
     }
-    
+
     public String navigateToEditFeaturesOfMultipleItems() {
         return "/admin/items/multiple_item_edit";
     }
@@ -906,7 +906,7 @@ public class ItemController implements Serializable {
             }
         }
     }
-    
+
     public void markSelectedItemsFeesChangableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -918,7 +918,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
     }
-    
+
     public void markSelectedItemsAsDiscountableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -930,30 +930,54 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
     }
-    
-    public void unmarkSelectedItemsFeesChangableAtBilling() {
-    if (selectedList == null || selectedList.isEmpty()) {
-        JsfUtil.addErrorMessage("Nothing is selected");
-        return;
-    }
-    for (Item i : selectedList) {
-        i.setUserChangable(false);
-        itemFacade.edit(i);
-    }
-    JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
-}
 
-public void unmarkSelectedItemsAsDiscountableAtBilling() {
-    if (selectedList == null || selectedList.isEmpty()) {
-        JsfUtil.addErrorMessage("Nothing is selected");
-        return;
+    public void unmarkSelectedItemsFeesChangableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setUserChangable(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked as Fees Changable at Billing");
     }
-    for (Item i : selectedList) {
-        i.setDiscountAllowed(false);
-        itemFacade.edit(i);
+
+    public void unmarkSelectedItemsAsDiscountableAtBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setDiscountAllowed(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked as Discountable at Billing");
     }
-    JsfUtil.addSuccessMessage("All Unmarked as Discountable at Billing");
-}
+
+    public void markSelectedItemsForPrintSeparateFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintFeesForBills(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked for Print Separate Fees");
+    }
+
+    public void unMarkSelectedItemsForPrintSeparateFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setPrintFeesForBills(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
+    }
 
     public void updateSelectedItemFees() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1651,38 +1675,76 @@ public void unmarkSelectedItemsAsDiscountableAtBilling() {
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=MedicalPackage "
                     + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
 
     }
-    
+
     public List<Item> completeAllServicesAndInvestigations(String query) {
         List<Item> suggestions;
-        HashMap m = new HashMap();
+        HashMap<String, Object> m = new HashMap<>();
         String sql;
-        if (query == null) {
+        String[] keywords = null;
+
+        if (query == null || query.trim().isEmpty()) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Item c "
-                    + " where c.retired=false "
-                    + " and type(c)!=:pac "
-                    + " and (type(c)=:ser "
-                    + " or type(c)=:inv"
-                    + " or type(c)=:ward "
-                    + " or type(c)=:the)  "
-                    + " and (c.name) like :q"
-                    + " order by c.name";
+            keywords = query.trim().toLowerCase().split("\\s+");
+
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("select c from Item c ")
+                    .append("where c.retired = false ")
+                    .append("and type(c) != :pac ")
+                    .append("and (type(c) = :ser ")
+                    .append("or type(c) = :inv ")
+                    .append("or type(c) = :ward ")
+                    .append("or type(c) = :the) ");
+
+            for (int i = 0; i < keywords.length; i++) {
+                if (i == 0) {
+                    sqlBuilder.append("and (");
+                } else {
+                    sqlBuilder.append(" or ");
+                }
+                sqlBuilder.append("upper(c.name) like :q").append(i);
+                m.put("q" + i, "%" + keywords[i].toUpperCase() + "%");
+            }
+            sqlBuilder.append(") order by c.name");
+
+            sql = sqlBuilder.toString();
+
             m.put("pac", Packege.class);
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
             m.put("ward", InwardService.class);
             m.put("the", TheatreService.class);
-            m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql, m, 20);
+            suggestions = getFacade().findByJpql(sql, m);
+
         }
+
+        if (suggestions != null && !suggestions.isEmpty()) {
+            List<Item> filteredSuggestions = new ArrayList<>();
+            for (Item suggestion : suggestions) {
+                String itemName = (suggestion.getName() != null) ? suggestion.getName().toLowerCase() : "";
+                String departmentName = (suggestion.getDepartment() != null && suggestion.getDepartment().getName() != null)
+                        ? suggestion.getDepartment().getName().toLowerCase() : "";
+
+                boolean matchesAll = true;
+                for (String keyword : keywords) {
+                    if (!itemName.contains(keyword) && !departmentName.contains(keyword)) {
+                        matchesAll = false;
+                        break;
+                    }
+                }
+
+                if (matchesAll) {
+                    filteredSuggestions.add(suggestion);
+                }
+            }
+            suggestions = filteredSuggestions;
+        }
+
         return suggestions;
     }
 
@@ -1713,8 +1775,6 @@ public void unmarkSelectedItemsAsDiscountableAtBilling() {
         }
         return suggestions;
     }
-    
-    
 
     public void fillItemsForInward() {
         HashMap m = new HashMap();

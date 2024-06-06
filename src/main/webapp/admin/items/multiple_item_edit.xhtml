@@ -18,7 +18,7 @@
                     </f:facet>
 
                     <h:panelGrid columns="1" styleClass="alignTop" >
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="4" >
                             <!-- Make Selected Items' Fees Changeable at Billing -->
                             <p:commandButton ajax="false" 
                                              value="Make Selected Items' Fees Changable at Billing"
@@ -47,7 +47,20 @@
                             <p:commandButton ajax="false" 
                                              value="Unmark Selected Items Discountable at Billing"
                                              action="#{itemController.unmarkSelectedItemsAsDiscountableAtBilling}"
-                                             icon="pi pi-minus-square" 
+                                             icon="pi pi-times-circle" 
+                                             styleClass="ui-button-danger">
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             value="Mark Selected Items for Print Separate Fees"
+                                             action="#{itemController.markSelectedItemsForPrintSeparateFees()}"
+                                             icon="pi pi-check-square" 
+                                             styleClass="ui-button-success">
+                            </p:commandButton>
+                            
+                            <p:commandButton ajax="false" 
+                                             value="Unmark Selected Items for Print Separate Fees"
+                                             action="#{itemController.unMarkSelectedItemsForPrintSeparateFees()}"
+                                             icon="pi pi-times-circle"  
                                              styleClass="ui-button-danger">
                             </p:commandButton>
 

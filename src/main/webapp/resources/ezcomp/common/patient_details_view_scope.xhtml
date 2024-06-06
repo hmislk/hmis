@@ -11,6 +11,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatientViewScope"/>
+        <cc:attribute name="editable" type="java.lang.Boolean"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -36,7 +37,7 @@
                                 value="Searched Patient Details" 
                                 class="mx-2"
                                 ></h:outputText>
-                            <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" id="edit" >
+                            <h:panelGroup id="edit" >
                                 <p:selectBooleanButton 
                                     value="#{cc.attrs.controller.patientDetailsEditable}" 
                                     offIcon="pi pi-pencil" 
