@@ -838,9 +838,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
             settleSucessFully = false;
             return;
         }
-        
-        if(paymentMethod == PaymentMethod.OnCall){
-            if(selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true){
+
+        if (paymentMethod == PaymentMethod.OnCall) {
+            if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true) {
                 JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
                 settleSucessFully = false;
                 return;
@@ -1657,6 +1657,20 @@ public class BookingController implements Serializable, ControllerWithPatient {
         JsfUtil.addErrorMessage("Marked to Cancelled");
     }
 
+    public void markToCancelUndo() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return;
+        }
+        if (Boolean.TRUE.equals(selectedBillSession.getMarkedToRefund())) {
+            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            return;
+        }
+        selectedBillSession.setMarkedToCancel(false);
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Cancelled");
+    }
+
     public void markToCancelReversed() {
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -1687,6 +1701,21 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedBillSession.setMarkedToRefund(true);
         selectedBillSession.setMarkedToRefundAt(new Date());
         selectedBillSession.setMarkedToRefundBy(sessionController.getLoggedUser());
+        billSessionFacade.edit(selectedBillSession);
+        JsfUtil.addErrorMessage("Marked to Refund");
+    }
+
+    public void markToRefundUndo() {
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Nothing to refund");
+            return;
+        }
+        if (Boolean.TRUE.equals(selectedBillSession.getMarkedToCancel())) {
+            JsfUtil.addErrorMessage("Cannot cancel a session marked for refund.");
+            return;
+        }
+
+        selectedBillSession.setMarkedToRefund(false);
         billSessionFacade.edit(selectedBillSession);
         JsfUtil.addErrorMessage("Marked to Refund");
     }
@@ -1806,6 +1835,131 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setCurrentlyConsultingBillSession(currentSession);
         sessionInstanceFacade.edit(selectedSessionInstance);
 
+    }
+
+    //////// NEW
+    public void patientAttend() {
+        if (selectedBillSession == null) {
+            return;
+        }
+
+        List<BillSession> validBillSessions = getValidBillSessions();
+        if (validBillSessions == null) {
+            System.out.println("Valid bill sessions list is null");
+            return;
+        }
+
+        int selectedBillSessionIndex = -1; // Initialize with a default value
+        for (int i = 0; i < validBillSessions.size(); i++) {
+            if (validBillSessions.get(i).equals(selectedBillSession)) {
+                selectedBillSessionIndex = i;
+                break;
+            }
+        }
+
+        if (selectedBillSessionIndex != -1) {
+            selectedBillSession.setCurrentlyConsulted(true);
+            billSessionFacade.edit(selectedBillSession);
+
+            selectedSessionInstance.setCurrentlyConsultingBillSession(selectedBillSession);
+            int nextInLineIndex = selectedBillSessionIndex + 1;
+            if (nextInLineIndex < validBillSessions.size()) {
+                selectedSessionInstance.setNextInLineBillSession(validBillSessions.get(nextInLineIndex));
+            }
+
+            sessionInstanceFacade.edit(selectedSessionInstance);
+        } else {
+            System.out.println("Selected bill session not found in the valid sessions list");
+        }
+    }
+
+    public void patientAttendUndo() {
+        if (selectedBillSession == null) {
+            return;
+        }
+
+        List<BillSession> validBillSessions = getValidBillSessions();
+        if (validBillSessions == null) {
+            System.out.println("Valid bill sessions list is null");
+            return;
+        }
+
+        int selectedBillSessionIndex = -1; // Initialize with a default value
+        for (int i = 0; i < validBillSessions.size(); i++) {
+            if (validBillSessions.get(i).equals(selectedBillSession)) {
+                selectedBillSessionIndex = i;
+                break;
+            }
+        }
+
+        if (selectedBillSessionIndex != -1) {
+            selectedBillSession.setCurrentlyConsulted(false);
+            billSessionFacade.edit(selectedBillSession);
+
+            selectedSessionInstance.setCurrentlyConsultingBillSession(selectedBillSession);
+            int nextInLineIndex = -1;
+            nextInLineIndex = selectedBillSessionIndex + 1;
+            if (nextInLineIndex < validBillSessions.size()) {
+                selectedSessionInstance.setNextInLineBillSession(validBillSessions.get(nextInLineIndex));
+            }
+
+            sessionInstanceFacade.edit(selectedSessionInstance);
+
+        } else {
+            System.out.println("Selected bill session not found in the valid sessions list");
+        }
+    }
+
+    public void completeSelectedBillSession() {
+        if (selectedBillSession == null) {
+            return;
+        }
+        selectedBillSession.setCompleted(true);
+        billSessionFacade.edit(selectedBillSession);
+        selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void completeSelectedBillSessionUndo() {
+        if (selectedBillSession == null) {
+            return;
+        }
+        selectedBillSession.setCompleted(false);
+        billSessionFacade.edit(selectedBillSession);
+        selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
+        sessionInstanceFacade.edit(selectedSessionInstance);
+    }
+
+    public void resetBillSession() {
+        if (selectedBillSession == null) {
+            return;
+        }
+
+        if (selectedBillSession.getCurrentlyConsulted()) {
+            selectedBillSession.setCurrentlyConsulted(false);
+        }
+
+        if (selectedBillSession.isCompleted()) {
+            selectedBillSession.setCompleted(false);
+        }
+
+        if (selectedBillSession.getMarkedToRefund() != null) {
+            if (selectedBillSession.getMarkedToRefund() == true) {
+                selectedBillSession.setMarkedToRefund(false);
+            }
+        }
+
+        if (selectedBillSession.getMarkedToCancel() != null) {
+            if (selectedBillSession.getMarkedToCancel()) {
+                selectedBillSession.setMarkedToCancel(false);
+            }
+
+        }
+
+        selectedBillSession.setCompleted(true);
+        billSessionFacade.edit(selectedBillSession);
+        selectedSessionInstance.setLastCompletedBillSession(selectedBillSession);
+        sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
     public void reverseCurrentCompleteAndCallPrevious() {
@@ -2069,7 +2223,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillBillSessions() {
-        selectedBillSession = null;
+        
         BillType[] billTypes = {
             BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -2141,6 +2295,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
     }
+    
 
     private boolean errorCheckForAddingNewBooking() {
         if (getSelectedSessionInstance() == null) {
@@ -2450,7 +2605,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //        }
 //
 //        getBillSessionFacade().create(bs);
-
         List<BillFee> savingBillFees = new ArrayList<>();
 
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessionsForPatientPortal(savingBill, savingBillItem, false);
