@@ -1187,9 +1187,9 @@ public class Qb {
             b = billFacade.find(b.getId());
         }
         bfs = b.getBillFees();
-//        if (bfs == null || bfs.isEmpty()) {
-//            bfs = findBillFeesFromBill(b);
-//        }
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
 
         for (BillFee bf : bfs) {
             JSONObject bijo = new JSONObject();
@@ -1293,9 +1293,9 @@ public class Qb {
             b = billFacade.find(b.getId());
         }
         bfs = b.getBillFees();
-//        if (bfs == null || bfs.isEmpty()) {
-//            bfs = findBillFeesFromBill(b);
-//        }
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
 
         for (BillFee bf : bfs) {
             JSONObject bijo = new JSONObject();
@@ -1402,9 +1402,9 @@ public class Qb {
             b = billFacade.find(b.getId());
         }
         bfs = b.getBillFees();
-//        if (bfs == null || bfs.isEmpty()) {
-//            bfs = findBillFeesFromBill(b);
-//        }
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
 
         for (BillFee bf : bfs) {
             JSONObject bijo = new JSONObject();
@@ -1949,11 +1949,11 @@ public class Qb {
         JSONArray bija = new JSONArray();
 
         List<BillFee> billFees = b.getBillFees();
-//        if (billFees == null || billFees.isEmpty()) {
-//            billFees = findBillFeesFromBill(b);
-//        }
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = findBillFeesFromBill(b);
+        }
 
-        for (BillFee bf : b.getBillFees()) {
+        for (BillFee bf : billFees) {
 
             if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
