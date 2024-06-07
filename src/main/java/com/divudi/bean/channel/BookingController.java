@@ -1844,71 +1844,28 @@ public class BookingController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        List<BillSession> validBillSessions = getValidBillSessions();
-        if (validBillSessions == null) {
-            System.out.println("Valid bill sessions list is null");
-            return;
+        for (BillSession temBs : getValidBillSessions()) {
+            temBs.setCurrentlyConsulted(false);
+            billSessionFacade.edit(temBs);
         }
-
-        int selectedBillSessionIndex = -1; // Initialize with a default value
-        for (int i = 0; i < validBillSessions.size(); i++) {
-            if (validBillSessions.get(i).equals(selectedBillSession)) {
-                selectedBillSessionIndex = i;
-                break;
-            }
-        }
-
-        if (selectedBillSessionIndex != -1) {
-            selectedBillSession.setCurrentlyConsulted(true);
-            billSessionFacade.edit(selectedBillSession);
-
-            selectedSessionInstance.setCurrentlyConsultingBillSession(selectedBillSession);
-            int nextInLineIndex = selectedBillSessionIndex + 1;
-            if (nextInLineIndex < validBillSessions.size()) {
-                selectedSessionInstance.setNextInLineBillSession(validBillSessions.get(nextInLineIndex));
-            }
-
-            sessionInstanceFacade.edit(selectedSessionInstance);
-        } else {
-            System.out.println("Selected bill session not found in the valid sessions list");
-        }
+        selectedBillSession.setCurrentlyConsulted(true);
+        billSessionFacade.edit(selectedBillSession);
+        selectedSessionInstance.setCurrentlyConsultingBillSession(selectedBillSession);
+        sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
     public void patientAttendUndo() {
         if (selectedBillSession == null) {
             return;
         }
-
-        List<BillSession> validBillSessions = getValidBillSessions();
-        if (validBillSessions == null) {
-            System.out.println("Valid bill sessions list is null");
-            return;
+        for (BillSession temBs : getValidBillSessions()) {
+            temBs.setCurrentlyConsulted(false);
+            billSessionFacade.edit(temBs);
         }
-
-        int selectedBillSessionIndex = -1; // Initialize with a default value
-        for (int i = 0; i < validBillSessions.size(); i++) {
-            if (validBillSessions.get(i).equals(selectedBillSession)) {
-                selectedBillSessionIndex = i;
-                break;
-            }
-        }
-
-        if (selectedBillSessionIndex != -1) {
-            selectedBillSession.setCurrentlyConsulted(false);
-            billSessionFacade.edit(selectedBillSession);
-
-            selectedSessionInstance.setCurrentlyConsultingBillSession(selectedBillSession);
-            int nextInLineIndex = -1;
-            nextInLineIndex = selectedBillSessionIndex + 1;
-            if (nextInLineIndex < validBillSessions.size()) {
-                selectedSessionInstance.setNextInLineBillSession(validBillSessions.get(nextInLineIndex));
-            }
-
-            sessionInstanceFacade.edit(selectedSessionInstance);
-
-        } else {
-            System.out.println("Selected bill session not found in the valid sessions list");
-        }
+        selectedBillSession.setCurrentlyConsulted(false);
+        billSessionFacade.edit(selectedBillSession);
+        selectedSessionInstance.setCurrentlyConsultingBillSession(null);
+        sessionInstanceFacade.edit(selectedSessionInstance);
     }
 
     public void completeSelectedBillSession() {
@@ -2224,7 +2181,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void fillBillSessions() {
-        
+
         BillType[] billTypes = {
             BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -2296,7 +2253,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
     }
-    
 
     private boolean errorCheckForAddingNewBooking() {
         if (getSelectedSessionInstance() == null) {
