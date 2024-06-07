@@ -1944,6 +1944,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillBillSessions();
     }
 
+
+
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
         if (patient == null) {
