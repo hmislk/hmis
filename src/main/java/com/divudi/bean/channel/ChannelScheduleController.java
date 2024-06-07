@@ -120,7 +120,7 @@ public class ChannelScheduleController implements Serializable {
     @Inject
     ChannelScheduleController channelScheduleController;
 
-    private DoctorSpeciality speciality;
+    private Speciality speciality;
     ServiceSession current;
     private Item additionalItemToAdd;
     private ItemForItem additionalItemToRemove;
@@ -622,11 +622,11 @@ public class ChannelScheduleController implements Serializable {
         this.tabIndex = tabIndex;
     }
 
-    public DoctorSpeciality getSpeciality() {
+    public Speciality getSpeciality() {
         return speciality;
     }
 
-    public void setSpeciality(DoctorSpeciality speciality) {
+    public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
     }
 
