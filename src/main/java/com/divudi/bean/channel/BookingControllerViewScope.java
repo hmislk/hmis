@@ -326,7 +326,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return feeTotalForSelectedBill;
     }
-    
+
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1683,6 +1683,65 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         fillFees();
     }
 
+    public void addItemToBookingAtSettling() {
+        if (itemToAddToBooking == null) {
+            JsfUtil.addErrorMessage("Item to add to booking");
+            return;
+        }
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("No Bill Session");
+            return;
+        }
+        if (selectedBillSession.getBillItem() == null) {
+            JsfUtil.addErrorMessage("No Bill Item");
+            return;
+        }
+        if (selectedBillSession.getBillItem().getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (selectedBillSession.getBillItem().getBill().getBillItems() == null) {
+            JsfUtil.addErrorMessage("No Bill Items");
+            return;
+        }
+        BillItem newBillItem = new BillItem();
+        newBillItem.setBill(selectedBillSession.getBillItem().getBill());
+        newBillItem.setBillSession(selectedBillSession);
+        newBillItem.setCreatedAt(new Date());
+        newBillItem.setCreater(sessionController.getLoggedUser());
+        newBillItem.setInwardChargeType(itemToAddToBooking.getInwardChargeType());
+        newBillItem.setItem(itemToAddToBooking);
+        newBillItem.setItemId(itemToAddToBooking.getId() + "");
+
+        if (newBillItem.getQty() == null || newBillItem.getQty() == 0.0) {
+            newBillItem.setQty(1.0);
+        }
+        if (foriegn) {
+            newBillItem.setGrossValue(itemToAddToBooking.getTotalForForeigner() * newBillItem.getQty());
+        } else {
+            newBillItem.setGrossValue(itemToAddToBooking.getTotal() * newBillItem.getQty());
+        }
+
+        newBillItem.setDiscountRate(0);
+        newBillItem.setDiscount(0);
+
+        newBillItem.setNetRate(0);
+        newBillItem.setNetValue(newBillItem.getGrossValue() - newBillItem.getDiscount());
+
+        newBillItem.setBillFees(listBillFees);
+
+        List<ItemFee> itemFeesofTheAddingItem = billBeanController.fillFees(itemToAddToBooking);
+        List<BillFee> billFeesToAdd = null;
+        if (itemFeesofTheAddingItem != null) {
+            billFeesToAdd = billBeanController.createNewBillFeesAndReturnThem(newBillItem, addedItemFees, sessionController.getLoggedUser(), null, null, foriegn);
+        }
+
+        selectedBillSession.getBillItem().getBill().getBillItems().add(newBillItem);
+
+        itemToAddToBooking = null;
+        fillFees();
+    }
+
     public boolean errorCheckForSerial() {
         if (selectedBillSession == null || billSessions == null) {
             // Handle the case when selectedBillSession or billSessions is null
@@ -1943,8 +2002,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         addChannelBooking(reservedBooking);
         fillBillSessions();
     }
-
-
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
