@@ -251,6 +251,31 @@
 
                                     </div>
                                     <div class="col-6">
+
+                                        <p:panel header="Additional Items" >
+                                            <p:selectOneMenu 
+                                                class="w-75 mx-1" 
+                                                autoWidth="false" 
+                                                id="lstItems" 
+                                                value="#{bookingControllerViewScope.itemToAddToBooking}" >
+                                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                <f:selectItems  value="#{bookingControllerViewScope.itemsAvailableToAddToBooking}" var="iata" itemValue="#{iata}"  itemLabel="#{iata.name}" ></f:selectItems>
+                                                <!--<p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>-->
+                                            </p:selectOneMenu>
+
+
+                                            <p:commandButton 
+                                                id="btnAddItem"
+                                                process="lstItems btnAddItem"
+                                                value="Add Item" 
+                                                icon="fas fa-plus"
+                                                class="ui-button-success"
+                                                action="#{bookingControllerViewScope.addItemToBooking}"
+                                                update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                ></p:commandButton>
+
+                                        </p:panel>
+
                                         <p:panel class="m-1">
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
