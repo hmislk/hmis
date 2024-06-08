@@ -270,10 +270,11 @@
                                                 value="Add Item" 
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
-                                                action="#{bookingControllerViewScope.addItemToBooking}"
-                                                update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
+                                                update="ccFees lstItems"
                                                 ></p:commandButton>
 
+                                            <!--update="lblSessionTotal paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"-->
                                         </p:panel>
 
                                         <p:panel class="m-1">
@@ -491,7 +492,8 @@
                                         </p:panel>
                                     </div>
                                     <div class="col-md-12 my-2">
-                                        <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                        
+                                        <ch:bill_fees id="ccFees" bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                     </div>
                                 </div>
                             </h:panelGroup>

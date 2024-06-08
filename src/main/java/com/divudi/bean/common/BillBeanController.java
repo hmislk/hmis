@@ -367,7 +367,7 @@ public class BillBeanController implements Serializable {
                 + " where f.retired=false "
                 + " and f.item =:item "
                 + " order by f.id";
-        m.put("items", item);
+        m.put("item", item);
         itemFees = itemFeeFacade.findByJpql(sql, m);
         return itemFees;
     }
