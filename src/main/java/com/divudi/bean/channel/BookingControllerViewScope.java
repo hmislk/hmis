@@ -303,6 +303,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private Institution referredByInstitution;
     private Doctor referredBy;
     private Institution collectingCentre;
+    private double netPlusVat;
 
     public void removeAddedAditionalItems(Item item) {
         itemsAddedToBooking.remove(item);
@@ -2022,9 +2023,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
+
             if (toStaff == null) {
                 return true;
             }
+            setNetPlusVat(feeTotalForSelectedBill);
+            if (toStaff.getCreditLimitQualified() >= toStaff.getCurrentCreditValue() + netPlusVat) {
+                staffBean.updateStaffCredit(toStaff, netPlusVat);
+            } else {
+                JsfUtil.addErrorMessage("Staff credit limit exceeded. The current credit value cannot exceed the credit limit qualified by the staff member.");
+                return true;
+            }
+
         }
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -6362,6 +6372,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setNeedToFillSessionInstanceDetails(Boolean needToFillSessionInstanceDetails) {
         this.needToFillSessionInstanceDetails = needToFillSessionInstanceDetails;
+    }
+
+    public double getNetPlusVat() {
+        return netPlusVat;
+    }
+
+    public void setNetPlusVat(double netPlusVat) {
+        this.netPlusVat = netPlusVat;
     }
 
 }
